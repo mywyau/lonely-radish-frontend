@@ -86,6 +86,27 @@ const nextWord = computed(() => {
 
 const { volume } = useAudioVolume()
 
+type AudioVoice = 'male' | 'female'
+
+const selectedAudioVoice = useCookie<AudioVoice>('audio-voice', {
+    default: () => 'male',
+    sameSite: 'lax'
+})
+
+const setAudioVoice = (voice: AudioVoice) => {
+    selectedAudioVoice.value = voice
+}
+
+const audioDirectory = computed(() => {
+    return selectedAudioVoice.value === 'female'
+        ? 'audio-female'
+        : 'audio'
+})
+
+const getAudioSrc = (fileName?: string | null) => {
+    if (!fileName) return ''
+    return `${cdnBase}/${audioDirectory.value}/${fileName}`
+}
 
 const word = computed(() => data.value)
 
@@ -162,9 +183,48 @@ watchEffect(() => {
 <template>
     <main v-if="authReady && word" class="word-page max-w-4xl mx-auto px-4 py-8 space-y-4 sm:space-y-6">
 
-        <NuxtLink :to="`/topic/words/${topic}/v2#${word.id}`" class="text-sm text-black hover:underline">
-            ← Back
-        </NuxtLink>
+        <!-- <div class="page-top-row">
+            <NuxtLink :to="`/topic/words/${topic}/v2#${word.id}`" class="text-sm text-black hover:underline">
+                ← Back
+            </NuxtLink>
+
+            <div class="voice-toggle" aria-label="Audio voice">
+                <button type="button" class="voice-toggle-btn"
+                    :class="{ 'voice-toggle-btn-active': selectedAudioVoice === 'male' }"
+                    :aria-pressed="selectedAudioVoice === 'male'" @click="setAudioVoice('male')">
+                    Male
+                </button>
+
+                <button type="button" class="voice-toggle-btn"
+                    :class="{ 'voice-toggle-btn-active': selectedAudioVoice === 'female' }"
+                    :aria-pressed="selectedAudioVoice === 'female'" @click="setAudioVoice('female')">
+                    Female
+                </button>
+            </div>
+        </div> -->
+
+        <div class="flex items-center justify-between gap-4">
+            <NuxtLink :to="`/topic/words/${topic}/v2#${word.id}`" class="text-sm text-black hover:underline">
+                ← Back
+            </NuxtLink>
+
+            <div class="inline-flex items-center rounded-full border border-gray-300 bg-white p-1"
+                aria-label="Audio voice">
+                <button type="button" class="rounded-full px-3 py-1 text-xs font-semibold transition" :class="selectedAudioVoice === 'male'
+                        ? 'bg-pink-100 text-gray-900'
+                        : 'bg-transparent text-gray-600 hover:bg-gray-100'
+                    " :aria-pressed="selectedAudioVoice === 'male'" @click="setAudioVoice('male')">
+                    Male
+                </button>
+
+                <button type="button" class="rounded-full px-3 py-1 text-xs font-semibold transition" :class="selectedAudioVoice === 'female'
+                        ? 'bg-pink-100 text-gray-900'
+                        : 'bg-transparent text-gray-600 hover:bg-gray-100'
+                    " :aria-pressed="selectedAudioVoice === 'female'" @click="setAudioVoice('female')">
+                    Female
+                </button>
+            </div>
+        </div>
 
         <!-- Word header -->
         <section class="text-center space-y-4 sm:space-y-4 word-card rounded-xl p-6 sm:p-8">
@@ -226,12 +286,23 @@ watchEffect(() => {
                     <span class="mobile-action-label">Speak</span>
                 </NuxtLink>
 
-                <AudioButton v-if="word.audio?.word" :src="`${cdnBase}/audio/${word.audio.word}`"
-                    :playback-rate="playbackRate" size="md" class="tone-gate-play-btn main-action-btn" />
+                <!-- <div class="voice-toggle" aria-label="Audio voice">
+                    <button type="button" class="voice-toggle-btn"
+                        :class="{ 'voice-toggle-btn-active': selectedAudioVoice === 'male' }"
+                        :aria-pressed="selectedAudioVoice === 'male'" @click="setAudioVoice('male')">
+                        Male
+                    </button>
 
-                <AudioButton v-if="word.audio?.word" :src="`${cdnBase}/audio-female/${word.audio.word}`"
-                    :playback-rate="playbackRate" size="md" class="tone-gate-play-btn main-action-btn" />
+                    <button type="button" class="voice-toggle-btn"
+                        :class="{ 'voice-toggle-btn-active': selectedAudioVoice === 'female' }"
+                        :aria-pressed="selectedAudioVoice === 'female'" @click="setAudioVoice('female')">
+                        Female
+                    </button>
+                </div> -->
 
+                <AudioButton v-if="word.audio?.word" :key="`word-audio-${selectedAudioVoice}-${word.audio.word}`"
+                    :src="getAudioSrc(word.audio.word)" :playback-rate="playbackRate" size="md"
+                    class="tone-gate-play-btn main-action-btn" />
 
             </div>
 
@@ -306,13 +377,8 @@ watchEffect(() => {
                                 </NuxtLink>
 
                                 <AudioButton v-if="word.audio?.examples?.[currentExampleIndex]"
-                                    :src="`${cdnBase}/audio/${word.audio.examples[currentExampleIndex]}`"
-                                    :playback-rate="playbackRate" size="sm"
-                                    class="tone-gate-play-btn example-action-btn" />
-
-
-                                <AudioButton v-if="word.audio?.examples?.[currentExampleIndex]"
-                                    :src="`${cdnBase}/audio-female/${word.audio.examples[currentExampleIndex]}`"
+                                    :key="`example-audio-${selectedAudioVoice}-${word.id}-${currentExampleIndex}`"
+                                    :src="getAudioSrc(word.audio.examples[currentExampleIndex])"
                                     :playback-rate="playbackRate" size="sm"
                                     class="tone-gate-play-btn example-action-btn" />
                             </div>
@@ -465,6 +531,40 @@ watchEffect(() => {
     min-height: 2rem;
 }
 
+.voice-toggle {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid #d1d5db;
+    border-radius: 9999px;
+    background: #ffffff;
+    padding: 0.15rem;
+    min-height: 2.5rem;
+}
+
+.voice-toggle-btn {
+    border: none;
+    background: transparent;
+    color: #4b5563;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.35rem 0.65rem;
+    border-radius: 9999px;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.voice-toggle-btn:hover {
+    background: #f3f4f6;
+}
+
+.voice-toggle-btn-active {
+    background: #F6E1E1;
+    color: #111827;
+}
+
+.voice-toggle-btn-active:hover {
+    background: #f2d8d8;
+}
+
 .example-pagination {
     display: flex;
     align-items: center;
@@ -612,6 +712,15 @@ watchEffect(() => {
     .mobile-action-icon {
         font-size: 0.95rem;
         line-height: 1;
+    }
+
+    .voice-toggle {
+        min-height: 2rem;
+    }
+
+    .voice-toggle-btn {
+        font-size: 0.7rem;
+        padding: 0.25rem 0.45rem;
     }
 }
 </style>
