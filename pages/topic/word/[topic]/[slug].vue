@@ -266,20 +266,6 @@ watchEffect(() => {
                     <span class="mobile-action-label">Speak</span>
                 </NuxtLink>
 
-                <!-- <div class="voice-toggle" aria-label="Audio voice">
-                    <button type="button" class="voice-toggle-btn"
-                        :class="{ 'voice-toggle-btn-active': selectedAudioVoice === 'male' }"
-                        :aria-pressed="selectedAudioVoice === 'male'" @click="setAudioVoice('male')">
-                        Male
-                    </button>
-
-                    <button type="button" class="voice-toggle-btn"
-                        :class="{ 'voice-toggle-btn-active': selectedAudioVoice === 'female' }"
-                        :aria-pressed="selectedAudioVoice === 'female'" @click="setAudioVoice('female')">
-                        Female
-                    </button>
-                </div> -->
-
                 <AudioButton v-if="word.audio?.word" :key="`word-audio-${selectedAudioVoice}-${word.audio.word}`"
                     :src="getAudioSrc(word.audio.word)" :playback-rate="playbackRate" size="md"
                     class="tone-gate-play-btn main-action-btn" />
