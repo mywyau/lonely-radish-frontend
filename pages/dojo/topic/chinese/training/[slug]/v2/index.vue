@@ -56,6 +56,20 @@ const { isLoggedIn } = useMeStateV2()
 const runtimeConfig = useRuntimeConfig()
 const cdnBase = runtimeConfig.public.cdnBase
 
+type AudioVoice = 'male' | 'female'
+const selectedVoice = useCookie<AudioVoice>('audio-voice', {
+  default: () => 'male',
+})
+const audioDirectory = computed(() => selectedVoice.value === 'female' ? 'audio-female' : 'audio-male')
+const currentAudioSrc = computed(() => {
+  if (!current.value?.wordId) return ''
+  return `${cdnBase}/${audioDirectory.value}/${current.value.wordId}.mp3`
+})
+
+function setVoice(voice: AudioVoice) {
+  selectedVoice.value = voice
+}
+
 const auth = await useAuth()
 
 async function authedFetch<T>(
@@ -482,15 +496,13 @@ function advance() {
 const wordAudio = ref<HTMLAudioElement | null>(null)
 
 function playCurrentAudio() {
-  if (!current.value) return
-
-  const src = `${cdnBase}/audio/${current.value.wordId}.mp3`
+  if (!currentAudioSrc.value) return
 
   if (!wordAudio.value) {
     wordAudio.value = new Audio()
   }
 
-  wordAudio.value.src = src
+  wordAudio.value.src = currentAudioSrc.value
   wordAudio.value.currentTime = 0
   wordAudio.value.play().catch(() => { })
 }
@@ -670,16 +682,27 @@ onBeforeUnmount(() => {
             </div>
 
             <div class="flex items-center gap-2">
-              <span class="rounded-full bg-white/80 px-3 py-1 text-xs font-medium text-gray-700">
-                {{ formattedElapsedTime }}
-              </span>
               <!-- <button
                 class="rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition"
                 type="button" @click="restartSession">
                 New session
               </button> -->
-
-              <AudioButton :key="current?.wordId" :src="`${cdnBase}/audio/${current?.wordId}.mp3`" />
+              <div class="inline-flex items-center rounded-full border border-gray-200 bg-white p-0.5 text-xs">
+                <button type="button" class="rounded-full px-2 py-1 transition" :class="selectedVoice === 'male'
+                  ? 'bg-blue-100 text-gray-900 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-800'" @click="setVoice('male')">
+                  Male
+                </button>
+                <button type="button" class="rounded-full px-2 py-1 transition" :class="selectedVoice === 'female'
+                  ? 'bg-pink-100 text-gray-900 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-800'" @click="setVoice('female')">
+                  Female
+                </button>
+              </div>
+              <AudioButton :key="`audio-${selectedVoice}-${current?.wordId}`" :src="currentAudioSrc" />
+              <span class="rounded-full bg-white/80 px-3 py-1 text-xs font-medium text-gray-700">
+                {{ formattedElapsedTime }}
+              </span>
             </div>
           </div>
 

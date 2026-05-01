@@ -714,10 +714,6 @@ onBeforeUnmount(() => {
             </div> -->
 
             <div class="flex flex-wrap items-center gap-2">
-              <span class="rounded-full bg-white/80 px-3 py-1 text-xs font-medium text-gray-700">
-                {{ formattedElapsedTime }}
-              </span>
-
               <div class="flex rounded-full bg-gray-100 p-1">
                 <button type="button" class="rounded-full px-3 py-1 text-xs font-medium transition" :class="selectedVoice === 'male'
                   ? 'bg-blue-100 text-gray-900 shadow-sm'
@@ -733,6 +729,9 @@ onBeforeUnmount(() => {
               </div>
 
               <AudioButton :key="`${current?.wordId}-${selectedVoice}`" :src="currentAudioSrc" />
+              <span class="rounded-full bg-white/80 px-3 py-1 text-xs font-medium text-gray-700">
+                {{ formattedElapsedTime }}
+              </span>
             </div>
           </div>
 
