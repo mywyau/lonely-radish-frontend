@@ -719,6 +719,10 @@ onBeforeUnmount(() => {
         <span v-if="(current + 1) <= questions.length" class="text-sm text-gray-500 whitespace-nowrap">
           {{ current + 1 }} / {{ questions.length }}
         </span>
+
+        <div v-if="question?.type === 'audio'" class="text-center">
+          <AudioButton :key="question.audioKey" :src="getRandomizedAudioSrc(question.audioKey)" autoplay />
+        </div>
       </div>
 
       <div v-if="showQuiz" class="space-y-6">
@@ -738,9 +742,9 @@ onBeforeUnmount(() => {
           </p>
         </div>
 
-        <div v-if="question?.type === 'audio'" class="text-center">
+        <!-- <div v-if="question?.type === 'audio'" class="text-center">
           <AudioButton :key="question.audioKey" :src="getRandomizedAudioSrc(question.audioKey)" autoplay />
-        </div>
+        </div> -->
 
         <div class="min-h-[50px] space-y-3">
           <div class="flex items-center justify-center gap-3">
