@@ -15,6 +15,7 @@ import {
 } from '@/utils/sounds';
 
 import { masteryXp } from '@/config/xp/helpers';
+import { useQuizTimer } from '~/composables/quiz/useQuizTimer';
 import { brandColours } from '~/utils/branding/helpers';
 
 const route = useRoute()
@@ -893,7 +894,7 @@ onBeforeUnmount(() => {
   padding-bottom: 0.25rem;
 }
 
-.completion-tiles-grid > * {
+.completion-tiles-grid>* {
   min-width: calc(50% - 0.5rem);
   scroll-snap-align: start;
 }
@@ -908,7 +909,7 @@ onBeforeUnmount(() => {
     gap: 1.25rem;
   }
 
-  .completion-tiles-grid > * {
+  .completion-tiles-grid>* {
     min-width: 0;
   }
 

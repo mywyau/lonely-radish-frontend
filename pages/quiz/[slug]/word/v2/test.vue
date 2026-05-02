@@ -18,6 +18,7 @@ import { masteryXp } from '@/config/xp/helpers'
 import type { LevelData, Word } from '~/types/level/quiz/types'
 import { brandColours } from '~/utils/branding/helpers'
 import { levelTitles } from '~/utils/levels/levels'
+import { useQuizTimer } from '~/composables/quiz/useQuizTimer'
 
 const route = useRoute()
 const slug = computed(() => route.params.slug as string)
