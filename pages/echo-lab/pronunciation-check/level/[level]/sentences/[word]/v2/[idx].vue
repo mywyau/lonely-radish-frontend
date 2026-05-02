@@ -363,7 +363,6 @@ async function submitRecording() {
       remainingAttempts: number
       limit: number
     }>(
-      // "/api/pronunciation-check-v2",
       "/api/pronunciation-check-v3",
       {
         method: "POST",
