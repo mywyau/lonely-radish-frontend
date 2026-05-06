@@ -111,7 +111,11 @@ onMounted(() => {
       <div class="mt-5 flex flex-wrap gap-3">
         <NuxtLink to="/topics"
           class="inline-flex items-center justify-center rounded-md bg-gray-900 text-white font-medium px-4 py-2 hover:bg-gray-800 transition">
-          Explore topics
+          Explore Topics
+        </NuxtLink>
+        <NuxtLink to="/levels"
+          class="inline-flex items-center justify-center rounded-md bg-gray-900 text-white font-medium px-4 py-2 hover:bg-gray-800 transition">
+          Explore Levels
         </NuxtLink>
         <NuxtLink to="/topics/quiz"
           class="inline-flex items-center justify-center rounded-md border border-gray-700 text-gray-900 font-medium px-4 py-2 hover:bg-white/60 transition">
