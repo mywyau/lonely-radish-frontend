@@ -243,24 +243,18 @@ watchEffect(() => {
                 <details ref="settingsDetails" class="group relative">
 
                     <summary
-                        class="inline-flex list-none cursor-pointer items-center gap-1.5 rounded-full bg-yellow-100 px-3 py-1.5 text-xs font-semibold text-black shadow-sm transition hover:bg-yellow-200">
+                        class="inline-flex list-none cursor-pointer items-center gap-1.5 rounded-lg bg-yellow-200 px-3 py-1.5 text-xs font-semibold text-black shadow-sm transition hover:bg-yellow-100">
                         <Settings class="h-3.5 w-3.5" />
                         <span>Settings</span>
                     </summary>
 
                     <div
-                        class="fixed left-1/2 top-24 z-50 max-h-[calc(100vh-7rem)] w-[calc(100vw-1.5rem)] max-w-sm -translate-x-1/2 overflow-y-auto rounded-xl border border-yellow-200 bg-yellow-50 p-3 shadow-lg sm:absolute sm:left-auto sm:right-0 sm:top-auto sm:mt-2 sm:max-h-none sm:w-72 sm:translate-x-0 sm:overflow-visible">
+                        class="fixed left-1/2 top-24 z-50 max-h-[calc(100vh-7rem)] w-[calc(100vw-1.5rem)] max-w-sm -translate-x-1/2 overflow-y-auto rounded-xl bg-yellow-100 p-3 shadow-lg sm:absolute sm:left-auto sm:right-0 sm:top-auto sm:mt-2 sm:max-h-none sm:w-72 sm:translate-x-0 sm:overflow-visible">
 
                         <div class="mb-3 flex items-center justify-between">
                             <p class="text-xs font-semibold uppercase tracking-wide text-gray-800">
                                 Settings
                             </p>
-
-                            <!-- <button type="button"
-                                class="flex h-7 w-7 items-center justify-center text-lg leading-none text-gray-900 transition hover:brightness-110"
-                                aria-label="Close settings" @click="closeSettings">
-                                ×
-                            </button> -->
 
                             <button type="button"
                                 class="flex h-7 w-7 items-center justify-center rounded-full text-gray-900 transition hover:bg-black/5"
@@ -278,7 +272,7 @@ watchEffect(() => {
                                     <input type="range" min="0" max="1" step="0.01" v-model="volume"
                                         class="h-2 w-full cursor-pointer appearance-none rounded-full bg-gray-200 accent-blue-600" />
                                     <span class="w-8 text-xs tabular-nums text-gray-700">{{ Math.round(volume * 100)
-                                    }}%</span>
+                                        }}%</span>
                                 </div>
                             </div>
                             <div class="space-y-1">
@@ -305,7 +299,7 @@ watchEffect(() => {
                                 <div class="flex rounded-full bg-gray-100 p-1" aria-label="Audio voice">
                                     <button type="button"
                                         class="flex-1 rounded-full px-3 py-1 text-xs font-semibold transition" :class="selectedAudioVoice === 'male'
-                                            ? 'bg-blue-100 text-black shadow-sm'
+                                            ? 'bg-blue-200 text-black shadow-sm'
                                             : 'bg-transparent text-gray-700 hover:bg-gray-200'
                                             " :aria-pressed="selectedAudioVoice === 'male'"
                                         @click="setAudioVoice('male')">
@@ -314,7 +308,7 @@ watchEffect(() => {
 
                                     <button type="button"
                                         class="flex-1 rounded-full px-3 py-1 text-xs font-semibold transition" :class="selectedAudioVoice === 'female'
-                                            ? 'bg-pink-100 text-black shadow-sm'
+                                            ? 'bg-pink-200 text-black shadow-sm'
                                             : 'bg-transparent text-gray-700 hover:bg-gray-200'
                                             " :aria-pressed="selectedAudioVoice === 'female'"
                                         @click="setAudioVoice('female')">
