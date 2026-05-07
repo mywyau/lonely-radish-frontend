@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { Construction } from '@lucide/vue'
+
 definePageMeta({
   title: 'Coming soon · TaroTea'
 })
@@ -30,8 +32,9 @@ definePageMeta({
       <BackLink />
     </div>
 
-    <h1 class="text-3xl text-black font-semibold">
-      🚧 Coming soon
+    <h1 class="flex items-center justify-center gap-3 text-3xl text-black font-semibold">
+      <Construction class="size-8" aria-hidden="true" />
+      <span>Coming soon</span>
     </h1>
 
     <p class="text-gray-800">
