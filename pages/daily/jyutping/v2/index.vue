@@ -720,8 +720,8 @@ watch(
             </div>
           </transition>
 
-          <transition-group name="card-fade" tag="div" class="grid grid-cols-1 sm:grid-cols-4 gap-4 sm:gap-6">
-            <div v-for="tile in completionTiles" :key="tile.label" class="stat-card hover:brightness-110"
+          <transition-group name="card-fade" tag="div" class="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-1 sm:grid sm:grid-cols-4 sm:overflow-visible sm:snap-none sm:gap-6 sm:pb-0">
+            <div v-for="tile in completionTiles" :key="tile.label" class="stat-card hover:brightness-110 min-w-[calc(50%-0.5rem)] snap-start sm:min-w-0"
               :class="tile.className">
               <p class="stat-label">
                 {{ tile.label }}

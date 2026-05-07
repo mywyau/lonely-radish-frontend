@@ -635,16 +635,16 @@ onBeforeUnmount(() => {
             <p class="hero-score">{{ passPercentage }}%</p>
           </div>
 
-          <div class="grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-6">
-            <div class="stat-card result-3 text-center">
+          <div class="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-1 sm:grid sm:grid-cols-3 sm:overflow-visible sm:snap-none sm:gap-6 sm:pb-0">
+            <div class="stat-card result-3 text-center min-w-[calc(50%-0.5rem)] snap-start sm:min-w-0">
               <p class="stat-label">Passed Words</p>
               <p class="stat-value">{{ passedCount }}</p>
             </div>
-            <div class="stat-card result-1 text-center">
+            <div class="stat-card result-1 text-center min-w-[calc(50%-0.5rem)] snap-start sm:min-w-0">
               <p class="stat-label">Skipped Words</p>
               <p class="stat-value">{{ missedCount }}</p>
             </div>
-            <div class="stat-card result-2 text-center">
+            <div class="stat-card result-2 text-center min-w-[calc(50%-0.5rem)] snap-start sm:min-w-0">
               <p class="stat-label">Total Time</p>
               <p class="stat-value">{{ formattedElapsedTime }}</p>
             </div>
@@ -658,11 +658,21 @@ onBeforeUnmount(() => {
         </div>
 
         <div v-else-if="currentWord" class="space-y-4">
-          <div
-            class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-fuchsia-100 bg-fuchsia-50/60 p-3 text-sm text-gray-700">
-            <p>Progress: <span class="font-semibold text-gray-900">{{ progressLabel }}</span></p>
-            <p>Passed: <span class="font-semibold text-emerald-700">{{ passedCount }}</span> / {{ quizSize }}</p>
-            <p>Elapsed: <span class="font-semibold text-fuchsia-700">{{ formattedElapsedTime }}</span></p>
+          <div class="grid gap-3 sm:grid-cols-3">
+            <div class="rounded-xl border border-[#BFEA83]/70 bg-[#BFEA83]/30 p-3 text-center shadow-sm">
+              <p class="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-lime-800">Progress</p>
+              <p class="mt-1 text-lg font-bold text-gray-900">{{ progressLabel }}</p>
+            </div>
+
+            <div class="rounded-xl border border-[#FDBA74]/70 bg-[#FDBA74]/30 p-3 text-center shadow-sm">
+              <p class="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-orange-800">Passed</p>
+              <p class="mt-1 text-lg font-bold text-gray-900">{{ passedCount }} / {{ quizSize }}</p>
+            </div>
+
+            <div class="rounded-xl border border-[#F7D774]/80 bg-[#F7D774]/35 p-3 text-center shadow-sm">
+              <p class="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-yellow-800">Elapsed</p>
+              <p class="mt-1 text-lg font-bold text-gray-900">{{ formattedElapsedTime }}</p>
+            </div>
           </div>
 
           <div class="rounded-xl border border-fuchsia-100 bg-white p-4">
