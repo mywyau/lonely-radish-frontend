@@ -115,6 +115,8 @@ function formatStatValue(stat: StatCard, index: number): string {
   return `${rawValue.toLocaleString()}${suffix}`
 }
 
+const marqueeStats = computed(() => [...stats.value, ...stats.value])
+
 onMounted(async () => {
   try {
     const { getAccessToken } = await useAuth()
@@ -159,12 +161,12 @@ onMounted(async () => {
       {{ errorState }}
     </div>
 
-    <div v-else>
-      <h1 class="your-stat-heading">
+    <!-- <div v-else> -->
+      <!-- <h1 class="your-stat-heading">
         Your Stats
-      </h1>
+      </h1> -->
 
-      <transition-group name="card-fade" tag="div"
+      <!-- <transition-group name="card-fade" tag="div"
         class="mt-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-4 sm:gap-6">
         <div v-for="(stat, index) in stats" :key="stat.label" class="stat-card hover:brightness-110"
           :class="`stat-${index}`">
@@ -180,8 +182,78 @@ onMounted(async () => {
             {{ formatStatValue(stat, index) }}
           </p>
         </div>
-      </transition-group>
+      </transition-group> -->
+
+      <!-- <div class="stats-marquee mt-6" aria-label="Your learning stats">
+        <div class="stats-marquee-track">
+          <div v-for="(stat, index) in marqueeStats" :key="`${stat.label}-${index}`"
+            class="stat-card stat-marquee-card hover:brightness-110" :class="`stat-${index % stats.length}`">
+            <div class="stat-icon" aria-hidden="true">
+              <component :is="stat.icon" class="h-5 w-5" />
+            </div>
+
+            <p class="stat-label">
+              {{ stat.label }}
+            </p>
+
+            <p class="stat-value">
+              {{ formatStatValue(stat, index % stats.length) }}
+            </p>
+          </div>
+        </div>
+      </div> -->
+
+    <!-- </div> -->
+
+    <div v-else>
+  <h1 class="your-stat-heading">
+    Your Stats
+  </h1>
+
+  <section class="mt-6 space-y-4">
+    <div
+      v-if="stats[0]"
+      class="featured-stat-card hover:brightness-105"
+    >
+      <div class="featured-stat-icon" aria-hidden="true">
+        <component :is="stats[0].icon" class="h-6 w-6" />
+      </div>
+
+      <div>
+        <p class="stat-label">
+          {{ stats[0].label }}
+        </p>
+
+        <p class="featured-stat-value">
+          {{ formatStatValue(stats[0], 0) }}
+        </p>
+      </div>
     </div>
+
+    <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
+      <div
+        v-for="(stat, index) in stats.slice(1)"
+        :key="stat.label"
+        class="compact-stat-card hover:brightness-105"
+        :class="`stat-${index + 1}`"
+      >
+        <div class="compact-stat-top">
+          <p class="stat-label">
+            {{ stat.label }}
+          </p>
+
+          <div class="compact-stat-icon" aria-hidden="true">
+            <component :is="stat.icon" class="h-4 w-4" />
+          </div>
+        </div>
+
+        <p class="compact-stat-value">
+          {{ formatStatValue(stat, index + 1) }}
+        </p>
+      </div>
+    </div>
+  </section>
+</div>
   </main>
 </template>
 
@@ -201,7 +273,7 @@ main {
 
 .stat-card {
   border-radius: 22px;
-  padding: 1.5rem;
+  padding: 1.25rem;
   text-align: center;
   backdrop-filter: blur(6px);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
@@ -268,5 +340,142 @@ main {
 
 .stat-5 {
   background: rgba(130, 255, 111, 0.4);
+}
+
+.stats-marquee {
+  overflow: hidden;
+  width: 100%;
+  mask-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    black 8%,
+    black 92%,
+    transparent 100%
+  );
+}
+
+.stats-marquee-track {
+  display: flex;
+  width: max-content;
+  gap: 1rem;
+  animation: stats-marquee 20s linear infinite;
+}
+
+.stats-marquee:hover .stats-marquee-track {
+  animation-play-state: paused;
+}
+
+.stat-marquee-card {
+  width: 16rem;
+  flex: 0 0 auto;
+}
+
+@keyframes stats-marquee {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(calc(-50% - 0.5rem));
+  }
+}
+
+@media (max-width: 640px) {
+  .stat-marquee-card {
+    width: 13.5rem;
+  }
+
+  .stats-marquee-track {
+    animation-duration: 22s;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stats-marquee {
+    overflow-x: auto;
+    mask-image: none;
+  }
+
+  .stats-marquee-track {
+    animation: none;
+    padding-bottom: 0.5rem;
+  }
+}
+
+
+.featured-stat-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  border-radius: 24px;
+  padding: 1.35rem;
+  background: linear-gradient(135deg, rgba(234, 184, 228, 0.55), rgba(168, 202, 224, 0.5));
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.06);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.featured-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.09);
+}
+
+.featured-stat-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.55);
+  color: rgba(17, 24, 39, 0.75);
+  flex: 0 0 auto;
+}
+
+.featured-stat-value {
+  font-size: clamp(2rem, 5vw, 3.25rem);
+  line-height: 1;
+  font-weight: 800;
+  margin-top: 0.45rem;
+  color: #111827;
+}
+
+.compact-stat-card {
+  position: relative;
+  min-height: 8.5rem;
+  border-radius: 22px;
+  padding: 1rem;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.compact-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.08);
+}
+
+.compact-stat-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.compact-stat-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.55);
+  color: rgba(17, 24, 39, 0.72);
+  flex: 0 0 auto;
+}
+
+.compact-stat-value {
+  font-size: clamp(1.4rem, 4vw, 2rem);
+  font-weight: 750;
+  margin-top: 1.5rem;
+  color: #111827;
 }
 </style>
