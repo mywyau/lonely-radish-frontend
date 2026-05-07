@@ -104,6 +104,22 @@ const nextWord = computed(() => {
 
 const { volume } = useAudioVolume()
 
+const showXpBar = useCookie<boolean>('word-page-show-xp-bar', {
+    default: () => true,
+    sameSite: 'lax',
+    maxAge: 60 * 60 * 24 * 180
+})
+const showPracticeButtons = useCookie<boolean>('word-page-show-practice-buttons', {
+    default: () => true,
+    sameSite: 'lax',
+    maxAge: 60 * 60 * 24 * 180
+})
+const showAudioButtons = useCookie<boolean>('word-page-show-audio-buttons', {
+    default: () => true,
+    sameSite: 'lax',
+    maxAge: 60 * 60 * 24 * 180
+})
+
 type AudioVoice = 'male' | 'female'
 
 const audioVoiceCookie = useCookie<AudioVoice | null>('audio-voice', {
@@ -240,10 +256,10 @@ watchEffect(() => {
         <details class="group relative">
           <summary
             class="list-none cursor-pointer rounded-full bg-yellow-100 px-3 py-1.5 text-xs font-semibold text-black shadow-sm transition hover:bg-yellow-200">
-            Audio settings
+            Settings
           </summary>
           <div
-            class="absolute left-1/2 z-20 mt-2 w-[min(16rem,calc(100vw-1rem))] -translate-x-1/2 rounded-xl border border-yellow-200 bg-yellow-50 p-3 shadow-lg space-y-3 sm:left-auto sm:right-0 sm:w-64 sm:translate-x-0">
+            class="absolute left-1/2 z-20 mt-2 w-[min(18rem,calc(100vw-1rem))] -translate-x-1/2 rounded-xl border border-yellow-200 bg-yellow-50 p-3 shadow-lg space-y-4 sm:left-auto sm:right-0 sm:w-72 sm:translate-x-0">
             <div class="space-y-1">
               <p class="text-[11px] font-semibold uppercase tracking-wide text-gray-500">Volume</p>
               <div class="flex items-center gap-2">
@@ -270,25 +286,43 @@ watchEffect(() => {
                 </button>
               </div>
             </div>
+            <div class="space-y-2">
+              <p class="text-[11px] font-semibold uppercase tracking-wide text-gray-500">Voice</p>
+              <div class="flex rounded-full bg-gray-100 p-1" aria-label="Audio voice">
+                <button type="button" class="flex-1 rounded-full px-2.5 py-1 text-[11px] font-semibold transition sm:px-3 sm:text-xs"
+                  :class="selectedAudioVoice === 'male'
+                    ? 'bg-blue-100 text-black shadow-sm'
+                    : 'bg-transparent text-gray-700 hover:bg-gray-200'
+                    " :aria-pressed="selectedAudioVoice === 'male'" @click="setAudioVoice('male')">
+                  Male
+                </button>
+
+                <button type="button" class="flex-1 rounded-full px-2.5 py-1 text-[11px] font-semibold transition sm:px-3 sm:text-xs"
+                  :class="selectedAudioVoice === 'female'
+                    ? 'bg-pink-100 text-black shadow-sm'
+                    : 'bg-transparent text-gray-700 hover:bg-gray-200'
+                    " :aria-pressed="selectedAudioVoice === 'female'" @click="setAudioVoice('female')">
+                  Female
+                </button>
+              </div>
+            </div>
+            <div class="space-y-2 border-t border-yellow-200 pt-3">
+              <p class="text-[11px] font-semibold uppercase tracking-wide text-gray-500">Page display</p>
+              <label class="flex cursor-pointer items-center justify-between gap-3 text-xs font-medium text-gray-700">
+                <span>Show XP bar</span>
+                <input v-model="showXpBar" type="checkbox" class="h-4 w-4 rounded border-gray-300 accent-blue-600" />
+              </label>
+              <label class="flex cursor-pointer items-center justify-between gap-3 text-xs font-medium text-gray-700">
+                <span>Show practice buttons</span>
+                <input v-model="showPracticeButtons" type="checkbox" class="h-4 w-4 rounded border-gray-300 accent-blue-600" />
+              </label>
+              <label class="flex cursor-pointer items-center justify-between gap-3 text-xs font-medium text-gray-700">
+                <span>Show audio buttons</span>
+                <input v-model="showAudioButtons" type="checkbox" class="h-4 w-4 rounded border-gray-300 accent-blue-600" />
+              </label>
+            </div>
           </div>
         </details>
-        <div class="flex rounded-full bg-gray-100 p-1" aria-label="Audio voice">
-          <button type="button" class="rounded-full px-2.5 py-1 text-[11px] font-semibold transition sm:px-3 sm:text-xs"
-            :class="selectedAudioVoice === 'male'
-              ? 'bg-blue-100 text-black shadow-sm'
-              : 'bg-transparent text-gray-700 hover:bg-gray-200'
-              " :aria-pressed="selectedAudioVoice === 'male'" @click="setAudioVoice('male')">
-            Male
-          </button>
-
-          <button type="button" class="rounded-full px-2.5 py-1 text-[11px] font-semibold transition sm:px-3 sm:text-xs"
-            :class="selectedAudioVoice === 'female'
-              ? 'bg-pink-100 text-black shadow-sm'
-              : 'bg-transparent text-gray-700 hover:bg-gray-200'
-              " :aria-pressed="selectedAudioVoice === 'female'" @click="setAudioVoice('female')">
-            Female
-          </button>
-        </div>
       </div>
     </div>
 
@@ -308,7 +342,7 @@ watchEffect(() => {
       </div>
 
       <!-- XP block -->
-      <div class="pt-4 space-y-4">
+      <div v-if="showXpBar" class="pt-4 space-y-4">
 
         <div class="flex justify-between text-sm text-gray-600 max-w-xs mx-auto">
           <span>{{ xp }} / {{ masteryXp }} XP</span>
@@ -336,21 +370,21 @@ watchEffect(() => {
         </NuxtLink>
       </div>
 
-      <div class="main-actions-row">
+      <div v-if="showPracticeButtons || showAudioButtons" class="main-actions-row">
 
-        <NuxtLink :to="`/writing/${level}/vocab/${word.id}`" class="action-chip action-chip-write main-action-btn"
+        <NuxtLink v-if="showPracticeButtons" :to="`/writing/${level}/vocab/${word.id}`" class="action-chip action-chip-write main-action-btn"
           aria-label="Practice writing this word">
           <span aria-hidden="true" class="mobile-action-icon">✏️</span>
           <span class="mobile-action-label">Write</span>
         </NuxtLink>
 
-        <NuxtLink :to="`/tone-garden/${word.id}`" class="action-chip action-chip-tone-forge main-action-btn"
+        <NuxtLink v-if="showPracticeButtons" :to="`/tone-garden/${word.id}`" class="action-chip action-chip-tone-forge main-action-btn"
           aria-label="Open tone checker for this word">
           <span aria-hidden="true" class="mobile-action-icon">🎤</span>
           <span class="mobile-action-label">Speak</span>
         </NuxtLink>
 
-        <AudioButton v-if="word.audio?.word" :key="`word-audio-${selectedAudioVoice}-${word.audio.word}`"
+        <AudioButton v-if="showAudioButtons && word.audio?.word" :key="`word-audio-${selectedAudioVoice}-${word.audio.word}`"
           :src="getAudioSrc(word.audio.word)" :playback-rate="playbackRate" size="md"
           class="tone-gate-play-btn main-action-btn" />
 
@@ -382,16 +416,16 @@ watchEffect(() => {
       <ul class="space-y-5">
         <li v-if="currentExample" :key="`${word.id}-${currentExampleIndex}`" class="example-card rounded-lg p-4">
           <div class="space-y-3">
-            <div class="flex justify-end">
+            <div v-if="showPracticeButtons || showAudioButtons" class="flex justify-end">
               <div class="example-actions-row">
-                <NuxtLink :to="`/writing/${level}/sentences/${word.id}/${currentExampleIndex}`"
+                <NuxtLink v-if="showPracticeButtons" :to="`/writing/${level}/sentences/${word.id}/${currentExampleIndex}`"
                   class="action-chip action-chip-sm action-chip-write example-action-btn"
                   aria-label="Practice writing this sentence">
                   <span aria-hidden="true" class="mobile-action-icon">✏️</span>
                   <span class="mobile-action-label">Write</span>
                 </NuxtLink>
 
-                <NuxtLink
+                <NuxtLink v-if="showPracticeButtons"
                   :to="`/echo-lab/pronunciation-check/level/${level}/sentences/${word.id}/v2/${currentExampleIndex}`"
                   class="action-chip action-chip-sm action-chip-speak example-action-btn"
                   aria-label="Practice pronunciation for this sentence">
@@ -399,7 +433,7 @@ watchEffect(() => {
                   <span class="mobile-action-label">Speak</span>
                 </NuxtLink>
 
-                <AudioButton v-if="word.audio?.examples?.[currentExampleIndex]"
+                <AudioButton v-if="showAudioButtons && word.audio?.examples?.[currentExampleIndex]"
                   :key="`example-audio-${selectedAudioVoice}-${word.id}-${currentExampleIndex}`"
                   :src="getAudioSrc(word.audio.examples[currentExampleIndex])" :playback-rate="playbackRate" size="sm"
                   class="tone-gate-play-btn example-action-btn" />
