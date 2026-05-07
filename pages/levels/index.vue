@@ -5,6 +5,7 @@ definePageMeta({
   ssr: true,
 })
 
+import { Tally1, Tally2, Tally3, Tally4, Tally5 } from '@lucide/vue'
 import { brandColours } from '@/utils/branding/helpers'
 import { levelSelectMetaData } from '@/utils/levels/helpers'
 import { onMounted } from 'vue'
@@ -17,6 +18,30 @@ const {
 
 function getLevelColor(index: number) {
   return brandColours[index % brandColours.length]
+}
+
+const tallyIcons = {
+  1: Tally1,
+  2: Tally2,
+  3: Tally3,
+  4: Tally4,
+  5: Tally5,
+} as const
+
+type TallyCount = keyof typeof tallyIcons
+
+function getTallyIcon(tallyGroup: TallyCount) {
+  return tallyIcons[tallyGroup]
+}
+
+function getLevelTallyGroups(levelNumber: number): TallyCount[] {
+  const fullGroups = Math.floor(levelNumber / 5)
+  const remainder = levelNumber % 5
+
+  return [
+    ...Array.from({ length: fullGroups }, () => 5 as TallyCount),
+    ...(remainder > 0 ? [remainder as TallyCount] : []),
+  ]
 }
 
 // --- helpers ---
@@ -45,7 +70,7 @@ onMounted(async () => {
     <ul class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-4">
 
       <li v-for="(level, index) in levelSelectMetaData" :key="level.id"
-        class="rounded-xl p-6 transition shadow-sm hover:shadow-md hover:brightness-110" :style="{
+        class="relative rounded-xl p-6 transition shadow-sm hover:shadow-md hover:brightness-110" :style="{
           backgroundColor: level.comingSoon
             ? 'rgba(0,0,0,0.03)'
             : getLevelColor(index)
@@ -54,8 +79,18 @@ onMounted(async () => {
         <!-- Accessible level -->
         <NuxtLink v-if="true" :to="`/level/${level.id}/v2`" class="block space-y-3">
 
+          <div class="tally-icons tally-icons-corner" role="img" :aria-label="`${level.title} tally marks`">
+            <component
+              :is="getTallyIcon(tallyGroup)"
+              v-for="(tallyGroup, tallyIndex) in getLevelTallyGroups(level.number)"
+              :key="`${level.id}-tally-${tallyIndex}`"
+              class="tally-icon"
+              aria-hidden="true"
+            />
+          </div>
+
           <div class="flex items-start justify-between gap-4">
-            <div>
+            <div class="min-w-0 pr-14">
               <div class="text-lg font-semibold text-gray-900">
                 {{ level.title }}
               </div>
@@ -65,7 +100,7 @@ onMounted(async () => {
               </div>
             </div>
 
-            <div class="shrink-0">
+            <div class="shrink-0 pt-6">
               <span v-if="level.comingSoon" class="pill pill-soon">Coming soon</span>
             </div>
           </div>
@@ -74,8 +109,18 @@ onMounted(async () => {
 
         <!-- Locked level (kept for later when you re-enable gating) -->
         <div v-else class="space-y-3 cursor-not-allowed">
+          <div class="tally-icons tally-icons-corner" role="img" :aria-label="`${level.title} tally marks`">
+            <component
+              :is="getTallyIcon(tallyGroup)"
+              v-for="(tallyGroup, tallyIndex) in getLevelTallyGroups(level.number)"
+              :key="`${level.id}-tally-${tallyIndex}`"
+              class="tally-icon"
+              aria-hidden="true"
+            />
+          </div>
+
           <div class="flex items-start justify-between gap-4">
-            <div>
+            <div class="min-w-0 pr-14">
               <div class="text-lg font-semibold text-gray-900">
                 {{ level.title }}
               </div>
@@ -85,7 +130,7 @@ onMounted(async () => {
               </div>
             </div>
 
-            <div class="shrink-0">
+            <div class="shrink-0 pt-6">
               <span v-if="level.comingSoon" class="pill pill-soon">Coming soon</span>
               <span v-else class="pill pill-locked">Locked</span>
             </div>
@@ -169,6 +214,25 @@ onMounted(async () => {
   opacity: 0.85;
   border-color: rgba(244, 205, 39, 0.30);
   /* subtle yellow border hint */
+}
+
+.tally-icons {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.1rem;
+  color: rgba(17, 24, 39, 0.68);
+}
+
+.tally-icons-corner {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+}
+
+.tally-icon {
+  width: 1.1rem;
+  height: 1.1rem;
+  stroke-width: 2.25;
 }
 
 /* Pills */
