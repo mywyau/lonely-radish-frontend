@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Phone } from '@lucide/vue'
+import { Mail } from '@lucide/vue';
 
 definePageMeta({
   title: 'Contact · TaroTea'
@@ -11,37 +11,29 @@ definePageMeta({
 
     <BackLink />
 
-    <!-- Header -->
-    <header class="text-center space-y-3">
-      <h1 class="text-3xl font-semibold text-gray-900">
-        Contact
-      </h1>
-
-      <p class="text-gray-600 text-sm sm:text-base">
-        Have a question, found an issue, or want to share feedback?
-        We’d love to hear from you.
-      </p>
-    </header>
-
     <!-- Contact Card -->
     <section class="contact-card text-center space-y-4">
 
-      <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-purple-50 text-purple-600 ring-1 ring-purple-100">
-        <Phone class="h-6 w-6" aria-hidden="true" />
+      <div class="mx-auto flex h-8 w-8 items-center justify-center text-gray-600">
+        <Mail class="h-6 w-6" aria-hidden="true" />
       </div>
 
       <p class="text-xs uppercase tracking-wide text-gray-600">
         Email
       </p>
 
-      <a href="mailto:contact@tarotea.co.uk" class="email-link">
+      <a href="mailto:contact@tarotea.co.uk" class="email-link hover:underline ">
         contact@tarotea.co.uk
       </a>
+
+      <p class="text-gray-800 text-xs sm:text-sm">
+        Have a question, found an issue, or want to share feedback?
+        We’d love to hear from you.
+      </p>
 
       <p class="text-xs text-gray-600">
         We usually respond in a few days.
       </p>
-
     </section>
 
   </main>
@@ -67,7 +59,7 @@ definePageMeta({
 
 /* Simple email accent */
 .email-link {
-  font-size: 1.1rem;
+  font-size: 1.5rem;
   font-weight: 600;
   color: #111827;
   text-decoration: none;
