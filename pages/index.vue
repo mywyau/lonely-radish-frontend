@@ -93,13 +93,8 @@ onMounted(() => {
         Learn and improve your Cantonese in just <span class="brand-text-gradient">15 minutes</span> a day
       </h1>
 
-      <!-- <h1 class="text-3xl sm:text-4xl font-semibold tracking-tight text-gray-900">
-        Learn and improve your Cantonese in just <span class="text-indigo-500">15 minutes</span> a day
-      </h1> -->
-
-
       <div class="grid grid-cols-2 sm:grid-cols-2 gap-4 mt-6 max-w-2xl mx-auto">
-        <div class="relative rounded-xl p-5 pr-14 text-center brand-card-green shadow-sm">
+        <div class="relative rounded-xl p-5 pr-14 text-center brand-card-green ">
           <div class="absolute right-4 top-4 inline-flex size-9 items-center justify-center text-gray-900">
             <UsersRound class="size-5" :stroke-width="2.2" />
           </div>
@@ -111,7 +106,7 @@ onMounted(() => {
           </div>
         </div>
 
-        <div class="relative rounded-xl p-5 pr-14 text-center brand-card-pink shadow-sm">
+        <div class="relative rounded-xl p-5 pr-14 text-center brand-card-pink">
 
           <div class="absolute right-4 top-4 inline-flex size-9 items-center justify-center text-gray-900">
             <GraduationCap class="size-5" :stroke-width="2.2" />
@@ -200,7 +195,7 @@ onMounted(() => {
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <article v-for="mode in learningModes" :key="mode.title" :class="mode.bgClass"
-          class="relative rounded-xl p-5 pr-16 shadow-sm">
+          class="relative rounded-xl p-5 pr-16">
           <div class="absolute right-4 top-4 inline-flex size-9 items-center justify-center text-gray-900">
             <component :is="mode.icon" class="size-5" :stroke-width="2.2" />
           </div>
