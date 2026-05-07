@@ -14,12 +14,12 @@ const { data: stats } = await useFetch('/api/total-users-stats', {
 const learningModes = [
   {
     title: 'Daily practice',
-    description: 'Short sessions designed for consistency, even with a busy schedule.',
+    description: 'Short sessions designed for consistency, even with a busy schedule. Run a short quiz whenever you want',
     bgClass: 'brand-card-yellow',
   },
   {
     title: 'Multiple activities',
-    description: 'Switch between vocabulary, audio only, or sentence quizzes, and pronunciation-focused learning modes.',
+    description: 'Switch between multiple quiz types, practice pronunciation with our echo labs and echo gecko learning modes. You can also practice your typing skills at the TaroTea dojo',
     bgClass: 'brand-card-blue',
   },
   {
@@ -117,9 +117,6 @@ onMounted(() => {
           class="start-learning-face start-learning-face-front rounded-2xl p-6 sm:p-8 brand-cta-topic-bg text-gray-900 shadow-sm">
           <div class="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <!-- <p class="text-xs font-semibold uppercase tracking-[0.28em] text-gray-700">
-                Topic path
-              </p> -->
               <h2 class="mt-2 text-2xl font-semibold tracking-tight">
                 Start learning Cantonese today
               </h2>
@@ -128,14 +125,6 @@ onMounted(() => {
                 everyday conversations.
               </p>
             </div>
-            <!-- <button
-              type="button"
-              class="flip-hint rounded-full bg-white/50 px-3 py-1 text-xs font-medium text-gray-800 transition hover:bg-white/70 focus:outline-none focus:ring-2 focus:ring-gray-900/40"
-              aria-label="Show levels and level quizzes"
-              @click.stop="flipStartPanel"
-            >
-              Click panel to flip
-            </button> -->
           </div>
 
           <div class="mt-5 flex flex-wrap gap-3">
@@ -156,9 +145,6 @@ onMounted(() => {
           class="start-learning-face start-learning-face-back rounded-2xl p-6 sm:p-8 brand-cta-level-bg text-gray-900 shadow-sm">
           <div class="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <!-- <p class="text-xs font-semibold uppercase tracking-[0.28em] text-gray-700">
-                Level path
-              </p> -->
               <h2 class="mt-2 text-2xl font-semibold tracking-tight">
                 Start learning Cantonese today
               </h2>
@@ -167,14 +153,6 @@ onMounted(() => {
                 confidence step by step.
               </p>
             </div>
-            <!-- <button
-              type="button"
-              class="flip-hint rounded-full bg-white/50 px-3 py-1 text-xs font-medium text-gray-800 transition hover:bg-white/70 focus:outline-none focus:ring-2 focus:ring-gray-900/40"
-              aria-label="Show topics and topic quizzes"
-              @click.stop="flipStartPanel"
-            >
-              Click panel to flip back
-            </button> -->
           </div>
 
           <div class="mt-5 flex flex-wrap gap-3">
@@ -338,19 +316,22 @@ onMounted(() => {
   }
 }
 
-/* .brand-text-gradient {
+.brand-text-gradient {
   background: linear-gradient(90deg, #6F5CCA 0%, #E07ABF 50%, #5EA6D6 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-} */
+}
 
-.brand-text-gradient {
-  background: linear-gradient(90deg,
-      #725ce0 0%,
-      #f757c5 100%);
+/* .brand-text-gradient {
+  background: linear-gradient(
+      90deg,
+      #8972ff 0%,
+      #7795f9 50%,
+      #f977d0 100%,
+    );
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-}
+} */
 </style>
