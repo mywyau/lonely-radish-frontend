@@ -154,9 +154,9 @@ onMounted(loadData)
     <BackLink :to="`/topic/words/${slug}/v2`" />
 
     <header class="rounded-lg header-card">
-      <h1 class="page-heading">Unlock word</h1>
+      <h1 class="page-heading inline-flex items-center gap-2"><TaroLockIcon size="h-5 w-5" /> Unlock word</h1>
       <p class="page-subheading mt-2">
-        Use <span class="font-bold">1</span> TaroKey to access this Tile permanently.
+        Use <span class="inline-flex items-center gap-1 font-bold"><TaroKeyIcon size="h-4 w-4" /> 1</span> TaroKey to access this Tile permanently.
       </p>
     </header>
 
@@ -169,8 +169,8 @@ onMounted(loadData)
         </p>
         <ul class="list-disc pl-5 text-sm text-gray-700 space-y-1">
           <li>Gain XP from quizzes and practice.</li>
-          <li>Earn TaroKeys from your XP progress.</li>
-          <li>Use TaroKeys to unlock this tile permanently.</li>
+          <li><span class="inline-flex items-center gap-2"><TaroKeyIcon size="h-4 w-4 shrink-0" /> Earn TaroKeys from your XP progress.</span></li>
+          <li><span class="inline-flex items-center gap-2"><TaroKeyIcon size="h-4 w-4 shrink-0" /> Use TaroKeys to unlock this tile permanently.</span></li>
         </ul>
         <button type="button"
           class="w-full rounded-lg py-3 font-semibold border border-black/10 text-gray-900 bg-white/70 backdrop-blur hover:bg-white transition"
@@ -201,12 +201,18 @@ onMounted(loadData)
 
         <div class="stat-card page-card rounded-lg stat-1">
           <p class="stat-label">TaroKeys available</p>
-          <p class="stat-value font-bold">{{ unlockSummary.creditsAvailable }}</p>
+          <p class="stat-value stat-value-with-icon font-bold">
+            <TaroKeyIcon size="h-4 w-4" />
+            {{ unlockSummary.creditsAvailable }}
+          </p>
         </div>
 
         <div class="stat-card page-card rounded-lg stat-2">
           <p class="stat-label">TaroKeys used</p>
-          <p class="stat-value font-bold">{{ unlockSummary.creditsSpent }}</p>
+          <p class="stat-value stat-value-with-icon font-bold">
+            <TaroKeyIcon size="h-4 w-4" />
+            {{ unlockSummary.creditsSpent }}
+          </p>
         </div>
       </section>
 
@@ -218,7 +224,7 @@ onMounted(loadData)
 
             <p class="mt-4 text-sm text-gray-700">
               Unlock this tile permanently by using
-              <span class="font-semibold">1 TaroKey</span>.
+              <span class="inline-flex items-center gap-1 font-semibold"><TaroKeyIcon size="h-4 w-4" /> 1 TaroKey</span>.
             </p>
           </div>
 
@@ -233,7 +239,7 @@ onMounted(loadData)
 
         <div class="progress-card rounded-lg px-4 py-4 space-y-3">
           <div class="flex items-center justify-between gap-3 text-sm">
-            <p class="text-gray-700 font-semibold">Next TaroKey</p>
+            <p class="inline-flex items-center gap-1 text-gray-700 font-semibold"><TaroKeyIcon size="h-4 w-4" /> Next TaroKey</p>
             <p class="text-gray-600">
               <span class="font-semibold">{{ xpTowardsNextKey }}</span>
               / {{ xpNeededForOneTaroKey }} xp
@@ -261,13 +267,13 @@ onMounted(loadData)
             <div v-if="showUnlockPanel" class="space-y-4">
               <div class="rounded-lg border px-4 py-3 text-sm text-gray-800 bg-white/75 border-black/10">
                 <p>
-                  Spend <span class="font-semibold">1 TaroKey</span> to unlock
+                  Spend <span class="inline-flex items-center gap-1 font-semibold"><TaroKeyIcon size="h-4 w-4" /> 1 TaroKey</span> to unlock
                   <span class="font-semibold">{{ word?.word ?? 'this tile' }}</span>?
                 </p>
 
                 <p class="mt-2 text-gray-600">
                   You currently have
-                  <span class="font-semibold">{{ unlockSummary.creditsAvailable }}</span>
+                  <span class="inline-flex items-center gap-1 font-semibold"><TaroKeyIcon size="h-4 w-4" /> {{ unlockSummary.creditsAvailable }}</span>
                   TaroKey<span v-if="unlockSummary.creditsAvailable !== 1">s</span> available.
                 </p>
               </div>
@@ -387,6 +393,13 @@ onMounted(loadData)
   margin-top: 0.45rem;
   font-size: 1.05rem;
   color: rgba(0, 0, 0);
+}
+
+.stat-value-with-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
 }
 
 .action-card {

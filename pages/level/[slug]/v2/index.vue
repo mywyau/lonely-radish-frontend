@@ -246,12 +246,18 @@ onMounted(async () => {
 
         <div v-if="!hasPaidAccess" class="stat-card page-card rounded-xl stat-2">
           <p class="stat-label">TaroKeys</p>
-          <p class="stat-value font-bold">{{ unlockSummary.creditsAvailable }}</p>
+          <p class="stat-value stat-value-with-icon font-bold">
+            <TaroKeyIcon size="h-4 w-4" />
+            {{ unlockSummary.creditsAvailable }}
+          </p>
         </div>
 
         <div class="stat-card page-card rounded-xl stat-3">
           <p class="stat-label">Locked words</p>
-          <p class="stat-value font-bold">{{ lockedWordCount }}</p>
+          <p class="stat-value stat-value-with-icon font-bold">
+            <TaroLockIcon size="h-4 w-4" />
+            {{ lockedWordCount }}
+          </p>
         </div>
       </div>
     </section>
@@ -403,6 +409,13 @@ onMounted(async () => {
   margin-top: 0.45rem;
   font-size: 1.05rem;
   color: rgba(0, 0, 0);
+}
+
+.stat-value-with-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
 }
 
 .stat-0 {
