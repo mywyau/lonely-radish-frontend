@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { BadgePoundSterling, CreditCard, Mail, ReceiptText, RotateCw, Trash2 } from '@lucide/vue'
+
 definePageMeta({
   title: 'Refund Policy · TaroTea'
 })
@@ -27,7 +29,7 @@ definePageMeta({
     </section>
 
     <section class="space-y-3">
-      <h2 class="text-xl font-semibold">1. Digital subscriptions</h2>
+      <FooterPageSectionHeading :icon="CreditCard" color-class="bg-sky-50 text-sky-600 ring-sky-100">Digital subscriptions</FooterPageSectionHeading>
 
       <p class="text-gray-700">
         TaroTea provides access to digital learning content through monthly or yearly
@@ -41,7 +43,7 @@ definePageMeta({
     </section>
 
     <section class="space-y-3">
-      <h2 class="text-xl font-semibold">2. Canceling your subscription</h2>
+      <FooterPageSectionHeading :icon="RotateCw" color-class="bg-sky-50 text-sky-600 ring-sky-100">Canceling your subscription</FooterPageSectionHeading>
 
       <p class="text-gray-700">
         You may cancel your subscription at any time.
@@ -61,7 +63,7 @@ definePageMeta({
     </section>
 
     <section class="space-y-3">
-      <h2 class="text-xl font-semibold">3. Account deletion</h2>
+      <FooterPageSectionHeading :icon="Trash2" color-class="bg-sky-50 text-sky-600 ring-sky-100">Account deletion</FooterPageSectionHeading>
 
       <p class="text-gray-700">
         Deleting your account permanently removes your access to TaroTea and any associated data.
@@ -78,7 +80,7 @@ definePageMeta({
     </section>
 
     <section class="space-y-3">
-      <h2 class="text-xl font-semibold">4. Exceptions</h2>
+      <FooterPageSectionHeading :icon="BadgePoundSterling" color-class="bg-sky-50 text-sky-600 ring-sky-100">Exceptions</FooterPageSectionHeading>
 
       <p class="text-gray-700">
         Refunds may be considered in limited circumstances, such as:
@@ -95,7 +97,7 @@ definePageMeta({
     </section>
 
     <section class="space-y-3">
-      <h2 class="text-xl font-semibold">5. How to contact us</h2>
+      <FooterPageSectionHeading :icon="Mail" color-class="bg-sky-50 text-sky-600 ring-sky-100">How to contact us</FooterPageSectionHeading>
 
       <p class="text-gray-700">
         For billing or refund questions, please contact:
@@ -107,7 +109,7 @@ definePageMeta({
     </section>
 
     <section class="space-y-3">
-      <h2 class="text-xl font-semibold">6. Changes to this policy</h2>
+      <FooterPageSectionHeading :icon="ReceiptText" color-class="bg-sky-50 text-sky-600 ring-sky-100">Changes to this policy</FooterPageSectionHeading>
 
       <p class="text-gray-700">
         We may update this Refund Policy from time to time. Any changes will be reflected on this page.

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { Phone } from '@lucide/vue'
+
 definePageMeta({
   title: 'Contact · TaroTea'
 })
@@ -23,6 +25,10 @@ definePageMeta({
 
     <!-- Contact Card -->
     <section class="contact-card text-center space-y-4">
+
+      <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-purple-50 text-purple-600 ring-1 ring-purple-100">
+        <Phone class="h-6 w-6" aria-hidden="true" />
+      </div>
 
       <p class="text-xs uppercase tracking-wide text-gray-600">
         Email

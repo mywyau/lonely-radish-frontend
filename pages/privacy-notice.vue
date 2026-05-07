@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { Baby, CalendarClock, Contact, Database, FileText, Handshake, LockKeyhole, Mail, RotateCw, Scale, ShieldCheck, Trash2 } from '@lucide/vue'
+
 definePageMeta({
   title: 'Privacy Notice · TaroTea'
 })
@@ -35,7 +37,7 @@ definePageMeta({
     </section>
 
     <section class="space-y-3">
-      <h2 class="text-xl font-semibold">1. Who we are</h2>
+      <FooterPageSectionHeading :icon="Contact" color-class="bg-emerald-50 text-emerald-600 ring-emerald-100">Who we are</FooterPageSectionHeading>
 
       <p class="text-gray-700">
         TaroTea is operated as a Cantonese learning web application.
@@ -51,7 +53,7 @@ definePageMeta({
     </section>
 
     <section class="space-y-3">
-      <h2 class="text-xl font-semibold">2. What data we collect</h2>
+      <FooterPageSectionHeading :icon="Database" color-class="bg-emerald-50 text-emerald-600 ring-emerald-100">What data we collect</FooterPageSectionHeading>
 
       <p class="text-gray-700">
         We collect different types of information depending on how you use TaroTea.
@@ -99,7 +101,7 @@ definePageMeta({
     </section>
 
     <section class="space-y-3">
-      <h2 class="text-xl font-semibold">3. How we use your data</h2>
+      <FooterPageSectionHeading :icon="ShieldCheck" color-class="bg-emerald-50 text-emerald-600 ring-emerald-100">How we use your data</FooterPageSectionHeading>
 
       <ul class="list-disc pl-6 space-y-2 text-gray-700">
         <li>To create and manage your account</li>
@@ -115,7 +117,7 @@ definePageMeta({
     </section>
 
     <section class="space-y-3">
-      <h2 class="text-xl font-semibold">4. Legal basis for processing</h2>
+      <FooterPageSectionHeading :icon="Scale" color-class="bg-emerald-50 text-emerald-600 ring-emerald-100">Legal basis for processing</FooterPageSectionHeading>
 
       <p class="text-gray-700">
         Under UK GDPR, we rely on the following legal bases:
@@ -146,7 +148,7 @@ definePageMeta({
     </section>
 
     <section class="space-y-3">
-      <h2 class="text-xl font-semibold">5. Third-party services</h2>
+      <FooterPageSectionHeading :icon="Handshake" color-class="bg-emerald-50 text-emerald-600 ring-emerald-100">Third-party services</FooterPageSectionHeading>
 
       <p class="text-gray-700">
         We use trusted third-party providers to operate TaroTea. These providers only
@@ -181,7 +183,7 @@ definePageMeta({
     </section>
 
     <section class="space-y-3">
-      <h2 class="text-xl font-semibold">6. Cookies and similar technologies</h2>
+      <FooterPageSectionHeading :icon="FileText" color-class="bg-emerald-50 text-emerald-600 ring-emerald-100">Cookies and similar technologies</FooterPageSectionHeading>
 
       <p class="text-gray-700">
         TaroTea uses cookies and similar technologies to operate the app, keep users
@@ -257,7 +259,7 @@ definePageMeta({
     </section>
 
     <section class="space-y-3">
-      <h2 class="text-xl font-semibold">7. Data retention</h2>
+      <FooterPageSectionHeading :icon="CalendarClock" color-class="bg-emerald-50 text-emerald-600 ring-emerald-100">Data retention</FooterPageSectionHeading>
 
       <p class="text-gray-700">
         We keep personal data only for as long as needed for the purposes described in
@@ -293,7 +295,7 @@ definePageMeta({
     </section>
 
     <section class="space-y-3">
-      <h2 class="text-xl font-semibold">8. Your rights</h2>
+      <FooterPageSectionHeading :icon="Mail" color-class="bg-emerald-50 text-emerald-600 ring-emerald-100">Your rights</FooterPageSectionHeading>
 
       <p class="text-gray-700">
         Under UK GDPR, you may have the right to:
@@ -319,7 +321,7 @@ definePageMeta({
     </section>
 
     <section class="space-y-3">
-      <h2 class="text-xl font-semibold">9. Account deletion</h2>
+      <FooterPageSectionHeading :icon="Trash2" color-class="bg-emerald-50 text-emerald-600 ring-emerald-100">Account deletion</FooterPageSectionHeading>
 
       <p class="text-gray-700">
         You may request deletion of your TaroTea account at any time. When an account is
@@ -330,7 +332,7 @@ definePageMeta({
     </section>
 
     <section class="space-y-3">
-      <h2 class="text-xl font-semibold">10. Security</h2>
+      <FooterPageSectionHeading :icon="LockKeyhole" color-class="bg-emerald-50 text-emerald-600 ring-emerald-100">Security</FooterPageSectionHeading>
 
       <p class="text-gray-700">
         We use reasonable technical and organisational measures to protect your personal
@@ -341,7 +343,7 @@ definePageMeta({
     </section>
 
     <section class="space-y-3">
-      <h2 class="text-xl font-semibold">11. Children</h2>
+      <FooterPageSectionHeading :icon="Baby" color-class="bg-emerald-50 text-emerald-600 ring-emerald-100">Children</FooterPageSectionHeading>
 
       <p class="text-gray-700">
         TaroTea is not intended for children under 13. If you believe a child has provided
@@ -351,7 +353,7 @@ definePageMeta({
     </section>
 
     <section class="space-y-3">
-      <h2 class="text-xl font-semibold">12. Complaints</h2>
+      <FooterPageSectionHeading :icon="Scale" color-class="bg-emerald-50 text-emerald-600 ring-emerald-100">Complaints</FooterPageSectionHeading>
 
       <p class="text-gray-700">
         If you have concerns about how we handle your data, please contact us first so we
@@ -361,7 +363,7 @@ definePageMeta({
     </section>
 
     <section class="space-y-3">
-      <h2 class="text-xl font-semibold">13. Changes to this notice</h2>
+      <FooterPageSectionHeading :icon="RotateCw" color-class="bg-emerald-50 text-emerald-600 ring-emerald-100">Changes to this notice</FooterPageSectionHeading>
 
       <p class="text-gray-700">
         We may update this Privacy Notice from time to time. Any significant changes will
@@ -371,7 +373,7 @@ definePageMeta({
     </section>
 
     <section class="space-y-3">
-      <h2 class="text-xl font-semibold">14. Contact</h2>
+      <FooterPageSectionHeading :icon="Mail" color-class="bg-emerald-50 text-emerald-600 ring-emerald-100">Contact</FooterPageSectionHeading>
 
       <p class="text-gray-700">
         If you have any questions about this Privacy Notice, please contact:
