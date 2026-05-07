@@ -265,6 +265,10 @@ function cycleLevelMode(levelId: string, direction: 1 | -1) {
 }
 
 .level-mode-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 56px;
   border-radius: 8px;
   background: rgba(31, 41, 55, 0.08);
   color: #1f2937;
@@ -272,6 +276,10 @@ function cycleLevelMode(levelId: string, direction: 1 | -1) {
   line-height: 1;
   font-weight: 700;
   transition: all 0.15s ease;
+}
+
+.level-mode-toggle svg {
+  display: block;
 }
 
 .level-mode-toggle:hover {

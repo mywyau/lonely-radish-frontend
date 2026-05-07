@@ -429,7 +429,11 @@ onMounted(async () => {
 .pagination-page,
 .pagination-arrow,
 .pagination-jump {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     flex: 0 0 auto;
+    line-height: 1;
 }
 
 /* Mobile first */
@@ -455,6 +459,11 @@ onMounted(async () => {
     color: #000;
     box-shadow: 0 8px 20px rgba(214, 163, 209, 0.35);
     transform: translateY(-1px);
+}
+
+.pagination-arrow svg,
+.pagination-jump svg {
+    display: block;
 }
 
 .pagination-arrow {

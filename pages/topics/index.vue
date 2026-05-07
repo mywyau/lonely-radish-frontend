@@ -386,6 +386,15 @@ onMounted(async () => {
 /* Pink + Yellow TaroTea pagination */
 
 /* Mobile first */
+.pagination-page,
+.pagination-arrow,
+.pagination-jump {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
 .pagination-page {
   min-width: 32px;
   height: 32px;
@@ -408,6 +417,11 @@ onMounted(async () => {
   color: #000;
   box-shadow: 0 6px 16px rgba(214, 163, 209, 0.35);
   transform: translateY(-1px);
+}
+
+.pagination-arrow svg,
+.pagination-jump svg {
+  display: block;
 }
 
 .pagination-arrow {

@@ -257,6 +257,10 @@ function cycleTopicMode(topicId: string, direction: 1 | -1) {
 }
 
 .topic-mode-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 56px;
   border-radius: 8px;
   background: rgba(31, 41, 55, 0.08);
   color: #1f2937;
@@ -264,6 +268,10 @@ function cycleTopicMode(topicId: string, direction: 1 | -1) {
   line-height: 1;
   font-weight: 700;
   transition: all 0.15s ease;
+}
+
+.topic-mode-toggle svg {
+  display: block;
 }
 
 .topic-mode-toggle:hover {
@@ -305,7 +313,15 @@ function cycleTopicMode(topicId: string, direction: 1 | -1) {
 
 .pagination-page,
 .pagination-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex: 0 0 auto;
+  line-height: 1;
+}
+
+.pagination-arrow svg {
+  display: block;
 }
 
 .pagination-page {

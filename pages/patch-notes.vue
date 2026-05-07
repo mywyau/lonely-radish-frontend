@@ -160,6 +160,15 @@ watchEffect(() => {
 </template>
 
 <style scoped>
+.pagination-page,
+.pagination-arrow,
+.pagination-jump {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
 .pagination-page {
   min-width: 32px;
   height: 32px;
@@ -184,10 +193,12 @@ watchEffect(() => {
   transform: translateY(-1px);
 }
 
+.pagination-arrow svg,
+.pagination-jump svg {
+  display: block;
+}
+
 .pagination-arrow {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   width: 32px;
   height: 32px;
   border-radius: 10px;
@@ -208,9 +219,6 @@ watchEffect(() => {
 }
 
 .pagination-jump {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   min-width: 48px;
   height: 32px;
   padding: 0 10px;
