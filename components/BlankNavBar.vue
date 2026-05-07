@@ -346,27 +346,7 @@ onBeforeUnmount(() => {
 }
 
 .brand-logo:hover {
-  animation: softBrandBounce 1.0s ease-in-out infinite;
-}
-
-@keyframes softBrandBounce {
-
-  0%,
-  100% {
-    transform: translateY(0) scale(1);
-  }
-
-  30% {
-    transform: translateY(-4px) scale(1.025);
-  }
-
-  55% {
-    transform: translateY(1px) scale(0.995);
-  }
-
-  75% {
-    transform: translateY(-2px) scale(1.01);
-  }
+  animation: hamburgerWiggle 1.2s ease-in-out infinite;
 }
 
 .menu-btn {
@@ -418,6 +398,7 @@ onBeforeUnmount(() => {
 
 @media (prefers-reduced-motion: reduce) {
 
+  .brand-logo:hover,
   .menu-btn:hover,
   .portal-icon {
     animation: none;
