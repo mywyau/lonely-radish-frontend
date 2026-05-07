@@ -136,7 +136,7 @@ onMounted(async () => {
 
     <ul class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4">
 
-      <li v-for="(topic, index) in paginatedTopics" :key="topic.id" class="topic-card rounded-lg p-4 space-y-3 transition"
+      <li v-for="(topic, index) in paginatedTopics" :key="topic.id" class="topic-card hover:brightness-110 rounded-lg p-4 space-y-3 transition"
         :class="[
           topic.comingSoon
             ? 'is-disabled'

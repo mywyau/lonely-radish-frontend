@@ -257,7 +257,7 @@ watchEffect(() => {
                                     <input type="range" min="0" max="1" step="0.01" v-model="volume"
                                         class="h-2 w-full cursor-pointer appearance-none rounded-full bg-gray-200 accent-blue-600" />
                                     <span class="w-8 text-xs tabular-nums text-gray-700">{{ Math.round(volume * 100)
-                                        }}%</span>
+                                    }}%</span>
                                 </div>
                             </div>
                             <div class="space-y-1">
@@ -286,7 +286,8 @@ watchEffect(() => {
                                         class="flex-1 rounded-full px-3 py-1 text-xs font-semibold transition" :class="selectedAudioVoice === 'male'
                                             ? 'bg-blue-100 text-black shadow-sm'
                                             : 'bg-transparent text-gray-700 hover:bg-gray-200'
-                                            " :aria-pressed="selectedAudioVoice === 'male'" @click="setAudioVoice('male')">
+                                            " :aria-pressed="selectedAudioVoice === 'male'"
+                                        @click="setAudioVoice('male')">
                                         Male
                                     </button>
 
