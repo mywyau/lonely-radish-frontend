@@ -583,9 +583,23 @@ onBeforeUnmount(() => {
         </NuxtLink>
 
         <section class="text-center space-y-4">
-            <h1 class="text-2xl font-semibold level-heading">
-                {{ quizTitle }}
-            </h1>
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-center gap-3">
+                <h1 class="text-2xl font-semibold level-heading">
+                    {{ quizTitle }}
+                </h1>
+
+                <div v-if="showQuiz && (current + 1) <= questions.length"
+                    class="flex items-center justify-center gap-3">
+                    <div class="w-32 bg-gray-200 rounded-full h-2">
+                        <div class="bg-purple-300 h-2 rounded-full transition-all duration-300"
+                            :style="{ width: progressPercent + '%' }" />
+                    </div>
+
+                    <span class="text-xs text-gray-500 whitespace-nowrap">
+                        {{ current + 1 }} / {{ questions.length }}
+                    </span>
+                </div>
+            </div>
 
             <div v-if="pending" class="py-12 text-gray-500">
                 Loading quiz...
@@ -603,17 +617,6 @@ onBeforeUnmount(() => {
             </div>
 
             <template v-else>
-                <div class="flex items-center gap-3 mb-6">
-                    <div v-if="(current + 1) <= questions.length" class="flex-1 bg-gray-200 rounded-full h-3">
-                        <div class="bg-purple-300 h-3 rounded-full transition-all duration-300"
-                            :style="{ width: progressPercent + '%' }" />
-                    </div>
-
-                    <span v-if="(current + 1) <= questions.length" class="text-sm text-gray-500 whitespace-nowrap">
-                        {{ current + 1 }} / {{ questions.length }}
-                    </span>
-                </div>
-
                 <div v-if="showQuiz" class="space-y-6">
                     <div class="space-y-6">
                         <div class="flex flex-col items-center justify-center min-h-[80px]">
