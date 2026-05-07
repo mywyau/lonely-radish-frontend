@@ -169,7 +169,7 @@ onBeforeUnmount(() => {
             Check again
           </button>
 
-          <NuxtLink to="/account" class="block text-sm text-gray-500 hover:underline">
+          <NuxtLink to="/account/v2" class="block text-sm text-gray-500 hover:underline">
             Go to account
           </NuxtLink>
         </div>
@@ -201,7 +201,7 @@ onBeforeUnmount(() => {
             Continue learning
           </NuxtLink>
 
-          <NuxtLink to="/account" class="block text-sm text-gray-500 hover:underline">
+          <NuxtLink to="/account/v2" class="block text-sm text-gray-500 hover:underline">
             View account
           </NuxtLink>
         </div>
@@ -237,7 +237,7 @@ onBeforeUnmount(() => {
             Try again
           </button>
 
-          <NuxtLink to="/account" class="block text-sm text-gray-500 hover:underline">
+          <NuxtLink to="/account/v2" class="block text-sm text-gray-500 hover:underline">
             Go to account
           </NuxtLink>
         </div>
