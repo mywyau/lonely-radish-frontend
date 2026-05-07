@@ -161,99 +161,48 @@ onMounted(async () => {
       {{ errorState }}
     </div>
 
-    <!-- <div v-else> -->
-      <!-- <h1 class="your-stat-heading">
+    <div v-else>
+      <h1 class="your-stat-heading">
         Your Stats
-      </h1> -->
+      </h1>
 
-      <!-- <transition-group name="card-fade" tag="div"
-        class="mt-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-4 sm:gap-6">
-        <div v-for="(stat, index) in stats" :key="stat.label" class="stat-card hover:brightness-110"
-          :class="`stat-${index}`">
-          <div class="stat-icon" aria-hidden="true">
-            <component :is="stat.icon" class="h-5 w-5" />
+      <section class="mt-6 space-y-4">
+        <div v-if="stats[0]" class="featured-stat-card hover:brightness-105">
+          <div class="featured-stat-icon" aria-hidden="true">
+            <component :is="stats[0].icon" class="h-8 w-8" />
           </div>
 
-          <p class="stat-label">
-            {{ stat.label }}
-          </p>
+          <div>
+            <p class="stat-label">
+              {{ stats[0].label }}
+            </p>
 
-          <p class="stat-value">
-            {{ formatStatValue(stat, index) }}
-          </p>
+            <p class="featured-stat-value">
+              {{ formatStatValue(stats[0], 0) }}
+            </p>
+          </div>
         </div>
-      </transition-group> -->
 
-      <!-- <div class="stats-marquee mt-6" aria-label="Your learning stats">
-        <div class="stats-marquee-track">
-          <div v-for="(stat, index) in marqueeStats" :key="`${stat.label}-${index}`"
-            class="stat-card stat-marquee-card hover:brightness-110" :class="`stat-${index % stats.length}`">
-            <div class="stat-icon" aria-hidden="true">
-              <component :is="stat.icon" class="h-5 w-5" />
+        <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
+          <div v-for="(stat, index) in stats.slice(1)" :key="stat.label" class="compact-stat-card hover:brightness-105"
+            :class="`stat-${index + 1}`">
+            <div class="compact-stat-top">
+              <p class="stat-label">
+                {{ stat.label }}
+              </p>
+
+              <div class="compact-stat-icon" aria-hidden="true">
+                <component :is="stat.icon" class="h-4 w-4" />
+              </div>
             </div>
 
-            <p class="stat-label">
-              {{ stat.label }}
-            </p>
-
-            <p class="stat-value">
-              {{ formatStatValue(stat, index % stats.length) }}
+            <p class="compact-stat-value">
+              {{ formatStatValue(stat, index + 1) }}
             </p>
           </div>
         </div>
-      </div> -->
-
-    <!-- </div> -->
-
-    <div v-else>
-  <h1 class="your-stat-heading">
-    Your Stats
-  </h1>
-
-  <section class="mt-6 space-y-4">
-    <div
-      v-if="stats[0]"
-      class="featured-stat-card hover:brightness-105"
-    >
-      <div class="featured-stat-icon" aria-hidden="true">
-        <component :is="stats[0].icon" class="h-6 w-6" />
-      </div>
-
-      <div>
-        <p class="stat-label">
-          {{ stats[0].label }}
-        </p>
-
-        <p class="featured-stat-value">
-          {{ formatStatValue(stats[0], 0) }}
-        </p>
-      </div>
+      </section>
     </div>
-
-    <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
-      <div
-        v-for="(stat, index) in stats.slice(1)"
-        :key="stat.label"
-        class="compact-stat-card hover:brightness-105"
-        :class="`stat-${index + 1}`"
-      >
-        <div class="compact-stat-top">
-          <p class="stat-label">
-            {{ stat.label }}
-          </p>
-
-          <div class="compact-stat-icon" aria-hidden="true">
-            <component :is="stat.icon" class="h-4 w-4" />
-          </div>
-        </div>
-
-        <p class="compact-stat-value">
-          {{ formatStatValue(stat, index + 1) }}
-        </p>
-      </div>
-    </div>
-  </section>
-</div>
   </main>
 </template>
 
@@ -345,13 +294,11 @@ main {
 .stats-marquee {
   overflow: hidden;
   width: 100%;
-  mask-image: linear-gradient(
-    90deg,
-    transparent 0%,
-    black 8%,
-    black 92%,
-    transparent 100%
-  );
+  mask-image: linear-gradient(90deg,
+      transparent 0%,
+      black 8%,
+      black 92%,
+      transparent 100%);
 }
 
 .stats-marquee-track {
@@ -423,10 +370,10 @@ main {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 3.25rem;
-  height: 3.25rem;
+  width: 3.5rem;
+  height: 3.5rem;
   border-radius: 18px;
-  background: rgba(255, 255, 255, 0.55);
+  /* background: rgba(255, 255, 255, 0.55); */
   color: rgba(17, 24, 39, 0.75);
   flex: 0 0 auto;
 }
@@ -467,7 +414,7 @@ main {
   width: 2rem;
   height: 2rem;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.55);
+  /* background: rgba(255, 255, 255, 0.55); */
   color: rgba(17, 24, 39, 0.72);
   flex: 0 0 auto;
 }
