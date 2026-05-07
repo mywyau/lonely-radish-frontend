@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { Volume2 } from '@lucide/vue'
+
 const props = withDefaults(defineProps<{
   src: string
   autoplay?: boolean
@@ -29,7 +31,6 @@ const play = () => {
   audio.value.playbackRate = props.playbackRate
   audio.value.currentTime = 0
 
-  // optional, browser support varies
   if ('preservesPitch' in audio.value) {
     audio.value.preservesPitch = true
   }
@@ -46,6 +47,18 @@ const sizeClass = computed(() => {
     case 'md':
     default:
       return 'text-sm px-3 py-2 rounded-lg gap-2'
+  }
+})
+
+const iconClass = computed(() => {
+  switch (props.size) {
+    case 'sm':
+      return 'h-3.5 w-3.5'
+    case 'lg':
+      return 'h-5 w-5'
+    case 'md':
+    default:
+      return 'h-4 w-4'
   }
 })
 
@@ -87,6 +100,7 @@ onBeforeUnmount(() => {
 
 <template>
   <button
+    type="button"
     @click="play"
     :class="[
       'inline-flex items-center justify-center font-medium transition-all duration-150 active:scale-[0.98] shadow-sm',
@@ -95,7 +109,8 @@ onBeforeUnmount(() => {
     ]"
     aria-label="Play audio"
   >
-    <span aria-hidden="true">▶︎</span>
+    <Volume2 :class="iconClass" aria-hidden="true" />
+
     <span v-if="props.size !== 'sm'">
       Play
     </span>

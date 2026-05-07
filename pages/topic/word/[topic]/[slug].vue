@@ -8,6 +8,17 @@ definePageMeta({
 
 import { masteryXp } from '@/config/xp/helpers';
 
+import {
+    ArrowLeft,
+    CheckCircle2,
+    ChevronLeft,
+    ChevronRight,
+    Mic,
+    PencilLine,
+    Settings,
+    X,
+} from '@lucide/vue';
+
 type TopicIndex = {
     topic: string
     title: string
@@ -222,15 +233,19 @@ watchEffect(() => {
     <main v-if="authReady && word" class="word-page max-w-4xl mx-auto px-4 py-8 space-y-4 sm:space-y-6">
 
         <div class="flex items-center justify-between gap-4">
-            <NuxtLink :to="`/topic/words/${topic}/v2#${word.id}`" class="text-sm text-black hover:underline">
-                ← Back
+            <NuxtLink :to="`/topic/words/${topic}/v2#${word.id}`"
+                class="inline-flex items-center gap-1.5 text-sm text-black hover:underline">
+                <ArrowLeft class="h-4 w-4" />
+                <span>Back</span>
             </NuxtLink>
 
             <div class="flex items-center gap-2">
                 <details ref="settingsDetails" class="group relative">
+
                     <summary
-                        class="list-none cursor-pointer rounded-full bg-yellow-100 px-3 py-1.5 text-xs font-semibold text-black shadow-sm transition hover:bg-yellow-200">
-                        Settings
+                        class="inline-flex list-none cursor-pointer items-center gap-1.5 rounded-full bg-yellow-100 px-3 py-1.5 text-xs font-semibold text-black shadow-sm transition hover:bg-yellow-200">
+                        <Settings class="h-3.5 w-3.5" />
+                        <span>Settings</span>
                     </summary>
 
                     <div
@@ -241,10 +256,16 @@ watchEffect(() => {
                                 Settings
                             </p>
 
-                            <button type="button"
+                            <!-- <button type="button"
                                 class="flex h-7 w-7 items-center justify-center text-lg leading-none text-gray-900 transition hover:brightness-110"
                                 aria-label="Close settings" @click="closeSettings">
                                 ×
+                            </button> -->
+
+                            <button type="button"
+                                class="flex h-7 w-7 items-center justify-center rounded-full text-gray-900 transition hover:bg-black/5"
+                                aria-label="Close settings" @click="closeSettings">
+                                <X class="h-4 w-4" />
                             </button>
                         </div>
 
@@ -264,18 +285,18 @@ watchEffect(() => {
                                 <p class="text-[11px] font-semibold uppercase tracking-wide text-gray-500">Speed</p>
                                 <div class="flex items-center justify-between gap-2">
                                     <button type="button"
-                                        class="px-1 text-2xl font-semibold leading-none text-gray-600 transition hover:text-sky-500 disabled:cursor-not-allowed disabled:opacity-40"
+                                        class="inline-flex h-7 w-7 items-center justify-center rounded-full text-gray-600 transition hover:bg-black/5 hover:text-sky-500 disabled:cursor-not-allowed disabled:opacity-40"
                                         :disabled="playbackRate <= minPlaybackRate"
                                         aria-label="Reduce playback speed by 20%" @click="decreasePlaybackRate">
-                                        ‹
+                                        <ChevronLeft class="h-4 w-4" />
                                     </button>
                                     <span class="w-28 text-center tabular-nums text-xs font-semibold text-gray-900">{{
                                         speedDeltaLabel }}</span>
                                     <button type="button"
-                                        class="px-1 text-2xl font-semibold leading-none text-gray-600 transition hover:text-sky-500 disabled:cursor-not-allowed disabled:opacity-40"
+                                        class="inline-flex h-7 w-7 items-center justify-center rounded-full text-gray-600 transition hover:bg-black/5 hover:text-sky-500 disabled:cursor-not-allowed disabled:opacity-40"
                                         :disabled="playbackRate >= maxPlaybackRate"
                                         aria-label="Increase playback speed by 20%" @click="increasePlaybackRate">
-                                        ›
+                                        <ChevronRight class="h-4 w-4" />
                                     </button>
                                 </div>
                             </div>
@@ -349,8 +370,9 @@ watchEffect(() => {
 
                 <div class="flex justify-between text-sm text-gray-600 max-w-xs mx-auto">
                     <span>{{ xp }} / {{ masteryXp }} XP</span>
-                    <span v-if="isMastered" class="font-semibold text-green-600">
-                        ✓ Maxed
+                    <span v-if="isMastered" class="inline-flex items-center gap-1 font-semibold text-green-600">
+                        <CheckCircle2 class="h-4 w-4" />
+                        <span>Maxed</span>
                     </span>
                 </div>
 
@@ -364,14 +386,13 @@ watchEffect(() => {
             <div class="flex items-center justify-between w-full pt-1">
                 <NuxtLink v-if="prevWord" :to="`/topic/word/${topic}/${prevWord.id}`" class="edge-arrow"
                     aria-label="Previous word">
-                    ‹
+                    <ChevronLeft class="h-12 w-12" />
                 </NuxtLink>
-
                 <div v-else class="w-10" />
 
                 <NuxtLink v-if="nextWord" :to="`/topic/word/${topic}/${nextWord.id}`" class="edge-arrow"
                     aria-label="Next word">
-                    ›
+                    <ChevronRight class="h-12 w-12" />
                 </NuxtLink>
             </div>
 
@@ -379,14 +400,15 @@ watchEffect(() => {
 
                 <NuxtLink v-if="showPracticeButtons" :to="`/writing/${topic}/vocab/${word.id}`"
                     class="action-chip action-chip-write main-action-btn" aria-label="Practice writing this word">
-                    <span aria-hidden="true" class="mobile-action-icon">✏️</span>
+                    <PencilLine class="mobile-action-icon h-4 w-4" />
                     <span class="mobile-action-label">Write</span>
+
                 </NuxtLink>
 
                 <NuxtLink v-if="showPracticeButtons" :to="`/tone-garden/${word.id}`"
                     class="action-chip action-chip-tone-forge main-action-btn"
                     aria-label="Open tone checker for this word">
-                    <span aria-hidden="true" class="mobile-action-icon">🎤</span>
+                    <Mic class="mobile-action-icon h-4 w-4" />
                     <span class="mobile-action-label">Speak</span>
                 </NuxtLink>
 
@@ -431,7 +453,7 @@ watchEffect(() => {
                                     :to="`/writing/${topic}/sentences/${word.id}/${currentExampleIndex}`"
                                     class="action-chip action-chip-sm action-chip-write example-action-btn"
                                     aria-label="Practice writing this sentence">
-                                    <span aria-hidden="true" class="mobile-action-icon">✏️</span>
+                                    <PencilLine class="mobile-action-icon h-3.5 w-3.5" />
                                     <span class="mobile-action-label">Write</span>
                                 </NuxtLink>
 
@@ -439,7 +461,7 @@ watchEffect(() => {
                                     :to="`/echo-lab/pronunciation-check/topic/${topic}/sentences/${word.id}/v2/${currentExampleIndex}`"
                                     class="action-chip action-chip-sm action-chip-speak example-action-btn"
                                     aria-label="Practice pronunciation for this sentence">
-                                    <span aria-hidden="true" class="mobile-action-icon">🎤</span>
+                                    <Mic class="mobile-action-icon h-3.5 w-3.5" />
                                     <span class="mobile-action-label">Speak</span>
                                 </NuxtLink>
 
@@ -472,14 +494,16 @@ watchEffect(() => {
             </ul>
 
             <div v-if="totalExamples > 1" class="example-pagination mt-4">
-                <button class="example-nav-arrow" type="button" aria-label="Previous example"
-                    @click="showPrevExample">‹</button>
+                <button class="example-nav-arrow" type="button" aria-label="Previous example" @click="showPrevExample">
+                    <ChevronLeft class="h-7 w-7" />
+                </button>
                 <div class="example-dots" aria-label="Example position indicator">
                     <span v-for="dotIndex in totalExamples" :key="dotIndex" class="example-dot"
                         :class="{ 'example-dot-active': dotIndex - 1 === currentExampleIndex }" />
                 </div>
-                <button class="example-nav-arrow" type="button" aria-label="Next example"
-                    @click="showNextExample">›</button>
+                <button class="example-nav-arrow" type="button" aria-label="Next example" @click="showNextExample">
+                    <ChevronRight class="h-7 w-7" />
+                </button>
             </div>
 
             <div class="text-center mt-10">
@@ -725,8 +749,9 @@ watchEffect(() => {
 }
 
 .edge-arrow {
-    font-size: 4rem;
-    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     color: #4b5563;
     transition: color 0.2s ease, transform 0.2s ease;
 }
@@ -734,6 +759,26 @@ watchEffect(() => {
 .edge-arrow:hover {
     color: #49b0ff;
     transform: scale(1.04);
+}
+
+.example-nav-arrow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #6b7280;
+    border: none;
+    background: transparent;
+    padding: 0.1rem 0.3rem;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.example-nav-arrow:hover {
+    color: #374151;
+    transform: scale(1.05);
+}
+
+.mobile-action-icon {
+    flex-shrink: 0;
 }
 
 @media (max-width: 640px) {
@@ -776,10 +821,10 @@ watchEffect(() => {
         display: none;
     }
 
-    .mobile-action-icon {
+    /* .mobile-action-icon {
         font-size: 0.95rem;
         line-height: 1;
-    }
+    } */
 
     .voice-toggle {
         min-height: 2rem;
