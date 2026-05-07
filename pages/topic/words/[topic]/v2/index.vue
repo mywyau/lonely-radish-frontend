@@ -4,6 +4,7 @@ definePageMeta({
   ssr: true,
 })
 
+import { CircleCheck, Library } from '@lucide/vue'
 import WordTile from '@/components/WordTile.vue'
 import { masteryXp } from '@/config/xp/helpers'
 import { createError } from 'nuxt/app'
@@ -231,12 +232,18 @@ onMounted(async () => {
       <div class="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
         <div class="stat-card page-card rounded-xl stat-0">
           <p class="stat-label">Total words</p>
-          <p class="stat-value font-bold">{{ totalWords }}</p>
+          <p class="stat-value stat-value-with-icon font-bold">
+            <Library class="h-4 w-4" aria-hidden="true" />
+            {{ totalWords }}
+          </p>
         </div>
 
         <div class="stat-card page-card rounded-xl stat-1">
           <p class="stat-label">Accessible words</p>
-          <p class="stat-value font-bold">{{ accessibleWordCount }}</p>
+          <p class="stat-value stat-value-with-icon font-bold">
+            <CircleCheck class="h-4 w-4" aria-hidden="true" />
+            {{ accessibleWordCount }}
+          </p>
         </div>
 
         <div v-if="!hasPaidAccess && !isTopicFree" class="stat-card page-card rounded-xl stat-2">

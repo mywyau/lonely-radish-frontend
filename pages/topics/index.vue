@@ -6,11 +6,54 @@ useSeoMeta({
   ogDescription: 'Explore themed Cantonese topic lists with vocabulary and sentence practice.',
 })
 
+import type { Component } from 'vue'
 import type { Topic } from '@/types/topic'
 import { brandColours } from '@/utils/branding/helpers'
 import { sortedTopics } from '@/utils/topics/topics'
-import { computed, onMounted, ref } from 'vue'
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from '@lucide/vue'
+import { computed, markRaw, onMounted, ref } from 'vue'
+import {
+  Apple,
+  BookOpen,
+  BrickWall,
+  BriefcaseBusiness,
+  Building2,
+  Bus,
+  Calculator,
+  CalendarDays,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+  Clock,
+  CloudSun,
+  Dumbbell,
+  FlaskConical,
+  Gamepad2,
+  Gem,
+  Globe2,
+  HardHat,
+  HeartHandshake,
+  HeartPulse,
+  House,
+  Landmark,
+  MessageCircle,
+  Mountain,
+  Music,
+  Newspaper,
+  Palette,
+  PawPrint,
+  Ruler,
+  ShieldPlus,
+  Shirt,
+  Smile,
+  Sofa,
+  Soup,
+  Sprout,
+  Smartphone,
+  Utensils,
+  Volume2,
+  Zap,
+} from '@lucide/vue'
 
 const {
   authReady,
@@ -110,6 +153,51 @@ const paginatedTopics = computed(() => {
   return sortedTopics.slice(start, end)
 })
 
+const fallbackTopicIcon = markRaw(BookOpen)
+
+const topicIcons: Record<string, Component> = {
+  'survival-essentials': markRaw(ShieldPlus),
+  'greetings-polite': markRaw(HeartHandshake),
+  'basic-verbs': markRaw(Zap),
+  'fruits-vegetables': markRaw(Apple),
+  clothing: markRaw(Shirt),
+  'dim-sum': markRaw(Soup),
+  'restaurant-menu': markRaw(Utensils),
+  colours: markRaw(Palette),
+  math: markRaw(Calculator),
+  'measure-quantities': markRaw(Ruler),
+  'time-dates': markRaw(Clock),
+  'family-members': markRaw(MessageCircle),
+  countries: markRaw(Globe2),
+  emotions: markRaw(Smile),
+  furniture: markRaw(Sofa),
+  'sports-fitness': markRaw(Dumbbell),
+  weather: markRaw(CloudSun),
+  technology: markRaw(Smartphone),
+  housing: markRaw(House),
+  'transport-travel': markRaw(Bus),
+  health: markRaw(HeartPulse),
+  'daily-life': markRaw(CalendarDays),
+  materials: markRaw(BrickWall),
+  animals: markRaw(PawPrint),
+  science: markRaw(FlaskConical),
+  'hobbies-interests': markRaw(Gamepad2),
+  'buildings-local-services': markRaw(Building2),
+  business: markRaw(BriefcaseBusiness),
+  'jobs-professions': markRaw(HardHat),
+  'gemstones-jewellery': markRaw(Gem),
+  'landforms-natural-disasters': markRaw(Mountain),
+  'news-media': markRaw(Newspaper),
+  'plants-gardening': markRaw(Sprout),
+  music: markRaw(Music),
+  politics: markRaw(Landmark),
+  onomatopoeia: markRaw(Volume2),
+}
+
+function getTopicIcon(topic: Topic) {
+  return topicIcons[topic.id] ?? fallbackTopicIcon
+}
+
 // Resolve auth once on mount (safe + idempotent)
 onMounted(async () => {
   if (!authReady.value) {
@@ -142,7 +230,11 @@ onMounted(async () => {
             : 'is-active'
         ]" :style="{ backgroundColor: getTopicColor(topic, index) }">
 
-        <NuxtLink :to="topicLink(topic)" class="block space-y-3">
+        <NuxtLink :to="topicLink(topic)" class="block space-y-3 pr-12">
+          <span class="topic-icon">
+            <component :is="getTopicIcon(topic)" class="h-5 w-5" aria-hidden="true" />
+          </span>
+
           <!-- Title row -->
           <div class="flex items-start justify-between gap-3">
             <div>
@@ -242,8 +334,24 @@ onMounted(async () => {
 
 /* Topic cards */
 .topic-card {
+  position: relative;
   backdrop-filter: blur(6px);
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.03);
+}
+
+.topic-icon {
+  position: absolute;
+  top: 0.9rem;
+  right: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.42);
+  color: rgba(17, 24, 39, 0.82);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
 }
 
 .topic-card.is-active:hover {
