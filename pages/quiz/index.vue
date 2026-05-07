@@ -126,7 +126,7 @@ function cycleLevelMode(levelId: string, direction: 1 | -1) {
 
         <!-- Buttons -->
         <div v-if="canEnterLevel(quizLevel) && !quizLevel.comingSoon" class="pt-4 space-y-3">
-          <div class="grid grid-cols-[42px_1fr_42px] gap-3">
+          <div class="quiz-mode-selector">
             <button class="level-mode-toggle" @click="cycleLevelMode(quizLevel.id, -1)" aria-label="Previous quiz mode">
               <ChevronLeft class="h-5 w-5" aria-hidden="true" />
             </button>
@@ -265,18 +265,30 @@ function cycleLevelMode(levelId: string, direction: 1 | -1) {
   background: rgba(192, 223, 188, 0.85);
 }
 
+.quiz-mode-selector {
+  display: grid;
+  grid-template-columns: 2.5rem minmax(0, 1fr) 2.5rem;
+  align-items: stretch;
+  column-gap: 0.75rem;
+}
+
 .level-mode-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
   border-radius: 8px;
-  background: rgba(31, 41, 55, 0.08);
+  background: transparent;
   color: #1f2937;
   font-size: 1.25rem;
   line-height: 1;
   font-weight: 700;
-  transition: all 0.15s ease;
+  transition: color 0.15s ease, transform 0.15s ease;
 }
 
 .level-mode-toggle:hover {
-  background: rgba(31, 41, 55, 0.15);
+  color: rgba(31, 41, 55, 0.7);
+  transform: translateY(-1px);
 }
 
 .mode-dots {
