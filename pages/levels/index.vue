@@ -79,20 +79,22 @@ onMounted(async () => {
         <!-- Accessible level -->
         <NuxtLink v-if="true" :to="`/level/${level.id}/v2`" class="block space-y-3">
 
-          <div class="tally-icons tally-icons-corner" role="img" :aria-label="`${level.title} tally marks`">
-            <component
-              :is="getTallyIcon(tallyGroup)"
-              v-for="(tallyGroup, tallyIndex) in getLevelTallyGroups(level.number)"
-              :key="`${level.id}-tally-${tallyIndex}`"
-              class="tally-icon"
-              aria-hidden="true"
-            />
-          </div>
-
           <div class="flex items-start justify-between gap-4">
-            <div class="min-w-0 pr-14">
-              <div class="text-lg font-semibold text-gray-900">
-                {{ level.title }}
+            <div class="min-w-0 flex-1">
+              <div class="level-card-header">
+                <div class="text-lg font-semibold text-gray-900">
+                  {{ level.title }}
+                </div>
+
+                <div class="tally-icons" role="img" :aria-label="`${level.title} tally marks`">
+                  <component
+                    :is="getTallyIcon(tallyGroup)"
+                    v-for="(tallyGroup, tallyIndex) in getLevelTallyGroups(level.number)"
+                    :key="`${level.id}-tally-${tallyIndex}`"
+                    class="tally-icon"
+                    aria-hidden="true"
+                  />
+                </div>
               </div>
 
               <div class="text-sm text-gray-700 mt-1">
@@ -109,20 +111,22 @@ onMounted(async () => {
 
         <!-- Locked level (kept for later when you re-enable gating) -->
         <div v-else class="space-y-3 cursor-not-allowed">
-          <div class="tally-icons tally-icons-corner" role="img" :aria-label="`${level.title} tally marks`">
-            <component
-              :is="getTallyIcon(tallyGroup)"
-              v-for="(tallyGroup, tallyIndex) in getLevelTallyGroups(level.number)"
-              :key="`${level.id}-tally-${tallyIndex}`"
-              class="tally-icon"
-              aria-hidden="true"
-            />
-          </div>
-
           <div class="flex items-start justify-between gap-4">
-            <div class="min-w-0 pr-14">
-              <div class="text-lg font-semibold text-gray-900">
-                {{ level.title }}
+            <div class="min-w-0 flex-1">
+              <div class="level-card-header">
+                <div class="text-lg font-semibold text-gray-900">
+                  {{ level.title }}
+                </div>
+
+                <div class="tally-icons" role="img" :aria-label="`${level.title} tally marks`">
+                  <component
+                    :is="getTallyIcon(tallyGroup)"
+                    v-for="(tallyGroup, tallyIndex) in getLevelTallyGroups(level.number)"
+                    :key="`${level.id}-tally-${tallyIndex}`"
+                    class="tally-icon"
+                    aria-hidden="true"
+                  />
+                </div>
               </div>
 
               <div class="text-sm text-gray-700 mt-1">
@@ -216,17 +220,20 @@ onMounted(async () => {
   /* subtle yellow border hint */
 }
 
+.level-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
 .tally-icons {
   display: inline-flex;
   align-items: center;
+  justify-content: flex-end;
+  flex-shrink: 0;
   gap: 0.1rem;
   color: rgba(17, 24, 39, 0.68);
-}
-
-.tally-icons-corner {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
 }
 
 .tally-icon {
