@@ -1,8 +1,8 @@
 <script setup lang="ts">
 
 import { levelSelectMetaData } from '@/utils/levels/helpers'
-import { onMounted, ref } from 'vue'
-import { ChevronLeft, ChevronRight } from '@lucide/vue'
+import { markRaw, onMounted, ref } from 'vue'
+import { BookOpen, ChevronLeft, ChevronRight, Headphones, MessageSquareText, Mic2, Volume2 } from '@lucide/vue'
 
 
 const {
@@ -35,30 +35,35 @@ const levelQuizModes = [
   {
     id: 'vocab',
     label: 'Vocabulary',
+    icon: markRaw(BookOpen),
     buttonClass: 'level-btn-blue',
     to: (levelId: string) => `/quiz/${levelId}/word/start-quiz`,
   },
   {
     id: 'audio',
     label: 'Audio',
+    icon: markRaw(Headphones),
     buttonClass: 'level-btn-purple',
     to: (levelId: string) => `/quiz/${levelId}/audio/start-quiz`,
   },
   {
     id: 'sentences',
     label: 'Sentences',
+    icon: markRaw(MessageSquareText),
     buttonClass: 'level-btn-yellow',
     to: (levelId: string) => `/quiz/${levelId}/sentences/no-audio/v3/start-quiz`,
   },
   {
     id: 'sentence-audio',
     label: 'Sentence Audio Only',
+    icon: markRaw(Volume2),
     buttonClass: 'level-btn-blush',
     to: (levelId: string) => `/quiz/${levelId}/sentences/audio/v3/start-quiz`,
   },
   {
     id: 'echo-gecko',
     label: 'Echo Gecko',
+    icon: markRaw(Mic2),
     buttonClass: 'level-btn-green',
     to: (levelId: string) => `/quiz/${levelId}/echo-gecko`,
   },
@@ -133,7 +138,11 @@ function cycleLevelMode(levelId: string, direction: 1 | -1) {
 
             <NuxtLink :to="getSelectedLevelMode(quizLevel.id).to(quizLevel.id)" class="level-btn"
               :class="getSelectedLevelMode(quizLevel.id).buttonClass">
-              {{ getSelectedLevelMode(quizLevel.id).label }}
+              <component :is="getSelectedLevelMode(quizLevel.id).icon" class="h-4 w-4 shrink-0" aria-hidden="true" />
+
+              <span>
+                {{ getSelectedLevelMode(quizLevel.id).label }}
+              </span>
             </NuxtLink>
 
             <button class="level-mode-toggle" @click="cycleLevelMode(quizLevel.id, 1)" aria-label="Next quiz mode">
@@ -209,14 +218,18 @@ function cycleLevelMode(levelId: string, direction: 1 | -1) {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 0.45rem;
   text-align: center;
   min-height: 52px;
-  padding: 0.6rem 0.75rem;
+  padding: 0.65rem 0.85rem;
   font-size: 0.85rem;
-  border-radius: 8px;
-  font-weight: 600;
+  border-radius: 14px;
+  font-weight: 700;
   line-height: 1.2;
-  transition: all 0.15s ease;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    background 0.18s ease;
 }
 
 /* Colour variations */
