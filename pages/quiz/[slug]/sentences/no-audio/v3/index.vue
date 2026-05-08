@@ -758,11 +758,7 @@ onBeforeUnmount(() => {
                                 Play Again
                             </NuxtLink>
 
-                            <NuxtLink to="/please-sign-in"
-                                class="block w-full rounded-xl text-black py-3 text-center font-medium hover:brightness-110 transition"
-                                style="background-color:rgba(244,205,39,0.35)">
-                                Sign up to earn XP, track progress & unlock more words
-                            </NuxtLink>
+                            <GuestQuizGuidance v-if="!isLoggedIn" />
                         </div>
                     </div>
                 </transition>

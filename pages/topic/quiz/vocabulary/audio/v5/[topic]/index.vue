@@ -831,11 +831,7 @@ onUnmounted(() => {
                     </div>
 
                     <div class="pt-2 space-y-3">
-                        <NuxtLink v-if="isGuestPreview" to="/please-sign-in"
-                            class="block w-full rounded-xl text-black py-3 text-center font-medium hover:brightness-110 transition"
-                            style="background-color:#F4CD27;">
-                            Sign up to earn XP & unlock more words
-                        </NuxtLink>
+                        <GuestQuizGuidance v-if="isGuestPreview" />
 
                         <NuxtLink :to="`/topics/quiz`"
                             class="block w-full rounded-xl text-black py-3 text-center font-medium hover:brightness-110 transition"

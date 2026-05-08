@@ -819,21 +819,7 @@ onBeforeUnmount(() => {
                         </div>
                     </div>
 
-                    <div v-if="isGuestMode" class="stat-card text-left result-2 space-y-3">
-                        <h3 class="text-sm font-semibold text-gray-900">
-                            Save your progress
-                        </h3>
-
-                        <p class="hero-subtext !mt-0">
-                            Sign up to earn XP from quizzes and unlock more words.
-                        </p>
-
-                        <NuxtLink to="/please-sign-in"
-                            class="block w-full rounded-xl text-black py-3 text-center font-medium hover:brightness-110 transition"
-                            style="background-color:#A8CAE0;">
-                            Sign up to earn XP
-                        </NuxtLink>
-                    </div>
+                    <GuestQuizGuidance v-if="isGuestMode" />
 
                     <div class="pt-2 space-y-3">
                         <NuxtLink :to="`/quiz/${slug}/word/start-quiz`"
