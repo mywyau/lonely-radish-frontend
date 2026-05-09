@@ -99,8 +99,8 @@ function cycleLevelMode(levelId: string, direction: 1 | -1) {
       <TypewriterTitleBlock
         heading-text="Level Dojo"
         subheading-text="Strengthen your phonetic and typing proficiency with our exercises"
-        heading-class="text-xl font-semibold level-heading"
-        subheading-class="level-subheading"
+        heading-class="text-xl font-semibold dojo-page-heading"
+        subheading-class="dojo-page-subheading"
         gap="0.75rem"
       />
     </header>
@@ -187,13 +187,13 @@ function cycleLevelMode(levelId: string, direction: 1 | -1) {
   --blush: #F6E1E1;
 }
 
-.level-heading {
+.dojo-page-heading {
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: rgba(17, 24, 39);
 }
 
-.level-subheading {
+.dojo-page-subheading {
   font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
