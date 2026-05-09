@@ -354,11 +354,7 @@ onMounted(() => {
 }
 
 .brand-text-gradient {
-<<<<<<< Updated upstream
-  background: linear-gradient(90deg, #6F5CCA 0%, #E07ABF 50%, #5EA6D6 100%);
-=======
   background: linear-gradient(90deg, #f079ca 50%);
->>>>>>> Stashed changes
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
