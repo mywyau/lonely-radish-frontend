@@ -193,6 +193,9 @@ function cycleLevelMode(levelId: string, direction: 1 | -1) {
 
 /* Card */
 .level-card {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   border-radius: 20px;
   padding: 1.5rem;
   background: rgba(255, 255, 255, 0.75);
@@ -202,6 +205,24 @@ function cycleLevelMode(levelId: string, direction: 1 | -1) {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+}
+
+.level-card::before {
+  content: '';
+  position: absolute;
+  inset: -45%;
+  z-index: 0;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='172' height='92' viewBox='0 0 172 92'%3E%3Cg fill='%231f2937' opacity='.11' font-family='Arial,sans-serif' font-weight='700'%3E%3Ctext x='8' y='34' font-size='30'%3E%3F%3C/text%3E%3Ctext x='48' y='22' font-size='16'%3E%E2%9C%A6%3C/text%3E%3Ctext x='88' y='39' font-size='26'%3E%3F%3C/text%3E%3Ctext x='133' y='24' font-size='18'%3E%E2%97%87%3C/text%3E%3Ctext x='24' y='78' font-size='17'%3E%E2%9C%93%3C/text%3E%3Ctext x='68' y='70' font-size='28'%3E%3F%3C/text%3E%3Ctext x='121' y='81' font-size='17'%3E%E2%98%85%3C/text%3E%3C/g%3E%3C/svg%3E");
+  background-size: 172px 92px;
+  opacity: 0.55;
+  transform: rotate(-18deg);
+  transform-origin: center;
+}
+
+.level-card > * {
+  position: relative;
+  z-index: 1;
 }
 
 .level-card:hover {
