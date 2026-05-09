@@ -111,13 +111,13 @@ const showAdvancedTips = ref(false)
   padding: 0.75rem;
   font-weight: 600;
   text-align: center;
-  background: #A8CAE0;
+  background: rgba(168, 202, 224, 0.72);
   color: #111827;
   transition: background 0.15s ease, transform 0.15s ease;
 }
 
 .start-btn:hover {
-  background: #8fbfd6;
+  background: rgba(168, 202, 224, 0.9);
   transform: translateY(-2px);
 }
 
@@ -223,19 +223,19 @@ const showAdvancedTips = ref(false)
 
 
 .start-btn.theme-purple {
-  background: #D6A3D1;
+  background: rgba(214, 163, 209, 0.72);
 }
 
 .start-btn.theme-purple:hover {
-  background: #c88fc2;
+  background: rgba(214, 163, 209, 0.9);
 }
 
 .start-btn.theme-blush {
-  background: rgb(249, 166, 166);
+  background: rgba(246, 180, 180, 0.72);
 }
 
 .start-btn.theme-blush:hover {
-  background: rgb(204, 136, 136);
+  background: rgba(246, 180, 180, 0.9);
 }
 
 

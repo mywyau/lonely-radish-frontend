@@ -85,10 +85,10 @@ main {
 }
 
 .dojo-tile-blue {
-  background-color: var(--blue);
+  background-color: rgba(168, 202, 224, 0.66);
 }
 
 .dojo-tile-pink {
-  background-color: var(--pink);
+  background-color: rgba(234, 184, 228, 0.66);
 }
 </style>

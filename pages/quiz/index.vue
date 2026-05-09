@@ -320,21 +320,21 @@ function cycleLevelMode(levelId: string, direction: 1 | -1) {
 }
 
 .level-btn-blush {
-  background: rgb(249, 166, 166);
+  background: rgba(246, 180, 180, 0.42);
   color: #1f2937;
 }
 
 .level-btn-blush:hover {
-  background: rgb(204, 136, 136);
+  background: rgba(246, 180, 180, 0.62);
 }
 
 .level-btn-green {
-  background: rgba(205, 232, 201, 0.7);
+  background: rgba(205, 232, 201, 0.45);
   color: #1f2937;
 }
 
 .level-btn-green:hover {
-  background: rgba(192, 223, 188, 0.85);
+  background: rgba(205, 232, 201, 0.65);
 }
 
 .quiz-mode-selector {

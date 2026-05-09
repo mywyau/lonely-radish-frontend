@@ -293,7 +293,7 @@ onMounted(async () => {
     --purple: #D6A3D1;
     --blue: #A8CAE0;
     --yellow: #F4CD27;
-    --blush: #F6E1E1;
+      --blush: #F6E1E1;
 }
 
 .topics-heading {
@@ -457,12 +457,12 @@ onMounted(async () => {
 }
 
 .topic-btn-green {
-    background: rgba(205, 232, 201, 0.7);
+    background: rgba(205, 232, 201, 0.45);
     color: #1f2937;
 }
 
 .topic-btn-green:hover {
-    background: rgba(192, 223, 188, 0.85);
+    background: rgba(205, 232, 201, 0.65);
 }
 
 .quiz-mode-selector {

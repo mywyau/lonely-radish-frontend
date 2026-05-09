@@ -81,13 +81,9 @@ function cycleTopicMode(topicId: string, direction: 1 | -1) {
     <BackLink />
 
     <header class="text-center space-y-3 max-w-2xl mx-auto">
-      <TypewriterTitleBlock
-        heading-text="Topic Dojo"
+      <TypewriterTitleBlock heading-text="Topic Dojo"
         subheading-text="Strengthen your phonetic and typing proficiency with our exercises."
-        heading-class="text-xl font-semibold dojo-page-heading"
-        subheading-class="dojo-page-subheading"
-        gap="0.75rem"
-      />
+        heading-class="text-xl font-semibold dojo-page-heading" subheading-class="dojo-page-subheading" gap="0.75rem" />
     </header>
 
     <div v-if="totalPages > 1" class="pagination-wrapper flex flex-col items-center gap-3 pt-8">
@@ -135,8 +131,7 @@ function cycleTopicMode(topicId: string, direction: 1 | -1) {
               <ChevronLeft class="h-5 w-5" aria-hidden="true" />
             </button>
 
-            <NuxtLink :to="getSelectedTopicMode(quizTopic.id).to(quizTopic.id)"
-              class="topic-btn"
+            <NuxtLink :to="getSelectedTopicMode(quizTopic.id).to(quizTopic.id)" class="topic-btn"
               :class="getSelectedTopicMode(quizTopic.id).buttonClass">
               {{ getSelectedTopicMode(quizTopic.id).label }}
             </NuxtLink>
@@ -146,7 +141,8 @@ function cycleTopicMode(topicId: string, direction: 1 | -1) {
             </button>
           </div>
 
-          <div class="mode-dots" :aria-label="`Mode ${getSelectedTopicModeIndex(quizTopic.id) + 1} of ${topicQuizModes.length}`">
+          <div class="mode-dots"
+            :aria-label="`Mode ${getSelectedTopicModeIndex(quizTopic.id) + 1} of ${topicQuizModes.length}`">
             <span v-for="(mode, modeIndex) in topicQuizModes" :key="`${quizTopic.id}-${mode.id}`" class="mode-dot"
               :class="{ 'is-active': modeIndex === getSelectedTopicModeIndex(quizTopic.id) }" />
           </div>
@@ -213,7 +209,7 @@ function cycleTopicMode(topicId: string, direction: 1 | -1) {
   transform-origin: center;
 }
 
-.topic-card > * {
+.topic-card>* {
   position: relative;
   z-index: 1;
 }
@@ -233,10 +229,10 @@ function cycleTopicMode(topicId: string, direction: 1 | -1) {
   align-items: center;
   justify-content: center;
   text-align: center;
-  min-height: 56px;
-  padding: 0.6rem 0.75rem;
+  min-height: 52px;
+  padding: 0.65rem 0.85rem;
   font-size: 0.85rem;
-  border-radius: 8px;
+  border-radius: 14px;
   font-weight: 600;
   line-height: 1.2;
   transition: all 0.15s ease;
@@ -270,12 +266,12 @@ function cycleTopicMode(topicId: string, direction: 1 | -1) {
 }
 
 .topic-btn-blush {
-  background: rgb(249, 166, 166);
+  background: rgba(246, 180, 180, 0.42);
   color: #1f2937;
 }
 
 .topic-btn-blush:hover {
-  background: rgb(204, 136, 136);
+  background: rgba(246, 180, 180, 0.62);
 }
 
 .topic-mode-toggle {
