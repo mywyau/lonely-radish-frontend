@@ -380,12 +380,14 @@ watchEffect(() => {
             <div class="flex items-center justify-between w-full pt-1">
                 <NuxtLink v-if="prevWord" :to="`/topic/word/${topic}/${prevWord.id}`" class="edge-arrow"
                     aria-label="Previous word">
+                    <span class="edge-arrow-burst" aria-hidden="true"></span>
                     <ChevronLeft class="h-12 w-12" />
                 </NuxtLink>
                 <div v-else class="w-10" />
 
                 <NuxtLink v-if="nextWord" :to="`/topic/word/${topic}/${nextWord.id}`" class="edge-arrow"
                     aria-label="Next word">
+                    <span class="edge-arrow-burst" aria-hidden="true"></span>
                     <ChevronRight class="h-12 w-12" />
                 </NuxtLink>
             </div>
@@ -743,16 +745,111 @@ watchEffect(() => {
 }
 
 .edge-arrow {
+    position: relative;
+    isolation: isolate;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    font-size: 4rem;
+    line-height: 1;
     color: #4b5563;
     transition: color 0.2s ease, transform 0.2s ease;
 }
 
-.edge-arrow:hover {
-    color: #49b0ff;
+.edge-arrow svg {
+    position: relative;
+    z-index: 1;
+}
+
+.edge-arrow:hover,
+.edge-arrow:focus-visible {
+    color: #2563eb;
     transform: scale(1.04);
+}
+
+.edge-arrow:hover .edge-arrow-burst,
+.edge-arrow:focus-visible .edge-arrow-burst {
+    animation: edgeArrowBurst 650ms ease-out both;
+}
+
+.edge-arrow-burst {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 0.28rem;
+    height: 0.28rem;
+    border-radius: 999px;
+    background: transparent;
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.35);
+    z-index: -1;
+    box-shadow:
+        -0.18rem -1.42rem 0 -0.03rem rgba(37, 99, 235, 0.95),
+        0.58rem -1.18rem 0 -0.08rem rgba(29, 78, 216, 0.9),
+        1.42rem -0.36rem 0 -0.05rem rgba(59, 130, 246, 0.92),
+        1.28rem 0.84rem 0 -0.08rem rgba(30, 64, 175, 0.86),
+        0.24rem 1.44rem 0 -0.04rem rgba(37, 99, 235, 0.92),
+        -0.72rem 1.1rem 0 -0.08rem rgba(59, 130, 246, 0.9),
+        -1.44rem 0.42rem 0 -0.05rem rgba(29, 78, 216, 0.9),
+        -1.08rem -0.82rem 0 -0.1rem rgba(37, 99, 235, 0.86);
+    pointer-events: none;
+}
+
+.edge-arrow-burst::before,
+.edge-arrow-burst::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    border-radius: 999px;
+    background: transparent;
+    transform: translate(-50%, -50%);
+}
+
+.edge-arrow-burst::before {
+    width: 0.2rem;
+    height: 0.2rem;
+    box-shadow:
+        0.22rem -1.72rem 0 -0.04rem rgba(30, 64, 175, 0.84),
+        1.52rem -0.96rem 0 -0.03rem rgba(37, 99, 235, 0.9),
+        1.72rem 0.24rem 0 -0.06rem rgba(59, 130, 246, 0.86),
+        0.78rem 1.58rem 0 -0.04rem rgba(29, 78, 216, 0.86),
+        -0.32rem 1.78rem 0 -0.06rem rgba(37, 99, 235, 0.88),
+        -1.56rem 0.92rem 0 -0.03rem rgba(30, 64, 175, 0.82),
+        -1.72rem -0.28rem 0 -0.06rem rgba(59, 130, 246, 0.86),
+        -0.84rem -1.44rem 0 -0.05rem rgba(29, 78, 216, 0.86);
+}
+
+.edge-arrow-burst::after {
+    width: 0.16rem;
+    height: 0.16rem;
+    background: transparent;
+    box-shadow:
+        0.96rem -1.68rem 0 -0.03rem rgba(59, 130, 246, 0.78),
+        1.9rem -0.08rem 0 -0.04rem rgba(30, 64, 175, 0.84),
+        1.22rem 1.22rem 0 -0.03rem rgba(37, 99, 235, 0.86),
+        -0.04rem 2.02rem 0 -0.05rem rgba(59, 130, 246, 0.8),
+        -1.18rem 1.42rem 0 -0.04rem rgba(29, 78, 216, 0.84),
+        -1.92rem 0.04rem 0 -0.03rem rgba(37, 99, 235, 0.82),
+        -1.34rem -1.16rem 0 -0.04rem rgba(59, 130, 246, 0.8),
+        0.04rem -1.98rem 0 -0.05rem rgba(30, 64, 175, 0.82);
+}
+
+@keyframes edgeArrowBurst {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.2);
+    }
+
+    35% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.12);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(1.45);
+    }
 }
 
 .example-nav-arrow {
