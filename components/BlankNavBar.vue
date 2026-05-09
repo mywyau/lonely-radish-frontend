@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { login, logout } from '@/composables/useAuth'
 import { useMeStateV2 } from '@/composables/useMeStateV2'
-import { Menu, Orbit, X } from '@lucide/vue'
+import { Menu, Orbit, Rocket, X } from '@lucide/vue'
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 
 const { isLoggedIn, resolve } = useMeStateV2()
@@ -146,7 +146,10 @@ onBeforeUnmount(() => {
     <transition name="slide-left">
       <aside v-if="navOpen" id="warp-navigation-panel" class="nav-drawer" aria-label="Main navigation panel">
         <div class="px-4 py-4 border-b border-black/20">
-          <span class="text-xl font-semibold text-black">Warp</span>
+          <span class="flex items-center gap-2 text-xl font-semibold text-black">
+            <Rocket class="h-5 w-5" aria-hidden="true" />
+            Warp
+          </span>
         </div>
 
         <nav class="px-3 py-4 space-y-1">
@@ -275,7 +278,7 @@ onBeforeUnmount(() => {
   flex-direction: column;
   height: 100vh;
   width: min(20rem, 88vw);
-  background: rgba(111, 92, 202, 0.35);
+  background-color: rgba(236, 224, 248, 0.86);
   backdrop-filter: blur(8px);
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.12);
 }
