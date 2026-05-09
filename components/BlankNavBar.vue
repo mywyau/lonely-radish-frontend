@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { login, logout } from '@/composables/useAuth'
 import { useMeStateV2 } from '@/composables/useMeStateV2'
-import { Menu, Rocket, X } from '@lucide/vue'
+import { AudioLines, CalendarCheck, CircleHelp, House, Layers, Menu, Rocket, Tags, Target, X } from '@lucide/vue'
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 
 const { isLoggedIn, resolve } = useMeStateV2()
@@ -13,15 +13,15 @@ const menuRoot = ref<HTMLElement | null>(null)
 
 const navLinks = computed(() => {
   const links = [
-    { to: '/', label: 'Home', requiresAuth: false },
-    { to: '/daily/vocab/v2/start-quiz', label: 'Daily Quiz', requiresAuth: true },
-    { to: '/daily/jyutping/v2', label: 'Daily Jyutping Quiz', requiresAuth: true },
-    { to: '/levels', label: 'Levels', requiresAuth: false },
-    { to: '/quiz', label: 'Level Quiz', requiresAuth: false },
-    { to: '/dojo/level', label: 'Level Dojo', requiresAuth: false },
-    { to: '/topics', label: 'Topics', requiresAuth: false },
-    { to: '/topics/quiz', label: 'Topic Quiz', requiresAuth: false },
-    { to: '/dojo/topic', label: 'Topic Dojo', requiresAuth: false },
+    { to: '/', label: 'Home', requiresAuth: false, icon: House },
+    { to: '/daily/vocab/v2/start-quiz', label: 'Daily Quiz', requiresAuth: true, icon: CalendarCheck },
+    { to: '/daily/jyutping/v2', label: 'Daily Jyutping Quiz', requiresAuth: true, icon: AudioLines },
+    { to: '/levels', label: 'Levels', requiresAuth: false, icon: Layers },
+    { to: '/quiz', label: 'Level Quiz', requiresAuth: false, icon: CircleHelp },
+    { to: '/dojo/level', label: 'Level Dojo', requiresAuth: false, icon: Target },
+    { to: '/topics', label: 'Topics', requiresAuth: false, icon: Tags },
+    { to: '/topics/quiz', label: 'Topic Quiz', requiresAuth: false, icon: CircleHelp },
+    { to: '/dojo/topic', label: 'Topic Dojo', requiresAuth: false, icon: Target },
   ]
 
   return links.filter(link => !link.requiresAuth || isLoggedIn.value)
@@ -157,7 +157,8 @@ onBeforeUnmount(() => {
           <NuxtLink v-for="link in navLinks" :key="link.to" :to="link.to" class="drawer-link font-medium"
             :class="{ 'drawer-link-active': route.path === link.to }"
             :aria-current="route.path === link.to ? 'page' : undefined">
-            {{ link.label }}
+            <component :is="link.icon" class="drawer-link-icon" aria-hidden="true" />
+            <span>{{ link.label }}</span>
           </NuxtLink>
         </nav>
       </aside>
@@ -359,11 +360,21 @@ onBeforeUnmount(() => {
 
 .drawer-link {
   display: flex;
+  align-items: center;
+  gap: 0.7rem;
   border-radius: 0.75rem;
   padding: 0.65rem 0.75rem;
   font-size: 0.95rem;
   color: #111827;
   transition: background 120ms ease;
+}
+
+.drawer-link-icon {
+  width: 1.1rem;
+  height: 1.1rem;
+  flex-shrink: 0;
+  color: rgba(17, 24, 39, 0.72);
+  stroke-width: 2.15;
 }
 
 .drawer-link:hover {
