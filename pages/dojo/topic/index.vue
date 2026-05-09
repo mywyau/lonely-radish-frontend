@@ -81,12 +81,13 @@ function cycleTopicMode(topicId: string, direction: 1 | -1) {
     <BackLink />
 
     <header class="text-center space-y-3 max-w-2xl mx-auto">
-      <h1 class="font-semibold topics-heading">
-        Topic Dojo
-      </h1>
-      <p class="topics-subheading">
-        Strengthen your phonetic and typing proficiency with our exercises.
-      </p>
+      <TypewriterTitleBlock
+        heading-text="Topic Dojo"
+        subheading-text="Strengthen your phonetic and typing proficiency with our exercises."
+        heading-class="font-semibold topics-heading"
+        subheading-class="topics-subheading"
+        gap="0.75rem"
+      />
     </header>
 
     <div v-if="totalPages > 1" class="pagination-wrapper flex flex-col items-center gap-3 pt-8">

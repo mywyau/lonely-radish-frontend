@@ -24,9 +24,13 @@ const showAdvancedTips = ref(false)
     <BackLink />
 
     <section class="quiz-card text-center space-y-6">
-      <h1 class="text-3xl font-semibold text-gray-900 level-heading">{{ props.heading }}</h1>
-
-      <p class="text-black level-subheading">{{ props.description }}</p>
+      <TypewriterTitleBlock
+        :heading-text="props.heading"
+        :subheading-text="props.description"
+        heading-class="text-3xl font-semibold text-gray-900 level-heading"
+        subheading-class="text-black level-subheading"
+        gap="1.5rem"
+      />
 
       <p v-if="props.guestNote" class="guest-note">
         {{ props.guestNote }}

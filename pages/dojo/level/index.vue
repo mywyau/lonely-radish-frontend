@@ -96,12 +96,13 @@ function cycleLevelMode(levelId: string, direction: 1 | -1) {
 
     <!-- Header -->
     <header class="text-center space-y-3 max-w-2xl mx-auto">
-      <h1 class="text-xl font-semibold level-heading">
-        Level Dojo
-      </h1>
-      <p class="level-subheading">
-        Strenghten your phonetic and typing proficiency with our exercises
-      </p>
+      <TypewriterTitleBlock
+        heading-text="Level Dojo"
+        subheading-text="Strengthen your phonetic and typing proficiency with our exercises"
+        heading-class="text-xl font-semibold level-heading"
+        subheading-class="level-subheading"
+        gap="0.75rem"
+      />
     </header>
 
     <!-- Grid -->
