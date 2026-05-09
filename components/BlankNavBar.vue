@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { login, logout } from '@/composables/useAuth'
 import { useMeStateV2 } from '@/composables/useMeStateV2'
-import { Menu, Orbit, Rocket, X } from '@lucide/vue'
+import { Menu, Rocket, X } from '@lucide/vue'
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 
 const { isLoggedIn, resolve } = useMeStateV2()
@@ -135,7 +135,8 @@ onBeforeUnmount(() => {
     <button type="button" class="trigger-visibility-btn" :class="{ 'is-open': navOpen }"
       :aria-label="navOpen ? 'Close Warp panel' : 'Open Warp panel'" :aria-expanded="navOpen ? 'true' : 'false'"
       aria-controls="warp-navigation-panel" @click.stop="toggleNav">
-      <Orbit class="portal-icon" aria-hidden="true" />
+      <span class="rocket-burst" aria-hidden="true"></span>
+      <Rocket class="portal-icon" aria-hidden="true" />
       <span class="sr-only">{{ navOpen ? 'Close Warp panel' : 'Open Warp panel' }}</span>
     </button>
 
@@ -197,8 +198,9 @@ onBeforeUnmount(() => {
   background: transparent;
   backdrop-filter: none;
   /* box-shadow: 0 8px 18px rgba(0, 0, 0, 0.16); */
-  overflow: hidden;
+  overflow: visible;
   isolation: isolate;
+  transition: transform 160ms ease;
 }
 
 .portal-icon {
@@ -210,7 +212,8 @@ onBeforeUnmount(() => {
   color: rgba(15, 15, 15, 0.9);
   stroke-width: 2.4;
   transform-origin: center;
-  animation: portalOrbit 6s linear infinite;
+  transition: transform 160ms ease;
+  z-index: 1;
 }
 
 .trigger-visibility-btn::before {
@@ -219,23 +222,87 @@ onBeforeUnmount(() => {
   inset: 0.45rem;
   border-radius: inherit;
   background:
-    radial-gradient(circle, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.12) 62%, transparent 70%);
-  z-index: -1;
-}
-
-.trigger-visibility-btn::after {
-  content: '';
-  position: absolute;
-  inset: 0.3rem;
-  /* border-radius: inherit; */
-  /* border: 1px solid rgba(15, 15, 15, 0.14); */
-  z-index: -1;
+    radial-gradient(circle, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.18) 62%, transparent 70%);
+  z-index: -2;
 }
 
 .trigger-visibility-btn:hover,
 .trigger-visibility-btn.is-open {
   transform: scale(1.20);
   /* box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22); */
+}
+
+.trigger-visibility-btn:hover .portal-icon,
+.trigger-visibility-btn.is-open .portal-icon {
+  transform: translateY(-0.08rem);
+}
+
+.rocket-burst {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0.28rem;
+  height: 0.28rem;
+  border-radius: 999px;
+  background: transparent;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.35);
+  z-index: -1;
+  box-shadow:
+    -0.18rem -1.42rem 0 -0.03rem rgba(159, 91, 181, 0.95),
+    0.58rem -1.18rem 0 -0.08rem rgba(133, 78, 161, 0.9),
+    1.42rem -0.36rem 0 -0.05rem rgba(181, 123, 195, 0.92),
+    1.28rem 0.84rem 0 -0.08rem rgba(115, 65, 150, 0.86),
+    0.24rem 1.44rem 0 -0.04rem rgba(159, 91, 181, 0.92),
+    -0.72rem 1.1rem 0 -0.08rem rgba(181, 123, 195, 0.9),
+    -1.44rem 0.42rem 0 -0.05rem rgba(133, 78, 161, 0.9),
+    -1.08rem -0.82rem 0 -0.1rem rgba(159, 91, 181, 0.86);
+  pointer-events: none;
+}
+
+.rocket-burst::before,
+.rocket-burst::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  border-radius: 999px;
+  background: transparent;
+  transform: translate(-50%, -50%);
+}
+
+.rocket-burst::before {
+  width: 0.2rem;
+  height: 0.2rem;
+  box-shadow:
+    0.22rem -1.72rem 0 -0.04rem rgba(115, 65, 150, 0.84),
+    1.52rem -0.96rem 0 -0.03rem rgba(159, 91, 181, 0.9),
+    1.72rem 0.24rem 0 -0.06rem rgba(181, 123, 195, 0.86),
+    0.78rem 1.58rem 0 -0.04rem rgba(133, 78, 161, 0.86),
+    -0.32rem 1.78rem 0 -0.06rem rgba(159, 91, 181, 0.88),
+    -1.56rem 0.92rem 0 -0.03rem rgba(115, 65, 150, 0.82),
+    -1.72rem -0.28rem 0 -0.06rem rgba(181, 123, 195, 0.86),
+    -0.84rem -1.44rem 0 -0.05rem rgba(133, 78, 161, 0.86);
+}
+
+.rocket-burst::after {
+  width: 0.16rem;
+  height: 0.16rem;
+  background: transparent;
+  box-shadow:
+    0.96rem -1.68rem 0 -0.03rem rgba(181, 123, 195, 0.78),
+    1.9rem -0.08rem 0 -0.04rem rgba(115, 65, 150, 0.84),
+    1.22rem 1.22rem 0 -0.03rem rgba(159, 91, 181, 0.86),
+    -0.04rem 2.02rem 0 -0.05rem rgba(181, 123, 195, 0.8),
+    -1.18rem 1.42rem 0 -0.04rem rgba(133, 78, 161, 0.84),
+    -1.92rem 0.04rem 0 -0.03rem rgba(159, 91, 181, 0.82),
+    -1.34rem -1.16rem 0 -0.04rem rgba(181, 123, 195, 0.8),
+    0.04rem -1.98rem 0 -0.05rem rgba(115, 65, 150, 0.82);
+}
+
+.trigger-visibility-btn:hover .rocket-burst,
+.trigger-visibility-btn.is-open .rocket-burst {
+  animation: lilacBurst 650ms ease-out both;
 }
 
 
@@ -327,15 +394,20 @@ onBeforeUnmount(() => {
   transform: translateX(-100%);
 }
 
-/* @keyframes portalSwirl {
-  to {
-    transform: rotate(360deg);
+@keyframes lilacBurst {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.2);
   }
-} */
 
-@keyframes portalOrbit {
-  to {
-    transform: rotate(360deg);
+  35% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.12);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.45);
   }
 }
 
@@ -403,7 +475,7 @@ onBeforeUnmount(() => {
 
   .brand-logo:hover,
   .menu-btn:hover,
-  .portal-icon {
+  .rocket-burst {
     animation: none;
   }
 }
