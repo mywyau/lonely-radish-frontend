@@ -131,7 +131,7 @@ watch(aiUsage, (val) => {
         <div class="px-4 py-14 sm:py-16">
             <div class="max-w-xl mx-auto space-y-8">
 
-                <BackLink />
+                <!-- <BackLink /> -->
 
                 <!-- Header -->
                 <header v-if="isLoggedIn" class="space-y-2">

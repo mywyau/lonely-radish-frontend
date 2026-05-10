@@ -621,7 +621,7 @@ onUnmounted(() => {
 <template>
     <main class="max-w-xl mx-auto px-4 py-16 space-y-8">
 
-        <BackLink />
+        <!-- <BackLink /> -->
 
         <section class="text-center space-y-4">
             <h1 class="text-2xl font-semibold">
@@ -795,13 +795,8 @@ onUnmounted(() => {
                     </transition>
 
                     <transition name="card-fade" appear>
-                        <QuizCompletionFlipStats
-                            :correct="score"
-                            :incorrect="incorrectCount"
-                            :time="formattedElapsedTime"
-                            :xp-earned="animatedXpEarned"
-                            :xp-lost="animatedXpLost"
-                        />
+                        <QuizCompletionFlipStats :correct="score" :incorrect="incorrectCount"
+                            :time="formattedElapsedTime" :xp-earned="animatedXpEarned" :xp-lost="animatedXpLost" />
                     </transition>
 
                     <div v-if="correctWords.length" class="stat-card text-left result-3">

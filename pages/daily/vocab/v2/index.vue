@@ -514,9 +514,7 @@ onUnmounted(() => {
 
 <template>
   <div class="max-w-xl mx-auto px-4 py-8">
-    <div class="mb-6">
-      <BackLink />
-    </div>
+    <!-- <BackLink /> -->
 
     <h1 v-if="!showCompleteView && !submitting && currentQuestion" class="text-2xl font-semibold text-center mb-4">
       Daily Training
@@ -697,12 +695,8 @@ onUnmounted(() => {
             </transition>
 
             <transition name="card-fade" appear>
-              <QuizCompletionFlipStats
-                :correct="correctCount"
-                :incorrect="incorrectCount"
-                :time="formattedElapsedTime"
-                :xp-earned="animatedXpEarned"
-              />
+              <QuizCompletionFlipStats :correct="correctCount" :incorrect="incorrectCount" :time="formattedElapsedTime"
+                :xp-earned="animatedXpEarned" />
             </transition>
 
             <div class="text-center">

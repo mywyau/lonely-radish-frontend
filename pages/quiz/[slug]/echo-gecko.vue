@@ -580,7 +580,7 @@ onBeforeUnmount(() => {
 <template>
   <main class="min-h-screen text-gray-900">
     <div class="mx-auto max-w-3xl px-4 py-10">
-      <BackLink />
+      <!-- <BackLink /> -->
 
       <header class="mb-6 mt-10">
         <h1 class="text-3xl font-bold">Echo Gecko</h1>
@@ -644,14 +644,8 @@ onBeforeUnmount(() => {
             <p class="hero-score">{{ passPercentage }}%</p>
           </div>
 
-          <QuizCompletionFlipStats
-            correct-label="Passed Words"
-            incorrect-label="Skipped Words"
-            :correct="passedCount"
-            :incorrect="missedCount"
-            :time="formattedElapsedTime"
-            :show-xp="false"
-          />
+          <QuizCompletionFlipStats correct-label="Passed Words" incorrect-label="Skipped Words" :correct="passedCount"
+            :incorrect="missedCount" :time="formattedElapsedTime" :show-xp="false" />
 
           <button
             class="w-full rounded-xl bg-[#BFEA83] px-4 py-3 text-base font-semibold text-gray-900 transition hover:brightness-105"
@@ -759,7 +753,7 @@ onBeforeUnmount(() => {
                     {{ row.character ? `Character: ${row.character}` : `Syllable ${row.syllable}` }}
                   </span>
                   <span class="text-gray-500"> (target <span class="text-black font-medium">{{ row.token
-                  }})</span></span>,
+                      }})</span></span>,
                   I heard <span class="font-semibold">{{ row.heardJyutping }}</span>
                   — tone <span class="font-semibold">{{ row.detectedTone ?? "unknown" }}</span>
                 </li>

@@ -580,15 +580,14 @@ onBeforeUnmount(() => {
 <template>
   <main class="min-h-screen text-gray-900">
     <div class="mx-auto max-w-3xl px-4 py-10">
-      <BackLink />
+      <!-- <BackLink /> -->
 
       <header class="mb-6 mt-10">
         <h1 class="text-3xl font-bold">Echo Gecko</h1>
         <p class="mt-1 text-sm text-gray-600">{{ data?.title ?? topicSlug }}</p>
       </header>
 
-      <section
-        class="rounded-2xl p-5 sm:p-6"
+      <section class="rounded-2xl p-5 sm:p-6"
         :class="(finished || finalizing) ? 'bg-transparent shadow-none' : 'border border-fuchsia-100 bg-white/90 shadow-sm'">
         <div v-if="pending || loading" class="text-sm text-gray-600">Loading quiz words…</div>
         <div v-else-if="error" class="rounded-lg border border-rose-300 bg-rose-100 p-3 text-sm text-rose-700">
@@ -645,14 +644,8 @@ onBeforeUnmount(() => {
             <p class="hero-score">{{ passPercentage }}%</p>
           </div>
 
-          <QuizCompletionFlipStats
-            correct-label="Passed Words"
-            incorrect-label="Skipped Words"
-            :correct="passedCount"
-            :incorrect="missedCount"
-            :time="formattedElapsedTime"
-            :show-xp="false"
-          />
+          <QuizCompletionFlipStats correct-label="Passed Words" incorrect-label="Skipped Words" :correct="passedCount"
+            :incorrect="missedCount" :time="formattedElapsedTime" :show-xp="false" />
 
           <button
             class="w-full rounded-xl bg-[#BFEA83] px-4 py-3 text-base font-medium text-black transition hover:brightness-110"

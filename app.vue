@@ -1,5 +1,9 @@
 <script setup lang="ts">
-import { Analytics } from '@vercel/analytics/vue';
+import { Analytics } from '@vercel/analytics/vue'
+
+const route = useRoute()
+
+const showBackLink = computed(() => route.path !== '/')
 
 const runtimeConfig = useRuntimeConfig()
 
@@ -21,17 +25,23 @@ useSeoMeta({
   twitterTitle: 'TaroTea · Learn Cantonese',
   twitterDescription: 'Learn natural Cantonese with exercises, vocabulary, audio and quizzes.',
 })
-
 </script>
 
 <template>
   <div class="min-h-screen flex flex-col overflow-x-hidden bg-[#F6E1E1]/30">
     <BlankNavBar />
 
+    <BackLink
+      v-if="showBackLink"
+      to="/"
+      class="mt-10"
+    />
+
     <main class="flex-1">
       <ClientOnly>
         <Analytics />
       </ClientOnly>
+
       <NuxtPage />
     </main>
 

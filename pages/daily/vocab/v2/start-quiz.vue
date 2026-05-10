@@ -36,7 +36,7 @@ const showAllTips = ref(false)
 
 <template>
   <main class="quiz-intro-page max-w-xl mx-auto px-4 py-16 space-y-10">
-    <BackLink />
+    <!-- <BackLink /> -->
 
     <section class="quiz-card text-center space-y-6">
       <h1 class="text-3xl font-semibold text-gray-900 level-heading">

@@ -160,9 +160,7 @@ onMounted(async () => {
 <template>
     <main class="topics-page max-w-4xl mx-auto py-10 px-4 space-y-8">
 
-        <div class="mb-6">
-            <BackLink />
-        </div>
+        <!-- <BackLink /> -->
 
         <!-- Intro -->
         <header class="text-center space-y-3 max-w-4xl mx-auto">
@@ -293,7 +291,7 @@ onMounted(async () => {
     --purple: #D6A3D1;
     --blue: #A8CAE0;
     --yellow: #F4CD27;
-      --blush: #F6E1E1;
+    --blush: #F6E1E1;
 }
 
 .topics-heading {
@@ -339,7 +337,7 @@ onMounted(async () => {
     transform-origin: center;
 }
 
-.topic-card > * {
+.topic-card>* {
     position: relative;
     z-index: 1;
 }

@@ -579,17 +579,12 @@ onBeforeUnmount(() => {
 <template>
   <main class="dojo-training-page mx-auto max-w-2xl px-6 py-12">
 
-    <div class="mb-6">
-      <BackLink />
-    </div>
+    <!-- <BackLink /> -->
 
     <header class="dojo-training-header space-y-4">
-      <TypewriterTitleBlock
-        :heading-text="title || `Sentence Dojo - ${levelTitles[slug]}`"
+      <TypewriterTitleBlock :heading-text="title || `Sentence Dojo - ${levelTitles[slug]}`"
         subheading-text="Read the Chinese and type the full sentence in Chinese."
-        heading-class="text-2xl font-semibold tracking-tight text-gray-900"
-        subheading-class="text-sm text-gray-600"
-      />
+        heading-class="text-2xl font-semibold tracking-tight text-gray-900" subheading-class="text-sm text-gray-600" />
     </header>
 
     <section :class="[
@@ -782,14 +777,8 @@ onBeforeUnmount(() => {
               </p>
             </div>
 
-            <QuizCompletionFlipStats
-              correct-label="Hint-Free"
-              incorrect-label="Hints Used"
-              :correct="hintFreeCount"
-              :incorrect="hintsUsedCount"
-              :time="formattedElapsedTime"
-              :xp-earned="animatedXpEarned"
-            />
+            <QuizCompletionFlipStats correct-label="Hint-Free" incorrect-label="Hints Used" :correct="hintFreeCount"
+              :incorrect="hintsUsedCount" :time="formattedElapsedTime" :xp-earned="animatedXpEarned" />
 
             <div class="pt-2 space-y-3">
               <button

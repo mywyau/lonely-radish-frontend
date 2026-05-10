@@ -124,8 +124,7 @@ onMounted(async () => {
 <template>
   <main class="topics-page max-w-4xl mx-auto py-12 px-4 space-y-10">
 
-    <BackLink to="/" />
-
+    <!-- <BackLink to="/" /> -->
 
     <header class="rounded-lg header-card">
       <h1 class="topic-heading">Topics</h1>

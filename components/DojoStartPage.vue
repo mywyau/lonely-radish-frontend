@@ -21,16 +21,13 @@ const showAdvancedTips = ref(false)
 
 <template>
   <main class="quiz-intro-page max-w-xl mx-auto px-4 py-16 space-y-10">
-    <BackLink />
+
+    <!-- <!-- <BackLink /> --> -->
 
     <section class="quiz-card text-center space-y-6">
-      <TypewriterTitleBlock
-        :heading-text="props.heading"
-        :subheading-text="props.description"
+      <TypewriterTitleBlock :heading-text="props.heading" :subheading-text="props.description"
         heading-class="text-3xl font-semibold text-gray-900 level-heading"
-        subheading-class="text-black level-subheading"
-        gap="1.5rem"
-      />
+        subheading-class="text-black level-subheading" gap="1.5rem" />
 
       <p v-if="props.guestNote" class="guest-note">
         {{ props.guestNote }}
@@ -48,17 +45,14 @@ const showAdvancedTips = ref(false)
         </div>
 
         <div class="tips-grid">
-          <article
-            v-for="rule in props.xpRules"
-            :key="`${rule.action}-${rule.xp}`"
-            class="tip-card"
-          >
+          <article v-for="rule in props.xpRules" :key="`${rule.action}-${rule.xp}`" class="tip-card">
             <h3 class="tip-card-title">{{ rule.action }}</h3>
             <p class="tip-card-body">{{ rule.xp }}</p>
           </article>
         </div>
 
-        <button class="tips-toggle" :class="`theme-${props.theme ?? 'blue'}`" type="button" @click="showAdvancedTips = !showAdvancedTips">
+        <button class="tips-toggle" :class="`theme-${props.theme ?? 'blue'}`" type="button"
+          @click="showAdvancedTips = !showAdvancedTips">
           {{ showAdvancedTips ? 'Hide extra tips' : 'See keyboard and tips' }}
         </button>
 

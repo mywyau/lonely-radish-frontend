@@ -10,7 +10,7 @@ definePageMeta({
 <template>
   <main class="max-w-3xl mx-auto px-4 py-16 space-y-10">
 
-    <BackLink />
+    <!-- <!-- <BackLink /> --> -->
 
     <header class="space-y-3">
       <h1 class="text-3xl font-semibold">

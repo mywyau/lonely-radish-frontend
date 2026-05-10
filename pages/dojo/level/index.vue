@@ -59,29 +59,23 @@ function cycleLevelMode(levelId: string, direction: 1 | -1) {
       </NuxtLink>
     </div> -->
 
-    <div class="mb-6">
-      <BackLink />
-    </div>
+    <!-- <BackLink /> -->
 
     <!-- Header -->
     <header class="text-center space-y-3 max-w-2xl mx-auto">
-      <TypewriterTitleBlock
-        heading-text="Level Dojo"
+      <TypewriterTitleBlock heading-text="Level Dojo"
         subheading-text="Strengthen your phonetic and typing proficiency with our exercises"
-        heading-class="text-xl font-semibold dojo-page-heading"
-        subheading-class="dojo-page-subheading"
-        gap="0.75rem"
-      />
+        heading-class="text-xl font-semibold dojo-page-heading" subheading-class="dojo-page-subheading" gap="0.75rem" />
     </header>
 
     <!-- Grid -->
     <ul class="grid grid-cols-1 sm:grid-cols-2 gap-6">
 
       <li v-for="quizLevel in jyutPingQuizSelectMetaData" :key="quizLevel.id" class="dojo-level-card" :class="[
-          (!canEnterLevel(quizLevel) || quizLevel.comingSoon)
-            ? 'level-locked'
-            : ''
-        ]">
+        (!canEnterLevel(quizLevel) || quizLevel.comingSoon)
+          ? 'level-locked'
+          : ''
+      ]">
 
         <!-- Title -->
         <div class="space-y-2">
@@ -105,8 +99,7 @@ function cycleLevelMode(levelId: string, direction: 1 | -1) {
               <ChevronLeft class="h-5 w-5" aria-hidden="true" />
             </button>
 
-            <NuxtLink :to="getSelectedLevelMode(quizLevel.id).to(quizLevel.id)"
-              class="level-btn"
+            <NuxtLink :to="getSelectedLevelMode(quizLevel.id).to(quizLevel.id)" class="level-btn"
               :class="getSelectedLevelMode(quizLevel.id).buttonClass">
               {{ getSelectedLevelMode(quizLevel.id).label }}
             </NuxtLink>
@@ -116,7 +109,8 @@ function cycleLevelMode(levelId: string, direction: 1 | -1) {
             </button>
           </div>
 
-          <div class="mode-dots" :aria-label="`Mode ${getSelectedLevelModeIndex(quizLevel.id) + 1} of ${levelQuizModes.length}`">
+          <div class="mode-dots"
+            :aria-label="`Mode ${getSelectedLevelModeIndex(quizLevel.id) + 1} of ${levelQuizModes.length}`">
             <span v-for="(mode, modeIndex) in levelQuizModes" :key="`${quizLevel.id}-${mode.id}`" class="mode-dot"
               :class="{ 'is-active': modeIndex === getSelectedLevelModeIndex(quizLevel.id) }" />
           </div>
@@ -186,7 +180,7 @@ function cycleLevelMode(levelId: string, direction: 1 | -1) {
   transform-origin: center;
 }
 
-.dojo-level-card > * {
+.dojo-level-card>* {
   position: relative;
   z-index: 1;
 }

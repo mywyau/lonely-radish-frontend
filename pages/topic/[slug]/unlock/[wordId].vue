@@ -151,7 +151,7 @@ onMounted(loadData)
 <template>
   <main class="unlock-page max-w-3xl mx-auto px-4 py-10 sm:py-12 space-y-8">
 
-    <BackLink :to="`/topic/words/${slug}/v2`" />
+    <!-- <BackLink :to="`/topic/words/${slug}/v2`" /> -->
 
     <header class="rounded-lg header-card">
       <h1 class="page-heading inline-flex items-center gap-2"><TaroLockIcon size="h-5 w-5" /> Unlock word</h1>

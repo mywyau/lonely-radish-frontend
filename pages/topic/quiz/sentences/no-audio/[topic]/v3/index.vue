@@ -573,7 +573,7 @@ onBeforeUnmount(() => {
 <template>
   <main class="max-w-2xl mx-auto px-4 py-16 space-y-8">
 
-    <BackLink />
+    <!-- <BackLink /> -->
 
     <section class="text-center space-y-4">
       <h1 class="text-2xl font-semibold level-heading">
@@ -731,15 +731,10 @@ onBeforeUnmount(() => {
             </div>
           </transition>
 
-            <transition name="card-fade" appear>
-              <QuizCompletionFlipStats
-                :correct="score"
-                :incorrect="incorrectCount"
-                :time="formattedElapsedTime"
-                :xp-earned="animatedXpEarned"
-                :xp-lost="animatedXpLost"
-              />
-            </transition>
+          <transition name="card-fade" appear>
+            <QuizCompletionFlipStats :correct="score" :incorrect="incorrectCount" :time="formattedElapsedTime"
+              :xp-earned="animatedXpEarned" :xp-lost="animatedXpLost" />
+          </transition>
 
           <div class="pt-2 space-y-3">
             <NuxtLink :to="`/topics/quiz`"

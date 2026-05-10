@@ -218,9 +218,7 @@ onMounted(() => {
 
 <template>
   <div v-if="ready" class="writing-page mx-auto max-w-4xl px-3 py-5 sm:px-6 sm:py-8 lg:px-8">
-    <div class="mb-4 sm:mb-6">
-      <BackLink />
-    </div>
+    <!-- <BackLink /> -->
 
     <section class="hero-card rounded-2xl p-4 sm:p-6">
       <p class="page-eyebrow text-xs font-medium uppercase tracking-wide sm:text-sm">

@@ -93,9 +93,7 @@ watchEffect(() => {
 <template>
   <main class="max-w-2xl mx-auto px-4 py-16 space-y-12">
 
-    <div class="text-left">
-      <BackLink />
-    </div>
+    <!-- <!-- <BackLink /> --> -->
 
     <header class="space-y-3 text-center">
       <h1 class="text-3xl font-semibold">
@@ -128,11 +126,13 @@ watchEffect(() => {
     <nav v-if="totalPages > 1" class="pagination-wrapper flex flex-col items-center gap-3 pt-8"
       aria-label="Patch notes pagination">
       <div class="flex justify-center items-center gap-1.5 sm:gap-3">
-        <button v-if="showFirstButton" @click="goToPage(1)" :disabled="currentPage === 1" class="pagination-jump" aria-label="First page">
+        <button v-if="showFirstButton" @click="goToPage(1)" :disabled="currentPage === 1" class="pagination-jump"
+          aria-label="First page">
           <ChevronsLeft class="h-4 w-4" aria-hidden="true" />
         </button>
 
-        <button @click="goToPage(currentPage - 1)" :disabled="currentPage === 1" class="pagination-arrow" aria-label="Previous page">
+        <button @click="goToPage(currentPage - 1)" :disabled="currentPage === 1" class="pagination-arrow"
+          aria-label="Previous page">
           <ChevronLeft class="h-4 w-4" aria-hidden="true" />
         </button>
 
@@ -141,7 +141,8 @@ watchEffect(() => {
           {{ page }}
         </button>
 
-        <button @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages" class="pagination-arrow" aria-label="Next page">
+        <button @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages" class="pagination-arrow"
+          aria-label="Next page">
           <ChevronRight class="h-4 w-4" aria-hidden="true" />
         </button>
 

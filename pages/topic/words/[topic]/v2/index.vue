@@ -217,7 +217,7 @@ onMounted(async () => {
 <template>
   <main class="topic-page max-w-4xl mx-auto px-4 py-10 sm:py-12 space-y-10">
 
-    <BackLink to="/topics" />
+    <!-- <BackLink to="/topics" /> -->
 
     <header class="rounded-lg header-card">
       <h1 class="topic-heading">{{ topic.title }}</h1>

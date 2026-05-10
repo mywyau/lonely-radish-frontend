@@ -580,7 +580,7 @@ onBeforeUnmount(() => {
 <template>
   <main class="max-w-2xl mx-auto px-4 py-16 space-y-8">
 
-    <BackLink />
+    <!-- <BackLink /> -->
 
     <section class="text-center space-y-4">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-center gap-3">
@@ -754,13 +754,8 @@ onBeforeUnmount(() => {
             </transition>
 
             <transition name="card-fade" appear>
-              <QuizCompletionFlipStats
-                :correct="score"
-                :incorrect="incorrectCount"
-                :time="formattedElapsedTime"
-                :xp-earned="animatedXpEarned"
-                :xp-lost="animatedXpLost"
-              />
+              <QuizCompletionFlipStats :correct="score" :incorrect="incorrectCount" :time="formattedElapsedTime"
+                :xp-earned="animatedXpEarned" :xp-lost="animatedXpLost" />
             </transition>
 
             <div class="pt-2 space-y-3">

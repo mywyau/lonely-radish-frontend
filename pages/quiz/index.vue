@@ -92,9 +92,7 @@ function cycleLevelMode(levelId: string, direction: 1 | -1) {
 <template>
   <main class="levels-page max-w-4xl mx-auto py-8 px-4 space-y-8">
 
-    <div class="mb-4">
-      <BackLink />
-    </div>
+    <!-- <BackLink /> -->
 
     <!-- Header -->
     <header class="text-center space-y-3 max-w-4xl mx-auto">
@@ -122,12 +120,9 @@ function cycleLevelMode(levelId: string, direction: 1 | -1) {
               {{ quizLevel.title }}
             </h2>
 
-            <div class="topic-icon-wrap" role="img" :aria-label="`${quizLevel.title}: ${getLevelTopicIcon(quizLevel.id).label}`">
-              <component
-                :is="getLevelTopicIcon(quizLevel.id).icon"
-                class="topic-icon"
-                aria-hidden="true"
-              />
+            <div class="topic-icon-wrap" role="img"
+              :aria-label="`${quizLevel.title}: ${getLevelTopicIcon(quizLevel.id).label}`">
+              <component :is="getLevelTopicIcon(quizLevel.id).icon" class="topic-icon" aria-hidden="true" />
             </div>
           </div>
 
@@ -161,7 +156,8 @@ function cycleLevelMode(levelId: string, direction: 1 | -1) {
             </button>
           </div>
 
-          <div class="mode-dots" :aria-label="`Mode ${getSelectedLevelModeIndex(quizLevel.id) + 1} of ${levelQuizModes.length}`">
+          <div class="mode-dots"
+            :aria-label="`Mode ${getSelectedLevelModeIndex(quizLevel.id) + 1} of ${levelQuizModes.length}`">
             <span v-for="(mode, modeIndex) in levelQuizModes" :key="`${quizLevel.id}-${mode.id}`" class="mode-dot"
               :class="{ 'is-active': modeIndex === getSelectedLevelModeIndex(quizLevel.id) }" />
           </div>
@@ -231,7 +227,7 @@ function cycleLevelMode(levelId: string, direction: 1 | -1) {
   transform-origin: center;
 }
 
-.level-card > * {
+.level-card>* {
   position: relative;
   z-index: 1;
 }
@@ -380,5 +376,4 @@ function cycleLevelMode(levelId: string, direction: 1 | -1) {
 .mode-dot.is-active {
   background: rgba(31, 41, 55, 0.7);
 }
-
 </style>

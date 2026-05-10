@@ -447,19 +447,21 @@ async function runToneCheck() {
 <template>
   <div class="min-h-screen text-gray-900">
     <div class="mx-auto max-w-3xl px-4 py-10">
-      <div class="mb-4">
-        <BackLink />
-      </div>
+      <!-- <BackLink /> -->
 
       <h1 class="text-3xl font-bold">Tone Garden</h1>
 
       <div class="mt-6 rounded-2xl border border-fuchsia-100 bg-white/90 p-5 shadow-sm">
         <div class="flex justify-end">
           <div class="flex rounded-full bg-gray-100 p-1" aria-label="Audio voice">
-            <button type="button" class="rounded-full px-3 py-1 text-xs font-medium transition" :class="selectedAudioVoice === 'male' ? 'bg-blue-100 text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-800'" :aria-pressed="selectedAudioVoice === 'male'" @click="setAudioVoice('male')">
+            <button type="button" class="rounded-full px-3 py-1 text-xs font-medium transition"
+              :class="selectedAudioVoice === 'male' ? 'bg-blue-100 text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-800'"
+              :aria-pressed="selectedAudioVoice === 'male'" @click="setAudioVoice('male')">
               Male
             </button>
-            <button type="button" class="rounded-full px-3 py-1 text-xs font-medium transition" :class="selectedAudioVoice === 'female' ? 'bg-pink-100 text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-800'" :aria-pressed="selectedAudioVoice === 'female'" @click="setAudioVoice('female')">
+            <button type="button" class="rounded-full px-3 py-1 text-xs font-medium transition"
+              :class="selectedAudioVoice === 'female' ? 'bg-pink-100 text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-800'"
+              :aria-pressed="selectedAudioVoice === 'female'" @click="setAudioVoice('female')">
               Female
             </button>
           </div>

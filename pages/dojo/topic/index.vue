@@ -78,7 +78,7 @@ function cycleTopicMode(topicId: string, direction: 1 | -1) {
 <template>
   <main class="topics-page max-w-4xl mx-auto py-10 px-2 space-y-10">
 
-    <BackLink />
+    <!-- <BackLink /> -->
 
     <header class="text-center space-y-3 max-w-2xl mx-auto">
       <TypewriterTitleBlock heading-text="Topic Dojo"

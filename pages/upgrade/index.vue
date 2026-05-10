@@ -50,14 +50,15 @@ function upgrade(plan: 'monthly' | 'yearly') {
 
     <div class="max-w-3xl mx-auto">
 
-      <BackLink />
+      <!-- <BackLink /> -->
 
       <!-- Card -->
       <div class="p-6 md:p-10 text-center space-y-6">
 
         <!-- Icon -->
         <div class="flex justify-center">
-          <div class="w-20 h-20 flex items-center justify-center rounded-full text-[#7A6FCB]" style="background-color:#EAB8E4;">
+          <div class="w-20 h-20 flex items-center justify-center rounded-full text-[#7A6FCB]"
+            style="background-color:#EAB8E4;">
             <Sparkles class="h-10 w-10" aria-hidden="true" />
           </div>
         </div>

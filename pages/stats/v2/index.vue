@@ -151,7 +151,7 @@ onMounted(async () => {
 
 <template>
   <main class="max-w-4xl mx-auto px-4 py-16 space-y-12">
-    <BackLink />
+    <!-- <BackLink /> -->
 
     <div v-if="loading" class="text-center text-gray-400">
       Loading stats...

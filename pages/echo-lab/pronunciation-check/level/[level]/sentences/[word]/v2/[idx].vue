@@ -473,10 +473,10 @@ onUnmounted(() => {
         </button>
       </div> -->
 
-      <div class="mb-6 flex w-full items-center justify-between">
-        <BackLink />
+      <!-- <BackLink /> -->
 
-        <div v-if="supported" class="flex rounded-full bg-gray-100 p-1" aria-label="Audio voice">
+      <div v-if="supported" class="flex justify-end">
+        <div class="flex rounded-full bg-gray-100 p-1" aria-label="Audio voice">
           <button type="button" class="rounded-full px-3 py-1 text-xs font-medium transition"
             :class="selectedAudioVoice === 'male' ? 'bg-blue-100 text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-800'"
             :aria-pressed="selectedAudioVoice === 'male'" @click="setAudioVoice('male')">

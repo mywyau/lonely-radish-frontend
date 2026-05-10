@@ -9,7 +9,7 @@ definePageMeta({
 <template>
   <main class="contact-page max-w-xl mx-auto px-4 py-16 space-y-10">
 
-    <BackLink />
+    <!-- <BackLink /> -->
 
     <!-- Contact Card -->
     <section class="contact-card text-center space-y-4">

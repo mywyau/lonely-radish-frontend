@@ -28,9 +28,7 @@ definePageMeta({
       </button>
     </div> -->
 
-    <div class="text-left">
-      <BackLink />
-    </div>
+    <!-- <!-- <BackLink /> --> -->
 
     <h1 class="flex items-center justify-center gap-3 text-3xl text-black font-semibold">
       <Construction class="size-8" aria-hidden="true" />

@@ -58,7 +58,7 @@ const canEnterLevel = () => true
 
 <template>
   <main class="quiz-intro-page max-w-xl mx-auto px-4 py-16 space-y-10">
-    <BackLink />
+    <!-- <BackLink /> -->
 
     <section v-if="authReady && !canEnterLevel()" class="quiz-card text-center space-y-4">
       <h1 class="text-2xl font-semibold text-gray-900">

@@ -70,7 +70,7 @@ const canEnterLevel = () => {
     <!-- ← Back -->
     <!-- </NuxtLink> -->
 
-    <BackLink />
+    <!-- <BackLink /> -->
 
     <section v-if="authReady && !canEnterLevel()" class="quiz-card text-center space-y-4">
       <h1 class="text-2xl font-semibold text-gray-900">

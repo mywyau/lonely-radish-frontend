@@ -9,16 +9,14 @@ definePageMeta({
 <template>
   <main class="dojo-home max-w-3xl mx-auto py-20 px-6 space-y-10">
 
-    <BackLink />
+    <!-- <BackLink /> -->
 
     <!-- Header -->
     <div class="text-center space-y-4">
-      <TypewriterTitleBlock
-        heading-text="Jyutping Dojo"
+      <TypewriterTitleBlock heading-text="Jyutping Dojo"
         subheading-text="Strengthen your Cantonese phonetic skills with some training."
         heading-class="text-3xl sm:text-4xl font-semibold text-black dojo-heading"
-        subheading-class="text-gray-700 max-w-lg mx-auto dojo-subheading"
-      />
+        subheading-class="text-gray-700 max-w-lg mx-auto dojo-subheading" />
     </div>
 
     <!-- Training Options -->

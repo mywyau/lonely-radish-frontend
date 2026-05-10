@@ -220,7 +220,7 @@ onMounted(async () => {
 <template>
   <main class="level-page max-w-4xl mx-auto px-4 py-10 sm:py-12 space-y-10">
 
-    <BackLink to="/levels" />
+    <!-- <BackLink to="/levels" /> -->
 
     <header class="rounded-lg header-card">
       <h1 class="level-heading">{{ levelCdnData.title }}</h1>
