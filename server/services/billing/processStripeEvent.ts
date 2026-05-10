@@ -119,8 +119,25 @@ function isInvoiceEventType(eventType: string): boolean {
   }
 }
 
+function isCheckoutSessionEventType(eventType: string): boolean {
+  return eventType === "checkout.session.completed";
+}
+
+function extractSubscriptionIdFromCheckoutSession(
+  session: Stripe.Checkout.Session,
+): string | null {
+  if (typeof session.subscription === "string") {
+    return session.subscription;
+  }
+
+  if (session.subscription && typeof session.subscription.id === "string") {
+    return session.subscription.id;
+  }
+
+  return null;
+}
+
 function extractSubscriptionIdFromInvoice(invoice: Stripe.Invoice): string | null {
-  
   if (typeof invoice.subscription === "string") {
     return invoice.subscription;
   }
@@ -235,6 +252,30 @@ export async function processStripeEvent(
         processed: true,
         eventType,
       };
+    }
+
+    if (isCheckoutSessionEventType(eventType)) {
+      const session = stripeEvent.data.object as Stripe.Checkout.Session;
+      const stripeSubscriptionId =
+        extractSubscriptionIdFromCheckoutSession(session);
+
+      if (!stripeSubscriptionId) {
+        if (session.mode !== "subscription") {
+          await markStripeEventProcessed(eventId);
+
+          return {
+            ok: true,
+            processed: true,
+            eventType,
+          };
+        }
+
+        throw new Error(
+          `Could not extract subscription id from checkout session event ${eventId}`,
+        );
+      }
+
+      await reconcileSubscriptionById(stripeSubscriptionId);
     }
 
     if (isSubscriptionEventType(eventType)) {
