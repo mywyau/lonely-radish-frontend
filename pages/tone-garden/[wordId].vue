@@ -1,5 +1,21 @@
 <script setup lang="ts">
-import { playCorrectJingle, playGoodJingle } from "~/utils/sounds"
+import {
+  AudioLines,
+  CircleCheck,
+  Languages,
+  LoaderCircle,
+  Mic,
+  Play,
+  Sparkles,
+  Sprout,
+  Square,
+  Trophy,
+  TriangleAlert,
+  User,
+  UserRound,
+  Volume2,
+} from "@lucide/vue"
+import { playCorrectJingle, playGoodJingle, playIncorrectJingle } from "~/utils/sounds"
 definePageMeta({
   ssr: false,
   middleware: "logged-in",
@@ -450,92 +466,144 @@ async function runToneCheck() {
 
     <div class="mx-auto max-w-4xl px-4 py-10">
 
-      <h1 class="text-3xl font-bold">Tone Garden</h1>
+      <div class="flex items-center gap-3">
+        <span class="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-[#CDE8C9] text-gray-900 shadow-sm" aria-hidden="true">
+          <Sprout class="h-6 w-6" />
+        </span>
+        <div>
+          <h1 class="text-3xl font-bold">Tone Garden</h1>
+          <p class="mt-1 flex items-center gap-1.5 text-sm text-gray-600">
+            <AudioLines class="h-4 w-4 text-gray-500" aria-hidden="true" />
+            Listen, record, then check your Cantonese tone shape.
+          </p>
+        </div>
+      </div>
 
       <div class="mt-6 rounded-2xl border border-fuchsia-100 bg-white/90 p-5 shadow-sm">
         <div class="flex justify-end">
           <div class="flex rounded-full bg-gray-100 p-1" aria-label="Audio voice">
-            <button type="button" class="rounded-full px-3 py-1 text-xs font-medium transition"
+            <button type="button" class="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition"
               :class="selectedAudioVoice === 'male' ? 'bg-blue-100 text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-800'"
               :aria-pressed="selectedAudioVoice === 'male'" @click="setAudioVoice('male')">
-              Male
+              <User class="h-3.5 w-3.5" aria-hidden="true" />
+              <span>Male</span>
             </button>
-            <button type="button" class="rounded-full px-3 py-1 text-xs font-medium transition"
+            <button type="button" class="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition"
               :class="selectedAudioVoice === 'female' ? 'bg-pink-100 text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-800'"
               :aria-pressed="selectedAudioVoice === 'female'" @click="setAudioVoice('female')">
-              Female
+              <UserRound class="h-3.5 w-3.5" aria-hidden="true" />
+              <span>Female</span>
             </button>
           </div>
         </div>
 
-        <p class="mt-3 text-xs uppercase tracking-wide text-gray-500">Target Chinese</p>
+        <p class="mt-3 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-gray-500">
+          <Languages class="h-3.5 w-3.5" aria-hidden="true" />
+          <span>Target Chinese</span>
+        </p>
         <p class="text-3xl font-semibold">{{ expectedChinese || "—" }}</p>
 
-        <p class="mt-3 text-xs uppercase tracking-wide text-gray-500">Target Jyutping</p>
+        <p class="mt-3 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-gray-500">
+          <AudioLines class="h-3.5 w-3.5" aria-hidden="true" />
+          <span>Target Jyutping</span>
+        </p>
         <p class="text-xl">{{ expectedJyutping || "—" }}</p>
 
         <div class="mt-4 flex flex-wrap items-center gap-3">
           <button
-            class="rounded-lg bg-[#D6A3D1] px-4 py-2 text-sm font-medium text-gray-900 transition hover:brightness-105 disabled:opacity-50"
+            class="inline-flex items-center justify-center gap-2 rounded-lg bg-[#D6A3D1] px-4 py-2 text-sm font-medium text-gray-900 shadow-sm transition hover:brightness-105 active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100"
             :disabled="!referenceAudioUrl" @click="playReferenceAudio">
-            ▶ Play Reference Audio
+            <Volume2 class="h-4 w-4" aria-hidden="true" />
+            <span>Play Reference Audio</span>
           </button>
 
           <button
-            class="rounded-lg bg-[#A8CAE0] px-4 py-2 text-sm font-medium text-gray-900 transition hover:brightness-105 disabled:opacity-50"
+            class="inline-flex items-center justify-center gap-2 rounded-lg bg-[#A8CAE0] px-4 py-2 text-sm font-medium text-gray-900 shadow-sm transition hover:brightness-105 active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100"
             :disabled="recording || loading || !expectedJyutping" @click="startRecording">
-            Start Recording
+            <Mic class="h-4 w-4" aria-hidden="true" />
+            <span>Start Recording</span>
           </button>
 
           <button
-            class="rounded-lg bg-[#F4C2D7] px-4 py-2 text-sm font-medium text-gray-900 transition hover:brightness-105 disabled:opacity-50"
+            class="inline-flex items-center justify-center gap-2 rounded-lg bg-[#F4C2D7] px-4 py-2 text-sm font-medium text-gray-900 shadow-sm transition hover:brightness-105 active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100"
             :disabled="!recording || loading" @click="stopRecording">
-            Stop
+            <Square class="h-4 w-4" aria-hidden="true" />
+            <span>Stop</span>
           </button>
 
           <button
-            class="rounded-lg bg-[#EAB8E4] px-4 py-2 text-sm font-medium text-gray-900 transition hover:brightness-105 disabled:opacity-50"
+            class="inline-flex items-center justify-center gap-2 rounded-lg bg-[#EAB8E4] px-4 py-2 text-sm font-medium text-gray-900 shadow-sm transition hover:brightness-105 active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100"
             :disabled="recording || !recordedBlob || loading || !expectedJyutping" @click="runToneCheck">
-            {{ loading ? "Checking..." : "Run Tone Check" }}
+            <LoaderCircle v-if="loading" class="h-4 w-4 animate-spin" aria-hidden="true" />
+            <Sparkles v-else class="h-4 w-4" aria-hidden="true" />
+            <span>{{ loading ? "Checking..." : "Run Tone Check" }}</span>
           </button>
         </div>
 
-        <p v-if="referenceAudioPath" class="mt-3 text-xs text-gray-500">Reference: {{ referenceAudioPath }}</p>
+        <p v-if="referenceAudioPath" class="mt-3 flex items-center gap-1.5 text-xs text-gray-500">
+          <Play class="h-3.5 w-3.5" aria-hidden="true" />
+          <span>Reference: {{ referenceAudioPath }}</span>
+        </p>
 
-        <p v-else class="mt-3 text-xs text-amber-700">No reference audio found for this word.</p>
+        <p v-else class="mt-3 flex items-center gap-1.5 text-xs text-amber-700">
+          <TriangleAlert class="h-3.5 w-3.5" aria-hidden="true" />
+          <span>No reference audio found for this word.</span>
+        </p>
 
-        <p v-if="recording" class="mt-2 text-sm text-amber-700">Recording... speak now.</p>
+        <p v-if="recording" class="mt-2 flex items-center gap-1.5 text-sm text-amber-700">
+          <Mic class="h-4 w-4" aria-hidden="true" />
+          <span>Recording... speak now.</span>
+        </p>
 
         <audio v-if="recordingUrl" class="mt-3 w-full" controls :src="recordingUrl" />
 
-        <p v-if="errorMessage" class="mt-3 rounded-lg border border-rose-300 bg-rose-100 p-3 text-sm text-rose-700">
-          {{ errorMessage }}
+        <p v-if="errorMessage" class="mt-3 flex items-start gap-2 rounded-lg border border-rose-300 bg-rose-100 p-3 text-sm text-rose-700">
+          <TriangleAlert class="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+          <span>{{ errorMessage }}</span>
         </p>
       </div>
 
       <div v-if="result" class="mt-6 rounded-2xl border border-fuchsia-100 bg-white/90 p-5 shadow-sm">
-        <h2 class="text-xl font-semibold">Result</h2>
+        <h2 class="flex items-center gap-2 text-xl font-semibold">
+          <Trophy class="h-5 w-5 text-gray-700" aria-hidden="true" />
+          <span>Result</span>
+        </h2>
 
         <dl class="mt-4 grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
           <div>
-            <dt class="text-gray-500">Expected Jyutping</dt>
+            <dt class="flex items-center gap-1.5 text-gray-500">
+              <AudioLines class="h-3.5 w-3.5" aria-hidden="true" />
+              <span>Expected Jyutping</span>
+            </dt>
             <dd>{{ result.expectedJyutping }}</dd>
           </div>
           <div>
-            <dt class="text-gray-500">Acoustic Tone Score</dt>
+            <dt class="flex items-center gap-1.5 text-gray-500">
+              <Mic class="h-3.5 w-3.5" aria-hidden="true" />
+              <span>Acoustic Tone Score</span>
+            </dt>
             <dd>{{ result.acousticToneScore ?? "n/a" }}</dd>
           </div>
           <div>
-            <dt class="text-gray-500">Final Tone Score</dt>
+            <dt class="flex items-center gap-1.5 text-gray-500">
+              <Sparkles class="h-3.5 w-3.5" aria-hidden="true" />
+              <span>Final Tone Score</span>
+            </dt>
             <dd>{{ result.toneScore }}</dd>
           </div>
           <div>
-            <dt class="text-gray-500">Overall Score</dt>
+            <dt class="flex items-center gap-1.5 text-gray-500">
+              <CircleCheck class="h-3.5 w-3.5" aria-hidden="true" />
+              <span>Overall Score</span>
+            </dt>
             <dd>{{ result.overallScore }}</dd>
           </div>
         </dl>
 
-        <p class="mt-3 text-sm text-gray-700">{{ result.feedback }}</p>
+        <p class="mt-3 flex items-start gap-2 text-sm text-gray-700">
+          <CircleCheck class="mt-0.5 h-4 w-4 shrink-0 text-green-600" aria-hidden="true" />
+          <span>{{ result.feedback }}</span>
+        </p>
 
         <p class="mt-2 text-xs text-gray-500">
           Extracted pitch contours: {{ extractedPitchContours.length }} syllable bucket(s) · reference contours: {{
