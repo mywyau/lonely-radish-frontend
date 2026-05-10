@@ -5,6 +5,7 @@ definePageMeta({
 })
 
 import { MAX_AUDIO_BYTES, MAX_RECORDING_SECONDS } from "~/config/audio_config"
+import { Mic, Play, RotateCcw, Send, Square, XCircle } from "@lucide/vue"
 
 const route = useRoute()
 const router = useRouter()
@@ -86,6 +87,7 @@ const transcript = ref("")
 const feedback = ref("")
 const score = ref<number | null>(null)
 const recordingUrl = ref<string | null>(null)
+const recordingAudio = ref<HTMLAudioElement | null>(null)
 const mediaRecorder = ref<MediaRecorder | null>(null)
 const streamRef = ref<MediaStream | null>(null)
 const recorderMimeType = ref("")
@@ -101,6 +103,14 @@ const animatedPercent = ref(0)
 
 const recordedBlob = ref<Blob | null>(null)
 const cancelRequested = ref(false)
+
+async function replayRecording() {
+  const audio = recordingAudio.value
+  if (!audio) return
+
+  audio.currentTime = 0
+  await audio.play()
+}
 
 const progress = computed(() => {
   return (recordingTime.value / MAX_RECORDING_SECONDS) * 100
@@ -549,9 +559,11 @@ onUnmounted(() => {
 
         <div class="flex flex-col items-center gap-8">
           <button v-if="!recording && !recordingUrl" :disabled="loading || !practiceTarget || !canUseEchoLab"
-            @click="startRecording" class="px-4 py-2 bg-black font-semibold rounded disabled:opacity-50">
+            @click="startRecording"
+            class="inline-flex items-center gap-2 rounded-2xl bg-black px-5 py-3 text-sm font-semibold shadow-sm ring-1 ring-black/10 transition hover:brightness-125 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:brightness-100">
+            <Mic class="h-4 w-4 text-[#7ec6f3]" aria-hidden="true" />
             <span
-              class="bg-gradient-to-r from-[#7ec6f3] via-[#5aaee6] to-[#3f8fd8] bg-clip-text text-transparent hover:brightness-125 transition">
+              class="bg-gradient-to-r from-[#7ec6f3] via-[#5aaee6] to-[#3f8fd8] bg-clip-text text-transparent">
               Start Recording
             </span>
           </button>
@@ -579,32 +591,41 @@ onUnmounted(() => {
             </div>
           </div>
 
-          <div v-if="recordingUrl" class="flex flex-col items-center gap-2">
-            <p class="text-sm text-gray-500">Your recording</p>
-            <audio :src="recordingUrl" controls class="w-64" />
+          <div v-if="recordingUrl" class="flex flex-col items-center gap-3 rounded-2xl border border-gray-200 bg-white/80 p-4 shadow-sm">
+            <p class="text-sm font-medium text-gray-600">Your recording</p>
+            <audio ref="recordingAudio" :src="recordingUrl" controls class="w-64" />
+            <button type="button" @click="replayRecording" :disabled="loading"
+              class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-800 shadow-sm transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50">
+              <Play class="h-4 w-4 text-[#5aaee6]" aria-hidden="true" />
+              Replay recording
+            </button>
           </div>
 
           <div v-if="recording" class="flex items-center gap-3">
 
             <button @click="stopRecording" :disabled="loading"
-              class="px-4 py-2 bg-red-500 text-black font-semibold rounded hover:brightness-125 transition">
+              class="inline-flex items-center gap-2 rounded-2xl bg-red-500 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50">
+              <Square class="h-4 w-4 fill-current" aria-hidden="true" />
               Stop Recording
             </button>
 
             <button @click="cancelRecording" :disabled="loading"
-              class="px-4 py-2 bg-gray-300 text-black font-semibold rounded hover:brightness-110 transition">
+              class="inline-flex items-center gap-2 rounded-2xl bg-gray-200 px-5 py-3 text-sm font-semibold text-gray-800 shadow-sm transition hover:bg-gray-300 disabled:cursor-not-allowed disabled:opacity-50">
+              <XCircle class="h-4 w-4" aria-hidden="true" />
               Cancel Recording
             </button>
           </div>
 
           <div v-if="recordingUrl && !recording && !feedback" class="flex items-center gap-3">
             <button @click="submitRecording" :disabled="loading || !canUseEchoLab"
-              class="px-4 py-2 bg-black text-white font-semibold rounded hover:brightness-110 transition disabled:opacity-50">
+              class="inline-flex items-center gap-2 rounded-2xl bg-black px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50">
+              <Send class="h-4 w-4 text-[#7ec6f3]" aria-hidden="true" />
               Submit Recording
             </button>
 
             <button @click="tryAgain" :disabled="loading"
-              class="px-4 py-2 bg-gray-300 text-black rounded hover:brightness-110 transition">
+              class="inline-flex items-center gap-2 rounded-2xl bg-gray-200 px-5 py-3 text-sm font-semibold text-gray-800 shadow-sm transition hover:bg-gray-300 disabled:cursor-not-allowed disabled:opacity-50">
+              <RotateCcw class="h-4 w-4" aria-hidden="true" />
               Record Again
             </button>
           </div>
