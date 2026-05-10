@@ -580,7 +580,7 @@ onBeforeUnmount(() => {
 <template>
   <main class="min-h-screen text-gray-900">
     <div class="mx-auto max-w-3xl px-4 py-10">
-      <!-- <BackLink /> -->
+
 
       <header class="mb-6 mt-10">
         <h1 class="text-3xl font-bold">Echo Gecko</h1>
@@ -753,7 +753,7 @@ onBeforeUnmount(() => {
                     {{ row.character ? `Character: ${row.character}` : `Syllable ${row.syllable}` }}
                   </span>
                   <span class="text-gray-500"> (target <span class="text-black font-medium">{{ row.token
-                      }})</span></span>,
+                  }})</span></span>,
                   I heard <span class="font-semibold">{{ row.heardJyutping }}</span>
                   — tone <span class="font-semibold">{{ row.detectedTone ?? "unknown" }}</span>
                 </li>

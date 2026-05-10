@@ -15,10 +15,10 @@ import {
 } from '@/utils/sounds'
 
 import { masteryXp } from '@/config/xp/helpers'
+import { useQuizTimer } from '~/composables/quiz/useQuizTimer'
 import type { LevelData, Word } from '~/types/level/quiz/types'
 import { brandColours } from '~/utils/branding/helpers'
 import { levelTitles } from '~/utils/levels/levels'
-import { useQuizTimer } from '~/composables/quiz/useQuizTimer'
 
 const route = useRoute()
 const slug = computed(() => route.params.slug as string)
@@ -639,8 +639,6 @@ onBeforeUnmount(() => {
 
 <template>
     <main class="max-w-xl mx-auto px-4 py-16 space-y-8">
-
-        <!-- <BackLink /> -->
 
         <section class="text-center space-y-4">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-center gap-3">

@@ -485,7 +485,7 @@ onUnmounted(() => {
         </button>
       </div> -->
 
-      <!-- <BackLink /> -->
+
 
       <div v-if="supported" class="flex justify-end">
         <div class="flex rounded-full bg-gray-100 p-1" aria-label="Audio voice">
@@ -560,8 +560,7 @@ onUnmounted(() => {
             @click="startRecording"
             class="inline-flex items-center gap-2 rounded-2xl bg-black px-5 py-3 text-sm font-semibold shadow-sm ring-1 ring-black/10 transition hover:brightness-125 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:brightness-100">
             <Mic class="h-4 w-4 text-[#7ec6f3]" aria-hidden="true" />
-            <span
-              class="bg-gradient-to-r from-[#7ec6f3] via-[#5aaee6] to-[#3f8fd8] bg-clip-text text-transparent">
+            <span class="bg-gradient-to-r from-[#7ec6f3] via-[#5aaee6] to-[#3f8fd8] bg-clip-text text-transparent">
               Start Recording
             </span>
           </button>
@@ -589,7 +588,8 @@ onUnmounted(() => {
             </div>
           </div>
 
-          <div v-if="recordingUrl" class="flex flex-col items-center gap-3 rounded-2xl border border-gray-200 bg-white/80 p-4 shadow-sm">
+          <div v-if="recordingUrl"
+            class="flex flex-col items-center gap-3 rounded-2xl border border-gray-200 bg-white/80 p-4 shadow-sm">
             <p class="text-sm font-medium text-gray-600">Your recording</p>
             <audio ref="recordingAudio" :src="recordingUrl" controls class="w-64" />
             <button type="button" @click="replayRecording" :disabled="loading"

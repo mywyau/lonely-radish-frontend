@@ -92,7 +92,7 @@ function cycleLevelMode(levelId: string, direction: 1 | -1) {
 <template>
   <main class="levels-page max-w-4xl mx-auto py-8 px-4 space-y-8">
 
-    <!-- <BackLink /> -->
+
 
     <!-- Header -->
     <header class="text-center space-y-3 max-w-4xl mx-auto">

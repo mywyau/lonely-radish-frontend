@@ -59,7 +59,7 @@ function cycleLevelMode(levelId: string, direction: 1 | -1) {
       </NuxtLink>
     </div> -->
 
-    <!-- <BackLink /> -->
+
 
     <!-- Header -->
     <header class="text-center space-y-3 max-w-2xl mx-auto">

@@ -9,7 +9,7 @@ definePageMeta({
 <template>
   <main class="dojo-home max-w-3xl mx-auto py-20 px-6 space-y-10">
 
-    <!-- <BackLink /> -->
+
 
     <!-- Header -->
     <div class="text-center space-y-4">

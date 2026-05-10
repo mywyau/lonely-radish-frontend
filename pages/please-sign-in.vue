@@ -11,8 +11,6 @@ definePageMeta({
 <template>
   <main class="max-w-xl mx-auto px-6 py-20 text-center space-y-10">
 
-    <!-- <!-- <BackLink /> --> -->
-
     <!-- Title -->
     <div class="space-y-8">
       <h1 class="inline-flex items-center justify-center gap-3 text-3xl font-semibold">
@@ -23,8 +21,6 @@ definePageMeta({
       <p class="text-gray-600 text-sm max-w-md mx-auto">
         Sign in to view this content and continue your journey.
       </p>
-
-
     </div>
 
     <!-- CTA -->

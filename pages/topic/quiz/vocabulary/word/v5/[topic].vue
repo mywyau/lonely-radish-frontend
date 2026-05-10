@@ -608,7 +608,7 @@ onBeforeUnmount(() => {
 <template>
   <main class="max-w-xl mx-auto px-4 py-16 space-y-8">
 
-    <!-- <BackLink /> -->
+
 
     <section class="text-center space-y-4">
       <h1 class="text-2xl font-semibold capitalize">

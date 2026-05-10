@@ -668,7 +668,7 @@ onBeforeUnmount(() => {
 <template>
   <main class="max-w-xl mx-auto px-4 py-16 space-y-8">
 
-    <!-- <BackLink /> -->
+
 
     <section class="text-center space-y-4">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-center gap-3">
