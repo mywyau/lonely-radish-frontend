@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { CircleCheck, Keyboard } from '@lucide/vue'
+
 type XpRule = {
   action: string
   xp: string
@@ -59,14 +61,20 @@ const showAdvancedTips = ref(false)
             <section v-if="props.keyboardSetupTips?.length" class="text-left space-y-2">
               <h3 class="tips-title">Keyboard setup</h3>
               <ul class="more-tips-list">
-                <li v-for="tip in props.keyboardSetupTips" :key="tip">{{ tip }}</li>
+                <li v-for="tip in props.keyboardSetupTips" :key="tip">
+                  <Keyboard class="more-tips-icon" aria-hidden="true" />
+                  <span>{{ tip }}</span>
+                </li>
               </ul>
             </section>
 
             <section class="text-left space-y-2">
               <h3 class="tips-title">Before you start</h3>
               <ul class="more-tips-list">
-                <li v-for="tip in props.tips" :key="tip">{{ tip }}</li>
+                <li v-for="tip in props.tips" :key="tip">
+                  <CircleCheck class="more-tips-icon" aria-hidden="true" />
+                  <span>{{ tip }}</span>
+                </li>
               </ul>
             </section>
           </div>
@@ -198,21 +206,22 @@ const showAdvancedTips = ref(false)
 }
 
 .more-tips-list li {
-  position: relative;
-  padding-left: 1rem;
+  display: grid;
+  grid-template-columns: 1.1rem minmax(0, 1fr);
+  align-items: flex-start;
+  gap: 0.5rem;
   font-size: 0.88rem;
   line-height: 1.5;
   color: #374151;
 }
 
-.more-tips-list li::before {
-  content: "•";
-  position: absolute;
-  left: 0;
+.more-tips-icon {
+  width: 1rem;
+  height: 1rem;
+  margin-top: 0.18rem;
   color: #D6A3D1;
+  stroke-width: 2.4;
 }
-
-
 
 .start-btn.theme-purple {
   background: rgba(214, 163, 209, 0.72);

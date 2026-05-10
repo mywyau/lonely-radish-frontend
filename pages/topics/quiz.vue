@@ -221,7 +221,7 @@ onMounted(async () => {
                                 getSelectedTopicMode(topic.id).buttonClass,
                                 { 'pointer-events-none opacity-60': topic.comingSoon || !canEnterTopic(topic) }
                             ]">
-                            <component :is="getSelectedTopicMode(topic.id).icon" class="h-4 w-4 shrink-0"
+                            <component :is="getSelectedTopicMode(topic.id).icon" class="quiz-mode-icon"
                                 aria-hidden="true" />
 
                             <span>
@@ -369,13 +369,13 @@ onMounted(async () => {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: rgba(31, 41, 55, 0.85);
+    color: #374151;
 }
 
 .quiz-topic-icon {
-    width: 1.25rem;
-    height: 1.25rem;
-    stroke-width: 2.25;
+    width: 1.65rem;
+    height: 1.65rem;
+    stroke-width: 2.35;
 }
 
 /* Buttons */
@@ -409,6 +409,14 @@ onMounted(async () => {
         transform 0.18s ease,
         box-shadow 0.18s ease,
         background 0.18s ease;
+}
+
+.quiz-mode-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    flex-shrink: 0;
+    color: #374151;
+    stroke-width: 2.35;
 }
 
 .topic-btn:hover {

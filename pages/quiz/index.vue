@@ -144,7 +144,7 @@ function cycleLevelMode(levelId: string, direction: 1 | -1) {
 
             <NuxtLink :to="getSelectedLevelMode(quizLevel.id).to(quizLevel.id)" class="level-btn"
               :class="getSelectedLevelMode(quizLevel.id).buttonClass">
-              <component :is="getSelectedLevelMode(quizLevel.id).icon" class="h-4 w-4 shrink-0" aria-hidden="true" />
+              <component :is="getSelectedLevelMode(quizLevel.id).icon" class="quiz-mode-icon" aria-hidden="true" />
 
               <span>
                 {{ getSelectedLevelMode(quizLevel.id).label }}
@@ -259,13 +259,13 @@ function cycleLevelMode(levelId: string, direction: 1 | -1) {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: rgba(31, 41, 55, 0.85);
+  color: #374151;
 }
 
 .topic-icon {
-  width: 1.25rem;
-  height: 1.25rem;
-  stroke-width: 2.25;
+  width: 1.65rem;
+  height: 1.65rem;
+  stroke-width: 2.35;
 }
 
 /* Buttons */
@@ -285,6 +285,14 @@ function cycleLevelMode(levelId: string, direction: 1 | -1) {
     transform 0.18s ease,
     box-shadow 0.18s ease,
     background 0.18s ease;
+}
+
+.quiz-mode-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+  color: #374151;
+  stroke-width: 2.35;
 }
 
 /* Colour variations */
