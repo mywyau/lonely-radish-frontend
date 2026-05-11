@@ -1,7 +1,7 @@
 <script setup lang="ts">
 definePageMeta({ ssr: false })
 
-import { useAuth } from '@/composables/useAuth'
+import { normalizeLoginRedirectPath, useAuth } from '@/composables/useAuth'
 import { useMeStateV2 } from '@/composables/useMeStateV2'
 import { onMounted, ref } from 'vue'
 
@@ -30,7 +30,7 @@ onMounted(async () => {
   }
 
   try {
-    await client.handleRedirectCallback()
+    const redirectResult = await client.handleRedirectCallback()
 
     const token = await auth.getAccessToken()
     const user = await client.getUser()
@@ -46,7 +46,9 @@ onMounted(async () => {
     })
 
     await me.resolve({ force: true })
-    await router.replace('/')
+
+    const targetUrl = normalizeLoginRedirectPath(redirectResult.appState?.targetUrl)
+    await router.replace(targetUrl)
   } catch (e) {
     console.error('Login callback failed:', e)
     callbackError.value = e instanceof Error ? e.message : 'Login callback failed'

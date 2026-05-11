@@ -1,3 +1,4 @@
+import { getPleaseSignInRedirect } from "~/utils/auth/signInRedirect";
 import { isLevelId, levelIdToNumbers } from "@/utils/levels/levels";
 import { isComingSoon, isFreeLevel } from "~/utils/levels/permissions";
 
@@ -9,7 +10,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
   await resolve();
 
   if (isLoggedOut.value) {
-    return navigateTo("/please-sign-in");
+    return navigateTo(getPleaseSignInRedirect(to));
   }
 
   if (!isLevelId(slug)) {

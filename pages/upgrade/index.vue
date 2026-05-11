@@ -110,7 +110,7 @@ function upgrade(plan: 'monthly' | 'yearly') {
         </div>
 
         <div v-else class="pt-4 max-w-md mx-auto">
-          <NuxtLink to="/please-sign-in"
+          <NuxtLink :to="{ path: '/please-sign-in', query: { redirect: '/upgrade' } }"
             class="block w-full rounded-xl py-3 px-3 font-medium transition shadow-sm hover:brightness-110 active:scale-[0.98]"
             style="background-color:#A8CAE0;">
             Sign in to choose a plan

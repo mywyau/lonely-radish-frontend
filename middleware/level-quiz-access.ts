@@ -1,3 +1,4 @@
+import { getPleaseSignInRedirect } from "~/utils/auth/signInRedirect";
 import { isLevelId, levelIdToNumbers } from "@/utils/levels/levels";
 import { isComingSoon } from "~/utils/levels/permissions";
 import { isGuestPreviewRoute } from "~/utils/quiz/access";
@@ -22,7 +23,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
   });
 
   if (isLoggedOut.value && !allowGuestPreview) {
-    return navigateTo("/please-sign-in");
+    return navigateTo(getPleaseSignInRedirect(to));
   }
 
   if (isComingSoon(levelNumber)) {

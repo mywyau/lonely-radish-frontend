@@ -1,4 +1,6 @@
-export default defineNuxtRouteMiddleware(() => {
+import { getPleaseSignInRedirect } from "~/utils/auth/signInRedirect";
+
+export default defineNuxtRouteMiddleware((to) => {
   const {
     isLoggedIn,
     isLoggedOut,
@@ -6,7 +8,7 @@ export default defineNuxtRouteMiddleware(() => {
   } = useMeStateV2();
 
   if (isLoggedOut.value) {
-    return navigateTo("/please-sign-in");        
+    return navigateTo(getPleaseSignInRedirect(to));
   }
 
   if (!isLoggedIn.value) {
@@ -16,6 +18,6 @@ export default defineNuxtRouteMiddleware(() => {
   if (isLoggedIn.value) {
     return;
   } else {
-    return navigateTo("/please-sign-in");
+    return navigateTo(getPleaseSignInRedirect(to));
   }
 });

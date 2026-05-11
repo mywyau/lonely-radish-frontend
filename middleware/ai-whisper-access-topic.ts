@@ -1,3 +1,4 @@
+import { getPleaseSignInRedirect } from "~/utils/auth/signInRedirect";
 import { canAccessTopicWord, freeTopics } from "~/utils/topics/permissions";
 
 export default defineNuxtRouteMiddleware(async (to) => {
@@ -13,7 +14,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
   await resolve();
 
   if (isLoggedOut.value) {
-    return navigateTo("/please-sign-in");
+    return navigateTo(getPleaseSignInRedirect(to));
   }
 
   // ✅ Fully free topics

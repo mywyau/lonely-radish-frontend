@@ -1,7 +1,35 @@
-
 import { Auth0Client, type Auth0ClientOptions } from "@auth0/auth0-spa-js";
 
 let auth0Client: Auth0Client | null = null;
+
+export function normalizeLoginRedirectPath(targetUrl?: string | null) {
+  if (!process.client || !targetUrl) return "/";
+
+  if (targetUrl.startsWith("/") && !targetUrl.startsWith("//")) {
+    return targetUrl;
+  }
+
+  try {
+    const url = new URL(targetUrl, window.location.origin);
+
+    if (url.origin !== window.location.origin) {
+      return "/";
+    }
+
+    return `${url.pathname}${url.search}${url.hash}`;
+  } catch {
+    return "/";
+  }
+}
+
+function getCurrentRoutePath() {
+  const route = useRoute();
+  return route.fullPath || `${window.location.pathname}${window.location.search}${window.location.hash}`;
+}
+
+function getLoginRedirectPath(targetUrl?: string | null) {
+  return normalizeLoginRedirectPath(targetUrl || getCurrentRoutePath());
+}
 
 function getClient() {
   if (auth0Client) return auth0Client;
@@ -28,7 +56,6 @@ function getClient() {
 }
 
 export async function useAuth() {
-  
   if (process.server) {
     return {
       client: null,
@@ -78,12 +105,15 @@ export async function useAuth() {
   };
 }
 
-export async function loginWithGoogle() {
+export async function loginWithGoogle(targetUrl?: string | null) {
   if (!process.client) return;
   const { client } = await useAuth();
   if (!client) return;
 
   await client.loginWithRedirect({
+    appState: {
+      targetUrl: getLoginRedirectPath(targetUrl),
+    },
     authorizationParams: {
       connection: "google-oauth2",
       prompt: "select_account",
@@ -91,13 +121,16 @@ export async function loginWithGoogle() {
   });
 }
 
-export async function login() {
+export async function login(targetUrl?: string | null) {
   if (!process.client) return;
 
   const { client } = await useAuth();
   if (!client) return;
 
   await client.loginWithRedirect({
+    appState: {
+      targetUrl: getLoginRedirectPath(targetUrl),
+    },
     authorizationParams: {
       prompt: "select_account",
     },

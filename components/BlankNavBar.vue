@@ -84,8 +84,8 @@ onBeforeUnmount(() => {
 
         <button type="button" class="menu-btn" @click.stop="toggleMenu" aria-label="Open account menu"
           :aria-expanded="menuOpen ? 'true' : 'false'">
-          <X v-if="menuOpen" class="h-5 w-5" aria-hidden="true" />
-          <Menu v-else class="h-5 w-5" aria-hidden="true" />
+          <X v-if="menuOpen" class="h-5 w-5 hover:text-gray-700" aria-hidden="true" />
+          <Menu v-else class="h-5 w-5 hover:text-gray-700" aria-hidden="true" />
         </button>
 
         <div v-if="menuOpen" class="menu-panel">
@@ -425,15 +425,7 @@ onBeforeUnmount(() => {
 .brand-logo {
   display: inline-block;
   transform-origin: center bottom;
-  /* transition:
-    color 160ms ease,
-    transform 160ms ease;
-  will-change: transform; */
 }
-
-/* .brand-logo:hover {
-  animation: hamburgerWiggle 1.2s ease-in-out infinite;
-} */
 
 .menu-btn {
   display: inline-flex;
@@ -446,9 +438,9 @@ onBeforeUnmount(() => {
   transition: transform 160ms ease;
 }
 
-.menu-btn:hover {
+/* .menu-btn:hover {
   animation: hamburgerWiggle 1.2s ease-in-out infinite;
-}
+} */
 
 .menu-btn:active {
   transform: scale(0.98);

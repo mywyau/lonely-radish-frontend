@@ -1,3 +1,4 @@
+import { getPleaseSignInRedirect } from "~/utils/auth/signInRedirect";
 import { isGuestPreviewRoute } from "~/utils/quiz/access";
 
 export default defineNuxtRouteMiddleware(async (to) => {
@@ -15,6 +16,6 @@ export default defineNuxtRouteMiddleware(async (to) => {
   });
 
   if (isLoggedOut.value && !allowGuestPreview) {
-    return navigateTo("/please-sign-in");
+    return navigateTo(getPleaseSignInRedirect(to));
   }
 });
