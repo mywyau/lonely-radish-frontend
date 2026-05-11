@@ -621,8 +621,6 @@ onUnmounted(() => {
 <template>
     <main class="max-w-xl mx-auto px-4 py-16 space-y-8">
 
-
-
         <section class="text-center space-y-4">
             <h1 class="text-2xl font-semibold">
                 {{ pageTitle }} Audio Quiz
@@ -676,11 +674,6 @@ onUnmounted(() => {
                         {{ currentWord.meaning }}
                     </p>
                 </div>
-
-
-                <!-- <div v-if="question?.type === 'audio'" class="text-center">
-                    <AudioButton :key="question.audioKey" :src="getRandomizedAudioSrc(question.audioKey)" autoplay />
-                </div> -->
 
                 <div class="min-h-[50px] space-y-3">
                     <div class="flex items-center justify-center gap-3">
