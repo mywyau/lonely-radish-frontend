@@ -62,6 +62,31 @@ function getTopicColor(topic: Topic, index: number) {
 
 const ITEMS_PER_PAGE = 12
 const currentPage = ref(1)
+const topicAnimationStyles = ref<Record<string, Record<string, string>>>({})
+const isTopicAnimationReady = ref(false)
+
+function generateTopicAnimationStyles() {
+  const nextStyles: Record<string, Record<string, string>> = {}
+
+  paginatedTopics.value.forEach((topic) => {
+    const delay = Math.round(Math.random() * 1100)
+    const duration = Math.round(1100 + Math.random() * 550)
+    const startX = Math.round((Math.random() - 0.5) * 220)
+    const startY = Math.round((Math.random() - 0.5) * 180)
+    const rotation = Math.round((Math.random() - 0.5) * 18)
+
+    nextStyles[topic.id] = {
+      '--topic-fly-delay': `${delay}ms`,
+      '--topic-fly-duration': `${duration}ms`,
+      '--topic-fly-x': `${startX}px`,
+      '--topic-fly-y': `${startY}px`,
+      '--topic-fly-rotation': `${rotation}deg`,
+    }
+  })
+
+  topicAnimationStyles.value = nextStyles
+  isTopicAnimationReady.value = true
+}
 
 const MAX_VISIBLE_PAGES = 3
 
@@ -98,6 +123,7 @@ const showLastButton = computed(() => {
 function goToPage(page: number) {
   if (page < 1 || page > totalPages.value) return
   currentPage.value = page
+  generateTopicAnimationStyles()
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
@@ -113,6 +139,8 @@ const paginatedTopics = computed(() => {
 
 // Resolve auth once on mount (safe + idempotent)
 onMounted(async () => {
+  generateTopicAnimationStyles()
+
   if (!authReady.value) {
     await resolve()
   }
@@ -135,12 +163,13 @@ onMounted(async () => {
 
     <ul class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4">
 
-      <li v-for="(topic, index) in paginatedTopics" :key="topic.id"
+      <li v-for="(topic, index) in paginatedTopics" :key="`${currentPage}-${topic.id}`"
         class="topic-card hover:brightness-110 rounded-lg p-4 space-y-3 transition" :class="[
+          isTopicAnimationReady ? 'topic-card-fly-in' : '',
           topic.comingSoon
             ? 'is-disabled'
             : 'is-active'
-        ]" :style="{ backgroundColor: getTopicColor(topic, index) }">
+        ]" :style="{ backgroundColor: getTopicColor(topic, index), ...topicAnimationStyles[topic.id] }">
 
         <NuxtLink :to="topicLink(topic)" class="block space-y-3 pr-12">
           <span class="topic-icon">
@@ -252,6 +281,39 @@ onMounted(async () => {
   position: relative;
   backdrop-filter: blur(6px);
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.03);
+}
+
+.topic-card-fly-in {
+  opacity: 0;
+  transform: translate(var(--topic-fly-x, 0), var(--topic-fly-y, 0)) rotate(var(--topic-fly-rotation, 0deg)) scale(0.92);
+  animation: topic-fly-in var(--topic-fly-duration, 1200ms) cubic-bezier(0.16, 0.84, 0.28, 1) var(--topic-fly-delay, 0ms) forwards;
+  will-change: opacity, transform;
+}
+
+@keyframes topic-fly-in {
+  0% {
+    opacity: 0;
+    transform: translate(var(--topic-fly-x, 0), var(--topic-fly-y, 0)) rotate(var(--topic-fly-rotation, 0deg)) scale(0.92);
+  }
+
+  70% {
+    opacity: 1;
+    transform: translate(0, 0) rotate(0deg) scale(1.025);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translate(0, 0) rotate(0deg) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .topic-card-fly-in {
+    opacity: 1;
+    transform: none;
+    animation: none;
+    will-change: auto;
+  }
 }
 
 .topic-icon {
