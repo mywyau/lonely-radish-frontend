@@ -328,6 +328,41 @@ const normalizedAnswer = computed(() =>
   normalizeChineseSentence(current.value?.sentence ?? '')
 )
 
+type SentenceCharState = 'idle' | 'correct'
+
+type SentenceCharToken = {
+  char: string
+  state: SentenceCharState
+  comparable: boolean
+}
+
+const sentenceCharTokens = computed<SentenceCharToken[]>(() => {
+  const answer = current.value?.sentence ?? ''
+  const user = normalizedInput.value
+  let normalizedIndex = 0
+
+  return Array.from(answer).map((char) => {
+    const normalizedChar = normalizeChineseSentence(char)
+
+    if (!normalizedChar) {
+      return {
+        char,
+        state: 'idle',
+        comparable: false,
+      }
+    }
+
+    const state: SentenceCharState = user[normalizedIndex] === normalizedChar ? 'correct' : 'idle'
+    normalizedIndex += 1
+
+    return {
+      char,
+      state,
+      comparable: true,
+    }
+  })
+})
+
 const live = computed(() => {
   if (!current.value) return { state: 'idle' as const }
 
@@ -646,9 +681,15 @@ onBeforeUnmount(() => {
                 Sentence
               </div>
 
-              <div class="text-2xl font-medium text-gray-900 leading-relaxed no-copy" @copy.prevent @cut.prevent
+              <div class="flex flex-wrap text-2xl font-medium text-gray-900 leading-relaxed no-copy" @copy.prevent @cut.prevent
                 @contextmenu.prevent @dragstart.prevent @selectstart.prevent>
-                {{ current?.sentence }}
+                <span v-for="(token, i) in sentenceCharTokens" :key="`${current?.sentenceId ?? 'sentence'}-${i}`"
+                  class="transition-colors duration-200" :class="{
+                    'text-green-600 font-semibold': token.state === 'correct',
+                    'text-gray-400': token.comparable && token.state === 'idle',
+                  }">
+                  {{ token.char }}
+                </span>
               </div>
 
               <div class="text-sm text-gray-400 leading-relaxed">
