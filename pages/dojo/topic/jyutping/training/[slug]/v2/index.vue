@@ -74,6 +74,8 @@ type AudioVoice = 'male' | 'female'
 const selectedVoice = useCookie<AudioVoice>('audio-voice', {
   default: () => 'male',
 })
+const playbackRate = ref(1)
+
 const audioDirectory = computed(() => selectedVoice.value === 'female' ? 'audio-female' : 'audio-male')
 const currentAudioSrc = computed(() => {
   if (!current.value?.wordId) return ''
@@ -557,6 +559,7 @@ function playCurrentAudio() {
 
   wordAudio.value.src = currentAudioSrc.value
   wordAudio.value.currentTime = 0
+  wordAudio.value.playbackRate = playbackRate.value
   wordAudio.value.play().catch(() => { })
 }
 
@@ -733,19 +736,9 @@ onBeforeUnmount(() => {
                 type="button" @click="restartSession">
                 New session
               </button> -->
-              <div class="inline-flex items-center rounded-full border border-gray-200 bg-white p-0.5 text-xs">
-                <button type="button" class="rounded-full px-2 py-1 transition" :class="selectedVoice === 'male'
-                  ? 'bg-blue-100 text-gray-900 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-800'" @click="setVoice('male')">
-                  Male
-                </button>
-                <button type="button" class="rounded-full px-2 py-1 transition" :class="selectedVoice === 'female'
-                  ? 'bg-pink-100 text-gray-900 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-800'" @click="setVoice('female')">
-                  Female
-                </button>
-              </div>
-              <AudioButton :key="`audio-${selectedVoice}-${current?.wordId}`" :src="currentAudioSrc" />
+              <DojoAudioSettings :voice="selectedVoice" :playback-rate="playbackRate"
+                @update:voice="setVoice" @update:playback-rate="playbackRate = $event" />
+              <AudioButton :key="`audio-${selectedVoice}-${current?.wordId}`" :src="currentAudioSrc" :playback-rate="playbackRate" />
               <span class="rounded-full bg-white/80 px-3 py-1 text-xs font-medium text-gray-700">
                 {{ formattedElapsedTime }}
               </span>

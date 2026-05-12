@@ -71,7 +71,12 @@ const cdnBase = runtimeConfig.public.cdnBase
 
 type AudioVoice = 'male' | 'female'
 
-const selectedVoice = useState<AudioVoice>('dojo-audio-voice', () => 'male')
+const selectedVoice = useCookie<AudioVoice>('audio-voice', {
+  default: () => 'male',
+  sameSite: 'lax'
+})
+
+const playbackRate = ref(1)
 
 const audioDirectory = computed(() => {
   return selectedVoice.value === 'female'
@@ -551,6 +556,7 @@ function playCurrentAudio() {
   wordAudio.value.pause()
   wordAudio.value.src = currentAudioSrc.value
   wordAudio.value.currentTime = 0
+  wordAudio.value.playbackRate = playbackRate.value
   wordAudio.value.play().catch(() => { })
 }
 
@@ -730,21 +736,10 @@ onBeforeUnmount(() => {
             </div>
 
             <div class="flex flex-wrap items-center gap-2">
-              <div class="flex rounded-full bg-gray-100 p-1">
-                <button type="button" class="rounded-full px-3 py-1 text-xs font-medium transition" :class="selectedVoice === 'male'
-                  ? 'bg-blue-100 text-gray-900 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-800'" @click="setVoice('male')">
-                  Male
-                </button>
+              <DojoAudioSettings :voice="selectedVoice" :playback-rate="playbackRate"
+                @update:voice="setVoice" @update:playback-rate="playbackRate = $event" />
 
-                <button type="button" class="rounded-full px-3 py-1 text-xs font-medium transition" :class="selectedVoice === 'female'
-                  ? 'bg-pink-100 text-gray-900 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-800'" @click="setVoice('female')">
-                  Female
-                </button>
-              </div>
-
-              <AudioButton :key="`${current?.wordId}-${selectedVoice}`" :src="currentAudioSrc" />
+              <AudioButton :key="`${current?.wordId}-${selectedVoice}`" :src="currentAudioSrc" :playback-rate="playbackRate" />
               <span class="rounded-full bg-white/80 px-3 py-1 text-xs font-medium text-gray-700">
                 {{ formattedElapsedTime }}
               </span>
