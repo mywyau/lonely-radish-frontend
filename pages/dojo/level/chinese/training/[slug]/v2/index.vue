@@ -645,7 +645,7 @@ onBeforeUnmount(() => {
       'mt-8',
       showCalculating || showResults || showFinalizeError
         ? 'bg-transparent shadow-none p-0'
-        : 'rounded-2xl p-5 '
+        : 'rounded-2xl p-5'
     ]">
       <div v-if="pending" class="text-sm text-gray-600">
         Loading training words…

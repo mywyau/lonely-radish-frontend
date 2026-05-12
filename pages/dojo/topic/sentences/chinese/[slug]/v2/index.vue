@@ -635,7 +635,7 @@ onBeforeUnmount(() => {
       'mt-8',
       showCalculating || showResults || showFinalizeError
         ? 'bg-transparent shadow-none p-0'
-        : 'dojo-activity-panel rounded-2xl bg-white p-5 shadow-sm'
+        : 'rounded-2xl p-5'
     ]">
       <div v-if="pending" class="text-sm text-gray-600">
         Loading training sentences…
@@ -670,13 +670,13 @@ onBeforeUnmount(() => {
               <DojoAudioSettings :voice="selectedVoice" :playback-rate="playbackRate"
                 @update:voice="setVoice" @update:playback-rate="playbackRate = $event" />
               <AudioButton :key="`audio-${selectedVoice}-${current?.sentenceId}`" :src="currentAudioSrc" :playback-rate="playbackRate" />
-              <span class="rounded-full bg-white/80 px-3 py-1 text-xs font-medium text-gray-700">
+              <span class="px-3 py-1 text-xs font-medium text-gray-700">
                 {{ formattedElapsedTime }}
               </span>
             </div>
           </div>
 
-          <div class="rounded-2xl bg-gray-50 p-5 space-y-5">
+          <div class="rounded-2xl p-5 space-y-5">
             <div class="space-y-2">
               <div class="text-xs uppercase tracking-wide text-gray-500">
                 Sentence
