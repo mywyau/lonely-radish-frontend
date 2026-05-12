@@ -11,6 +11,7 @@ import {
   GraduationCap,
   Layers,
   PenLine,
+  RotateCw,
   TrendingUp,
   UsersRound,
 } from '@lucide/vue'
@@ -189,9 +190,21 @@ onMounted(() => {
 
     <section class="mt-10 sm:mt-12 start-learning-flip hover:brightness-105"
       aria-label="Start learning Cantonese today">
-      <div class="start-learning-scene" :class="{ 'is-flipped': isStartPanelFlipped }" @click="flipStartPanel">
+      <div
+        class="start-learning-scene"
+        :class="{ 'is-flipped': isStartPanelFlipped }"
+        role="button"
+        tabindex="0"
+        :aria-label="isStartPanelFlipped ? 'Flip back to topic options' : 'Flip to level options'"
+        @click="flipStartPanel"
+        @keydown.enter.prevent="flipStartPanel"
+        @keydown.space.prevent="flipStartPanel"
+      >
         <article
-          class="start-learning-face start-learning-face-front rounded-2xl p-5 sm:p-8 brand-cta-topic-bg text-gray-900 shadow-sm">
+          class="start-learning-face start-learning-face-front rounded-2xl p-5 pr-16 sm:p-8 sm:pr-20 brand-cta-topic-bg text-gray-900 shadow-sm">
+          <span class="flip-hint" aria-hidden="true">
+            <RotateCw class="size-5" :stroke-width="2.4" />
+          </span>
           <div class="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <h2 class="text-xl sm:mt-2 sm:text-2xl font-semibold tracking-tight">
@@ -219,7 +232,10 @@ onMounted(() => {
         </article>
 
         <article
-          class="start-learning-face start-learning-face-back rounded-2xl p-5 sm:p-8 brand-cta-level-bg text-gray-900 shadow-sm">
+          class="start-learning-face start-learning-face-back rounded-2xl p-5 pr-16 sm:p-8 sm:pr-20 brand-cta-level-bg text-gray-900 shadow-sm">
+          <span class="flip-hint" aria-hidden="true">
+            <RotateCw class="size-5" :stroke-width="2.4" />
+          </span>
           <div class="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <h2 class="text-xl sm:mt-2 sm:text-2xl font-semibold tracking-tight">
@@ -382,7 +398,22 @@ onMounted(() => {
 }
 
 .flip-hint {
-  align-self: flex-start;
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: rgb(17, 24, 39);
+  opacity: 0.7;
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.start-learning-scene:hover .flip-hint,
+.start-learning-scene:focus-visible .flip-hint {
+  opacity: 1;
+  transform: translateZ(1px) scale(1.08);
 }
 
 .start-learning-copy {
