@@ -17,6 +17,8 @@ type PitchContour = {
   values: number[]
 }
 
+type AudioVoice = 'male' | 'female'
+
 type ToneApiResponse = {
   toneScore: number
   overallScore: number
@@ -47,6 +49,14 @@ const topicSlug = computed(() => route.params.topic as string)
 
 const runtimeConfig = useRuntimeConfig()
 const cdnBase = runtimeConfig.public.cdnBase
+
+const { volume } = useAudioVolume()
+const selectedVoice = useCookie<AudioVoice>('audio-voice', {
+  default: () => 'male',
+  sameSite: 'lax',
+})
+const playbackRate = ref(1)
+const audioDirectory = computed(() => selectedVoice.value === 'female' ? 'audio-female' : 'audio-male')
 
 const { getAccessToken } = await useAuth()
 const token = await getAccessToken()
@@ -103,7 +113,7 @@ const quizSize = computed(() => Math.min(MAX_QUIZ_SIZE, allWords.value.length))
 const progressLabel = computed(() => `${Math.min(currentIndex.value + 1, quizSize.value)} / ${quizSize.value}`)
 const currentWordAudioUrl = computed(() => {
   const id = currentWord.value?.id
-  return id ? `${cdnBase}/audio/${id}.mp3` : ""
+  return id ? `${cdnBase}/${audioDirectory.value}/${id}.mp3` : ""
 })
 
 function stripToneDigit(token: string) {
@@ -338,6 +348,8 @@ async function playCurrentWordAudio() {
   try {
     currentWordAudio?.pause()
     currentWordAudio = new Audio(currentWordAudioUrl.value)
+    currentWordAudio.volume = volume.value
+    currentWordAudio.playbackRate = playbackRate.value
     await currentWordAudio.play()
   } catch (err) {
     console.warn("[tone-gate] failed to play word audio", err)
@@ -547,6 +559,22 @@ watch(
   }
 )
 
+watch(volume, (newVolume) => {
+  if (currentWordAudio) currentWordAudio.volume = newVolume
+})
+
+watch(playbackRate, (newPlaybackRate) => {
+  if (currentWordAudio) currentWordAudio.playbackRate = newPlaybackRate
+})
+
+watch(selectedVoice, () => {
+  currentWordAudio?.pause()
+})
+
+function setVoice(voice: AudioVoice) {
+  selectedVoice.value = voice
+}
+
 watch(rapidMode, (enabled) => {
   if (!enabled) return
   clearNextWordCountdown()
@@ -582,9 +610,13 @@ onBeforeUnmount(() => {
     <div class="mx-auto max-w-3xl px-4 py-10">
 
 
-      <header class="mb-6 mt-10">
-        <h1 class="text-3xl font-bold">Echo Gecko</h1>
-        <p class="mt-1 text-sm text-gray-600">{{ data?.title ?? topicSlug }}</p>
+      <header class="mb-6 mt-10 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h1 class="text-3xl font-bold">Echo Gecko</h1>
+          <p class="mt-1 text-sm text-gray-600">{{ data?.title ?? topicSlug }}</p>
+        </div>
+        <DojoAudioSettings :voice="selectedVoice" :playback-rate="playbackRate" @update:voice="setVoice"
+          @update:playback-rate="playbackRate = $event" />
       </header>
 
       <section class="rounded-2xl p-5 sm:p-6"
