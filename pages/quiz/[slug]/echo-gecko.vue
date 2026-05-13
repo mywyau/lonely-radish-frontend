@@ -40,6 +40,7 @@ const GOOD_JINGLE_MIN_SCORE = 25
 const JINGLE_DELAY_MS = 400
 const SUCCESS_MESSAGE_MS = 20000
 const MAX_QUIZ_SIZE = 10
+const SKIP_UNLOCK_ATTEMPTS = 5
 const FINAL_SCREEN_BUFFER_MS = 250
 const FINAL_SCREEN_MIN_DELAY_MS = 2200
 const FINAL_SCREEN_MAX_DELAY_MS = 4000
@@ -75,6 +76,7 @@ const allWords = computed<QuizWord[]>(() => {
 
 const quizWords = ref<QuizWord[]>([])
 const currentIndex = ref(0)
+const currentWordAttemptCount = ref(0)
 const passedCount = ref(0)
 const started = ref(false)
 const finished = ref(false)
@@ -110,6 +112,8 @@ let finalizeQuizTimeout: ReturnType<typeof setTimeout> | null = null
 const currentWord = computed(() => quizWords.value[currentIndex.value] ?? null)
 const quizSize = computed(() => Math.min(MAX_QUIZ_SIZE, allWords.value.length))
 const progressLabel = computed(() => `${Math.min(currentIndex.value + 1, quizSize.value)} / ${quizSize.value}`)
+const canSkipCurrentWord = computed(() => currentWordAttemptCount.value > SKIP_UNLOCK_ATTEMPTS)
+const skipAttemptsRemaining = computed(() => Math.max(0, SKIP_UNLOCK_ATTEMPTS + 1 - currentWordAttemptCount.value))
 const currentWordAudioUrl = computed(() => {
   const id = currentWord.value?.id
   return id ? `${cdnBase}/${audioDirectory.value}/${id}.mp3` : ""
@@ -230,6 +234,7 @@ function advanceToNextWord(options?: { countAsPass?: boolean }) {
   feedback.value = ""
   lastToneScore.value = null
   detectedToneRows.value = []
+  currentWordAttemptCount.value = 0
 }
 
 function invalidateActiveAttempt() {
@@ -371,6 +376,7 @@ function startQuiz() {
   finalizing.value = false
   completionSoundPlayed.value = false
   currentIndex.value = 0
+  currentWordAttemptCount.value = 0
   passedCount.value = 0
   quizWords.value = shuffle(allWords.value).slice(0, quizSize.value)
   elapsedSeconds.value = 0
@@ -488,6 +494,7 @@ async function submitAttempt() {
     })
     if (attemptId !== activeAttemptId.value || currentWord.value?.id !== wordIdAtSubmit) return
 
+    currentWordAttemptCount.value += 1
     lastToneScore.value = result.toneScore
     feedback.value = result.feedback
     detectedToneRows.value = result.detectedAcousticTones ?? []
@@ -583,13 +590,23 @@ watch(rapidMode, (enabled) => {
 
 function goToNextWord() {
   if (recording.value) stopRecording()
-  invalidateActiveAttempt()
   const hasPassingAttempt = lastToneScore.value !== null && lastToneScore.value > PASS_SCORE
+  if (!hasPassingAttempt && !canSkipCurrentWord.value) {
+    errorMessage.value = `Try this word ${skipAttemptsRemaining.value} more ${skipAttemptsRemaining.value === 1 ? "time" : "times"} before skipping.`
+    return
+  }
+
+  invalidateActiveAttempt()
   advanceToNextWord({ countAsPass: hasPassingAttempt })
 }
 
 function skipWord() {
   if (recording.value) stopRecording()
+  if (!canSkipCurrentWord.value) {
+    errorMessage.value = `Try this word ${skipAttemptsRemaining.value} more ${skipAttemptsRemaining.value === 1 ? "time" : "times"} before skipping.`
+    return
+  }
+
   invalidateActiveAttempt()
   advanceToNextWord({ countAsPass: false })
 }
@@ -654,7 +671,7 @@ onBeforeUnmount(() => {
               </li>
               <li class="flex items-start gap-2">
                 <SkipForward class="mt-0.5 h-4 w-4 shrink-0 text-fuchsia-700" aria-hidden="true" />
-                <span>Use “Skip” if you are struggling with a word.</span>
+                <span>Use “Skip” if you are still stuck after more than 5 scored attempts.</span>
               </li>
             </ul>
           </section>
@@ -779,7 +796,8 @@ onBeforeUnmount(() => {
 
               <button
                 class="inline-flex items-center justify-center rounded-2xl border border-gray-200 bg-white px-3 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
-                :disabled="submitting" @click="skipWord" aria-label="Skip word">
+                :disabled="submitting || !canSkipCurrentWord" @click="skipWord" aria-label="Skip word"
+                :title="canSkipCurrentWord ? 'Skip word' : `Try ${skipAttemptsRemaining} more ${skipAttemptsRemaining === 1 ? 'time' : 'times'} to unlock skip`">
                 <SkipForward class="h-5 w-5" aria-hidden="true" />
               </button>
 
@@ -789,6 +807,9 @@ onBeforeUnmount(() => {
                 <Volume2 class="h-5 w-5" aria-hidden="true" />
               </button>
             </div>
+            <p v-if="!canSkipCurrentWord" class="mt-2 text-center text-xs text-gray-500">
+              Skip unlocks after {{ skipAttemptsRemaining }} more scored {{ skipAttemptsRemaining === 1 ? "attempt" : "attempts" }}.
+            </p>
           </div>
 
           <!-- Success message -->
@@ -826,8 +847,8 @@ onBeforeUnmount(() => {
             </p>
 
             <button
-              class="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#86EFAC] px-4 py-3 text-sm font-bold text-gray-900 transition hover:brightness-105"
-              @click="goToNextWord">
+              class="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#86EFAC] px-4 py-3 text-sm font-bold text-gray-900 transition hover:brightness-105 disabled:opacity-50"
+              :disabled="submitting || (lastToneScore <= PASS_SCORE && !canSkipCurrentWord)" @click="goToNextWord">
               <ArrowRight class="h-4 w-4" aria-hidden="true" />
               <span>Next word</span>
             </button>
