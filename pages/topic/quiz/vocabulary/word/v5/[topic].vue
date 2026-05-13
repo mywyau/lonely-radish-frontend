@@ -612,9 +612,9 @@ onBeforeUnmount(() => {
 
     <section class="text-center space-y-4">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-center gap-3">
-        <h1 class="text-2xl font-semibold capitalize">
+        <!-- <h1 class="text-2xl font-semibold capitalize">
           {{ pageTitle }}
-        </h1>
+        </h1> -->
 
         <div v-if="showQuiz && (current + 1) <= questions.length" class="flex items-center justify-center gap-3">
           <div class="w-32 bg-gray-200 rounded-full h-2">
