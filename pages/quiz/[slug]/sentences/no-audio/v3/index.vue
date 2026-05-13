@@ -584,21 +584,69 @@ onBeforeUnmount(() => {
 
         <section class="text-center space-y-4">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-center gap-3">
-                <h1 class="text-2xl font-semibold level-heading">
-                    {{ quizTitle }}
-                </h1>
+              <h1 class="text-2xl font-semibold level-heading">
+                {{ quizTitle }}
+              </h1>
 
-                <div v-if="showQuiz && (current + 1) <= questions.length"
-                    class="flex items-center justify-center gap-3">
-                    <div class="w-32 bg-gray-200 rounded-full h-2">
-                        <div class="bg-purple-300 h-2 rounded-full transition-all duration-300"
-                            :style="{ width: progressPercent + '%' }" />
+              <div v-if="showQuiz && (current + 1) <= questions.length"
+                class="flex flex-wrap items-center justify-center gap-3 md:gap-4">
+                <div class="flex items-center justify-center gap-3">
+                  <div class="w-32 bg-gray-200 rounded-full h-2">
+                    <div class="bg-purple-300 h-2 rounded-full transition-all duration-300"
+                      :style="{ width: progressPercent + '%' }" />
+                  </div>
+
+                  <span class="text-xs text-gray-500 whitespace-nowrap">
+                    {{ current + 1 }} / {{ questions.length }}
+                  </span>
+                </div>
+
+                <div class="text-center space-y-2">
+                  <div class="space-y-0.5 text-center transition-all duration-300"
+                    :class="answered ? 'blur-none opacity-100' : 'blur-lg opacity-60 select-none pointer-events-none'">
+                    <p class="text-[0.65rem] uppercase tracking-wide text-gray-500">
+                      Target word
+                    </p>
+
+                    <p class="text-base font-semibold leading-tight text-black">
+                      {{ question.sourceWord }}
+                    </p>
+
+                    <p class="text-xs text-gray-600">
+                      {{ question.sourceWordJyutping }}
+                    </p>
+                  </div>
+
+                  <div class="relative transition-all duration-300" :class="!answered && 'blur-md opacity-70 select-none'">
+                    <div class="flex items-center justify-center gap-3">
+                      <div class="w-28 h-1 bg-gray-200 rounded">
+                        <div class="h-1 bg-green-500 rounded transition-all duration-500"
+                          :style="{ width: Math.min((currentXp ?? 0) / masteryXp * 100, 100) + '%' }" />
+                      </div>
+
+                      <div class="relative flex items-center">
+                        <span class="text-xs text-gray-500 whitespace-nowrap">
+                          {{ currentXp ?? 0 }} / {{ masteryXp }} XP
+                        </span>
+
+                        <transition name="xp-fall">
+                          <span v-if="xpDelta !== null"
+                            class="absolute left-full ml-2 text-sm font-semibold pointer-events-none"
+                            :class="xpDelta > 0 ? 'text-green-600' : 'text-red-600'">
+                            {{ xpDelta > 0 ? '+' + xpDelta : xpDelta }}
+                          </span>
+                        </transition>
+                      </div>
                     </div>
 
-                    <span class="text-xs text-gray-500 whitespace-nowrap">
-                        {{ current + 1 }} / {{ questions.length }}
-                    </span>
+                    <div class="h-4 flex items-center justify-center">
+                      <span v-if="currentStreak && currentStreak > 0" class="text-xs text-orange-500">
+                        {{ currentStreak }} streak
+                      </span>
+                    </div>
+                  </div>
                 </div>
+              </div>
             </div>
 
             <div v-if="pending" class="py-12 text-gray-500">
@@ -623,57 +671,6 @@ onBeforeUnmount(() => {
                             <p class="text-2xl text-black leading-relaxed font-semibold text-center">
                                 {{ question.prompt }}
                             </p>
-                        </div>
-
-                        <div class="text-center space-y-4">
-                            <div class="relative">
-                                <div class="space-y-1"
-                                    :class="answered ? 'blur-none opacity-100' : 'blur-lg opacity-60 select-none pointer-events-none'">
-                                    <p class="text-xs uppercase tracking-wide text-gray-500">
-                                        Target word
-                                    </p>
-
-                                    <p class="text-base font-semibold text-black">
-                                        {{ question.sourceWord }}
-                                    </p>
-
-                                    <p class="text-sm text-gray-600">
-                                        {{ question.sourceWordJyutping }}
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div class="relative">
-                                <div class="min-h-[50px] space-y-3 transition-all duration-300"
-                                    :class="!answered && 'blur-md opacity-70 select-none'">
-                                    <div class="flex items-center justify-center gap-3">
-                                        <div class="w-32 h-1 bg-gray-200 rounded">
-                                            <div class="h-1 bg-green-500 rounded transition-all duration-500"
-                                                :style="{ width: Math.min((currentXp ?? 0) / masteryXp * 100, 100) + '%' }" />
-                                        </div>
-
-                                        <div class="relative flex items-center">
-                                            <span class="text-sm text-gray-500 whitespace-nowrap">
-                                                {{ currentXp ?? 0 }} / {{ masteryXp }} XP
-                                            </span>
-
-                                            <transition name="xp-fall">
-                                                <span v-if="xpDelta !== null"
-                                                    class="absolute left-full ml-2 text-sm font-semibold pointer-events-none"
-                                                    :class="xpDelta > 0 ? 'text-green-600' : 'text-red-600'">
-                                                    {{ xpDelta > 0 ? '+' + xpDelta : xpDelta }}
-                                                </span>
-                                            </transition>
-                                        </div>
-                                    </div>
-
-                                    <div class="h-5 flex items-center justify-center">
-                                        <span v-if="currentStreak && currentStreak > 0" class="text-xs text-orange-500">
-                                            {{ currentStreak }} streak
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
 
                         <div class="grid grid-cols-1 gap-4">
