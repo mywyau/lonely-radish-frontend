@@ -18,18 +18,6 @@ definePageMeta({
 <template>
   <main class="max-w-xl mx-auto px-4 py-20 space-y-8 text-center">
 
-    <!-- <div class="text-left">
-      <button
-        type="button"
-        @click="goBack"
-        class="text-sm text-black hover:underline"
-      >
-        ← Back
-      </button>
-    </div> -->
-
-    <!--  -->
-
     <h1 class="flex items-center justify-center gap-3 text-3xl text-black font-semibold">
       <Construction class="size-8" aria-hidden="true" />
       <span>Coming soon</span>

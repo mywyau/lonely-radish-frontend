@@ -479,13 +479,6 @@ onUnmounted(() => {
 <template>
   <div class="min-h-[70vh] flex items-center justify-center p-6">
     <div class="max-w-xl w-full text-center space-y-6">
-      <!-- <div class="w-full text-left mb-6">
-        <button @click="goBack" class="inline-flex items-center text-sm text-black hover:underline">
-          ← Back
-        </button>
-      </div> -->
-
-
 
       <div v-if="supported" class="flex justify-end">
         <div class="flex rounded-full bg-gray-100 p-1" aria-label="Audio voice">

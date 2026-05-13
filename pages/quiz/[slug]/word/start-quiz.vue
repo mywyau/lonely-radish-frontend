@@ -66,12 +66,6 @@ const canEnterLevel = () => {
 <template>
   <main class="quiz-intro-page max-w-xl mx-auto px-4 py-16 space-y-10">
 
-    <!-- <NuxtLink :to="`/quiz/`" class="text-sm text-black hover:underline"> -->
-    <!-- ← Back -->
-    <!-- </NuxtLink> -->
-
-
-
     <section v-if="authReady && !canEnterLevel()" class="quiz-card text-center space-y-4">
       <h1 class="text-2xl font-semibold text-gray-900">
         Quiz locked
