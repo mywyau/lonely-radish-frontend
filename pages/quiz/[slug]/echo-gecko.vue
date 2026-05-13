@@ -606,21 +606,22 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <main class="min-h-screen text-gray-900">
-    <div class="mx-auto max-w-3xl px-4 py-10">
 
+  <main class="min-h-screen text-gray-900">
+
+    <div class="mx-auto max-w-3xl px-4 py-10">
 
       <header class="mb-6 mt-10 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 class="text-3xl font-bold">Echo Gecko</h1>
-          <p class="mt-1 text-sm text-gray-600">{{ slug }}</p>
+          <!-- <p class="mt-1 text-sm text-gray-600">{{ slug }}</p> -->
         </div>
         <DojoAudioSettings :voice="selectedVoice" :playback-rate="playbackRate" @update:voice="setVoice"
           @update:playback-rate="playbackRate = $event" />
       </header>
 
       <section class="rounded-2xl p-5 sm:p-6"
-        :class="(finished || finalizing) ? 'bg-transparent shadow-none' : 'border border-fuchsia-100 bg-white/90 shadow-sm'">
+        :class="(finished || finalizing) ? 'bg-transparent shadow-none' : ''">
         <div v-if="pending || loading" class="text-sm text-gray-600">Loading quiz words…</div>
         <div v-else-if="error" class="rounded-lg border border-rose-300 bg-rose-100 p-3 text-sm text-rose-700">
           Failed to load quiz data. Please refresh and try again.
@@ -705,7 +706,7 @@ onBeforeUnmount(() => {
             </div>
           </div>
 
-          <div class="rounded-xl border border-fuchsia-100 bg-white p-4">
+          <div class="rounded-xl p-4">
             <p class="text-xs uppercase tracking-wider text-gray-500">Target Chinese</p>
             <p class="mt-1 text-3xl font-bold text-gray-900">{{ currentWord.word }}</p>
             <!-- <p class="mt-3 text-xs uppercase tracking-wider text-gray-500">Target Jyutping</p>
@@ -768,7 +769,7 @@ onBeforeUnmount(() => {
           </p>
           <audio v-if="recordingUrl" class="w-full" controls :src="recordingUrl" />
 
-          <div v-if="lastToneScore !== null" class="rounded-xl border border-fuchsia-100 bg-fuchsia-50/50 p-4">
+          <div v-if="lastToneScore !== null" class="rounded-xl p-4">
             <p class="text-sm text-gray-700">
               Feedback:
               <span class="font-semibold" :class="lastToneScore > PASS_SCORE ? 'text-emerald-700' : 'text-amber-700'">
@@ -785,7 +786,7 @@ onBeforeUnmount(() => {
               </button>
             </div>
             <div v-if="detectedToneDisplayRows.length"
-              class="mt-3 rounded-lg border border-fuchsia-100 bg-white/80 p-3">
+              class="mt-3 rounded-lg p-3">
               <p class="text-xs uppercase tracking-wider text-gray-500">Detected tones by syllable</p>
 
               <ul class="mt-2 space-y-1 text-sm text-gray-700">
@@ -808,6 +809,7 @@ onBeforeUnmount(() => {
         </p>
       </section>
     </div>
+    
   </main>
 </template>
 
