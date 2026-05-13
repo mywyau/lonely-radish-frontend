@@ -620,8 +620,7 @@ onBeforeUnmount(() => {
           @update:playback-rate="playbackRate = $event" />
       </header>
 
-      <section class="rounded-2xl p-5 sm:p-6"
-        :class="(finished || finalizing) ? 'bg-transparent shadow-none' : ''">
+      <section class="rounded-2xl p-5 sm:p-6" :class="(finished || finalizing) ? 'bg-transparent shadow-none' : ''">
         <div v-if="pending || loading" class="text-sm text-gray-600">Loading quiz words…</div>
         <div v-else-if="error" class="rounded-lg border border-rose-300 bg-rose-100 p-3 text-sm text-rose-700">
           Failed to load quiz data. Please refresh and try again.
@@ -642,7 +641,7 @@ onBeforeUnmount(() => {
             Start pronunciation quiz
           </button>
 
-          <section class="rounded-xl border border-fuchsia-100 bg-fuchsia-50/50 p-4 text-left">
+          <section class="rounded-xl p-4 text-left">
             <h3 class="text-sm font-semibold text-gray-900">Before you start</h3>
             <ul class="mt-3 space-y-2 text-sm text-gray-700">
               <li class="flex items-start gap-2">
@@ -785,8 +784,7 @@ onBeforeUnmount(() => {
                 <span>Next Word</span>
               </button>
             </div>
-            <div v-if="detectedToneDisplayRows.length"
-              class="mt-3 rounded-lg p-3">
+            <div v-if="detectedToneDisplayRows.length" class="mt-3 rounded-lg p-3">
               <p class="text-xs uppercase tracking-wider text-gray-500">Detected tones by syllable</p>
 
               <ul class="mt-2 space-y-1 text-sm text-gray-700">
@@ -795,7 +793,7 @@ onBeforeUnmount(() => {
                     {{ row.character ? `Character: ${row.character}` : `Syllable ${row.syllable}` }}
                   </span>
                   <span class="text-gray-500"> (target <span class="text-black font-medium">{{ row.token
-                  }})</span></span>,
+                      }})</span></span>,
                   I heard <span class="font-semibold">{{ row.heardJyutping }}</span>
                   — tone <span class="font-semibold">{{ row.detectedTone ?? "unknown" }}</span>
                 </li>
@@ -809,7 +807,7 @@ onBeforeUnmount(() => {
         </p>
       </section>
     </div>
-    
+
   </main>
 </template>
 
