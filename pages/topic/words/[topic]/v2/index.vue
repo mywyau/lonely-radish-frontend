@@ -187,8 +187,6 @@ const gatedCategories = computed(() => {
 
         const unlockedByUser = !!unlockMap.value[word.id]
         const locked = paywallLocked && !unlockedByUser
-        const animationIndex = globalIndex
-
         globalIndex++
 
         return {
@@ -196,7 +194,6 @@ const gatedCategories = computed(() => {
           paywallLocked,
           unlockedByUser,
           locked,
-          animationIndex,
           tileColor: getColorFromId(word.id)
         }
       })
@@ -205,24 +202,6 @@ const gatedCategories = computed(() => {
 })
 
 
-function getWordTileAnimationStyle(word: { id: string; animationIndex: number }) {
-  let hash = 0
-
-  for (let i = 0; i < word.id.length; i++) {
-    hash = (hash * 31 + word.id.charCodeAt(i)) >>> 0
-  }
-
-  const duration = 1250 + (hash % 520)
-  const startY = -260 - (hash % 180)
-  const rotation = ((hash % 11) - 5)
-
-  return {
-    '--tile-drop-delay': `${(word.animationIndex % 4) * 110}ms`,
-    '--tile-drop-duration': `${duration}ms`,
-    '--tile-drop-y': `${startY}px`,
-    '--tile-drop-rotation': `${rotation}deg`,
-  }
-}
 
 const isMobileStatsExpanded = ref(true)
 
@@ -305,11 +284,8 @@ onMounted(async () => {
           <WordTile :id="word.id" :to="word.locked
             ? `/topic/${slug}/unlock/${word.id}`
             : `/topic/word/${slug}/${word.id}`" :word="word.word" :jyutping="word.jyutping" :meaning="word.meaning"
-            :xp="getXp(word.id)" :mastered="isMastered(word.id)" :class="[
-              word.locked ? 'locked-tile' : '',
-              'word-tile-drop-in'
-            ]"
-            :style="{ background: word.tileColor, ...getWordTileAnimationStyle(word) }" />
+            :xp="getXp(word.id)" :mastered="isMastered(word.id)" :class="word.locked ? 'locked-tile' : ''"
+            :style="{ background: word.tileColor }" />
         </div>
       </div>
     </section>
@@ -359,9 +335,7 @@ onMounted(async () => {
 }
 
 .locked-tile {
-  --word-tile-resting-opacity: 0.38;
-
-  opacity: var(--word-tile-resting-opacity);
+  opacity: 0.38;
   user-select: none;
   filter: grayscale(0.15);
 }

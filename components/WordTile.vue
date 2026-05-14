@@ -3,7 +3,6 @@
 import { NuxtLink } from '#components';
 import { masteryXp } from '@/config/xp/helpers';;
 import { CheckCircle2 } from '@lucide/vue';
-import { onBeforeUnmount, onMounted, ref } from 'vue';
 
 const props = defineProps<{
   to?: string
@@ -15,70 +14,10 @@ const props = defineProps<{
 }>()
 
 const rippleClass = 'is-ripple-neighbor'
-const tileRef = ref<HTMLElement | { $el?: HTMLElement } | null>(null)
-let tileObserver: IntersectionObserver | null = null
-let observedVisibilityTarget: Element | null = null
-let hasRevealedDropIn = false
 
 function prefersReducedMotion() {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches
 }
-
-function getTileElement() {
-  const tile = tileRef.value
-
-  if (tile instanceof HTMLElement) return tile
-
-  return tile?.$el instanceof HTMLElement ? tile.$el : null
-}
-
-function getTileVisibilityTarget(tile: HTMLElement) {
-  return tile.closest('.tile-shell') ?? tile
-}
-
-function revealDropInTile(tile = getTileElement()) {
-  if (!tile || hasRevealedDropIn) return
-
-  hasRevealedDropIn = true
-  tile.classList.add('word-tile-drop-in-visible')
-
-  if (observedVisibilityTarget) {
-    tileObserver?.unobserve(observedVisibilityTarget)
-    observedVisibilityTarget = null
-  }
-}
-
-onMounted(() => {
-  const tile = getTileElement()
-
-  if (!tile?.classList.contains('word-tile-drop-in')) return
-
-  if (prefersReducedMotion() || !('IntersectionObserver' in window)) {
-    revealDropInTile(tile)
-    return
-  }
-
-  tileObserver = new IntersectionObserver(
-    ([entry]) => {
-      if (entry?.isIntersecting) {
-        revealDropInTile(tile)
-      }
-    },
-    {
-      rootMargin: '0px 0px -18% 0px',
-      threshold: 0.2,
-    }
-  )
-
-  observedVisibilityTarget = getTileVisibilityTarget(tile)
-  tileObserver.observe(observedVisibilityTarget)
-})
-
-onBeforeUnmount(() => {
-  tileObserver?.disconnect()
-  tileObserver = null
-  observedVisibilityTarget = null
-})
 
 function getTileHash() {
   const seed = `${props.word}-${props.jyutping}-${props.meaning}`
@@ -189,7 +128,7 @@ function moveTileWithPointer(event: PointerEvent) {
 </script>
 
 <template>
-  <component :is="to ? NuxtLink : 'div'" ref="tileRef" :to="to" class="relative word-tile hover:brightness-110"
+  <component :is="to ? NuxtLink : 'div'" :to="to" class="relative word-tile hover:brightness-110"
     @pointerenter="startTileMovement" @pointermove="moveTileWithPointer" @pointerleave="resetTileMovement"
     @pointercancel="resetTileMovement" @blur="resetTileMovement">
     <!-- Mastered badge -->
@@ -244,10 +183,6 @@ function moveTileWithPointer(event: PointerEvent) {
   --tile-ripple-y: 0px;
   --tile-ripple-rotate: 0deg;
   --tile-ripple-delay: 0ms;
-  --tile-drop-y: -320px;
-  --tile-drop-rotation: 0deg;
-  --tile-drop-delay: 0ms;
-  --tile-drop-duration: 3000ms;
 
   transform:
     translate3d(
@@ -264,71 +199,6 @@ function moveTileWithPointer(event: PointerEvent) {
     box-shadow 0.24s ease,
     filter 0.24s ease;
   transition-delay: var(--tile-ripple-delay), 0ms, 0ms;
-}
-
-.word-tile-drop-in {
-  opacity: 0;
-  transform:
-    translate3d(
-      calc(var(--tile-ripple-x) + var(--tile-x)),
-      calc(var(--tile-drop-y, -320px) + var(--tile-ripple-y) + var(--tile-y) + var(--tile-lift)),
-      0
-    )
-    rotate(calc(var(--tile-drop-rotation, 0deg) + var(--tile-ripple-rotate) + var(--tile-rotate)))
-    scale(0.96);
-}
-
-.word-tile-drop-in.word-tile-drop-in-visible {
-  animation: word-tile-drop-in var(--tile-drop-duration, 1400ms) cubic-bezier(0.18, 0.9, 0.28, 1.12) var(--tile-drop-delay, 0ms) forwards;
-}
-
-@keyframes word-tile-drop-in {
-  0% {
-    opacity: 0;
-    transform:
-      translate3d(
-        calc(var(--tile-ripple-x) + var(--tile-x)),
-        calc(var(--tile-drop-y, -320px) + var(--tile-ripple-y) + var(--tile-y) + var(--tile-lift)),
-        0
-      )
-      rotate(calc(var(--tile-drop-rotation, 0deg) + var(--tile-ripple-rotate) + var(--tile-rotate)))
-      scale(0.96);
-  }
-
-  66% {
-    opacity: var(--word-tile-resting-opacity, 1);
-    transform:
-      translate3d(
-        calc(var(--tile-ripple-x) + var(--tile-x)),
-        calc(10px + var(--tile-ripple-y) + var(--tile-y) + var(--tile-lift)),
-        0
-      )
-      rotate(calc(var(--tile-ripple-rotate) + var(--tile-rotate)))
-      scale(1.015);
-  }
-
-  82% {
-    transform:
-      translate3d(
-        calc(var(--tile-ripple-x) + var(--tile-x)),
-        calc(-4px + var(--tile-ripple-y) + var(--tile-y) + var(--tile-lift)),
-        0
-      )
-      rotate(calc(var(--tile-ripple-rotate) + var(--tile-rotate)))
-      scale(1.005);
-  }
-
-  100% {
-    opacity: var(--word-tile-resting-opacity, 1);
-    transform:
-      translate3d(
-        calc(var(--tile-ripple-x) + var(--tile-x)),
-        calc(var(--tile-ripple-y) + var(--tile-y) + var(--tile-lift)),
-        0
-      )
-      rotate(calc(var(--tile-ripple-rotate) + var(--tile-rotate)))
-      scale(var(--tile-scale));
-  }
 }
 
 .word-tile:hover {
@@ -356,11 +226,6 @@ function moveTileWithPointer(event: PointerEvent) {
     transition:
       box-shadow 0.2s ease,
       filter 0.2s ease;
-  }
-
-  .word-tile-drop-in {
-    opacity: var(--word-tile-resting-opacity, 1);
-    animation: none;
   }
 }
 </style>
