@@ -8,8 +8,6 @@ useSeoMeta({
 
 import {
   CalendarCheck,
-  DoorOpen,
-  Sword,
   GraduationCap,
   Layers,
   PenLine,
@@ -17,7 +15,9 @@ import {
   TrendingUp,
   UsersRound,
   X,
+  Rocket,
   Swords,
+  Sword,
 } from '@lucide/vue'
 
 const { data: stats } = await useFetch('/api/total-users-stats', {
@@ -152,12 +152,12 @@ onMounted(() => {
 <template>
   <main class="relative max-w-4xl mx-auto py-16 sm:py-20 px-6 min-h-screen">
 
-    <button type="button" class="hidden-dojo-trigger" aria-label="Enter the dojo" aria-haspopup="dialog"
-      :aria-expanded="isDojoEntranceOpen" aria-controls="dojo-entrance-dialog" @click="openDojoEntrance">
-      <span class="hidden-dojo-door" aria-hidden="true">
-        <Sword class="size-5" :stroke-width="2.2" />
-      </span>
-      <span class="hidden-dojo-peek">Enter the dojo</span>
+    <button type="button" class="hidden-dojo-trigger" :class="{ 'is-open': isDojoEntranceOpen }"
+      aria-label="Enter the dojo" aria-haspopup="dialog" :aria-expanded="isDojoEntranceOpen"
+      aria-controls="dojo-entrance-dialog" @click="openDojoEntrance">
+      <span class="hidden-dojo-burst" aria-hidden="true"></span>
+      <Sword class="hidden-dojo-icon" aria-hidden="true" />
+      <span class="sr-only">Enter the dojo</span>
     </button>
 
     <Teleport to="body">
@@ -170,7 +170,6 @@ onMounted(() => {
 
           <div class="dojo-entrance-header">
             <span class="dojo-entrance-glyph" aria-hidden="true">
-              <!-- <DoorOpen class="size-7" :stroke-width="2.2" /> -->
               <Swords class="size-7" :stroke-width="2.2" />
             </span>
 
@@ -335,29 +334,31 @@ onMounted(() => {
 <style scoped>
 .hidden-dojo-trigger {
   position: fixed;
-  top: 34vh;
-  right: -5.35rem;
-  z-index: 30;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  min-height: 3.25rem;
-  padding: 0.45rem 1rem 0.45rem 0.5rem;
-  color: #111827;
-  background: linear-gradient(135deg, rgba(231, 243, 213, 0.96), rgba(168, 202, 224, 0.96));
-  border: 1px solid rgba(17, 24, 39, 0.14);
-  border-right: 0;
-  border-radius: 999px 0 0 999px;
-  box-shadow: 0 16px 36px rgba(17, 24, 39, 0.16);
-  transform: rotate(-2deg);
-  transition: right 220ms ease, transform 220ms ease, box-shadow 220ms ease;
+  right: 0.85rem;
+  bottom: 0.85rem;
+  z-index: 75;
+  width: 3.3rem;
+  height: 3.3rem;
+  border-radius: 999px;
+  background: transparent;
+  overflow: visible;
+  isolation: isolate;
+  transition: transform 160ms ease;
+}
+
+.hidden-dojo-trigger::before {
+  position: absolute;
+  inset: 0.45rem;
+  z-index: -2;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.18) 62%, transparent 70%);
+  border-radius: inherit;
+  content: '';
 }
 
 .hidden-dojo-trigger:hover,
-.hidden-dojo-trigger:focus-visible {
-  right: 0;
-  transform: rotate(0deg);
-  box-shadow: 0 20px 48px rgba(17, 24, 39, 0.22);
+.hidden-dojo-trigger:focus-visible,
+.hidden-dojo-trigger.is-open {
+  transform: scale(1.20);
 }
 
 .hidden-dojo-trigger:focus-visible {
@@ -365,25 +366,102 @@ onMounted(() => {
   outline-offset: 3px;
 }
 
-.hidden-dojo-door {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.35rem;
-  height: 2.35rem;
-  color: #111827;
-  background: rgba(255, 255, 255, 0.72);
+.hidden-dojo-icon {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 2rem;
+  height: 2rem;
+  margin: auto;
+  color: rgba(15, 15, 15, 0.9);
+  stroke-width: 2.4;
+  transform-origin: center;
+  transition: transform 160ms ease;
+}
+
+.hidden-dojo-trigger:hover .hidden-dojo-icon,
+.hidden-dojo-trigger:focus-visible .hidden-dojo-icon,
+.hidden-dojo-trigger.is-open .hidden-dojo-icon {
+  transform: translateY(-0.08rem);
+}
+
+.hidden-dojo-burst {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: -1;
+  width: 0.28rem;
+  height: 0.28rem;
+  background: transparent;
   border-radius: 999px;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.35);
+  pointer-events: none;
+  box-shadow:
+    -0.18rem -1.42rem 0 -0.03rem rgba(159, 91, 181, 0.95),
+    0.58rem -1.18rem 0 -0.08rem rgba(133, 78, 161, 0.9),
+    1.42rem -0.36rem 0 -0.05rem rgba(181, 123, 195, 0.92),
+    1.28rem 0.84rem 0 -0.08rem rgba(115, 65, 150, 0.86),
+    0.24rem 1.44rem 0 -0.04rem rgba(159, 91, 181, 0.92),
+    -0.72rem 1.1rem 0 -0.08rem rgba(181, 123, 195, 0.9),
+    -1.44rem 0.42rem 0 -0.05rem rgba(133, 78, 161, 0.9),
+    -1.08rem -0.82rem 0 -0.1rem rgba(159, 91, 181, 0.86);
 }
 
-.hidden-dojo-peek {
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  white-space: nowrap;
+.hidden-dojo-burst::before,
+.hidden-dojo-burst::after {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  background: transparent;
+  border-radius: 999px;
+  content: '';
+  transform: translate(-50%, -50%);
 }
 
+.hidden-dojo-burst::before {
+  width: 0.2rem;
+  height: 0.2rem;
+  box-shadow:
+    0.22rem -1.72rem 0 -0.04rem rgba(115, 65, 150, 0.84),
+    1.52rem -0.96rem 0 -0.03rem rgba(159, 91, 181, 0.9),
+    1.72rem 0.24rem 0 -0.06rem rgba(181, 123, 195, 0.86),
+    0.78rem 1.58rem 0 -0.04rem rgba(133, 78, 161, 0.86),
+    -0.32rem 1.78rem 0 -0.06rem rgba(159, 91, 181, 0.88),
+    -1.56rem 0.92rem 0 -0.03rem rgba(115, 65, 150, 0.82),
+    -1.72rem -0.28rem 0 -0.06rem rgba(181, 123, 195, 0.86),
+    -0.84rem -1.44rem 0 -0.05rem rgba(133, 78, 161, 0.86);
+}
+
+.hidden-dojo-burst::after {
+  width: 0.16rem;
+  height: 0.16rem;
+  background: transparent;
+  box-shadow:
+    0.96rem -1.68rem 0 -0.03rem rgba(181, 123, 195, 0.78),
+    1.9rem -0.08rem 0 -0.04rem rgba(115, 65, 150, 0.84),
+    1.22rem 1.22rem 0 -0.03rem rgba(159, 91, 181, 0.86),
+    -0.04rem 2.02rem 0 -0.05rem rgba(181, 123, 195, 0.8),
+    -1.18rem 1.42rem 0 -0.04rem rgba(133, 78, 161, 0.84),
+    -1.92rem 0.04rem 0 -0.03rem rgba(159, 91, 181, 0.82),
+    -1.34rem -1.16rem 0 -0.04rem rgba(181, 123, 195, 0.8),
+    0.04rem -1.98rem 0 -0.05rem rgba(115, 65, 150, 0.82);
+}
+
+.hidden-dojo-trigger:hover .hidden-dojo-burst,
+.hidden-dojo-trigger:focus-visible .hidden-dojo-burst,
+.hidden-dojo-trigger.is-open .hidden-dojo-burst {
+  animation: lilacBurst 650ms ease-out both;
+}
+
+@media (min-width: 768px) {
+  .hidden-dojo-trigger {
+    right: 1rem;
+    bottom: 1rem;
+    width: 3.6rem;
+    height: 3.6rem;
+  }
+}
 .dojo-entrance-overlay {
   position: fixed;
   inset: 0;
@@ -674,57 +752,24 @@ onMounted(() => {
   }
 }
 
+@keyframes lilacBurst {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.2);
+  }
+
+  35% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.12);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.45);
+  }
+}
+
 @media (max-width: 640px) {
-  .hidden-dojo-trigger {
-    top: auto;
-    right: 0.85rem;
-    bottom: 0.85rem;
-    justify-content: center;
-    width: 3.3rem;
-    height: 3.3rem;
-    min-height: 3.3rem;
-    padding: 0;
-    background: transparent;
-    border: 0;
-    border-radius: 999px;
-    box-shadow: none;
-    overflow: visible;
-    isolation: isolate;
-    transform: none;
-  }
-
-  .hidden-dojo-trigger::before {
-    position: absolute;
-    inset: 0.45rem;
-    z-index: -1;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.18) 62%, transparent 70%);
-    border-radius: inherit;
-    content: '';
-  }
-
-  .hidden-dojo-trigger:hover,
-  .hidden-dojo-trigger:focus-visible {
-    right: 0.85rem;
-    box-shadow: none;
-    transform: none;
-  }
-
-  .hidden-dojo-door {
-    width: 2rem;
-    height: 2rem;
-    background: transparent;
-  }
-
-  .hidden-dojo-door :deep(svg) {
-    width: 2rem;
-    height: 2rem;
-    stroke-width: 2.4;
-  }
-
-  .hidden-dojo-peek {
-    display: none;
-  }
-
   .dojo-entrance-header {
     grid-template-columns: 1fr;
     padding-right: 1.75rem;
@@ -766,6 +811,10 @@ onMounted(() => {
     animation: none;
     opacity: 1;
     transform: none;
+  }
+
+  .hidden-dojo-burst {
+    animation: none;
   }
 }
 
