@@ -8,11 +8,14 @@ useSeoMeta({
 
 import {
   CalendarCheck,
+  DoorOpen,
   GraduationCap,
   Layers,
   PenLine,
+  Tags,
   TrendingUp,
   UsersRound,
+  X,
 } from '@lucide/vue'
 
 const { data: stats } = await useFetch('/api/total-users-stats', {
@@ -99,9 +102,18 @@ const learningModes = [
 
 const currentUsers = ref<number | null>(null)
 const isStartPanelFlipped = ref(false)
+const isDojoEntranceOpen = ref(false)
 
 function flipStartPanel() {
   isStartPanelFlipped.value = !isStartPanelFlipped.value
+}
+
+function openDojoEntrance() {
+  isDojoEntranceOpen.value = true
+}
+
+function closeDojoEntrance() {
+  isDojoEntranceOpen.value = false
 }
 const sessionCookie = useCookie<string>('online_session_id', {
   maxAge: 60 * 60 * 24 * 365,
@@ -136,7 +148,90 @@ onMounted(() => {
 </script>
 
 <template>
-  <main class="max-w-4xl mx-auto py-16 sm:py-20 px-6 min-h-screen">
+  <main class="relative max-w-4xl mx-auto py-16 sm:py-20 px-6 min-h-screen">
+
+    <button
+      type="button"
+      class="hidden-dojo-trigger"
+      aria-haspopup="dialog"
+      :aria-expanded="isDojoEntranceOpen"
+      aria-controls="dojo-entrance-dialog"
+      @click="openDojoEntrance"
+    >
+      <span class="hidden-dojo-door" aria-hidden="true">
+        <DoorOpen class="size-5" :stroke-width="2.2" />
+      </span>
+      <span class="hidden-dojo-peek">psst... dojo?</span>
+    </button>
+
+    <Teleport to="body">
+      <div
+        v-if="isDojoEntranceOpen"
+        class="dojo-entrance-overlay"
+        role="presentation"
+        @click.self="closeDojoEntrance"
+      >
+        <section
+          id="dojo-entrance-dialog"
+          class="dojo-entrance-dialog"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="dojo-entrance-title"
+        >
+          <button
+            type="button"
+            class="dojo-entrance-close"
+            aria-label="Close dojo entrance"
+            @click="closeDojoEntrance"
+          >
+            <X class="size-5" aria-hidden="true" />
+          </button>
+
+          <div class="dojo-entrance-secret" aria-hidden="true">
+            hidden passage unlocked
+          </div>
+
+          <div class="dojo-entrance-header">
+            <span class="dojo-entrance-glyph" aria-hidden="true">道場</span>
+            <div>
+              <h2 id="dojo-entrance-title" class="text-2xl font-semibold tracking-tight text-gray-900">
+                You found the dojo door
+              </h2>
+              <p class="mt-2 text-sm text-gray-700">
+                Slip into focused training by level or by topic. Pick a path and keep it hush-hush.
+              </p>
+            </div>
+          </div>
+
+          <div class="mt-6 grid gap-3 sm:grid-cols-2">
+            <NuxtLink
+              to="/dojo/level"
+              class="dojo-entrance-card dojo-entrance-card-level"
+              @click="closeDojoEntrance"
+            >
+              <span class="dojo-entrance-card-icon">
+                <Layers class="size-6" :stroke-width="2.2" aria-hidden="true" />
+              </span>
+              <span class="font-semibold text-gray-900">Level Dojo</span>
+              <span class="text-sm text-gray-700">Train through structured progression levels.</span>
+            </NuxtLink>
+
+            <NuxtLink
+              to="/dojo/topic"
+              class="dojo-entrance-card dojo-entrance-card-topic"
+              @click="closeDojoEntrance"
+            >
+              <span class="dojo-entrance-card-icon">
+                <Tags class="size-6" :stroke-width="2.2" aria-hidden="true" />
+              </span>
+              <span class="font-semibold text-gray-900">Topic Dojo</span>
+              <span class="text-sm text-gray-700">Practice phonetics by subject area.</span>
+            </NuxtLink>
+          </div>
+        </section>
+      </div>
+    </Teleport>
+
     <section class="text-center">
 
       <h1
@@ -274,6 +369,184 @@ onMounted(() => {
 </template>
 
 <style scoped>
+
+.hidden-dojo-trigger {
+  position: fixed;
+  top: 34vh;
+  right: -5.35rem;
+  z-index: 30;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 3.25rem;
+  padding: 0.45rem 1rem 0.45rem 0.5rem;
+  color: #111827;
+  background: linear-gradient(135deg, rgba(231, 243, 213, 0.96), rgba(168, 202, 224, 0.96));
+  border: 1px solid rgba(17, 24, 39, 0.14);
+  border-right: 0;
+  border-radius: 999px 0 0 999px;
+  box-shadow: 0 16px 36px rgba(17, 24, 39, 0.16);
+  transform: rotate(-2deg);
+  transition: right 220ms ease, transform 220ms ease, box-shadow 220ms ease;
+}
+
+.hidden-dojo-trigger:hover,
+.hidden-dojo-trigger:focus-visible {
+  right: 0;
+  transform: rotate(0deg);
+  box-shadow: 0 20px 48px rgba(17, 24, 39, 0.22);
+}
+
+.hidden-dojo-trigger:focus-visible {
+  outline: 3px solid rgba(240, 121, 202, 0.55);
+  outline-offset: 3px;
+}
+
+.hidden-dojo-door {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.35rem;
+  height: 2.35rem;
+  color: #111827;
+  background: rgba(255, 255, 255, 0.72);
+  border-radius: 999px;
+}
+
+.hidden-dojo-peek {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.dojo-entrance-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  background: rgba(17, 24, 39, 0.38);
+  backdrop-filter: blur(6px);
+}
+
+.dojo-entrance-dialog {
+  position: relative;
+  width: min(100%, 38rem);
+  overflow: hidden;
+  padding: 1.35rem;
+  background: linear-gradient(135deg, #fffaf0 0%, #f6e1e1 42%, #a8cae0 100%);
+  border: 1px solid rgba(255, 255, 255, 0.78);
+  border-radius: 1.5rem;
+  box-shadow: 0 30px 80px rgba(17, 24, 39, 0.28);
+}
+
+.dojo-entrance-dialog::before {
+  position: absolute;
+  inset: auto -3rem -4rem auto;
+  width: 12rem;
+  height: 12rem;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.56), transparent 68%);
+  content: '';
+  pointer-events: none;
+}
+
+.dojo-entrance-close {
+  position: absolute;
+  top: 0.9rem;
+  right: 0.9rem;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  color: #111827;
+  background: rgba(255, 255, 255, 0.62);
+  border-radius: 999px;
+  transition: background 180ms ease, transform 180ms ease;
+}
+
+.dojo-entrance-close:hover,
+.dojo-entrance-close:focus-visible {
+  background: rgba(255, 255, 255, 0.9);
+  transform: scale(1.04);
+}
+
+.dojo-entrance-secret {
+  display: inline-flex;
+  margin-bottom: 1rem;
+  padding: 0.35rem 0.65rem;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(17, 24, 39, 0.66);
+  background: rgba(255, 255, 255, 0.48);
+  border: 1px dashed rgba(17, 24, 39, 0.22);
+  border-radius: 999px;
+}
+
+.dojo-entrance-header {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1rem;
+  padding-right: 2rem;
+}
+
+.dojo-entrance-glyph {
+  display: inline-grid;
+  place-items: center;
+  width: 4.35rem;
+  height: 4.35rem;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #111827;
+  background: rgba(255, 255, 255, 0.56);
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 1.1rem;
+  transform: rotate(-5deg);
+}
+
+.dojo-entrance-card {
+  position: relative;
+  display: flex;
+  min-height: 10rem;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.58);
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 1.1rem;
+  transition: transform 180ms ease, background 180ms ease, box-shadow 180ms ease;
+}
+
+.dojo-entrance-card:hover,
+.dojo-entrance-card:focus-visible {
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 18px 36px rgba(17, 24, 39, 0.12);
+  transform: translateY(-0.15rem);
+}
+
+.dojo-entrance-card-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  color: #111827;
+  border-radius: 999px;
+}
+
+.dojo-entrance-card-level .dojo-entrance-card-icon {
+  background: rgba(168, 202, 224, 0.76);
+}
+
+.dojo-entrance-card-topic .dojo-entrance-card-icon {
+  background: rgba(234, 184, 228, 0.72);
+}
 .brand-card-green {
   background-color: #E7F3D5;
 }
@@ -437,6 +710,21 @@ onMounted(() => {
 }
 
 @media (max-width: 640px) {
+  .hidden-dojo-trigger {
+    top: auto;
+    right: -5.8rem;
+    bottom: 1.25rem;
+  }
+
+  .dojo-entrance-header {
+    grid-template-columns: 1fr;
+    padding-right: 1.75rem;
+  }
+
+  .dojo-entrance-glyph {
+    width: 3.5rem;
+    height: 3.5rem;
+  }
 
   .start-learning-scene,
   .start-learning-face {
