@@ -199,6 +199,7 @@ function deltaFor(correct: boolean, streakBefore: number) {
 }
 
 const question = computed(() => questions.value[current.value])
+const currentAudioSrc = computed(() => question.value ? getRandomizedAudioSrc(question.value.audioKey) : '')
 
 const animatedAccuracy = ref(0)
 const completionAnimated = ref(false)
@@ -578,7 +579,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <main class="max-w-2xl mx-auto px-4 py-16 space-y-8">
+  <main class="max-w-2xl mx-auto px-4 pt-16 pb-32 space-y-8">
 
     <section class="text-center space-y-4">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-center gap-3">
@@ -594,11 +595,6 @@ onBeforeUnmount(() => {
             <span class="text-xs text-gray-500 whitespace-nowrap">
               {{ current + 1 }} / {{ questions.length }}
             </span>
-          </div>
-
-          <div class="flex items-center justify-center min-h-[56px]">
-            <AudioButton v-if="question" :key="question.audioKey" :src="getRandomizedAudioSrc(question.audioKey)"
-              autoplay />
           </div>
 
           <div class="text-center space-y-2">
@@ -769,6 +765,8 @@ onBeforeUnmount(() => {
       </template>
     </section>
   </main>
+
+  <FloatingAudioButton v-if="showQuiz && question" :key="question.audioKey" :src="currentAudioSrc" />
 </template>
 
 <style scoped>
@@ -913,4 +911,5 @@ onBeforeUnmount(() => {
 .next-btn-blue {
   background: rgb(126, 147, 255);
 }
+
 </style>

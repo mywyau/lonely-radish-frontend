@@ -285,6 +285,9 @@ const questions = computed(() =>
 )
 
 const question = computed(() => questions.value[current.value])
+const currentAudioSrc = computed(() =>
+  question.value?.type === 'audio' ? getRandomizedAudioSrc(question.value.audioKey) : ''
+)
 
 const STREAK_CAP = 5
 const WRONG_PENALTY = -12
@@ -666,7 +669,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <main class="max-w-xl mx-auto px-4 py-16 space-y-8">
+  <main class="max-w-xl mx-auto px-4 pt-16 pb-32 space-y-8">
 
 
 
@@ -703,10 +706,6 @@ onBeforeUnmount(() => {
           <p v-if="answered && currentWord?.meaning" class="text-sm text-gray-700">
             {{ currentWord.meaning }}
           </p>
-        </div>
-
-        <div v-if="question?.type === 'audio'" class="text-center">
-          <AudioButton :key="question.audioKey" :src="getRandomizedAudioSrc(question.audioKey)" autoplay />
         </div>
 
         <div class="min-h-[50px] space-y-3">
@@ -864,6 +863,9 @@ onBeforeUnmount(() => {
       </transition>
     </section>
   </main>
+
+  <FloatingAudioButton v-if="showQuiz && question?.type === 'audio'" :key="question.audioKey"
+    :src="currentAudioSrc" />
 </template>
 
 <style scoped>

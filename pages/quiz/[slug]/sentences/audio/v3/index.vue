@@ -191,6 +191,9 @@ function deltaFor(correct: boolean, streakBefore: number) {
 }
 
 const question = computed(() => questions.value[current.value])
+const currentAudioSrc = computed(() =>
+  question.value ? `${cdnBase}/audio/${question.value.audioKey}` : ''
+)
 
 const animatedAccuracy = ref(0)
 const completionAnimated = ref(false)
@@ -562,7 +565,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <main class="max-w-3xl mx-auto px-4 py-16 space-y-8">
+  <main class="max-w-3xl mx-auto px-4 pt-16 pb-32 space-y-8">
     
     <section class="text-center space-y-4">
 
@@ -627,10 +630,6 @@ onBeforeUnmount(() => {
             </div>
           </div>
 
-          <div class="flex items-center justify-center min-h-[56px]">
-            <AudioButton v-if="question" :key="question.audioKey" :src="`${cdnBase}/audio/${question.audioKey}`"
-              autoplay />
-          </div>
         </div>
       </div>
 
@@ -754,6 +753,8 @@ onBeforeUnmount(() => {
       </template>
     </section>
   </main>
+
+  <FloatingAudioButton v-if="showQuiz && question" :key="question.audioKey" :src="currentAudioSrc" />
 </template>
 
 

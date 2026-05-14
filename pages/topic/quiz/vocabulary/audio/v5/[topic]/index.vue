@@ -344,6 +344,9 @@ watch(
 
 const questions = computed(() => quizData.value?.questions ?? [])
 const question = computed(() => questions.value[current.value] ?? null)
+const currentAudioSrc = computed(() =>
+    question.value?.type === 'audio' ? getRandomizedAudioSrc(question.value.audioKey) : ''
+)
 const wordsById = computed(() => quizData.value?.wordsById ?? {})
 
 const pageTitle = computed(() => {
@@ -619,7 +622,7 @@ onUnmounted(() => {
 
 
 <template>
-    <main class="max-w-xl mx-auto px-4 py-16 space-y-8">
+    <main class="max-w-xl mx-auto px-4 pt-16 pb-32 space-y-8">
 
         <section class="text-center space-y-4">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-center gap-3">
@@ -637,9 +640,6 @@ onUnmounted(() => {
                         {{ current + 1 }} / {{ questions.length }}
                     </span>
 
-                    <div v-if="question?.type === 'audio'" class="text-center">
-                        <AudioButton :key="question.audioKey" :src="getRandomizedAudioSrc(question.audioKey)" autoplay />
-                    </div>
                 </div>
             </div>
 
@@ -833,6 +833,9 @@ onUnmounted(() => {
             </transition>
         </section>
     </main>
+
+    <FloatingAudioButton v-if="showQuiz && question?.type === 'audio'" :key="question.audioKey"
+        :src="currentAudioSrc" />
 </template>
 
 <style scoped>
