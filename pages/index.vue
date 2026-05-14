@@ -9,6 +9,7 @@ useSeoMeta({
 import {
   CalendarCheck,
   DoorOpen,
+  Sword,
   GraduationCap,
   Layers,
   PenLine,
@@ -16,6 +17,7 @@ import {
   TrendingUp,
   UsersRound,
   X,
+  DoorOpenIcon,
 } from '@lucide/vue'
 
 const { data: stats } = await useFetch('/api/total-users-stats', {
@@ -150,49 +152,27 @@ onMounted(() => {
 <template>
   <main class="relative max-w-4xl mx-auto py-16 sm:py-20 px-6 min-h-screen">
 
-    <button
-      type="button"
-      class="hidden-dojo-trigger"
-      aria-haspopup="dialog"
-      :aria-expanded="isDojoEntranceOpen"
-      aria-controls="dojo-entrance-dialog"
-      @click="openDojoEntrance"
-    >
+    <button type="button" class="hidden-dojo-trigger" aria-haspopup="dialog" :aria-expanded="isDojoEntranceOpen"
+      aria-controls="dojo-entrance-dialog" @click="openDojoEntrance">
       <span class="hidden-dojo-door" aria-hidden="true">
-        <DoorOpen class="size-5" :stroke-width="2.2" />
+        <Sword class="size-5" :stroke-width="2.2" />
       </span>
       <span class="hidden-dojo-peek">Enter the dojo</span>
     </button>
 
     <Teleport to="body">
-      <div
-        v-if="isDojoEntranceOpen"
-        class="dojo-entrance-overlay"
-        role="presentation"
-        @click.self="closeDojoEntrance"
-      >
-        <section
-          id="dojo-entrance-dialog"
-          class="dojo-entrance-dialog"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="dojo-entrance-title"
-        >
-          <button
-            type="button"
-            class="dojo-entrance-close"
-            aria-label="Close dojo entrance"
-            @click="closeDojoEntrance"
-          >
+      <div v-if="isDojoEntranceOpen" class="dojo-entrance-overlay" role="presentation" @click.self="closeDojoEntrance">
+        <section id="dojo-entrance-dialog" class="dojo-entrance-dialog" role="dialog" aria-modal="true"
+          aria-labelledby="dojo-entrance-title">
+          <button type="button" class="dojo-entrance-close" aria-label="Close dojo entrance" @click="closeDojoEntrance">
             <X class="size-5" aria-hidden="true" />
           </button>
 
-          <!-- <div class="dojo-entrance-secret" aria-hidden="true">
-            hidden passage unlocked
-          </div> -->
-
           <div class="dojo-entrance-header">
-            <span class="dojo-entrance-glyph" aria-hidden="true">道場</span>
+            <span class="dojo-entrance-glyph" aria-hidden="true">
+              <DoorOpen class="size-7" :stroke-width="2.2" />
+            </span>
+
             <div>
               <h2 id="dojo-entrance-title" class="text-2xl font-semibold tracking-tight text-gray-900">
                 Hone your skills
@@ -204,11 +184,7 @@ onMounted(() => {
           </div>
 
           <div class="mt-6 grid gap-3 sm:grid-cols-2">
-            <NuxtLink
-              to="/dojo/level"
-              class="dojo-entrance-card dojo-entrance-card-level"
-              @click="closeDojoEntrance"
-            >
+            <NuxtLink to="/dojo/level" class="dojo-entrance-card dojo-entrance-card-level" @click="closeDojoEntrance">
               <span class="dojo-entrance-card-icon">
                 <Layers class="size-6" :stroke-width="2.2" aria-hidden="true" />
               </span>
@@ -216,11 +192,7 @@ onMounted(() => {
               <span class="text-sm text-gray-700">Train through structured progression levels.</span>
             </NuxtLink>
 
-            <NuxtLink
-              to="/dojo/topic"
-              class="dojo-entrance-card dojo-entrance-card-topic"
-              @click="closeDojoEntrance"
-            >
+            <NuxtLink to="/dojo/topic" class="dojo-entrance-card dojo-entrance-card-topic" @click="closeDojoEntrance">
               <span class="dojo-entrance-card-icon">
                 <Tags class="size-6" :stroke-width="2.2" aria-hidden="true" />
               </span>
@@ -234,23 +206,13 @@ onMounted(() => {
 
     <section class="text-center">
 
-      <h1
-        class="heading-fly-in text-3xl sm:text-4xl font-semibold tracking-tight text-gray-900"
-        :aria-label="headingText"
-      >
-        <span
-          v-for="(word, wordIndex) in headingWords"
-          :key="`heading-word-${wordIndex}`"
-          aria-hidden="true"
-          class="heading-fly-in-word"
-        >
-          <span
-            v-for="item in word.letters"
-            :key="`${item.letter}-${item.index}`"
-            class="heading-fly-in-letter"
-            :class="{ 'brand-text-gradient': item.gradient }"
-            :style="{ animationDelay: `${item.index * 32}ms` }"
-          >{{ item.letter }}</span><span v-if="word.trailingSpace">&nbsp;</span>
+      <h1 class="heading-fly-in text-3xl sm:text-4xl font-semibold tracking-tight text-gray-900"
+        :aria-label="headingText">
+        <span v-for="(word, wordIndex) in headingWords" :key="`heading-word-${wordIndex}`" aria-hidden="true"
+          class="heading-fly-in-word">
+          <span v-for="item in word.letters" :key="`${item.letter}-${item.index}`" class="heading-fly-in-letter"
+            :class="{ 'brand-text-gradient': item.gradient }" :style="{ animationDelay: `${item.index * 32}ms` }">{{
+              item.letter }}</span><span v-if="word.trailingSpace">&nbsp;</span>
         </span>
       </h1>
 
@@ -321,7 +283,8 @@ onMounted(() => {
                 Start learning Cantonese today
               </h2>
               <p class="start-learning-copy text-sm sm:text-base text-gray-800 mt-2 max-w-2xl">
-                Work through content in structured levels at your own pace, then practice and train with activities that build
+                Work through content in structured levels at your own pace, then practice and train with activities that
+                build
                 confidence step by step.
               </p>
             </div>
@@ -369,7 +332,6 @@ onMounted(() => {
 </template>
 
 <style scoped>
-
 .hidden-dojo-trigger {
   position: fixed;
   top: 34vh;
@@ -547,6 +509,7 @@ onMounted(() => {
 .dojo-entrance-card-topic .dojo-entrance-card-icon {
   background: rgba(234, 184, 228, 0.72);
 }
+
 .brand-card-green {
   background-color: #E7F3D5;
 }
