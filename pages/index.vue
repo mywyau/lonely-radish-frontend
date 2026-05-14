@@ -165,25 +165,26 @@ onMounted(() => {
         <section id="dojo-entrance-dialog" class="dojo-entrance-dialog" role="dialog" aria-modal="true"
           aria-labelledby="dojo-entrance-title">
           <button type="button" class="dojo-entrance-close" aria-label="Close dojo entrance" @click="closeDojoEntrance">
-            <X class="size-5" aria-hidden="true" />
+            <!-- <X class="size-5" aria-hidden="true" /> -->
+            <Swords class="size-5" aria-hidden="true" />
           </button>
 
           <div class="dojo-entrance-header">
-            <span class="dojo-entrance-glyph" aria-hidden="true">
+            <!-- <span class="dojo-entrance-glyph" aria-hidden="true">
               <Swords class="size-7" :stroke-width="2.2" />
-            </span>
+            </span> -->
 
-            <div>
+            <!-- <div>
               <h2 id="dojo-entrance-title" class="text-2xl font-semibold tracking-tight text-gray-900">
                 Typing Dojo
               </h2>
               <p class="mt-2 text-sm text-gray-700">
                 Hone your typing skills. Pick a path but keep it hush-hush.
               </p>
-            </div>
+            </div> -->
           </div>
 
-          <div class="mt-6 grid gap-3 sm:grid-cols-2">
+          <div class="mt-10 grid gap-3 sm:grid-cols-2">
             <NuxtLink to="/dojo/level" class="dojo-entrance-card dojo-entrance-card-level" @click="closeDojoEntrance">
               <span class="dojo-entrance-card-icon">
                 <Layers class="size-6" :stroke-width="2.2" aria-hidden="true" />
