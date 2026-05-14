@@ -190,7 +190,7 @@ onMounted(() => {
                 <Layers class="size-6" :stroke-width="2.2" aria-hidden="true" />
               </span>
               <span class="font-semibold text-gray-900">Level</span>
-              <span class="text-sm text-gray-700">Train through structured progression levels.</span>
+              <span class="text-sm text-gray-700">Hit words covered in our levels.</span>
             </NuxtLink>
 
             <NuxtLink to="/dojo/topic" class="dojo-entrance-card dojo-entrance-card-topic" @click="closeDojoEntrance">
@@ -198,7 +198,7 @@ onMounted(() => {
                 <Tags class="size-6" :stroke-width="2.2" aria-hidden="true" />
               </span>
               <span class="font-semibold text-gray-900">Topic</span>
-              <span class="text-sm text-gray-700">Practice phonetics by subject area.</span>
+              <span class="text-sm text-gray-700">Practice by subject area instead.</span>
             </NuxtLink>
           </div>
         </section>
