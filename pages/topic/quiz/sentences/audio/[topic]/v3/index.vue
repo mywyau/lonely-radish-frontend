@@ -596,6 +596,11 @@ onBeforeUnmount(() => {
             </span>
           </div>
 
+          <div class="flex items-center justify-center min-h-[56px]">
+            <AudioButton v-if="question" :key="question.audioKey" :src="getRandomizedAudioSrc(question.audioKey)"
+              autoplay />
+          </div>
+
           <div class="text-center space-y-2">
             <div class="space-y-0.5 text-center transition-all duration-300"
               :class="answered ? 'blur-none opacity-100' : 'blur-lg opacity-60 select-none pointer-events-none'">
@@ -642,10 +647,7 @@ onBeforeUnmount(() => {
             </div>
           </div>
 
-          <div class="flex items-center justify-center min-h-[56px]">
-            <AudioButton v-if="question" :key="question.audioKey" :src="getRandomizedAudioSrc(question.audioKey)"
-              autoplay />
-          </div>
+
         </div>
       </div>
 
