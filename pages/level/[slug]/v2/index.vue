@@ -169,6 +169,7 @@ const gatedCategories = computed(() => {
 
         const unlockedByUser = !!unlockMap.value[word.id]
         const locked = paywallLocked && !unlockedByUser
+        const tileAnimationDelay = `${Math.min(globalIndex * 45, 900)}ms`
         globalIndex++
 
         return {
@@ -176,7 +177,8 @@ const gatedCategories = computed(() => {
           paywallLocked,
           unlockedByUser,
           locked,
-          tileColor: getColorFromId(word.id)
+          tileColor: getColorFromId(word.id),
+          tileAnimationDelay,
         }
       })
     }
@@ -285,7 +287,13 @@ onMounted(async () => {
       </div>
 
       <div class="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-        <div v-for="word in category.words" :key="word.id" :id="word.id" class="tile-shell">
+        <div
+          v-for="word in category.words"
+          :key="word.id"
+          :id="word.id"
+          class="tile-shell word-tile-fall-shell"
+          :style="{ '--tile-fall-delay': word.tileAnimationDelay }"
+        >
           <WordTile :id="word.id" :to="word.locked
             ? `/level/${slug}/unlock/${word.id}`
             : `/level/${slug}/word/${word.id}`" :word="word.word" :jyutping="word.jyutping" :meaning="word.meaning"
@@ -354,6 +362,39 @@ onMounted(async () => {
   opacity: 0.38;
   user-select: none;
   filter: grayscale(0.15);
+}
+
+.word-tile-fall-shell {
+  --tile-fall-delay: 0ms;
+  animation: word-tile-fall-in 0.72s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: var(--tile-fall-delay);
+  transform-origin: 50% -24px;
+  will-change: transform, opacity;
+}
+
+@keyframes word-tile-fall-in {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, -42px, 0) rotate(-3deg) scale(0.98);
+  }
+
+  64% {
+    opacity: 1;
+    transform: translate3d(0, 8px, 0) rotate(1.2deg) scale(1.01);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .word-tile-fall-shell {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
 }
 
 .unlock-row {
