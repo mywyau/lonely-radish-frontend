@@ -648,8 +648,8 @@ onBeforeUnmount(() => {
 
                 <div v-if="showQuiz && (current + 1) <= questions.length"
                     class="flex items-center justify-center gap-3">
-                    <div class="w-32 bg-gray-200 rounded-full h-2">
-                        <div class="bg-blue-300 h-2 rounded-full transition-all duration-300"
+                    <div class="w-32 bg-gray-200 rounded-full h-2 md:w-64 md:h-3">
+                        <div class="bg-blue-300 h-2 rounded-full transition-all duration-300 md:h-3"
                             :style="{ width: progressPercent + '%' }" />
                     </div>
 
