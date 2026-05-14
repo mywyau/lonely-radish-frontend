@@ -152,8 +152,8 @@ onMounted(() => {
 <template>
   <main class="relative max-w-4xl mx-auto py-16 sm:py-20 px-6 min-h-screen">
 
-    <button type="button" class="hidden-dojo-trigger" aria-haspopup="dialog" :aria-expanded="isDojoEntranceOpen"
-      aria-controls="dojo-entrance-dialog" @click="openDojoEntrance">
+    <button type="button" class="hidden-dojo-trigger" aria-label="Enter the dojo" aria-haspopup="dialog"
+      :aria-expanded="isDojoEntranceOpen" aria-controls="dojo-entrance-dialog" @click="openDojoEntrance">
       <span class="hidden-dojo-door" aria-hidden="true">
         <Sword class="size-5" :stroke-width="2.2" />
       </span>
@@ -677,8 +677,52 @@ onMounted(() => {
 @media (max-width: 640px) {
   .hidden-dojo-trigger {
     top: auto;
-    right: -5.8rem;
-    bottom: 1.25rem;
+    right: 0.85rem;
+    bottom: 0.85rem;
+    justify-content: center;
+    width: 3.3rem;
+    height: 3.3rem;
+    min-height: 3.3rem;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    border-radius: 999px;
+    box-shadow: none;
+    overflow: visible;
+    isolation: isolate;
+    transform: none;
+  }
+
+  .hidden-dojo-trigger::before {
+    position: absolute;
+    inset: 0.45rem;
+    z-index: -1;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.18) 62%, transparent 70%);
+    border-radius: inherit;
+    content: '';
+  }
+
+  .hidden-dojo-trigger:hover,
+  .hidden-dojo-trigger:focus-visible {
+    right: 0.85rem;
+    box-shadow: none;
+    transform: none;
+  }
+
+  .hidden-dojo-door {
+    width: 2rem;
+    height: 2rem;
+    background: transparent;
+  }
+
+  .hidden-dojo-door :deep(svg) {
+    width: 2rem;
+    height: 2rem;
+    stroke-width: 2.4;
+  }
+
+  .hidden-dojo-peek {
+    display: none;
   }
 
   .dojo-entrance-header {
