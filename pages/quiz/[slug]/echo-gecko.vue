@@ -923,7 +923,7 @@ onBeforeUnmount(() => {
 
             <button
               class="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#86EFAC] px-4 py-3 text-sm font-bold text-gray-900 transition hover:brightness-105 disabled:opacity-50"
-              :disabled="submitting || (lastToneScore <= PASS_SCORE && !canSkipCurrentWord)" @click="goToNextWord">
+              :disabled="lastToneScore <= PASS_SCORE && !canSkipCurrentWord" @click="goToNextWord">
               <ArrowRight class="h-4 w-4" aria-hidden="true" />
               <span>Next word</span>
             </button>
