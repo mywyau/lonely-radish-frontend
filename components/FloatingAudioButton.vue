@@ -26,13 +26,21 @@ withDefaults(defineProps<{
   height: 3.1rem;
   min-width: 0;
   padding: 0;
+  border: 0;
   border-radius: 999px;
-  box-shadow: 0 10px 22px rgba(17, 24, 39, 0.14);
+  background: transparent;
+  color: rgba(15, 15, 15, 0.9);
+  box-shadow: none;
+}
+
+.floating-audio-control :deep(button:hover) {
+  background: transparent;
 }
 
 .floating-audio-control :deep(svg) {
-  width: 1.25rem;
-  height: 1.25rem;
+  width: 2rem;
+  height: 2rem;
+  stroke-width: 2.4;
 }
 
 @media (min-width: 768px) {
@@ -62,7 +70,6 @@ withDefaults(defineProps<{
   .floating-audio-control :deep(button) {
     position: relative;
     z-index: 1;
-    box-shadow: none;
   }
 }
 </style>
