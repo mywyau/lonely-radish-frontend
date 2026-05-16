@@ -168,6 +168,7 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .header-shell {
+  z-index: 80;
   --pink: #EAB8E4;
   --purple: #D6A3D1;
   --blue: #A8CAE0;
@@ -310,9 +311,14 @@ onBeforeUnmount(() => {
 @media (min-width: 768px) {
   .trigger-visibility-btn {
     left: 1rem;
-    bottom: 1rem;
-    height: 3.6rem;
-    width: 3.6rem;
+    bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+    height: 3.1rem;
+    width: 3.1rem;
+  }
+
+  .trigger-visibility-btn:hover,
+  .trigger-visibility-btn.is-open {
+    transform: scale(1.12);
   }
 }
 
