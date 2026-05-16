@@ -1,4 +1,5 @@
 import { db } from "~/server/repositories/db"
+import { getTaroKeysEarned } from "~/config/unlock/unlock-config"
 
 export type UnlockBalance = {
   totalXp: number
@@ -19,7 +20,7 @@ export async function getUserUnlockBalance(userId: string): Promise<UnlockBalanc
   )
 
   const totalXp = Number(statsResult.rows[0]?.total_xp ?? 0)
-  const creditsEarned = Math.floor(totalXp / 500)
+  const creditsEarned = getTaroKeysEarned(totalXp)
 
   const spentResult = await db.query(
     `

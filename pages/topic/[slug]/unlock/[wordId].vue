@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { xpNeededForOneTaroKey } from '~/config/unlock/unlock-config'
+import { getTaroKeyProgress } from '~/config/unlock/unlock-config'
 import { login, useAuth } from '~/composables/useAuth'
 
 definePageMeta({
@@ -33,18 +33,12 @@ const word = ref<null | {
 
 const showUnlockPanel = ref(false)
 
-const xpUntilNextKey = computed(() => {
-  const totalXp = unlockSummary.value.totalXp
-  const remainder = totalXp % xpNeededForOneTaroKey
+const taroKeyProgress = computed(() => getTaroKeyProgress(unlockSummary.value.totalXp))
 
-  return remainder === 0
-    ? xpNeededForOneTaroKey
-    : xpNeededForOneTaroKey - remainder
-})
+const xpUntilNextKey = computed(() => taroKeyProgress.value.xpUntilNextKey)
 
-const nextKeyAtXp = computed(() => {
-  return unlockSummary.value.totalXp + xpUntilNextKey.value
-})
+const xpNeededForNextTaroKey = computed(() => taroKeyProgress.value.xpNeededForNextTaroKey)
+
 
 function openUnlockPanel() {
   if (loading.value) return
@@ -137,12 +131,10 @@ async function startLogin() {
   }
 }
 
-const xpTowardsNextKey = computed(() => {
-  return unlockSummary.value.totalXp % xpNeededForOneTaroKey
-})
+const xpTowardsNextKey = computed(() => taroKeyProgress.value.xpTowardsNextKey)
 
 const xpProgressPercent = computed(() => {
-  return (xpTowardsNextKey.value / xpNeededForOneTaroKey) * 100
+  return (xpTowardsNextKey.value / xpNeededForNextTaroKey.value) * 100
 })
 
 onMounted(loadData)
@@ -242,7 +234,7 @@ onMounted(loadData)
             <p class="inline-flex items-center gap-1 text-gray-700 font-semibold"><TaroKeyIcon size="h-4 w-4" /> Next TaroKey</p>
             <p class="text-gray-600">
               <span class="font-semibold">{{ xpTowardsNextKey }}</span>
-              / {{ xpNeededForOneTaroKey }} xp
+              / {{ xpNeededForNextTaroKey }} xp
             </p>
           </div>
 

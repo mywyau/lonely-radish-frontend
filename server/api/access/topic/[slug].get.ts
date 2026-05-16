@@ -5,6 +5,7 @@ import { getUnlockedWordIdsForUser } from "~/server/services/cache/wordUnlockCac
 import { requireUser } from "~/server/utils/requireUser";
 import { Entitlement } from "~/types/auth/entitlements";
 import { canAccessTopicWord, freeTopics } from "~/utils/topics/permissions";
+import { getTaroKeysEarned } from "~/config/unlock/unlock-config";
 
 export default defineEventHandler(async (event) => {
   const slug = event.context.params?.slug as string | undefined;
@@ -97,7 +98,7 @@ export default defineEventHandler(async (event) => {
     ]);
 
     const totalXp = Number(statsResult.rows[0]?.total_xp ?? 0);
-    const creditsEarned = Math.floor(totalXp / 500);
+    const creditsEarned = getTaroKeysEarned(totalXp);
     const creditsSpent = Number(spentResult.rows[0]?.spent ?? 0);
     const creditsAvailable = Math.max(0, creditsEarned - creditsSpent);
 
@@ -153,7 +154,7 @@ export default defineEventHandler(async (event) => {
   ]);
 
   const totalXp = Number(statsResult.rows[0]?.total_xp ?? 0);
-  const creditsEarned = Math.floor(totalXp / 500);
+  const creditsEarned = getTaroKeysEarned(totalXp);
   const creditsSpent = Number(spentResult.rows[0]?.spent ?? 0);
   const creditsAvailable = Math.max(0, creditsEarned - creditsSpent);
 

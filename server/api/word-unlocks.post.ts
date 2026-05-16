@@ -1,5 +1,5 @@
 import { createError, readBody } from "h3";
-import { xpNeededForOneTaroKey } from "~/config/unlock/unlock-config";
+import { getTaroKeysEarned } from "~/config/unlock/unlock-config";
 import { db } from "~/server/repositories/db";
 import { addWordUnlockToCache } from "~/server/services/cache/wordUnlockCache";
 import { requireUser } from "~/server/utils/requireUser";
@@ -75,7 +75,7 @@ export default defineEventHandler(async (event) => {
     );
 
     const totalXp = Number(statsResult.rows[0]?.total_xp ?? 0);
-    const creditsEarned = Math.floor(totalXp / xpNeededForOneTaroKey);
+    const creditsEarned = getTaroKeysEarned(totalXp);
 
     const spentResult = await client.query<{ spent: number | null }>(
       `

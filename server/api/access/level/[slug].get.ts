@@ -1,6 +1,7 @@
 import { createError } from "h3";
 import { FREE_LEVEL_WORD_LIMIT } from "~/config/level/levels-config";
 import { db } from "~/server/repositories/db";
+import { getTaroKeysEarned } from "~/config/unlock/unlock-config";
 import { getUnlockedWordIdsForUser } from "~/server/services/cache/wordUnlockCache";
 import { requireUser } from "~/server/utils/requireUser";
 import { Entitlement } from "~/types/auth/entitlements";
@@ -108,7 +109,7 @@ export default defineEventHandler(async (event) => {
     );
 
     const totalXp = Number(statsResult.rows[0]?.total_xp ?? 0);
-    const creditsEarned = Math.floor(totalXp / 500);
+    const creditsEarned = getTaroKeysEarned(totalXp);
     const creditsSpent = Number(spentResult.rows[0]?.spent ?? 0);
     const creditsAvailable = Math.max(0, creditsEarned - creditsSpent);
 
@@ -166,7 +167,7 @@ export default defineEventHandler(async (event) => {
   ]);
 
   const totalXp = Number(statsResult.rows[0]?.total_xp ?? 0);
-  const creditsEarned = Math.floor(totalXp / 500);
+  const creditsEarned = getTaroKeysEarned(totalXp);
   const creditsSpent = Number(spentResult.rows[0]?.spent ?? 0);
   const creditsAvailable = Math.max(0, creditsEarned - creditsSpent);
 
