@@ -159,12 +159,14 @@ function stopTimer() {
 }
 
 function startTimer() {
+  if (typeof window === 'undefined') return
+
   stopTimer()
   quizStartedAt.value = Date.now()
   elapsedMs.value = 0
   frozenElapsedMs.value = null
 
-  timerInterval = setInterval(() => {
+  timerInterval = window.setInterval(() => {
     if (quizStartedAt.value !== null) {
       elapsedMs.value = Date.now() - quizStartedAt.value
     }
@@ -751,6 +753,7 @@ onBeforeUnmount(() => {
                 :key="current?.wordId"
                 :chars="chineseChars"
                 :states="charStates"
+                :speed="180"
                 container-class="text-4xl text-center font-medium flex gap-1 leading-none"
               />
             </transition>

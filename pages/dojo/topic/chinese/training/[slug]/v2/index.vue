@@ -145,12 +145,14 @@ function stopTimer() {
 }
 
 function startTimer() {
+  if (typeof window === 'undefined') return
+
   stopTimer()
   quizStartedAt.value = Date.now()
   elapsedMs.value = 0
   frozenElapsedMs.value = null
 
-  timerInterval = setInterval(() => {
+  timerInterval = window.setInterval(() => {
     if (quizStartedAt.value !== null) {
       elapsedMs.value = Date.now() - quizStartedAt.value
     }

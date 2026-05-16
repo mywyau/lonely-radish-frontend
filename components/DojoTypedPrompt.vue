@@ -16,6 +16,8 @@ const props = withDefaults(defineProps<{
   startDelay?: number
   speed?: number
   showCursor?: boolean
+  cursorHeight?: string
+  cursorOffsetY?: string
 }>(), {
   chars: () => [],
   states: () => [],
@@ -25,6 +27,8 @@ const props = withDefaults(defineProps<{
   startDelay: 180,
   speed: 120,
   showCursor: true,
+  cursorHeight: '0.92em',
+  cursorOffsetY: '0.08em',
 })
 
 const typedTokens = computed<DojoTypedPromptToken[]>(() => {
@@ -69,7 +73,11 @@ const cursorDelay = computed(() => (
     <span
       v-if="props.showCursor"
       class="dojo-typed-prompt__cursor"
-      :style="{ '--dojo-cursor-delay': `${cursorDelay}ms` }"
+      :style="{
+        '--dojo-cursor-delay': `${cursorDelay}ms`,
+        '--dojo-cursor-height': props.cursorHeight,
+        '--dojo-cursor-offset-y': props.cursorOffsetY,
+      }"
       aria-hidden="true"
     />
   </div>
@@ -87,9 +95,9 @@ const cursorDelay = computed(() => (
 .dojo-typed-prompt__cursor {
   display: inline-block;
   width: 0.08em;
-  height: 0.92em;
+  height: var(--dojo-cursor-height);
   margin-left: 0.12em;
-  transform: translateY(0.08em);
+  transform: translateY(var(--dojo-cursor-offset-y));
   background: currentColor;
   animation: dojo-cursor-enter 0.01s steps(1, end) forwards var(--dojo-cursor-delay),
     dojo-cursor-blink 0.85s steps(1, end) infinite var(--dojo-cursor-delay);
