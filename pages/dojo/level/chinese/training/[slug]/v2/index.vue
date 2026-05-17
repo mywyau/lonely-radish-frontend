@@ -985,7 +985,7 @@ onBeforeUnmount(() => {
 }
 
 .dojo-mini-progress {
-  background: linear-gradient(90deg, #f5b7b1 0%, #f8d58f 45%, #9fd6bf 100%);
+  background: var(--blue);
 }
 
 .fade-scale-enter-active,
