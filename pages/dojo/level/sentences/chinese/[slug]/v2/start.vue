@@ -16,9 +16,9 @@ const levelNumber = computed(() => levelIdToNumbers(slug.value) ?? slug.value)
   <DojoStartPage theme="blush" :heading="`Level ${levelNumber} · Sentence dojo`"
     description="Fill in missing Chinese words in sentence context to sharpen practical usage and recognition."
     :start-to="`/dojo/level/sentences/chinese/${slug}/v2`" start-label="Start sentence exercise" :xp-rules="[
-      { action: 'Correct answer (no hint)', xp: `+${chineseSentenceXp} XP` },
-      { action: 'Correct answer (hint used)', xp: `+${chineseSentenceXpHintUsed} XP` },
-      { action: 'Wrong answer', xp: '0 XP (retry until correct)' }
+      { action: 'No hint used', xp: `+${chineseSentenceXp} XP` },
+      { action: 'Hint used', xp: `+${chineseSentenceXpHintUsed} XP` },
+      { action: 'Unlimited retries', xp: 'check the hint if you are stuck' }
     ]" :keyboard-setup-tips="[
       'Set up or change to a Chinese based keyboard.',
     ]" :tips="[

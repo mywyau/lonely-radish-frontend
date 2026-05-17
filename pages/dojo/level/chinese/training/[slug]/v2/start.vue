@@ -16,9 +16,9 @@ const levelNumber = computed(() => levelIdToNumbers(slug.value) ?? slug.value)
   <DojoStartPage :heading="`Level ${levelNumber} · Chinese dojo`"
     description="See the meaning and type the Chinese word. Great for character recall and typing fluency."
     :start-to="`/dojo/level/chinese/training/${slug}/v2`" start-label="Start chinese exercise" :xp-rules="[
-      { action: 'Correct answer (no hint)', xp: `+${chineseXp} XP` },
-      { action: 'Correct answer (hint used)', xp: `+${chineseXpHintUsed} XP` },
-      { action: 'Wrong answer', xp: '0 XP (retry until correct)' }
+      { action: 'No hint used', xp: `+${chineseXp} XP` },
+      { action: 'Hint used', xp: `+${chineseXpHintUsed} XP` },
+      { action: 'Unlimited retries', xp: 'check the hint if you are stuck' }
     ]" :keyboard-setup-tips="[
       'Set up or change to a Chinese based keyboard.',
     ]" :tips="[
