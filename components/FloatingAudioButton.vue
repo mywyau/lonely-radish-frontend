@@ -2,21 +2,23 @@
 withDefaults(defineProps<{
   src: string
   autoplay?: boolean
+  playbackRate?: number
 }>(), {
   autoplay: true,
+  playbackRate: 1,
 })
 </script>
 
 <template>
   <div class="floating-audio-control" aria-live="polite">
-    <AudioButton :src="src" :autoplay="autoplay" size="sm" />
+    <AudioButton :src="src" :autoplay="autoplay" :playback-rate="playbackRate" size="sm" />
   </div>
 </template>
 
 <style scoped>
 .floating-audio-control {
   position: fixed;
-  right: 0.85rem;
+  left: 4.65rem;
   bottom: calc(0.85rem + env(safe-area-inset-bottom, 0px));
   z-index: 70;
 }

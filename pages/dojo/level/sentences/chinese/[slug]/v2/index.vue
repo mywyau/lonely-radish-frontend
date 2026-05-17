@@ -647,6 +647,14 @@ onBeforeUnmount(() => {
 
       <div v-else class="space-y-5">
         <div v-if="showTraining" class="space-y-5">
+          <FloatingAudioButton
+            v-if="currentAudioSrc"
+            :key="`floating-audio-${selectedVoice}-${currentAudioSrc}`"
+            :src="currentAudioSrc"
+            :playback-rate="playbackRate"
+            :autoplay="false"
+          />
+
           <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div class="w-full sm:w-auto">
               <div class="text-xs text-black">
@@ -662,7 +670,6 @@ onBeforeUnmount(() => {
             <div class="flex items-center gap-2">
               <DojoAudioSettings :voice="selectedVoice" :playback-rate="playbackRate"
                 @update:voice="setVoice" @update:playback-rate="playbackRate = $event" />
-              <AudioButton :key="`audio-${selectedVoice}-${current?.sentenceId}`" :src="currentAudioSrc" :playback-rate="playbackRate" />
               <span class="px-3 py-1 text-xs font-medium text-gray-700">
                 {{ formattedElapsedTime }}
               </span>
