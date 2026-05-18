@@ -660,6 +660,7 @@ onBeforeUnmount(() => {
             v-if="currentAudioSrc"
             :key="`floating-audio-${selectedVoice}-${currentAudioSrc}`"
             :src="currentAudioSrc"
+            :voice="selectedVoice"
             :playback-rate="playbackRate"
             :autoplay="false"
           />
