@@ -1,9 +1,11 @@
 import { createError, readMultipartFormData } from "h3";
 import OpenAI from "openai";
+import {
+  whisperRequestLimit,
+  whisperRequestLimitFree,
+} from "~/config/audio_config";
 import { redis } from "~/server/repositories/redis";
 import { redactIdentifier } from "~/server/utils/logging/redact";
-// import { whisperRequestLimit, whisperRequestLimitFree } from "~/utils/whisper";
-import { whisperRequestLimit, whisperRequestLimitFree } from "~/config/audio_config"
 import { consumeWhisperAttemptMonthlyBySubject } from "../repositories/whisper/consumeWhisperAttemptMonthlyBySubject";
 import { consumeWhisperAttemptSubscriptionMonthV2 } from "../repositories/whisper/consumeWhisperAttemptSubscriptionMonthV2";
 import { getUserEntitlement } from "../utils/getEntitlement";
@@ -33,9 +35,11 @@ export default defineEventHandler(async (event) => {
   const wordId = form?.find((f) => f.name === "wordId")?.data?.toString() ?? "";
   const exampleIndexRaw =
     form?.find((f) => f.name === "exampleIndex")?.data?.toString() ?? "";
-  const scopeRaw = form?.find((f) => f.name === "scope")?.data?.toString() ?? "";
+  const scopeRaw =
+    form?.find((f) => f.name === "scope")?.data?.toString() ?? "";
   const slugRaw = form?.find((f) => f.name === "slug")?.data?.toString() ?? "";
-  const scope = scopeRaw === "level" || scopeRaw === "topic" ? scopeRaw : undefined;
+  const scope =
+    scopeRaw === "level" || scopeRaw === "topic" ? scopeRaw : undefined;
   const slug = slugRaw || undefined;
 
   const exampleIndex = Number.parseInt(exampleIndexRaw, 10);
