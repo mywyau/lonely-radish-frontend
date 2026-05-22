@@ -115,8 +115,8 @@ function updateGeneralGreeting() {
   generalGreeting.value = currentHour < 12 ? 'Good morning!' : 'Good afternoon!'
   momentumMessage.value
     = currentHour < 12
-      ? "Keep that momentum going — you're on the right track."
-      : "Good progress today — keep that momentum going, you're on the right track."
+      ? "Keep that momentum going, you're on the right track."
+      : "Keep that momentum going, you're on the right track."
 }
 const sessionCookie = useCookie<string>('online_session_id', {
   maxAge: 60 * 60 * 24 * 365,
@@ -150,13 +150,14 @@ onMounted(() => {
     clearInterval(interval)
   })
 })
+
 </script>
 
 <template>
   <main class="relative max-w-4xl mx-auto py-16 sm:py-20 px-6 min-h-screen">
 
     <section class="text-center">
-      <div v-if="isLoggedIn && generalGreeting" class="mt-2 mb-6 rounded-2xl p-[1px] bg-gradient-to-r from-pink-400 via-violet-400 to-sky-400">
+      <div v-if="isLoggedIn && generalGreeting" class="mt-2 mb-6 rounded-2xl bg-gradient-to-r from-pink-400 via-violet-400 to-sky-400">
         <div class="rounded-2xl bg-white/85 backdrop-blur-sm px-5 py-4 sm:px-7 sm:py-5">
           <p class="text-base sm:text-lg font-semibold text-gray-900">
             {{ generalGreeting }}
