@@ -278,13 +278,13 @@ onMounted(loadData)
                 <button type="button"
                   class="confirm-btn-blush w-full rounded-lg py-3 font-semibold hover:brightness-110 transition disabled:opacity-50 disabled:cursor-not-allowed"
                   :disabled="loading || unlockSummary.creditsAvailable < 1" @click="unlockWord">
-                  {{ loading ? 'Unlocking…' : 'Confirm unlock' }}
+                  <span v-if="loading" class="inline-flex items-center gap-2"><span class="loading-spinner" aria-hidden="true" /> Unlocking…</span><span v-else>✓ Confirm unlock</span>
                 </button>
 
                 <button type="button"
                   class="w-full rounded-lg py-3 font-semibold border border-gray-300 text-gray-800 bg-white/70 backdrop-blur hover:bg-white transition"
                   :disabled="loading" @click="closeUnlockPanel">
-                  Cancel
+                  ✕ Cancel
                 </button>
               </div>
             </div>
@@ -495,5 +495,20 @@ onMounted(loadData)
   border-radius: 999px;
   background: rgba(168, 202, 224, 0.95);
   transition: width 0.25s ease;
+}
+
+.loading-spinner {
+  width: 0.95rem;
+  height: 0.95rem;
+  border: 2px solid rgba(255, 255, 255, 0.55);
+  border-top-color: rgba(255, 255, 255, 0.95);
+  border-radius: 9999px;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>
