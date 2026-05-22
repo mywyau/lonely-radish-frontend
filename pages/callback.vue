@@ -1,7 +1,7 @@
 <script setup lang="ts">
 definePageMeta({ ssr: false })
 
-import { normalizeLoginRedirectPath, useAuth } from '@/composables/useAuth'
+import { login, normalizeLoginRedirectPath, useAuth } from '@/composables/useAuth'
 import { useMeStateV2 } from '@/composables/useMeStateV2'
 import { onMounted, ref } from 'vue'
 
@@ -13,6 +13,10 @@ const me = useMeStateV2()
 const error = route.query.error as string | undefined
 const description = route.query.error_description as string | undefined
 const callbackError = ref<string | null>(null)
+
+async function tryDifferentAccount() {
+  await login('/')
+}
 
 onMounted(async () => {
   if (error) {
@@ -72,9 +76,12 @@ onMounted(async () => {
         {{ description || 'This application is currently private.' }}
       </p> -->
 
-      <NuxtLink to="/" class="inline-block mt-4 text-blue-600 hover:underline">
-        Return to home
-      </NuxtLink>
+      <div class="mt-4 flex flex-col items-center gap-3">
+        
+        <NuxtLink to="/" class="text-blue-600 hover:underline">
+          Return to home
+        </NuxtLink>
+      </div>
     </template>
 
     <template v-else-if="callbackError">

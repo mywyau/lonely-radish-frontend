@@ -116,7 +116,7 @@ export async function loginWithGoogle(targetUrl?: string | null) {
     },
     authorizationParams: {
       connection: "google-oauth2",
-      prompt: "select_account",
+      prompt: "login",
     },
   });
 }
@@ -132,7 +132,7 @@ export async function login(targetUrl?: string | null) {
       targetUrl: getLoginRedirectPath(targetUrl),
     },
     authorizationParams: {
-      prompt: "select_account",
+      prompt: "login",
     },
   });
 }
