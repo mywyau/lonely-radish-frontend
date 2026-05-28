@@ -118,7 +118,7 @@ async function openBillingPortal() {
     headers: { Authorization: `Bearer ${token}` },
   });
 
-  window.location.href = url;
+  window.location.replace(url);
 }
 
 watch(

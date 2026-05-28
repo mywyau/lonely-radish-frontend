@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { describe, it, expect } from "vitest";
 import { readPage } from "./pageTestUtils";
 
@@ -32,6 +34,11 @@ describe("auth and billing page contracts", () => {
     expect(upgrade).toContain("Upgrade your plan");
     expect(upgrade).toContain('NuxtLink to="/refund-policy"');
     expect(upgrade).toContain("query: { redirect: '/upgrade' }");
+    const upgradeComposable = readFileSync(
+      resolve(process.cwd(), "composables/useUpgrade.ts"),
+      "utf8",
+    );
+    expect(upgradeComposable).toContain("window.location.replace(res.url)");
   });
   it("account page keeps Stripe return layout recovery safeguards", () => {
     const account = readPage("account/v2/index.vue");
@@ -43,5 +50,6 @@ describe("auth and billing page contracts", () => {
     );
     expect(account).toContain("min-h-[calc(100dvh-56px)] w-full flex-none");
     expect(account).toContain("w-full min-w-0 rounded-lg");
+    expect(account).toContain("window.location.replace(url)");
   });
 });
