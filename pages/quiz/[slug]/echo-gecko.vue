@@ -819,7 +819,7 @@ onBeforeUnmount(() => {
 
             <!-- <button
               class="mx-auto mt-6 inline-flex items-center justify-center gap-2 rounded-full bg-[#F7D774] px-5 py-2.5 text-sm font-semibold text-gray-900 shadow-sm transition hover:brightness-105 disabled:opacity-50"
-              :disabled="submitting || !currentWordAudioUrl" @click="playCurrentWordAudio">
+              :disabled="!currentWordAudioUrl" @click="playCurrentWordAudio">
               <Volume2 class="h-4 w-4" aria-hidden="true" />
               <span>Listen</span>
             </button> -->
@@ -879,7 +879,7 @@ onBeforeUnmount(() => {
 
               <button
                 class="inline-flex items-center justify-center rounded-2xl border border-gray-200 bg-white px-3 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
-                :disabled="submitting" @click="playCurrentWordAudio" aria-label="Replay audio">
+                @click="playCurrentWordAudio" aria-label="Replay audio">
                 <Volume2 class="h-5 w-5" aria-hidden="true" />
               </button>
             </div>

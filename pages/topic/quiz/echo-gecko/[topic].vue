@@ -868,7 +868,7 @@ onBeforeUnmount(() => {
 
               <button
                 class="inline-flex items-center justify-center rounded-2xl border border-gray-200 bg-white px-3 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
-                :disabled="submitting" @click="playCurrentWordAudio" aria-label="Replay audio">
+                @click="playCurrentWordAudio" aria-label="Replay audio">
                 <Volume2 class="h-5 w-5" aria-hidden="true" />
               </button>
             </div>
