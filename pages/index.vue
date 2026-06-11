@@ -116,15 +116,39 @@ function formatGreeting(baseGreeting: string) {
   return firstName ? `${baseGreeting}, ${firstName}!` : `${baseGreeting}!`
 }
 
+function getTimeBasedGreeting(hour: number) {
+  if (hour < 5) {
+    return 'Burning the midnight oil'
+  }
+
+  if (hour < 12) {
+    return 'Good morning'
+  }
+
+  if (hour < 18) {
+    return 'Good afternoon'
+  }
+
+  return 'Good evening'
+}
+
+function getTimeBasedMomentumMessage(hour: number) {
+  if (hour < 5) {
+    return 'A little late-night Cantonese practice can still keep your progress glowing.'
+  }
+
+  if (hour < 18) {
+    return "Keep that momentum going, you're on the right track."
+  }
+
+  return 'Wind down with a quick Cantonese session and keep your progress moving.'
+}
+
 function updateGeneralGreeting() {
   const currentHour = new Date().getHours()
-  const baseGreeting = currentHour < 12 ? 'Good morning' : 'Good afternoon'
 
-  generalGreeting.value = formatGreeting(baseGreeting)
-  momentumMessage.value
-    = currentHour < 12
-      ? "Keep that momentum going, you're on the right track."
-      : "Keep that momentum going, you're on the right track."
+  generalGreeting.value = formatGreeting(getTimeBasedGreeting(currentHour))
+  momentumMessage.value = getTimeBasedMomentumMessage(currentHour)
 }
 const sessionCookie = useCookie<string>('online_session_id', {
   maxAge: 60 * 60 * 24 * 365,
