@@ -11,7 +11,7 @@ import { brandColours } from '@/utils/branding/helpers'
 import { sortedTopics } from '@/utils/topics/topics'
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from '@lucide/vue'
 import { getTopicIcon } from '@/utils/topics/icons'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 
 const {
   authReady,
@@ -20,7 +20,6 @@ const {
   resolve,
 } = useMeStateV2()
 
-await resolve()
 
 function doNotShowUpgradeMessage(topic: Topic) {
 
@@ -64,16 +63,25 @@ const ITEMS_PER_PAGE = 12
 const currentPage = ref(1)
 const topicAnimationStyles = ref<Record<string, Record<string, string>>>({})
 const isTopicAnimationReady = ref(false)
+const isMobileViewport = ref(false)
+let mobileViewportQuery: MediaQueryList | undefined
+
+function syncMobileViewport() {
+  isMobileViewport.value = mobileViewportQuery?.matches ?? false
+}
 
 function generateTopicAnimationStyles() {
   const nextStyles: Record<string, Record<string, string>> = {}
+  const mobile = isMobileViewport.value
 
-  paginatedTopics.value.forEach((topic) => {
-    const delay = Math.round(Math.random() * 1100)
-    const duration = Math.round(1100 + Math.random() * 550)
-    const startX = Math.round((Math.random() - 0.5) * 220)
-    const startY = Math.round((Math.random() - 0.5) * 180)
-    const rotation = Math.round((Math.random() - 0.5) * 18)
+  paginatedTopics.value.forEach((topic, index) => {
+    const row = Math.floor(index / (mobile ? 2 : 3))
+    const column = index % (mobile ? 2 : 3)
+    const delay = mobile ? index * 35 : index * 55
+    const duration = mobile ? 420 : 560
+    const startX = mobile ? (column === 0 ? -14 : 14) : (column - 1) * 34
+    const startY = mobile ? 18 + row * 3 : 28 + row * 5
+    const rotation = mobile ? 0 : (column - 1) * 2
 
     nextStyles[topic.id] = {
       '--topic-fly-delay': `${delay}ms`,
@@ -139,12 +147,22 @@ const paginatedTopics = computed(() => {
 
 // Resolve auth once on mount (safe + idempotent)
 onMounted(async () => {
+  mobileViewportQuery = window.matchMedia('(max-width: 639px)')
+  syncMobileViewport()
+  mobileViewportQuery.addEventListener('change', syncMobileViewport)
+
   generateTopicAnimationStyles()
 
   if (!authReady.value) {
     await resolve()
   }
 })
+
+onBeforeUnmount(() => {
+  mobileViewportQuery?.removeEventListener('change', syncMobileViewport)
+})
+
+await resolve()
 
 </script>
 
@@ -299,25 +317,25 @@ onMounted(async () => {
 
 .topic-card-fly-in {
   opacity: 0;
-  transform: translate(var(--topic-fly-x, 0), var(--topic-fly-y, 0)) rotate(var(--topic-fly-rotation, 0deg)) scale(0.92);
-  animation: topic-fly-in var(--topic-fly-duration, 1200ms) cubic-bezier(0.16, 0.84, 0.28, 1) var(--topic-fly-delay, 0ms) forwards;
+  transform: translate3d(var(--topic-fly-x, 0), var(--topic-fly-y, 0), 0) rotate(var(--topic-fly-rotation, 0deg)) scale(0.98);
+  animation: topic-fly-in var(--topic-fly-duration, 560ms) cubic-bezier(0.16, 0.84, 0.28, 1) var(--topic-fly-delay, 0ms) forwards;
   will-change: opacity, transform;
 }
 
 @keyframes topic-fly-in {
   0% {
     opacity: 0;
-    transform: translate(var(--topic-fly-x, 0), var(--topic-fly-y, 0)) rotate(var(--topic-fly-rotation, 0deg)) scale(0.92);
+    transform: translate3d(var(--topic-fly-x, 0), var(--topic-fly-y, 0), 0) rotate(var(--topic-fly-rotation, 0deg)) scale(0.98);
   }
 
   70% {
     opacity: 1;
-    transform: translate(0, 0) rotate(0deg) scale(1.025);
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1.01);
   }
 
   100% {
     opacity: 1;
-    transform: translate(0, 0) rotate(0deg) scale(1);
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
   }
 }
 
