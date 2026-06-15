@@ -516,12 +516,12 @@ async function runToneCheck() {
 
         <details ref="settingsDetails" class="group relative self-end sm:self-auto">
           <summary
-            class="inline-flex list-none cursor-pointer items-center gap-1.5 rounded-lg bg-yellow-200 px-3 py-1.5 text-xs font-semibold text-black shadow-sm transition hover:bg-yellow-100">
+            class="inline-flex list-none cursor-pointer items-center gap-1.5 rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-semibold text-black shadow-sm transition hover:bg-gray-200">
             <Settings class="h-3.5 w-3.5" />
             <span>Settings</span>
           </summary>
           <div
-            class="fixed left-1/2 top-24 z-50 max-h-[calc(100vh-7rem)] w-[calc(100vw-1.5rem)] max-w-sm -translate-x-1/2 overflow-y-auto rounded-xl bg-yellow-100 p-3 shadow-lg sm:absolute sm:left-auto sm:right-0 sm:top-auto sm:mt-2 sm:max-h-none sm:w-72 sm:translate-x-0 sm:overflow-visible">
+            class="fixed left-1/2 top-24 z-50 max-h-[calc(100vh-7rem)] w-[calc(100vw-1.5rem)] max-w-sm -translate-x-1/2 overflow-y-auto rounded-xl bg-gray-100 p-3 shadow-lg sm:absolute sm:left-auto sm:right-0 sm:top-auto sm:mt-2 sm:max-h-none sm:w-72 sm:translate-x-0 sm:overflow-visible">
             <div class="mb-3 flex items-center justify-between">
               <p class="text-xs font-semibold uppercase tracking-wide text-gray-800">
                 Settings

@@ -268,12 +268,12 @@ watchEffect(() => {
       <div class="flex items-center gap-2">
         <details ref="settingsDetails" class="group relative">
           <summary
-            class="inline-flex list-none cursor-pointer items-center gap-1.5 rounded-lg bg-yellow-200 px-3 py-1.5 text-xs font-semibold text-black shadow-sm transition hover:bg-yellow-100">
+            class="inline-flex list-none cursor-pointer items-center gap-1.5 rounded-lg bg-gray-200 px-3 py-1.5 text-xs font-semibold text-black shadow-sm transition hover:bg-gray-200">
             <Settings class="h-3.5 w-3.5" />
             <span>Settings</span>
           </summary>
           <div
-            class="fixed left-1/2 top-24 z-50 max-h-[calc(100vh-7rem)] w-[calc(100vw-1.5rem)] max-w-sm -translate-x-1/2 overflow-y-auto rounded-xl bg-yellow-100 p-3 shadow-lg sm:absolute sm:left-auto sm:right-0 sm:top-auto sm:mt-2 sm:max-h-none sm:w-72 sm:translate-x-0 sm:overflow-visible">
+            class="fixed left-1/2 top-24 z-50 max-h-[calc(100vh-7rem)] w-[calc(100vw-1.5rem)] max-w-sm -translate-x-1/2 overflow-y-auto rounded-xl bg-gray-200 p-3 shadow-lg sm:absolute sm:left-auto sm:right-0 sm:top-auto sm:mt-2 sm:max-h-none sm:w-72 sm:translate-x-0 sm:overflow-visible">
             <div class="mb-3 flex items-center justify-between">
               <p class="text-xs font-semibold uppercase tracking-wide text-gray-800">
                 Settings
@@ -334,7 +334,7 @@ watchEffect(() => {
                 </div>
               </div>
 
-              <div class="space-y-2 border-t border-yellow-200 pt-3">
+              <div class="space-y-2 border-t border-gray-300 pt-3">
                 <p class="text-[11px] font-semibold uppercase tracking-wide text-gray-500">Page display</p>
                 <label class="flex cursor-pointer items-center justify-between gap-3 text-xs font-medium text-gray-700">
                   <span>Show XP bar</span>
