@@ -134,8 +134,8 @@ definePageMeta({
       <p class="text-gray-700">
         If you have any questions about these Terms, please contact:
         <br />
-        <a href="mailto:contact@tarotea.co.uk" class="font-medium">
-          contact@tarotea.co.uk
+        <a href="mailto:contact@lonelyradish.app" class="font-medium">
+          contact@lonelyradish.app
         </a>
       </p>
     </section>

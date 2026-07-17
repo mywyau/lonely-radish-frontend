@@ -1,117 +1,40 @@
-// export type SubscriptionStatus =
-//   | "active"
-//   | "trialing"
-//   | "past_due"
-//   | "canceled"
-//   | "incomplete";
+import type { Entitlement, MeState, MeUser } from "~/types/auth/entitlements";
 
-import type {
-  MeState,
-  Entitlement,
-  SubscriptionStatus,
-  MeUser,
-} from "~/types/auth/entitlements";
+const mockEntitlement: Entitlement = {
+  plan: "free",
+  subscription_status: "active",
+  cancel_at_period_end: false,
+};
 
-// export interface Entitlement {
-//   plan: "free" | "monthly" | "yearly";
-//   subscription_status: SubscriptionStatus;
-//   cancel_at_period_end: boolean;
-//   current_period_end?: string;
-//   canceled_at?: string;
-// }
-
-// export interface MeUser {
-//   id: string;
-//   email: string;
-//   entitlement: Entitlement;
-// }
-
-// export type MeState =
-//   | { status: "loading" }
-//   | { status: "logged-out" }
-//   | { status: "logged-in"; user: MeUser };
+const mockUser: MeUser = {
+  id: "local-demo-user",
+  email: "demo@lonelyradish.app",
+  firstName: "Maya",
+  lastName: "Lee",
+  entitlement: mockEntitlement,
+};
 
 export function useMeStateV2() {
   const state = useState<MeState>("meStateV2", () => ({
-    status: "loading",
+    status: "logged-in",
+    user: mockUser,
   }));
 
-  const resolved = useState<boolean>("meResolvedV2", () => false);
-  const pendingResolve = useState<Promise<void> | null>(
-    "mePendingResolveV2",
-    () => null,
-  );
-
-  const resolve = async ({ force = false } = {}) => {
-    if (pendingResolve.value) {
-      await pendingResolve.value;
-      return;
-    }
-
-    if (resolved.value && !force) return;
-
-    const task = (async () => {
-      resolved.value = false;
-      state.value = { status: "loading" };
-
-      if (process.server) return;
-
-      const auth = await useAuth();
-
-      if (!auth.isAuthenticated) {
-        state.value = { status: "logged-out" };
-        resolved.value = true;
-        return;
-      }
-
-      try {
-        const token = await auth.getAccessToken();
-        const user = await $fetch<MeUser>("/api/meV2", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        state.value = { status: "logged-in", user };
-      } catch {
-        state.value = { status: "logged-out" };
-      } finally {
-        resolved.value = true;
-      }
-    })();
-
-    pendingResolve.value = task;
-
-    try {
-      await task;
-    } finally {
-      pendingResolve.value = null;
-    }
+  const resolve = async () => {
+    state.value = {
+      status: "logged-in",
+      user: mockUser,
+    };
   };
 
-  const authReady = computed(() => state.value.status !== "loading");
-
-  const isLoading = computed(() => state.value.status !== "loading");
-
-  const isLoggedIn = computed(() => state.value.status === "logged-in");
-
-  const isLoggedOut = computed(() => state.value.status === "logged-out");
-
-  const user = computed<MeUser | null>(() =>
-    state.value.status === "logged-in" ? state.value.user : null,
-  );
-
-  const entitlement: globalThis.ComputedRef<Entitlement | null> = computed(
-    () =>
-      state.value.status === "logged-in" ? state.value.user.entitlement : null,
-  );
-
-  const isCanceling = computed(
-    () => entitlement.value?.cancel_at_period_end === true,
-  );
-
-  const currentPeriodEnd = computed(() =>
-    entitlement.value?.current_period_end
-      ? new Date(entitlement.value.current_period_end)
-      : null,
-  );
+  const authReady = computed(() => true);
+  const isLoading = computed(() => false);
+  const isLoggedIn = computed(() => true);
+  const isLoggedOut = computed(() => false);
+  const user = computed<MeUser>(() => mockUser);
+  const entitlement = computed<Entitlement>(() => mockEntitlement);
+  const isCanceling = computed(() => false);
+  const currentPeriodEnd = computed<Date | null>(() => null);
 
   return {
     state,

@@ -4,13 +4,9 @@ definePageMeta({ layout: 'default' })
 
 import { Info } from '@lucide/vue';
 import { useUpgrade } from '@/composables/useUpgrade';
-import { hasPaidAccess } from '~/utils/levels/permissions';
+import { hasPaidAccess } from '~/utils/paidAccess';
 
-const {
-  authReady,
-  isLoggedIn,
-  entitlement,
-} = useMeStateV2();
+const { authReady, entitlement } = useMeStateV2();
 
 const monthlyPrice = 4.99
 const yearlyPrice = 49.99
@@ -47,11 +43,11 @@ const isSubscribed = computed(() =>
             No worries! Your payment was cancelled and no charges were made.
           </p>
 
-          <p v-if="isLoggedIn" class="text-sm text-gray-500">
+          <p class="text-sm text-gray-500">
             If you’d like to try again, please choose a plan below.
           </p>
 
-          <div v-if="isLoggedIn" class="space-y-3 pt-4">
+          <div class="space-y-3 pt-4">
             <p class="text-sm text-gray-500">
               Choose a plan
             </p>

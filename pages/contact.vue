@@ -22,8 +22,8 @@ definePageMeta({
         Email
       </p>
 
-      <a href="mailto:contact@tarotea.co.uk" class="email-link hover:underline ">
-        contact@tarotea.co.uk
+      <a href="mailto:contact@lonelyradish.app" class="email-link hover:underline ">
+        contact@lonelyradish.app
       </a>
 
       <p class="text-gray-800 text-xs sm:text-sm">

@@ -102,8 +102,8 @@ definePageMeta({
       <p class="text-gray-700">
         For billing or refund questions, please contact:
         <br />
-        <a href="mailto:billing@tarotea.co.uk" class="font-medium">
-          billing@tarotea.co.uk
+        <a href="mailto:billing@lonelyradish.app" class="font-medium">
+          billing@lonelyradish.app
         </a>
       </p>
     </section>

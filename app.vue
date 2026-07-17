@@ -4,29 +4,6 @@ import { Analytics } from '@vercel/analytics/vue'
 const route = useRoute()
 
 const showBackLink = computed(() => route.path !== '/')
-const appBackLinkTo = computed(() => {
-  const path = route.path
-
-  if (path.startsWith('/level/') && path.includes('/word/')) {
-    const levelSlug = route.params.slug
-    const wordId = route.params.id
-
-    if (typeof levelSlug === 'string' && typeof wordId === 'string') {
-      return `/level/${levelSlug}/v2#${decodeURIComponent(wordId)}`
-    }
-  }
-
-  if (path.startsWith('/topic/word/')) {
-    const topicSlug = route.params.topic
-    const wordSlug = route.params.slug
-
-    if (typeof topicSlug === 'string' && typeof wordSlug === 'string') {
-      return `/topic/words/${topicSlug}/v2#${decodeURIComponent(wordSlug)}`
-    }
-  }
-
-  return undefined
-})
 
 const runtimeConfig = useRuntimeConfig()
 
@@ -56,7 +33,6 @@ useSeoMeta({
 
     <BackLink
       v-if="showBackLink"
-      :to="appBackLinkTo"
       class="mt-10"
     />
 

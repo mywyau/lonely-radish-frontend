@@ -4,9 +4,8 @@ export default defineEventHandler((event) => {
 
   const routes = [
     '/',
-    '/topics',
-    '/topics/quiz',
-    '/dojo',
+    '/coming-soon',
+    '/upgrade',
     '/contact',
     '/terms-of-service',
     '/privacy-notice',

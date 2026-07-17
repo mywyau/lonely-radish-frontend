@@ -1,59 +1,52 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { readPage } from "./pageTestUtils";
 
-describe("auth and billing page contracts", () => {
-  it("auth and access pages keep sign-in and availability messaging", () => {
+describe("mock access and billing page contracts", () => {
+  it("replaces auth gates with prototype screens", () => {
     const signIn = readPage("please-sign-in.vue");
     const unavailable = readPage("content-not-available.vue");
     const comingSoon = readPage("coming-soon.vue");
 
-    expect(signIn).toContain("title: 'Please sign in · Lonely Radish'");
-    expect(signIn).toContain("Sign in / Create account");
+    expect(signIn).toContain("title: 'Mock onboarding · Lonely Radish'");
+    expect(signIn).toContain("Auth disabled for prototype");
 
-    expect(unavailable).toContain("title: 'Coming soon · Lonely Radish'");
-    expect(unavailable).toContain("Content Not Available");
+    expect(unavailable).toContain("title: 'Feature preview · Lonely Radish'");
+    expect(unavailable).toContain("Premium dating tools are mocked for now.");
 
-    expect(comingSoon).toContain("title: 'Coming soon · Lonely Radish'");
-    expect(comingSoon).toContain("Coming soon");
+    expect(comingSoon).toContain("title: 'Coffee-date preview · Lonely Radish'");
+    expect(comingSoon).toContain("Browse matches built around an actual coffee date.");
   });
 
-  it("billing and upgrade pages keep checkout recovery calls to action", () => {
+  it("keeps billing and upgrade flows local to the prototype", () => {
     const success = readPage("billing/success.vue");
     const cancel = readPage("billing/cancel.vue");
     const upgrade = readPage("upgrade/index.vue");
 
-    expect(success).toContain("/api/billing/me");
     expect(success).toContain("Payment successful");
-    expect(success).toContain("Continue to matching");
+    expect(success).toContain("No real payment or auth check was performed.");
 
     expect(cancel).toContain("Payment cancelled");
     expect(cancel).toContain("upgrade('monthly')");
 
     expect(upgrade).toContain("Upgrade your plan");
-    expect(upgrade).toContain('NuxtLink to="/refund-policy"');
-    expect(upgrade).toContain("query: { redirect: '/upgrade' }");
+    expect(upgrade).not.toContain("/please-sign-in");
+
     const upgradeComposable = readFileSync(
       resolve(process.cwd(), "composables/useUpgrade.ts"),
       "utf8",
     );
-    expect(upgradeComposable).toContain("window.location.replace(res.url)");
+    expect(upgradeComposable).toContain('path: "/billing/success"');
   });
-  it("account page keeps Stripe return layout recovery safeguards", () => {
+
+  it("account page uses local mock data instead of protected API calls", () => {
     const account = readPage("account/v2/index.vue");
 
-    expect(account).toContain("pageRestoreKey");
-    expect(account).toContain("refreshAccountAfterStripeReturn");
-    expect(account).toContain(
-      'window.addEventListener("pageshow", handlePageShow)',
-    );
-    expect(account).toContain("min-h-[calc(100dvh-56px)] w-full flex-none");
-    expect(account).toContain("w-full min-w-0 rounded-lg");
-    expect(account).toContain("window.location.replace(url)");
-    expect(account).toContain("/api/account/v2/profile");
-    expect(account).toContain('method: "POST"');
-    expect(account).toContain("First name");
-    expect(account).toContain("Last name");
+    expect(account).toContain("Mock profile");
+    expect(account).toContain("Auth is disabled for now.");
+    expect(account).toContain("Save mock profile");
+    expect(account).not.toContain("/api/account/v2/profile");
+    expect(account).not.toContain("getAccessToken");
   });
 });

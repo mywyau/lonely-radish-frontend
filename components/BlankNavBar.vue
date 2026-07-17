@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import { login, logout } from '@/composables/useAuth'
 import { useMeStateV2 } from '@/composables/useMeStateV2'
 import { CalendarDays, Coffee, HeartHandshake, House, Menu, ShieldCheck, Sparkles, X } from '@lucide/vue'
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 
-const { isLoggedIn, user, resolve } = useMeStateV2()
+const { user, resolve } = useMeStateV2()
 
 const accountLabel = computed(() => user.value?.firstName || 'Account')
 const route = useRoute()
@@ -15,14 +14,14 @@ const menuRoot = ref<HTMLElement | null>(null)
 
 const navLinks = computed(() => {
   const links = [
-    { to: '/', label: 'Home', requiresAuth: false, icon: House },
-    { to: '/coming-soon', label: 'Browse Matches', requiresAuth: false, icon: HeartHandshake },
-    { to: '/coming-soon', label: 'Coffee Dates', requiresAuth: false, icon: Coffee },
-    { to: '/coming-soon', label: 'Availability', requiresAuth: true, icon: CalendarDays },
-    { to: '/coming-soon', label: 'Safety', requiresAuth: false, icon: ShieldCheck },
+    { to: '/', label: 'Home', icon: House },
+    { to: '/coming-soon', label: 'Browse Matches', icon: HeartHandshake },
+    { to: '/coming-soon', label: 'Coffee Dates', icon: Coffee },
+    { to: '/coming-soon', label: 'Availability', icon: CalendarDays },
+    { to: '/content-not-available', label: 'Safety', icon: ShieldCheck },
   ]
 
-  return links.filter(link => !link.requiresAuth || isLoggedIn.value)
+  return links
 })
 
 function toggleMenu() {
@@ -38,12 +37,6 @@ function toggleNav() {
 function closeNav() {
   navOpen.value = false
 }
-async function handleLogout() {
-  await logout()
-  await resolve({ force: true })
-  closeMenu()
-}
-
 function onDocumentClick(e: MouseEvent) {
   const target = e.target as Node | null
   if (menuOpen.value && menuRoot.value && target && !menuRoot.value.contains(target)) {
@@ -87,45 +80,21 @@ onBeforeUnmount(() => {
         </button>
 
         <div v-if="menuOpen" class="menu-panel">
-          <template v-if="isLoggedIn">
-            <NuxtLink to="/account/v2"
-              class="w-full flex items-center rounded-xl px-3 py-2 text-sm text-black hover:bg-black/5 transition"
-              @click="closeMenu">
-              {{ accountLabel }}
-            </NuxtLink>
+          <NuxtLink to="/account/v2"
+            class="w-full flex items-center rounded-xl px-3 py-2 text-sm text-black hover:bg-black/5 transition"
+            @click="closeMenu">
+            {{ accountLabel }}
+          </NuxtLink>
 
-            <NuxtLink to="/stats/v2"
-              class="w-full flex items-center rounded-xl px-3 py-2 text-sm text-black hover:bg-black/5 transition"
-              @click="closeMenu">
-              Stats
-            </NuxtLink>
+          <NuxtLink to="/upgrade"
+            class="w-full flex items-center rounded-xl px-3 py-2 text-sm font-semibold hover:bg-black hover:brightness-125 transition"
+            @click="closeMenu">
 
-            <NuxtLink to="/upgrade"
-              class="w-full flex items-center rounded-xl px-3 py-2 text-sm font-semibold hover:bg-black hover:brightness-125 transition"
-              @click="closeMenu">
-
-              <span
-                class="bg-gradient-to-r from-[#d48fd0] via-[#b57bc3] via-[#6faed6] to-[#d48fd0] bg-clip-text text-transparent">
-                Upgrade
-              </span>
-            </NuxtLink>
-
-            <div class="h-px my-2 bg-black/10"></div>
-
-            <button type="button"
-              class="w-full flex items-center rounded-xl px-3 py-2 text-sm text-red-700 hover:bg-red-500/10 transition"
-              @click="handleLogout">
-              Log out
-            </button>
-          </template>
-
-          <template v-else>
-            <button type="button"
-              class="w-full flex items-center rounded-xl px-3 py-2 text-sm text-gray-900 hover:bg-black/5 transition"
-              @click="login()">
-              Login
-            </button>
-          </template>
+            <span
+              class="bg-gradient-to-r from-[#d48fd0] via-[#b57bc3] via-[#6faed6] to-[#d48fd0] bg-clip-text text-transparent">
+              Upgrade
+            </span>
+          </NuxtLink>
         </div>
       </div>
     </div>

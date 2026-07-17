@@ -5,7 +5,7 @@ describe('core page contracts', () => {
   it('contact page keeps metadata title and support email link', () => {
     const source = readPage('contact.vue')
     expect(source).toContain("title: 'Contact · Lonely Radish'")
-    expect(source).toContain('mailto:contact@tarotea.co.uk')
+    expect(source).toContain('mailto:contact@lonelyradish.app')
   })
 
   it('privacy notice page keeps metadata title and heading copy', () => {

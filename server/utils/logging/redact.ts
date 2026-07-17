@@ -18,7 +18,7 @@ const BOT_FAMILIES: Array<[string, RegExp]> = [
 ];
 
 const SENSITIVE_KEY_PATTERN =
-  /(^|_)(userId|user_id|customerId|customer_id|stripeCustomerId|stripe_customer_id|subscriptionId|subscription_id|stripeSubscriptionId|stripe_subscription_id|sessionKey|session_key|subjectKey|subject_key|ip|forwardedFor|userAgent|referrer|transcript|heardText|expectedChinese|expectedJyutping|normalizedExpected|normalizedHeard)$/i;
+  /(^|_)(userId|user_id|customerId|customer_id|stripeCustomerId|stripe_customer_id|subscriptionId|subscription_id|stripeSubscriptionId|stripe_subscription_id|sessionKey|session_key|subjectKey|subject_key|ip|forwardedFor|userAgent|referrer)$/i;
 
 export function hashForLog(value: unknown): string | null {
   if (value === null || value === undefined || value === "") return null;

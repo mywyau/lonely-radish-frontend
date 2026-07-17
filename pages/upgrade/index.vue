@@ -2,15 +2,14 @@
 
 definePageMeta({ layout: 'default' })
 
-import { BookOpen, Mic, Sparkles, Tags, Target, UnlockKeyhole } from '@lucide/vue';
+import { CalendarDays, Coffee, HeartHandshake, MapPin, ShieldCheck, Sparkles, Tags } from '@lucide/vue';
 import { markRaw } from 'vue';
 import { useUpgrade } from '@/composables/useUpgrade';
 import { useMeStateV2 } from '~/composables/useMeStateV2';
-import { hasPaidAccess } from '~/utils/levels/permissions';
+import { hasPaidAccess } from '~/utils/paidAccess';
 
 const {
   authReady,
-  isLoggedIn,
   entitlement,
 } = useMeStateV2();
 
@@ -24,13 +23,13 @@ const yearlySavings = (monthlyPrice * 12 - yearlyPrice).toFixed(2)
 const yearlyMonthlyEquivalent = (yearlyPrice / 12).toFixed(2)
 
 const benefits = [
-  { icon: markRaw(Sparkles), text: 'Greater language exposure with full access to all content' },
-  { icon: markRaw(UnlockKeyhole), text: 'Unlock over 2500 word tiles' },
-  { icon: markRaw(BookOpen), text: 'Unlock over 10000 sentences to help with your studies' },
-  { icon: markRaw(Target), text: 'Train to improve recognition and recall with our exercises and activities' },
-  { icon: markRaw(Mic), text: 'Practice your pronunciation with 1000 Echo Lab requests per month' },
-  { icon: markRaw(Sparkles), text: 'Increase exposure to weaker words via our xp system' },
-  { icon: markRaw(Tags), text: 'Access new topics, words and features added regularly' },
+  { icon: markRaw(HeartHandshake), text: 'A larger table of thoughtful coffee-date matches' },
+  { icon: markRaw(CalendarDays), text: 'Priority availability matching around real date windows' },
+  { icon: markRaw(Coffee), text: 'Coffee-date planning tools and cafe shortlists' },
+  { icon: markRaw(MapPin), text: 'More flexible neighbourhood and distance preferences' },
+  { icon: markRaw(ShieldCheck), text: 'Extra safety and privacy controls as they launch' },
+  { icon: markRaw(Tags), text: 'Early access to new dating features' },
+  { icon: markRaw(Sparkles), text: 'Profile polish tools for clearer first impressions' },
 ]
 
 // Already paid → manage subscription instead
@@ -83,7 +82,7 @@ function upgrade(plan: 'monthly' | 'yearly') {
         </div>
 
         <!-- Plans -->
-        <div v-if="isLoggedIn" class="space-y-3 pt-4 max-w-md mx-auto">
+        <div class="space-y-3 pt-4 max-w-md mx-auto">
           <p class="text-sm text-gray-500">
             Choose a plan
           </p>
@@ -107,14 +106,6 @@ function upgrade(plan: 'monthly' | 'yearly') {
               free</span>
           </button>
 
-        </div>
-
-        <div v-else class="pt-4 max-w-md mx-auto">
-          <NuxtLink :to="{ path: '/please-sign-in', query: { redirect: '/upgrade' } }"
-            class="block w-full rounded-xl py-3 px-3 font-medium transition shadow-sm hover:brightness-110 active:scale-[0.98]"
-            style="background-color:#A8CAE0;">
-            Sign in to choose a plan
-          </NuxtLink>
         </div>
 
         <!-- Subscribed -->

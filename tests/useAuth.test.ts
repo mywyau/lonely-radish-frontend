@@ -9,7 +9,7 @@ describe("useAuth helpers", () => {
     });
     vi.stubGlobal("window", {
       location: {
-        origin: "https://tarotea.test",
+        origin: "https://lonelyradish.test",
         pathname: "/current",
         search: "",
         hash: "",
@@ -18,10 +18,10 @@ describe("useAuth helpers", () => {
   });
 
   it("keeps same-origin relative and absolute redirect paths", () => {
-    expect(normalizeLoginRedirectPath("/quiz?mode=daily#start")).toBe(
-      "/quiz?mode=daily#start",
+    expect(normalizeLoginRedirectPath("/coming-soon?intent=matches#start")).toBe(
+      "/coming-soon?intent=matches#start",
     );
-    expect(normalizeLoginRedirectPath("https://tarotea.test/account?tab=billing")).toBe(
+    expect(normalizeLoginRedirectPath("https://lonelyradish.test/account?tab=billing")).toBe(
       "/account?tab=billing",
     );
   });

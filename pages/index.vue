@@ -9,7 +9,6 @@ import {
   ShieldCheck,
   Sparkles,
 } from '@lucide/vue'
-import { login } from '@/composables/useAuth'
 
 useSeoMeta({
   title: 'Coffee dates without the endless chat',
@@ -99,11 +98,7 @@ async function refreshCurrentUsers() {
 }
 
 function startOnboarding() {
-  if (isLoggedIn.value) {
-    return navigateTo('/coming-soon')
-  }
-
-  return login()
+  return navigateTo('/coming-soon')
 }
 
 onMounted(() => {

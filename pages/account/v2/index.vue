@@ -1,649 +1,185 @@
 <script setup lang="ts">
-import { CreditCard, Sparkles, Trash2, UserRound } from "@lucide/vue";
+import { CalendarDays, Coffee, HeartHandshake, MapPin, ShieldCheck, Trash2, UserRound } from "@lucide/vue";
 
 definePageMeta({
-  middleware: ["logged-in"],
-  //   middleware: ['coming-soon'],
-  ssr: true,
+  title: "Mock Account · Lonely Radish",
 });
 
-const {
-  authReady,
-  isLoggedIn,
-  user,
-  entitlement,
-  isCanceling,
-  currentPeriodEnd,
-  resolve,
-} = useMeStateV2();
+const profile = reactive({
+  firstName: "Maya",
+  lastName: "Lee",
+  neighbourhood: "East London",
+  coffee: "Flat white",
+  availability: "Thu evenings, Sat mornings",
+});
 
-const deleting = ref(false);
-const deleteConfirmInput = ref("");
-const profileFirstName = ref("");
-const profileLastName = ref("");
-const profileSaving = ref(false);
-const profileSaved = ref(false);
-const profileError = ref("");
-
-const animatedRemaining = ref(0);
-const animatedPercent = ref(0);
-const pageRestoreKey = ref(0);
+const saved = ref(false);
 const showDeletePanel = ref(false);
+const deleteConfirmInput = ref("");
 
-const deleteError = ref("");
+const fullName = computed(() => `${profile.firstName} ${profile.lastName}`.trim());
 
-function normalizeProfileInput(value: string) {
-  return value.trim().replace(/\s+/g, " ");
+const datePreferences = [
+  { icon: Coffee, label: "Coffee mood", value: "Quiet cafe, 30 minutes" },
+  { icon: MapPin, label: "Distance", value: "Up to 4 km" },
+  { icon: CalendarDays, label: "Best windows", value: "After work or weekend brunch" },
+  { icon: ShieldCheck, label: "Safety", value: "Public places only" },
+];
+
+function saveProfile() {
+  saved.value = true;
+  window.setTimeout(() => {
+    saved.value = false;
+  }, 2200);
 }
-
-const fullName = computed(() =>
-  [user.value?.firstName, user.value?.lastName]
-    .filter(Boolean)
-    .join(" "),
-);
-
-const profileChanged = computed(() => {
-  if (!user.value) return false;
-
-  return (
-    normalizeProfileInput(profileFirstName.value) !== (user.value.firstName ?? "") ||
-    normalizeProfileInput(profileLastName.value) !== (user.value.lastName ?? "")
-  );
-});
-
-const aiUsage = ref<{
-  attempts: number;
-  remaining: number;
-  limit: number;
-} | null>(null);
-
-const aiUsageLoading = ref(true);
-
-async function saveProfile() {
-  if (!isLoggedIn.value || !profileChanged.value) return;
-
-  profileSaving.value = true;
-  profileSaved.value = false;
-  profileError.value = "";
-
-  try {
-    const auth = await useAuth();
-    const token = await auth.getAccessToken();
-
-    await $fetch("/api/account/v2/profile", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}` },
-      body: {
-        firstName: normalizeProfileInput(profileFirstName.value),
-        lastName: normalizeProfileInput(profileLastName.value),
-      },
-    });
-
-    await resolve({ force: true });
-    profileSaved.value = true;
-  } catch (err: any) {
-    console.error("Profile update failed", err);
-    profileError.value =
-      err?.data?.statusMessage ??
-      "Something went wrong saving your profile. Please try again.";
-  } finally {
-    profileSaving.value = false;
-  }
-}
-
-async function deleteAccount() {
-  if (!isLoggedIn.value) return;
-  if (deleteConfirmInput.value.trim().toLowerCase() !== "delete") return;
-
-  deleteError.value = "";
-  deleting.value = true;
-
-  try {
-    const auth = await useAuth();
-    const token = await auth.getAccessToken();
-
-    await $fetch("/api/account/v2", {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${token}` },
-      body: { confirm: "DELETE" },
-    });
-
-    await auth.client?.logout({
-      logoutParams: { returnTo: window.location.origin },
-    });
-  } catch (err: any) {
-    console.error("Account deletion failed", err);
-    deleteError.value =
-      err?.data?.statusMessage ??
-      "Something went wrong deleting your account. Please try again.";
-  } finally {
-    deleting.value = false;
-    deleteConfirmInput.value = "";
-
-    if (!deleteError.value) {
-      showDeletePanel.value = false;
-    }
-  }
-}
-
-async function fetchAIUsage() {
-  if (!isLoggedIn.value) return;
-
-  aiUsageLoading.value = true;
-
-  try {
-    const auth = await useAuth();
-    const token = await auth.getAccessToken();
-
-    const usage = await $fetch("/api/ai/usage", {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    aiUsage.value = usage;
-    animateCount(animatedRemaining, usage.remaining);
-  } finally {
-    aiUsageLoading.value = false;
-  }
-}
-
-async function refreshAccountAfterStripeReturn() {
-  pageRestoreKey.value += 1;
-  aiUsage.value = null;
-  animatedRemaining.value = 0;
-  animatedPercent.value = 0;
-
-  await nextTick();
-  await resolve({ force: true });
-
-  if (isLoggedIn.value) {
-    await fetchAIUsage();
-  }
-}
-
-async function openBillingPortal() {
-  if (!isLoggedIn.value) return;
-
-  const auth = await useAuth();
-  const token = await auth.getAccessToken();
-
-  const { url } = await $fetch<{ url: string }>("/api/stripe/portal", {
-    method: "POST",
-    headers: { Authorization: `Bearer ${token}` },
-  });
-
-  window.location.replace(url);
-}
-
-watch(
-  user,
-  (value) => {
-    profileFirstName.value = value?.firstName ?? "";
-    profileLastName.value = value?.lastName ?? "";
-    profileSaved.value = false;
-    profileError.value = "";
-  },
-  { immediate: true },
-);
-
-watch([profileFirstName, profileLastName], () => {
-  profileSaved.value = false;
-  profileError.value = "";
-});
-
-watch(
-  () => [authReady.value, isLoggedIn.value],
-  async ([ready, loggedIn]) => {
-    if (ready && loggedIn && !aiUsage.value) {
-      await fetchAIUsage();
-    }
-  },
-  { immediate: true },
-);
-
-function handlePageShow(event: PageTransitionEvent) {
-  const navigation = performance.getEntriesByType("navigation")[0] as
-    | PerformanceNavigationTiming
-    | undefined;
-
-  if (event.persisted || navigation?.type === "back_forward") {
-    void refreshAccountAfterStripeReturn();
-  }
-}
-
-onMounted(() => {
-  window.addEventListener("pageshow", handlePageShow);
-});
-
-onBeforeUnmount(() => {
-  window.removeEventListener("pageshow", handlePageShow);
-});
-
-watch(aiUsage, (val) => {
-  if (!val || !val.limit) return;
-  const percent = (val.remaining / val.limit) * 100;
-  animateCount(animatedPercent, percent);
-});
 </script>
 
 <template>
-  <main class="account-page min-h-[calc(100dvh-56px)] w-full flex-none">
-    <!-- Soft page background -->
-    <div :key="pageRestoreKey" class="w-full px-4 py-14 sm:py-16">
-      <div class="w-full max-w-xl mx-auto space-y-8">
-        <!-- Header -->
-        <header v-if="isLoggedIn" class="w-full min-w-0 space-y-2">
-          <h1 class="text-3xl font-semibold text-gray-900">Account</h1>
-          <p class="text-sm text-gray-600">
-            Manage your plan, billing, and account settings.
-          </p>
-        </header>
+  <main class="min-h-screen bg-[#FBF7F1] px-5 py-10 text-[#211A16] sm:px-8">
+    <section class="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[0.85fr_1.15fr]">
+      <aside class="space-y-4">
+        <div class="rounded-lg bg-white p-6 shadow-sm">
+          <div class="flex items-center gap-4">
+            <div class="flex size-14 items-center justify-center rounded-full bg-[#F6E1E1] text-xl font-semibold">
+              {{ profile.firstName.charAt(0) }}
+            </div>
+            <div>
+              <p class="text-sm text-[#6B5C52]">Mock profile</p>
+              <h1 class="text-2xl font-semibold">{{ fullName }}</h1>
+            </div>
+          </div>
 
-        <!-- Loading -->
-        <div
-          v-if="!isLoggedIn"
-          class="w-full rounded-lg backdrop-blur p-5 text-gray-800"
-        >
-          Loading Account details…
+          <p class="mt-5 text-sm leading-6 text-[#6B5C52]">
+            Auth is disabled for now. This account screen uses local prototype data so the full product shell can be reviewed.
+          </p>
         </div>
 
-        <!-- Account details -->
-        <div v-else-if="isLoggedIn" class="w-full min-w-0 space-y-6">
-          <!-- Signed in card -->
-          <section
-            class="w-full min-w-0 rounded-lg backdrop-blur p-5"
-            style="background-color: #a8cae0"
+        <div class="rounded-lg bg-[#211A16] p-6 text-white shadow-sm">
+          <HeartHandshake class="size-6 text-[#E8C79F]" aria-hidden="true" />
+          <h2 class="mt-4 text-lg font-semibold">Plan preview</h2>
+          <p class="mt-2 text-sm leading-6 text-white/72">
+            Free prototype access. Premium matching and planning controls are mocked on the upgrade page.
+          </p>
+          <NuxtLink
+            to="/upgrade"
+            class="mt-5 inline-flex rounded-lg bg-white px-4 py-2 text-sm font-semibold text-[#211A16] transition hover:bg-[#F3E8DA]"
           >
-            <div class="flex w-full min-w-0 items-start gap-3">
-              <div
-                class="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/55 text-gray-900"
-              >
-                <UserRound class="h-4 w-4" aria-hidden="true" />
-              </div>
-              <div class="min-w-0">
-                <div class="text-sm text-gray-700">Signed in as</div>
-                <div
-                  v-if="fullName"
-                  class="mt-1 font-medium text-gray-900 break-words"
-                >
-                  {{ fullName }}
-                </div>
-                <div
-                  class="text-sm text-gray-800 break-all"
-                  :class="fullName ? 'mt-0.5' : 'mt-1 font-medium'"
-                >
-                  {{ user.email }}
-                </div>
-              </div>
-            </div>
-          </section>
+            View plans
+          </NuxtLink>
+        </div>
+      </aside>
 
-          <!-- Profile card -->
-          <section
-            class="w-full min-w-0 rounded-lg backdrop-blur p-5 space-y-4"
-            style="background-color: rgba(168, 202, 224, 0.45)"
-          >
-            <div class="flex min-w-0 items-start gap-3">
-              <div
-                class="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/60 text-gray-900"
-              >
-                <UserRound class="h-4 w-4" aria-hidden="true" />
-              </div>
-              <div class="min-w-0 flex-1 space-y-4">
-                <div>
-                  <h2 class="font-medium text-gray-900">Profile</h2>
-                  <p class="mt-1 text-sm text-gray-700">
-                    Add your name so TaroTea can personalize your experience.
-                  </p>
-                </div>
-
-                <form class="space-y-4" @submit.prevent="saveProfile">
-                  <div class="grid gap-3 sm:grid-cols-2">
-                    <label class="block text-sm text-gray-900">
-                      First name
-                      <input
-                        v-model="profileFirstName"
-                        type="text"
-                        autocomplete="given-name"
-                        maxlength="80"
-                        placeholder="Taro"
-                        class="mt-1 w-full rounded-lg border border-gray-300/70 bg-white/80 px-4 py-2 text-sm backdrop-blur focus:outline-none focus:ring-2 focus:ring-blue-300"
-                      />
-                    </label>
-
-                    <label class="block text-sm text-gray-900">
-                      Last name
-                      <input
-                        v-model="profileLastName"
-                        type="text"
-                        autocomplete="family-name"
-                        maxlength="80"
-                        placeholder="Tea"
-                        class="mt-1 w-full rounded-lg border border-gray-300/70 bg-white/80 px-4 py-2 text-sm backdrop-blur focus:outline-none focus:ring-2 focus:ring-blue-300"
-                      />
-                    </label>
-                  </div>
-
-                  <div
-                    v-if="profileError"
-                    class="rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800"
-                  >
-                    {{ profileError }}
-                  </div>
-
-                  <div
-                    v-else-if="profileSaved"
-                    class="rounded-lg border border-green-300 bg-green-50 px-4 py-3 text-sm text-green-800"
-                  >
-                    Profile saved.
-                  </div>
-
-                  <button
-                    type="submit"
-                    class="w-full rounded-lg bg-black py-3 font-semibold text-white shadow-sm transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
-                    :disabled="profileSaving || !profileChanged"
-                  >
-                    {{ profileSaving ? "Saving profile…" : "Save profile" }}
-                  </button>
-                </form>
-              </div>
-            </div>
-          </section>
-
-
-          <!-- Plan card -->
-          <section
-            class="w-full min-w-0 rounded-lg backdrop-blur p-5 space-y-3"
-            style="background-color: rgba(244, 205, 39, 0.35)"
-          >
-            <div class="flex w-full min-w-0 items-center justify-between gap-3">
-              <div class="flex min-w-0 items-start gap-3">
-                <div
-                  class="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/60 text-gray-900"
-                >
-                  <CreditCard class="h-4 w-4" aria-hidden="true" />
-                </div>
-                <div>
-                  <div class="text-sm text-gray-700">Plan</div>
-                  <div class="mt-1 font-medium text-gray-900">
-                    <span
-                      v-if="
-                        entitlement?.plan === 'monthly' &&
-                        entitlement?.subscription_status === 'active'
-                      "
-                      >Monthly</span
-                    >
-                    <span
-                      v-else-if="
-                        entitlement?.plan === 'yearly' &&
-                        entitlement?.subscription_status === 'active'
-                      "
-                      >Yearly</span
-                    >
-                    <span v-else>Free</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <p
-              v-if="isCanceling && currentPeriodEnd"
-              class="text-sm text-gray-600"
-            >
-              Cancels on
-              <span class="font-medium">{{
-                currentPeriodEnd.toLocaleDateString()
-              }}</span>
-            </p>
-
-            <p
-              v-else-if="
-                entitlement?.subscription_status === 'active' &&
-                currentPeriodEnd
-              "
-              class="text-sm text-gray-700"
-            >
-              Renews on
-              <span class="font-medium">{{
-                currentPeriodEnd.toLocaleDateString()
-              }}</span>
-            </p>
-
-            <p
-              v-else-if="entitlement?.subscription_status === 'past_due'"
-              class="text-sm text-red-700"
-            >
-              Payment issue — update your card to keep access.
-            </p>
-          </section>
-
-          <!-- AI Usage card -->
-          <section
-            class="w-full min-w-0 rounded-lg backdrop-blur p-5 space-y-3"
-            style="background-color: #f6e1e1"
-          >
-            <div
-              class="flex w-full min-w-0 items-start gap-3 text-sm text-gray-700 min-h-[80px]"
-            >
-              <div
-                class="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/60 text-gray-900"
-              >
-                <Sparkles class="h-4 w-4" aria-hidden="true" />
-              </div>
-
-              <div class="min-w-0 flex-1 space-y-2">
-                <div class="font-medium">AI Usage</div>
-
-                <template v-if="aiUsageLoading">
-                  <div class="h-5 w-40 rounded bg-white/50 animate-pulse"></div>
-                  <div class="w-full h-2 bg-gray-300 rounded overflow-hidden">
-                    <div
-                      class="h-2 w-1/3 rounded bg-white/50 animate-pulse"
-                    ></div>
-                  </div>
-                </template>
-
-                <template v-else-if="aiUsage">
-                  <p>
-                    {{ animatedRemaining.toLocaleString() }} requests remaining
-                  </p>
-
-                  <div
-                    class="w-full max-w-sm h-2 bg-gray-300 rounded overflow-hidden"
-                  >
-                    <div
-                      class="h-2 bg-blue-300 transition-[width] duration-500 ease-out"
-                      :style="{ width: animatedPercent + '%' }"
-                    ></div>
-                  </div>
-                </template>
-
-                <template v-else>
-                  <p class="text-gray-600">
-                    Unable to load AI usage right now.
-                  </p>
-                  <div class="w-full h-2 bg-gray-300 rounded overflow-hidden">
-                    <div class="h-2 w-0 bg-blue-300"></div>
-                  </div>
-                </template>
-              </div>
-            </div>
-          </section>
-
-          <!-- Primary action -->
-          <div class="space-y-3">
-            <button
-              v-if="entitlement && entitlement.plan !== 'free'"
-              type="button"
-              class="w-full rounded-lg py-3 font-semibold text-white border border-black/10 bg-black backdrop-blur hover:bg-gray-800 transition shadow-sm"
-              @click="openBillingPortal"
-            >
-              Manage billing
-            </button>
-
-            <div v-else>
-              <NuxtLink
-                to="/upgrade"
-                class="w-full block text-center rounded-lg py-3 font-semibold text-gray-900 bg-black text-white backdrop-blur transition shadow-sm hover:brightness-125 transition"
-              >
-                <span
-                  class="bg-gradient-to-r from-[#d48fd0] via-[#b57bc3] via-[#6faed6] to-[#d48fd0] bg-clip-text text-transparent hover:brightness-125 transition"
-                >
-                  Upgrade plan
-                </span>
-              </NuxtLink>
-
-              <!-- Optional: make upgrade feel “special” via text -->
-              <p class="mt-4 text-xs text-gray-500 text-center">
-                Upgrade to unlock more topics, levels, and practice tools.
+      <div class="space-y-5">
+        <section class="rounded-lg bg-white p-6 shadow-sm">
+          <div class="flex items-start gap-3">
+            <UserRound class="mt-1 size-5 text-[#B05D45]" aria-hidden="true" />
+            <div>
+              <h2 class="text-xl font-semibold">Profile basics</h2>
+              <p class="mt-1 text-sm text-[#6B5C52]">
+                Draft the minimum profile data needed for a coffee-date matching flow.
               </p>
             </div>
           </div>
 
-          <!-- Danger zone -->
-          <section
-            class="w-full min-w-0 rounded-lg border p-5 space-y-4"
-            style="
-              background: rgba(246, 225, 225, 0.55);
-              border-color: rgba(185, 28, 28, 0.25);
-            "
-          >
-            <div
-              class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between"
-            >
-              <div class="flex min-w-0 items-start gap-3">
-                <div
-                  class="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/70 text-red-800"
-                >
-                  <Trash2 class="h-4 w-4" aria-hidden="true" />
-                </div>
-                <div>
-                  <h2 class="text-base font-semibold text-gray-900">
-                    Danger zone
-                  </h2>
+          <form class="mt-6 grid gap-4 sm:grid-cols-2" @submit.prevent="saveProfile">
+            <label class="block text-sm font-medium">
+              First name
+              <input v-model="profile.firstName" class="field" type="text">
+            </label>
 
-                  <p class="mt-4 text-sm text-red-800">
-                    Deleting your account permanently removes your account, data
-                    and subscription. Your subscription will be canceled, and
-                    you will be signed out immediately.
-                  </p>
-                </div>
-              </div>
+            <label class="block text-sm font-medium">
+              Last name
+              <input v-model="profile.lastName" class="field" type="text">
+            </label>
 
-              <span
-                class="shrink-0 self-start text-xs font-semibold text-red-800 rounded-lg px-3 py-1"
-                style="background: rgba(244, 205, 39, 0.25)"
-              >
-                Permanent
-              </span>
+            <label class="block text-sm font-medium">
+              Neighbourhood
+              <input v-model="profile.neighbourhood" class="field" type="text">
+            </label>
+
+            <label class="block text-sm font-medium">
+              Coffee order
+              <input v-model="profile.coffee" class="field" type="text">
+            </label>
+
+            <label class="block text-sm font-medium sm:col-span-2">
+              Availability
+              <input v-model="profile.availability" class="field" type="text">
+            </label>
+
+            <div class="sm:col-span-2">
+              <button type="submit" class="rounded-lg bg-[#211A16] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#3A302A]">
+                Save mock profile
+              </button>
+              <span v-if="saved" class="ml-3 text-sm font-medium text-[#2F7D63]">Saved locally.</span>
             </div>
+          </form>
+        </section>
 
-            <div class="space-y-2 text-sm text-red-800/90">
-              <p>This action cannot be undone.</p>
-              <p>
-                It will also cancel any active subscription so it won’t renew.
+        <section class="grid gap-3 sm:grid-cols-2">
+          <article v-for="item in datePreferences" :key="item.label" class="rounded-lg bg-white p-5 shadow-sm">
+            <component :is="item.icon" class="size-5 text-[#B05D45]" aria-hidden="true" />
+            <p class="mt-3 text-sm font-semibold">{{ item.label }}</p>
+            <p class="mt-1 text-sm text-[#6B5C52]">{{ item.value }}</p>
+          </article>
+        </section>
+
+        <section class="rounded-lg border border-red-200 bg-[#F6E1E1] p-6">
+          <div class="flex items-start gap-3">
+            <Trash2 class="mt-1 size-5 text-red-800" aria-hidden="true" />
+            <div class="min-w-0 flex-1">
+              <h2 class="text-lg font-semibold">Danger zone preview</h2>
+              <p class="mt-2 text-sm text-red-900/80">
+                Account deletion is disabled in prototype mode. This block shows the future flow without touching real data.
               </p>
-              <p>Unused time will not be refunded.</p>
-            </div>
 
-            <div class="pt-2">
               <button
                 v-if="!showDeletePanel"
                 type="button"
-                class="w-full rounded-lg py-3 font-semibold border border-red-300 text-red-800 bg-white/70 backdrop-blur hover:bg-white transition"
-                @click="
-                  showDeletePanel = true;
-                  deleteError = '';
-                  deleteConfirmInput = '';
-                "
+                class="mt-4 rounded-lg bg-white/80 px-4 py-2 text-sm font-semibold text-red-900 transition hover:bg-white"
+                @click="showDeletePanel = true"
               >
-                Show delete options
+                Show delete mock
               </button>
 
-              <div v-else class="space-y-4">
-                <div class="space-y-2">
-                  <label class="block text-sm text-gray-900">
-                    Type <span class="font-mono font-semibold">delete</span> to
-                    confirm
-                  </label>
-
-                  <input
-                    v-model="deleteConfirmInput"
-                    type="text"
-                    placeholder="delete"
-                    class="w-full rounded-lg border px-4 py-2 text-sm bg-white/80 backdrop-blur border-red-300/60 focus:outline-none focus:ring-2 focus:ring-red-300"
-                  />
-                </div>
-
-                <div
-                  v-if="deleteError"
-                  class="rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800"
+              <div v-else class="mt-4 space-y-3">
+                <input
+                  v-model="deleteConfirmInput"
+                  class="field border-red-200"
+                  placeholder="Type delete"
+                  type="text"
                 >
-                  {{ deleteError }}
-                </div>
-
-                <div class="flex flex-col gap-2 sm:flex-row">
-                  <button
-                    type="button"
-                    class="w-full rounded-lg py-3 font-semibold border border-red-400/70 text-red-800 bg-white/70 backdrop-blur hover:bg-white transition disabled:opacity-50 disabled:cursor-not-allowed"
-                    :disabled="
-                      deleting ||
-                      deleteConfirmInput.trim().toLowerCase() !== 'delete'
-                    "
-                    @click="deleteAccount"
-                  >
-                    {{
-                      deleting
-                        ? "Deleting account…"
-                        : "Permanently delete account"
-                    }}
-                  </button>
-                  <button
-                    type="button"
-                    class="w-full rounded-lg py-3 font-semibold border border-gray-300 text-gray-800 bg-white/70 backdrop-blur hover:bg-white transition"
-                    :disabled="deleting"
-                    @click="
-                      showDeletePanel = false;
-                      deleteConfirmInput = '';
-                      deleteError = '';
-                    "
-                  >
-                    Cancel
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  class="rounded-lg bg-red-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+                  :disabled="deleteConfirmInput.trim().toLowerCase() !== 'delete'"
+                  @click="showDeletePanel = false; deleteConfirmInput = ''"
+                >
+                  Close mock delete flow
+                </button>
               </div>
             </div>
-          </section>
-        </div>
-
-        <!-- Not signed in -->
-        <div
-          v-else
-          class="w-full rounded-lg backdrop-blur p-6 text-center space-y-6"
-        >
-          <p class="text-black font-medium text-xl">You’re not signed in.</p>
-          <p class="text-sm text-black">
-            Sign in to manage your account and subscription.
-          </p>
-          <div class="mt-">
-            <NuxtLink
-              to="/"
-              class="inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-semibold transition text-black hover:underline"
-            >
-              Go home
-            </NuxtLink>
           </div>
-        </div>
+        </section>
       </div>
-    </div>
+    </section>
   </main>
 </template>
 
 <style scoped>
-.account-page,
-.account-page * {
-  box-sizing: border-box;
+.field {
+  margin-top: 0.35rem;
+  width: 100%;
+  border-radius: 0.5rem;
+  border: 1px solid #D8C8B6;
+  background: #FBF7F1;
+  padding: 0.7rem 0.85rem;
+  font-size: 0.95rem;
+  outline: none;
+}
+
+.field:focus {
+  border-color: #B05D45;
+  box-shadow: 0 0 0 3px rgba(176, 93, 69, 0.16);
 }
 </style>

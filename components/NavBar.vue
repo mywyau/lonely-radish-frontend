@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { loginWithGoogle, logout } from '@/composables/useAuth'
 import { useMeStateV2 } from '@/composables/useMeStateV2'
 import { Coffee, HeartHandshake, Menu, ShieldCheck, X } from '@lucide/vue'
 
-const { isLoggedIn, entitlement, resolve } = useMeStateV2()
+const { entitlement, resolve } = useMeStateV2()
 
 const mobileOpen = ref(false)
 
@@ -13,12 +12,6 @@ function toggleMobile() {
 
 function closeMobile() {
   mobileOpen.value = false
-}
-
-async function handleLogout() {
-  await logout()
-  await resolve({ force: true })
-  closeMobile()
 }
 
 onMounted(() => {
@@ -40,7 +33,7 @@ onMounted(() => {
       <!-- Desktop Navigation -->
       <nav class="hidden md:flex items-center gap-6">
 
-        <NuxtLink v-if="isLoggedIn" to="/coming-soon" class="nav-link hover:text-gray-600">
+        <NuxtLink to="/coming-soon" class="nav-link hover:text-gray-600">
           Matches
         </NuxtLink>
 
@@ -55,8 +48,7 @@ onMounted(() => {
         </NuxtLink>
 
         <!-- Logged In Desktop -->
-        <template v-if="isLoggedIn">
-
+        <template>
           <NuxtLink v-if="entitlement?.plan === 'free' || entitlement?.subscription_status !== 'active'" to="/upgrade"
             class="font-medium bg-clip-text text-transparent
                    bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500
@@ -65,23 +57,10 @@ onMounted(() => {
             Plus
           </NuxtLink>
 
-          <NuxtLink to="/stats" class="nav-link hover:text-gray-600">
-            Stats
-          </NuxtLink>
-
-          <NuxtLink to="/account" class="nav-link hover:text-gray-600">
+          <NuxtLink to="/account/v2" class="nav-link hover:text-gray-600">
             Account
           </NuxtLink>
-
-          <button type="button" class="text-red-600 hover:text-red-400" @click="handleLogout">
-            Log out
-          </button>
         </template>
-
-        <!-- Logged Out Desktop -->
-        <button v-else type="button" class="text-blue-600 hover:text-blue-400" @click="loginWithGoogle">
-          Login
-        </button>
 
       </nav>
 
@@ -100,7 +79,7 @@ onMounted(() => {
       <!-- Primary Links -->
       <div class="space-y-4 py-4">
 
-          <NuxtLink v-if="isLoggedIn" to="/coming-soon" class="mobile-primary block" @click="closeMobile">
+          <NuxtLink to="/coming-soon" class="mobile-primary block" @click="closeMobile">
           Matches
         </NuxtLink>
 
@@ -121,8 +100,7 @@ onMounted(() => {
       <!-- Account Section -->
       <div class="space-y-4 py-4">
 
-        <template v-if="isLoggedIn">
-
+        <template>
           <NuxtLink v-if="entitlement?.plan === 'free' || entitlement?.subscription_status !== 'active'" to="/upgrade"
             class="mobile-secondary font-medium block bg-clip-text text-transparent
                bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600
@@ -131,26 +109,9 @@ onMounted(() => {
             Plus
           </NuxtLink>
 
-          <NuxtLink to="/stats" class="mobile-primary block" @click="closeMobile">
-            Stats
-          </NuxtLink>
-
-          <NuxtLink to="/account" class="mobile-secondary block" @click="closeMobile">
+          <NuxtLink to="/account/v2" class="mobile-secondary block" @click="closeMobile">
             Account
           </NuxtLink>
-
-          <button type="button" class="mobile-danger text-red-600 hover:text-red-400 block text-left w-full"
-            @click="handleLogout">
-            Log out
-          </button>
-
-        </template>
-
-        <template v-else>
-          <button type="button" class="mobile-secondary text-blue-600 hover:text-blue-400 block text-left w-full"
-            @click="loginWithGoogle">
-            Login
-          </button>
         </template>
 
       </div>

@@ -46,8 +46,8 @@ definePageMeta({
       <p class="text-gray-700">
         If you have any questions about this notice or your data, you can contact us at:
         <br />
-        <a href="mailto:contact@tarotea.co.uk" class="font-medium text-gray-900 hover:underline">
-          contact@tarotea.co.uk
+        <a href="mailto:contact@lonelyradish.app" class="font-medium text-gray-900 hover:underline">
+          contact@lonelyradish.app
         </a>
       </p>
     </section>
@@ -66,8 +66,8 @@ definePageMeta({
         </li>
 
         <li>
-          <strong>Authentication information:</strong> login and session information
-          handled through our authentication provider. We do not store your password.
+          <strong>Prototype account information:</strong> local mock profile settings used
+          while authentication is disabled.
         </li>
 
         <li>
@@ -158,15 +158,7 @@ definePageMeta({
 
       <ul class="list-disc pl-6 space-y-2 text-gray-700">
         <li>
-          <strong>Auth0:</strong> authentication, login and account security.
-        </li>
-
-        <li>
           <strong>Stripe:</strong> payment processing, subscriptions, invoices and billing.
-        </li>
-
-        <li>
-          <strong>OpenAI:</strong> optional AI-assisted app features, if introduced and used.
         </li>
 
         <li>
@@ -207,11 +199,11 @@ definePageMeta({
                 Essential cookies
               </td>
               <td class="py-2 pr-4">
-                Used for login, authentication, session management, security and access
-                to account features.
+                Used for basic session continuity, security and access to account features
+                when those systems are enabled.
               </td>
               <td class="py-2 pr-4">
-                Authentication/session cookies
+                Session cookies
               </td>
             </tr>
 
@@ -311,8 +303,8 @@ definePageMeta({
       <p class="text-gray-700">
         To exercise these rights, contact us at:
         <br />
-        <a href="mailto:contact@tarotea.co.uk" class="font-medium text-gray-900 hover:underline">
-          contact@tarotea.co.uk
+        <a href="mailto:contact@lonelyradish.app" class="font-medium text-gray-900 hover:underline">
+          contact@lonelyradish.app
         </a>
       </p>
     </section>
@@ -375,8 +367,8 @@ definePageMeta({
       <p class="text-gray-700">
         If you have any questions about this Privacy Notice, please contact:
         <br />
-        <a href="mailto:contact@tarotea.co.uk" class="font-medium text-gray-900 hover:underline">
-          contact@tarotea.co.uk
+        <a href="mailto:contact@lonelyradish.app" class="font-medium text-gray-900 hover:underline">
+          contact@lonelyradish.app
         </a>
       </p>
     </section>
