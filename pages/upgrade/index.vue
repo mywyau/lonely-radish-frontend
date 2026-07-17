@@ -2,7 +2,7 @@
 
 definePageMeta({ layout: 'default' })
 
-import { CalendarDays, Coffee, HeartHandshake, MapPin, ShieldCheck, Sparkles, Tags } from '@lucide/vue';
+import { CalendarDays, HeartHandshake, MapPin, ShieldCheck, Sparkles, Tags } from '@lucide/vue';
 import { markRaw } from 'vue';
 import { useUpgrade } from '@/composables/useUpgrade';
 import { useMeStateV2 } from '~/composables/useMeStateV2';
@@ -23,9 +23,9 @@ const yearlySavings = (monthlyPrice * 12 - yearlyPrice).toFixed(2)
 const yearlyMonthlyEquivalent = (yearlyPrice / 12).toFixed(2)
 
 const benefits = [
-  { icon: markRaw(HeartHandshake), text: 'A larger table of thoughtful coffee-date matches' },
-  { icon: markRaw(CalendarDays), text: 'Priority availability matching around real date windows' },
-  { icon: markRaw(Coffee), text: 'Coffee-date planning tools and cafe shortlists' },
+  { icon: markRaw(HeartHandshake), text: 'More thoughtful matches around shared activities' },
+  { icon: markRaw(CalendarDays), text: 'Priority availability matching around real plan windows' },
+  { icon: markRaw(Sparkles), text: 'Activity planning tools and public-place shortlists' },
   { icon: markRaw(MapPin), text: 'More flexible neighbourhood and distance preferences' },
   { icon: markRaw(ShieldCheck), text: 'Extra safety and privacy controls as they launch' },
   { icon: markRaw(Tags), text: 'Early access to new dating features' },
@@ -45,19 +45,17 @@ function upgrade(plan: 'monthly' | 'yearly') {
 </script>
 
 <template>
-  <main class="min-h-[70vh] px-4 pt-6 pb-6">
-
-    <div class="max-w-3xl mx-auto">
+  <main class="min-h-[70vh] bg-[#FBF7F1] px-4 pb-10 pt-6 text-[#2A1520]">
+    <div class="mx-auto max-w-3xl">
 
 
 
       <!-- Card -->
-      <div class="p-6 md:p-10 text-center space-y-6">
+      <div class="space-y-6 rounded-lg bg-white p-6 text-center shadow-[0_12px_28px_rgba(180,35,74,0.08)] md:p-10">
 
         <!-- Icon -->
         <div class="flex justify-center">
-          <div class="w-20 h-20 flex items-center justify-center rounded-full text-[#7A6FCB]"
-            style="background-color:#EAB8E4;">
+          <div class="flex h-20 w-20 items-center justify-center rounded-full bg-[#FCE3E8] text-[#B4234A]">
             <Sparkles class="h-10 w-10" aria-hidden="true" />
           </div>
         </div>
@@ -67,69 +65,65 @@ function upgrade(plan: 'monthly' | 'yearly') {
           Upgrade your plan
         </h1>
 
-        <p class="text-gray-600 max-w-xl mx-auto">
-          Unlock premium matching, planning, and profile tools as they become available.
+        <p class="mx-auto max-w-xl text-[#6E4D58]">
+          Unlock premium matching, activity planning, and profile tools as they become available.
         </p>
 
         <!-- Benefits -->
-        <div class="max-w-xl mx-auto rounded-2xl p-5 md:p-6">
-          <ul class="space-y-3 text-left text-gray-700 leading-relaxed">
+        <div class="mx-auto max-w-xl rounded-lg bg-[#FBF7F1] p-5 md:p-6">
+          <ul class="space-y-3 text-left leading-relaxed text-[#4D2F39]">
             <li v-for="benefit in benefits" :key="benefit.text" class="flex items-start gap-3">
-              <component :is="benefit.icon" class="mt-0.5 h-4 w-4 shrink-0 text-[#7A6FCB]" aria-hidden="true" />
+              <component :is="benefit.icon" class="mt-0.5 h-4 w-4 shrink-0 text-[#B4234A]" aria-hidden="true" />
               <span>{{ benefit.text }}</span>
             </li>
           </ul>
         </div>
 
         <!-- Plans -->
-        <div class="space-y-3 pt-4 max-w-md mx-auto">
-          <p class="text-sm text-gray-500">
+        <div class="mx-auto max-w-md space-y-3 pt-4">
+          <p class="text-sm text-[#6E4D58]">
             Choose a plan
           </p>
 
-          <!-- Monthly (Pastel themed) -->
-          <button class="block w-full rounded-xl py-3 font-medium transition shadow-sm"
-            style="background-color:#A8CAE0;" :class="isSubscribed
+          <button class="block w-full rounded-lg bg-[#FCE3E8] px-3 py-3 font-medium text-[#2A1520] transition shadow-sm"
+            :class="isSubscribed
               ? 'opacity-60 cursor-not-allowed'
-              : 'hover:brightness-110 active:scale-[0.98]'" :disabled="isSubscribed" @click="upgrade('monthly')">
+              : 'hover:bg-[#F7D4DC] active:scale-[0.98]'" :disabled="isSubscribed" @click="upgrade('monthly')">
             <span class="block">Monthly plan · £{{ monthlyPrice }}</span>
-            <span class="block text-xs text-gray-700 mt-0.5">Flexible month-to-month billing</span>
+            <span class="mt-0.5 block text-xs text-[#6E4D58]">Flexible month-to-month billing</span>
           </button>
 
-          <!-- Yearly (KEEP BLACK) -->
-          <button class="block w-full rounded-xl text-black px-3 py-3 font-medium transition shadow-md" :class="isSubscribed
+          <button class="block w-full rounded-lg bg-[#B4234A] px-3 py-3 font-medium text-white transition shadow-[0_12px_26px_rgba(180,35,74,0.18)]" :class="isSubscribed
             ? 'opacity-60 cursor-not-allowed'
-            : 'hover:bg-gray-800 active:scale-[0.98]'" :disabled="isSubscribed" @click="upgrade('yearly')"
-            style="background-color:rgba(244,205,39,0.35);">
+            : 'hover:bg-[#8F1839] active:scale-[0.98]'" :disabled="isSubscribed" @click="upgrade('yearly')">
             <span class="block">Yearly plan · £{{ yearlyPrice }}</span>
-            <span class="block text-xs text-gray-700 mt-0.5">≈ £{{ yearlyMonthlyEquivalent }}/mo · Get 2 months
-              free</span>
+            <span class="mt-0.5 block text-xs text-white/80">≈ £{{ yearlyMonthlyEquivalent }}/mo · Save £{{ yearlySavings }}</span>
           </button>
 
         </div>
 
         <!-- Subscribed -->
-        <p v-if="isSubscribed" class="text-sm text-gray-600">
+        <p v-if="isSubscribed" class="text-sm text-[#6E4D58]">
           You’re already subscribed.
-          <NuxtLink to="/account/v2" class="text-purple-500 hover:underline">
+          <NuxtLink to="/account/v2" class="text-[#B4234A] hover:underline">
             Manage your plan
           </NuxtLink>
         </p>
 
         <!-- Continue without upgrading -->
-        <p v-if="!isSubscribed" class="text-sm text-gray-500">
-          <NuxtLink to="/coming-soon" class="hover:underline">
+        <p v-if="!isSubscribed" class="text-sm text-[#6E4D58]">
+          <NuxtLink to="/coming-soon" class="hover:text-[#B4234A] hover:underline">
             Continue without upgrading
           </NuxtLink>
         </p>
 
-        <p class="text-sm text-gray-500">
-          <NuxtLink to="/refund-policy" class="hover:underline">
+        <p class="text-sm text-[#6E4D58]">
+          <NuxtLink to="/refund-policy" class="hover:text-[#B4234A] hover:underline">
             View refund policy
           </NuxtLink>
         </p>
 
-        <p class="text-xs text-gray-400 pt-4">
+        <p class="pt-4 text-xs text-[#7C5963]">
           You can cancel your plan at any time.
         </p>
 

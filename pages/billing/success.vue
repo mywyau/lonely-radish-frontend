@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { CalendarDays, CircleCheck, Coffee, HeartHandshake } from '@lucide/vue'
+import { CalendarDays, CircleCheck, HeartHandshake, Sparkles } from '@lucide/vue'
 
 definePageMeta({
   layout: "default",
@@ -32,8 +32,8 @@ const plan = computed(() => route.query.plan === "yearly" ? "Yearly" : "Monthly"
           <p class="mt-3 text-sm font-semibold">Date windows</p>
         </div>
         <div class="rounded-lg bg-[#FBF7F1] p-4">
-          <Coffee class="size-5 text-[#B05D45]" aria-hidden="true" />
-          <p class="mt-3 text-sm font-semibold">Cafe planning</p>
+          <Sparkles class="size-5 text-[#B05D45]" aria-hidden="true" />
+          <p class="mt-3 text-sm font-semibold">Activity planning</p>
         </div>
       </div>
 

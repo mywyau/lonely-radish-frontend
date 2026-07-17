@@ -20,15 +20,15 @@ useHead({
 
 useSeoMeta({
   ogUrl: `${baseUrl}/`,
-  ogTitle: 'Lonely Radish · Coffee-date dating',
-  ogDescription: 'A casual dating app for low-pressure coffee dates, clear availability, and thoughtful introductions.',
-  twitterTitle: 'Lonely Radish · Coffee-date dating',
-  twitterDescription: 'A casual dating app for low-pressure coffee dates, clear availability, and thoughtful introductions.',
+  ogTitle: 'Lonely Radish · Activity-first dating',
+  ogDescription: 'A casual dating app for people who want to meet through shared plans, clear availability, and thoughtful introductions.',
+  twitterTitle: 'Lonely Radish · Activity-first dating',
+  twitterDescription: 'A casual dating app for people who want to meet through shared plans, clear availability, and thoughtful introductions.',
 })
 </script>
 
 <template>
-  <div class="min-h-screen flex flex-col overflow-x-hidden bg-[#FFF6F7]">
+  <div class="min-h-screen flex flex-col overflow-x-hidden bg-[#FBF7F1]">
     <BlankNavBar />
 
     <BackLink

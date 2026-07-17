@@ -25,7 +25,7 @@ definePageMeta({
             <div class="rounded-lg bg-[#FBF7F1] p-4">
               <Sparkles class="size-5 text-[#B05D45]" aria-hidden="true" />
               <p class="mt-3 text-sm font-semibold">Profile polish</p>
-              <p class="mt-1 text-sm text-[#6B5C52]">Prompts and coffee-date intent hints.</p>
+              <p class="mt-1 text-sm text-[#6B5C52]">Prompts and activity-date intent hints.</p>
             </div>
             <div class="rounded-lg bg-[#FBF7F1] p-4">
               <ShieldCheck class="size-5 text-[#2F7D63]" aria-hidden="true" />

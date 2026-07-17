@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { CalendarDays, Coffee, HeartHandshake, MapPin, ShieldCheck, Trash2, UserRound } from "@lucide/vue";
+import { CalendarDays, HeartHandshake, MapPin, ShieldCheck, Sparkles, Trash2, UserRound } from "@lucide/vue";
 
 definePageMeta({
   title: "Mock Account · Lonely Radish",
@@ -9,7 +9,7 @@ const profile = reactive({
   firstName: "Maya",
   lastName: "Lee",
   neighbourhood: "East London",
-  coffee: "Flat white",
+  activity: "Gallery walk",
   availability: "Thu evenings, Sat mornings",
 });
 
@@ -20,9 +20,9 @@ const deleteConfirmInput = ref("");
 const fullName = computed(() => `${profile.firstName} ${profile.lastName}`.trim());
 
 const datePreferences = [
-  { icon: Coffee, label: "Coffee mood", value: "Quiet cafe, 30 minutes" },
+  { icon: Sparkles, label: "Activity mood", value: "Gallery walk, market, or low-key gig" },
   { icon: MapPin, label: "Distance", value: "Up to 4 km" },
-  { icon: CalendarDays, label: "Best windows", value: "After work or weekend brunch" },
+  { icon: CalendarDays, label: "Best windows", value: "After work or weekend afternoons" },
   { icon: ShieldCheck, label: "Safety", value: "Public places only" },
 ];
 
@@ -35,34 +35,34 @@ function saveProfile() {
 </script>
 
 <template>
-  <main class="min-h-screen bg-[#FBF7F1] px-5 py-10 text-[#211A16] sm:px-8">
+  <main class="min-h-screen bg-[#FBF7F1] px-5 py-10 text-[#2A1520] sm:px-8">
     <section class="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[0.85fr_1.15fr]">
       <aside class="space-y-4">
-        <div class="rounded-lg bg-white p-6 shadow-sm">
+        <div class="rounded-lg bg-white p-6 shadow-[0_12px_28px_rgba(180,35,74,0.08)]">
           <div class="flex items-center gap-4">
-            <div class="flex size-14 items-center justify-center rounded-full bg-[#F6E1E1] text-xl font-semibold">
+            <div class="flex size-14 items-center justify-center rounded-full bg-[#FCE3E8] text-xl font-semibold text-[#B4234A]">
               {{ profile.firstName.charAt(0) }}
             </div>
             <div>
-              <p class="text-sm text-[#6B5C52]">Mock profile</p>
+              <p class="text-sm text-[#6E4D58]">Mock profile</p>
               <h1 class="text-2xl font-semibold">{{ fullName }}</h1>
             </div>
           </div>
 
-          <p class="mt-5 text-sm leading-6 text-[#6B5C52]">
+          <p class="mt-5 text-sm leading-6 text-[#6E4D58]">
             Auth is disabled for now. This account screen uses local prototype data so the full product shell can be reviewed.
           </p>
         </div>
 
-        <div class="rounded-lg bg-[#211A16] p-6 text-white shadow-sm">
-          <HeartHandshake class="size-6 text-[#E8C79F]" aria-hidden="true" />
+        <div class="rounded-lg bg-[#2A1520] p-6 text-white shadow-[0_14px_32px_rgba(42,21,32,0.16)]">
+          <HeartHandshake class="size-6 text-[#F7B7C4]" aria-hidden="true" />
           <h2 class="mt-4 text-lg font-semibold">Plan preview</h2>
           <p class="mt-2 text-sm leading-6 text-white/72">
             Free prototype access. Premium matching and planning controls are mocked on the upgrade page.
           </p>
           <NuxtLink
             to="/upgrade"
-            class="mt-5 inline-flex rounded-lg bg-white px-4 py-2 text-sm font-semibold text-[#211A16] transition hover:bg-[#F3E8DA]"
+            class="mt-5 inline-flex rounded-lg bg-white px-4 py-2 text-sm font-semibold text-[#8F1839] transition hover:bg-[#F3E8DA]"
           >
             View plans
           </NuxtLink>
@@ -70,13 +70,13 @@ function saveProfile() {
       </aside>
 
       <div class="space-y-5">
-        <section class="rounded-lg bg-white p-6 shadow-sm">
+        <section class="rounded-lg bg-white p-6 shadow-[0_12px_28px_rgba(180,35,74,0.08)]">
           <div class="flex items-start gap-3">
-            <UserRound class="mt-1 size-5 text-[#B05D45]" aria-hidden="true" />
+            <UserRound class="mt-1 size-5 text-[#B4234A]" aria-hidden="true" />
             <div>
               <h2 class="text-xl font-semibold">Profile basics</h2>
-              <p class="mt-1 text-sm text-[#6B5C52]">
-                Draft the minimum profile data needed for a coffee-date matching flow.
+              <p class="mt-1 text-sm text-[#6E4D58]">
+                Draft the minimum profile data needed for an activity-based matching flow.
               </p>
             </div>
           </div>
@@ -98,8 +98,8 @@ function saveProfile() {
             </label>
 
             <label class="block text-sm font-medium">
-              Coffee order
-              <input v-model="profile.coffee" class="field" type="text">
+              Preferred activity
+              <input v-model="profile.activity" class="field" type="text">
             </label>
 
             <label class="block text-sm font-medium sm:col-span-2">
@@ -108,35 +108,35 @@ function saveProfile() {
             </label>
 
             <div class="sm:col-span-2">
-              <button type="submit" class="rounded-lg bg-[#211A16] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#3A302A]">
+              <button type="submit" class="rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#8F1839]">
                 Save mock profile
               </button>
-              <span v-if="saved" class="ml-3 text-sm font-medium text-[#2F7D63]">Saved locally.</span>
+              <span v-if="saved" class="ml-3 text-sm font-medium text-[#6E8B52]">Saved locally.</span>
             </div>
           </form>
         </section>
 
         <section class="grid gap-3 sm:grid-cols-2">
-          <article v-for="item in datePreferences" :key="item.label" class="rounded-lg bg-white p-5 shadow-sm">
-            <component :is="item.icon" class="size-5 text-[#B05D45]" aria-hidden="true" />
+          <article v-for="item in datePreferences" :key="item.label" class="rounded-lg bg-white p-5 shadow-[0_10px_24px_rgba(180,35,74,0.08)]">
+            <component :is="item.icon" class="size-5 text-[#B4234A]" aria-hidden="true" />
             <p class="mt-3 text-sm font-semibold">{{ item.label }}</p>
-            <p class="mt-1 text-sm text-[#6B5C52]">{{ item.value }}</p>
+            <p class="mt-1 text-sm text-[#6E4D58]">{{ item.value }}</p>
           </article>
         </section>
 
-        <section class="rounded-lg border border-red-200 bg-[#F6E1E1] p-6">
+        <section class="rounded-lg bg-[#FCE3E8] p-6 shadow-[0_10px_24px_rgba(180,35,74,0.08)]">
           <div class="flex items-start gap-3">
-            <Trash2 class="mt-1 size-5 text-red-800" aria-hidden="true" />
+            <Trash2 class="mt-1 size-5 text-[#8F1839]" aria-hidden="true" />
             <div class="min-w-0 flex-1">
               <h2 class="text-lg font-semibold">Danger zone preview</h2>
-              <p class="mt-2 text-sm text-red-900/80">
+              <p class="mt-2 text-sm text-[#4D2F39]">
                 Account deletion is disabled in prototype mode. This block shows the future flow without touching real data.
               </p>
 
               <button
                 v-if="!showDeletePanel"
                 type="button"
-                class="mt-4 rounded-lg bg-white/80 px-4 py-2 text-sm font-semibold text-red-900 transition hover:bg-white"
+                class="mt-4 rounded-lg bg-white/80 px-4 py-2 text-sm font-semibold text-[#8F1839] transition hover:bg-white"
                 @click="showDeletePanel = true"
               >
                 Show delete mock
@@ -145,13 +145,13 @@ function saveProfile() {
               <div v-else class="mt-4 space-y-3">
                 <input
                   v-model="deleteConfirmInput"
-                  class="field border-red-200"
+                  class="field"
                   placeholder="Type delete"
                   type="text"
                 >
                 <button
                   type="button"
-                  class="rounded-lg bg-red-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+                  class="rounded-lg bg-[#8F1839] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
                   :disabled="deleteConfirmInput.trim().toLowerCase() !== 'delete'"
                   @click="showDeletePanel = false; deleteConfirmInput = ''"
                 >
@@ -171,7 +171,7 @@ function saveProfile() {
   margin-top: 0.35rem;
   width: 100%;
   border-radius: 0.5rem;
-  border: 1px solid #D8C8B6;
+  border: 1px solid #E8D8C4;
   background: #FBF7F1;
   padding: 0.7rem 0.85rem;
   font-size: 0.95rem;
@@ -179,7 +179,7 @@ function saveProfile() {
 }
 
 .field:focus {
-  border-color: #B05D45;
-  box-shadow: 0 0 0 3px rgba(176, 93, 69, 0.16);
+  border-color: #B4234A;
+  box-shadow: 0 0 0 3px rgba(180, 35, 74, 0.14);
 }
 </style>

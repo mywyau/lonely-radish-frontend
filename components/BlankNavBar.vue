@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useMeStateV2 } from '@/composables/useMeStateV2'
-import { CalendarDays, Coffee, HeartHandshake, House, Menu, ShieldCheck, Sparkles, X } from '@lucide/vue'
+import { CalendarDays, HeartHandshake, House, Menu, ShieldCheck, Sparkles, X } from '@lucide/vue'
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 
 const { user, resolve } = useMeStateV2()
@@ -16,7 +16,7 @@ const navLinks = computed(() => {
   const links = [
     { to: '/', label: 'Home', icon: House },
     { to: '/coming-soon', label: 'Browse Matches', icon: HeartHandshake },
-    { to: '/coming-soon', label: 'Coffee Dates', icon: Coffee },
+    { to: '/coming-soon', label: 'Activities', icon: Sparkles },
     { to: '/coming-soon', label: 'Availability', icon: CalendarDays },
     { to: '/content-not-available', label: 'Safety', icon: ShieldCheck },
   ]
@@ -81,13 +81,13 @@ onBeforeUnmount(() => {
 
         <div v-if="menuOpen" class="menu-panel">
           <NuxtLink to="/account/v2"
-            class="w-full flex items-center rounded-lg px-3 py-2 text-sm text-[#2A1520] hover:bg-[#FCE3E8] transition"
+            class="w-full flex items-center rounded-lg px-3 py-2 text-sm text-[#2A1520] hover:bg-[#F3E8DA] transition"
             @click="closeMenu">
             {{ accountLabel }}
           </NuxtLink>
 
           <NuxtLink to="/upgrade"
-            class="w-full flex items-center rounded-lg px-3 py-2 text-sm font-semibold hover:bg-[#FCE3E8] transition"
+            class="w-full flex items-center rounded-lg px-3 py-2 text-sm font-semibold hover:bg-[#F3E8DA] transition"
             @click="closeMenu">
 
             <span
@@ -115,8 +115,8 @@ onBeforeUnmount(() => {
       <aside v-if="navOpen" id="app-navigation-panel" class="nav-drawer" aria-label="Main navigation panel">
         <div class="px-4 py-4 border-b border-black/20">
           <span class="flex items-center gap-2 text-xl font-semibold text-[#2A1520]">
-            <Coffee class="h-5 w-5" aria-hidden="true" />
-            Coffee table
+            <Sparkles class="h-5 w-5" aria-hidden="true" />
+            Activity table
           </span>
         </div>
 
@@ -136,9 +136,9 @@ onBeforeUnmount(() => {
 <style scoped>
 .header-shell {
   z-index: 80;
-  --radish-milk: #FFF6F7;
+  --radish-milk: #FBF7F1;
   --radish-ink: #2A1520;
-  --radish-blush: #FCE3E8;
+  --radish-blush: #F3E8DA;
   --radish-leaf: #6E8B52;
   --radish-root: #B4234A;
 }
@@ -296,7 +296,7 @@ onBeforeUnmount(() => {
   width: 220px;
   border-radius: 10px;
   border: 1px solid rgba(180, 35, 74, 0.14);
-  background: rgba(255, 246, 247, 0.92);
+  background: rgba(255, 255, 255, 0.96);
   backdrop-filter: blur(10px);
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.12);
   padding: 10px;

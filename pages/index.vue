@@ -2,7 +2,6 @@
 import {
   CalendarDays,
   CheckCircle2,
-  Coffee,
   HeartHandshake,
   MapPin,
   MessageCircle,
@@ -11,10 +10,10 @@ import {
 } from '@lucide/vue'
 
 useSeoMeta({
-  title: 'Coffee dates without the endless chat',
-  description: 'Meet new people nearby for simple, low-pressure coffee dates.',
-  ogTitle: 'Coffee dates without the endless chat | Lonely Radish',
-  ogDescription: 'Find someone nearby, pick a cafe, and meet for a casual coffee.',
+  title: 'Meet through activities you both want to do',
+  description: 'Meet new people nearby through simple, low-pressure shared plans.',
+  ogTitle: 'Meet through activities you both want to do | Lonely Radish',
+  ogDescription: 'Find someone nearby, pick an activity, and meet around something you both enjoy.',
 })
 
 const { data: stats } = await useFetch('/api/total-users-stats', {
@@ -39,19 +38,19 @@ const greeting = computed(() => {
 const featuredMatches = [
   {
     name: 'Maya',
-    detail: 'Flat white, art walks, Sunday markets',
+    detail: 'Gallery walks, Sunday markets, low-key gigs',
     time: 'Free Thu evening',
-    tone: 'bg-[#FCE3E8]',
+    tone: 'bg-[#F3E8DA]',
   },
   {
     name: 'Theo',
-    detail: 'Filter coffee, bookshops, live jazz',
+    detail: 'Bookshops, live jazz, evening walks',
     time: 'Free Sat morning',
     tone: 'bg-[#EAF2DE]',
   },
   {
     name: 'Nina',
-    detail: 'Iced latte, indie films, city walks',
+    detail: 'Indie films, city walks, casual food spots',
     time: 'Free after work',
     tone: 'bg-[#F7D4DC]',
   },
@@ -59,25 +58,25 @@ const featuredMatches = [
 
 const dateFlow = [
   {
-    title: 'Pick your coffee mood',
-    description: 'Say whether you feel like a quick espresso, a slow weekend cafe, or a walk with takeaway cups.',
-    icon: Coffee,
+    title: 'Pick an activity',
+    description: 'Choose the kind of plan you would actually enjoy, from a gallery walk to a film, market, gig, sports or a simple stroll.',
+    icon: Sparkles,
   },
   {
     title: 'Meet someone nearby',
-    description: 'Browse people who are close are nearby.',
+    description: 'Browse people nearby who want to do something similar, at a time that works for both of you.',
     icon: CalendarDays,
   },
   {
     title: 'Keep it easy',
-    description: 'Choose a place and time and let life take the lead. Meet and cash in for a cheap coffee',
+    description: 'Agree the plan and get stuck in. Keep meet-ups feeling natural instead of overplanned.',
     icon: MessageCircle,
   },
 ]
 
 const principles = [
   'People who are open to forming new relationships',
-  // 'Coffee preferences, neighbourhoods, and simple plans up front',
+  'Activity preferences, neighbourhoods, and simple plans up front',
   'Public places first, with safety reminders and confirmations on meetups.',
 ]
 
@@ -117,30 +116,30 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <main class="min-h-screen bg-[#FFF6F7] text-[#2A1520]">
+  <main class="min-h-screen bg-[#FBF7F1] text-[#2A1520]">
     <section class="hero-shell">
       <div class="mx-auto flex min-h-[calc(100vh-5rem)] max-w-6xl flex-col justify-end px-5 pb-8 pt-24 sm:px-8 lg:min-h-[40rem] lg:pb-12">
-        <div v-if="isLoggedIn" class="mb-7 max-w-xl rounded-lg border border-[#F2C8D0] bg-white px-6 py-5 shadow-sm">
-          <p class="text-lg font-semibold text-[#2A1520]">
+        <div v-if="isLoggedIn" class="mb-7 max-w-xl rounded-lg bg-[#C13A5C] px-6 py-5 shadow-[0_16px_34px_rgba(180,35,74,0.2)]">
+          <p class="text-lg font-semibold text-white">
             {{ greeting }}
           </p>
-          <p class="mt-2 text-base leading-6 text-[#6E4D58]">
-            New coffee matches are ready to browse.
+          <p class="mt-2 text-base leading-6 text-white">
+            New activity matches are ready to browse.
           </p>
         </div>
 
         <div class="max-w-3xl">
-          <p class="mb-4 inline-flex items-center gap-2 rounded-full border border-[#F2C8D0] bg-white px-3 py-1 text-sm font-medium text-[#8F1839] shadow-sm">
-            <Coffee class="size-4" aria-hidden="true" />
-            Casual coffee dates nearby
+          <p class="mb-4 inline-flex items-center gap-2 rounded-full border border-[#E8D8C4] bg-white px-3 py-1 text-sm font-medium text-[#8F1839] shadow-sm">
+            <Sparkles class="size-4" aria-hidden="true" />
+            Casual activity dates nearby
           </p>
 
           <h1 class="max-w-3xl text-4xl font-semibold leading-[1.05] tracking-tight text-[#2A1520] sm:text-6xl">
-            Meet for coffee, not for endless chat.
+            Meet through something you both enjoy.
           </h1>
 
           <p class="mt-5 max-w-2xl text-base leading-7 text-[#6E4D58] sm:text-lg">
-            Find someone nearby who is up for a simple coffee. Choose a cafe, meet interesting new people.
+            Find someone nearby who wants to do the same kind of thing. Pick an activity, choose a public place, and meet naturally.
           </p>
 
           <div class="mt-7 flex flex-col gap-3 sm:flex-row">
@@ -157,7 +156,7 @@ onBeforeUnmount(() => {
       </div>
     </section>
 
-    <section class="mx-auto grid max-w-4xl gap-4 px-5 py-6 sm:grid-cols-2 sm:px-8">
+    <!-- <section class="mx-auto grid max-w-4xl gap-4 px-5 py-6 sm:grid-cols-2 sm:px-8">
       <article class="metric-card">
         <span class="metric-value">{{ currentUsers ?? '-' }}</span>
         <span class="metric-label">People browsing now</span>
@@ -167,16 +166,16 @@ onBeforeUnmount(() => {
         <span class="metric-value">{{ stats?.totalUsers ?? '-' }}</span>
         <span class="metric-label">Early members</span>
       </article>
-    </section>
+    </section> -->
 
     <section class="mx-auto grid max-w-6xl gap-8 px-5 py-10 sm:px-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-start">
       <div>
         <p class="section-kicker">Meet casually</p>
         <h2 class="section-heading">
-          Skip the endless swiping. Say yes to a coffee.
+          Skip the endless swiping. Say yes to a plan.
         </h2>
         <p class="mt-4 max-w-xl text-[#6E4D58]">
-          LonelyRadish is for people who just want to chat over coffee.
+          Lonely Radish is for people who would rather meet around a shared activity than keep guessing over messages.
         </p>
 
         <ul class="mt-6 space-y-3">
@@ -222,7 +221,7 @@ onBeforeUnmount(() => {
           <div>
             <!-- <p class="section-kicker text-[#F7B7C4]">How it works</p> -->
             <h2 class="section-heading max-w-2xl text-white">
-              From match to coffee without making it complicated.
+              From match to shared plan without making it complicated.
             </h2>
           </div>
           <NuxtLink to="/contact" class="text-sm font-semibold text-[#F7B7C4] hover:text-white">
@@ -251,7 +250,7 @@ onBeforeUnmount(() => {
           Meet somewhere safe and public.
         </h2>
         <p class="mt-3 text-sm leading-6 text-[#6E4D58]">
-          First coffees should feel simple and comfortable. Pick a public cafe or a safe place to chat and connect.
+          First meet-ups should feel simple and comfortable. Pick a public place, choose an activity with clear expectations, and keep it easy to leave or extend.
         </p>
       </article>
 
@@ -261,7 +260,7 @@ onBeforeUnmount(() => {
           Keep it cool, keep it chill.
         </h2>
         <p class="mt-3 text-sm leading-6 text-[#6E4D58]">
-          Come as you are, meet for a coffee, and connect with new people.
+          Come as you are, do something you will both enjoy, and see if there is a reason to meet again.
         </p>
       </article>
     </section>
@@ -273,7 +272,7 @@ onBeforeUnmount(() => {
   position: relative;
   min-height: calc(100vh - 5rem);
   overflow: hidden;
-  background: linear-gradient(180deg, #fff6f7 0%, #fce3e8 100%);
+  background: linear-gradient(180deg, #fbf7f1 0%, #f3e8da 100%);
   border-bottom: 1px solid rgba(180, 35, 74, 0.12);
 }
 
@@ -311,10 +310,10 @@ onBeforeUnmount(() => {
 
 .metric-card,
 .foundation-card {
-  border: 1px solid rgba(180, 35, 74, 0.14);
+  /* border: 1px solid rgba(180, 35, 74, 0.14); */
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.76);
-  box-shadow: 0 12px 28px rgba(180, 35, 74, 0.08);
+  /* box-shadow: 0 12px 28px rgba(180, 35, 74, 0.08); */
 }
 
 .metric-card {

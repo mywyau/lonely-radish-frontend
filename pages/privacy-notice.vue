@@ -30,7 +30,7 @@ definePageMeta({
       </p>
 
       <p>
-        Lonely Radish is a web application for casual coffee-date discovery. We only collect information
+        Lonely Radish is a web application for casual activity-date discovery. We only collect information
         that is needed to provide the service, manage accounts, process subscriptions,
         improve reliability, and support matching, messaging, safety, and date-planning features.
       </p>
@@ -72,7 +72,7 @@ definePageMeta({
 
         <li>
           <strong>Dating profile and preference information:</strong> such as profile text,
-          coffee preferences, neighbourhood preferences, availability windows, prompts,
+          activity preferences, neighbourhood preferences, availability windows, prompts,
           likes, matches, and related interaction data.
         </li>
 
@@ -95,7 +95,7 @@ definePageMeta({
         </li>
 
         <li>
-          <strong>Preferences:</strong> such as your selected coffee-date and notification preferences
+          <strong>Preferences:</strong> such as your selected activity-date and notification preferences
           where you choose to save it.
         </li>
       </ul>

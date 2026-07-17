@@ -1,28 +1,28 @@
 <script setup lang="ts">
-import { CalendarDays, Coffee, HeartHandshake, MapPin, ShieldCheck } from '@lucide/vue'
+import { CalendarDays, HeartHandshake, MapPin, ShieldCheck, Sparkles } from '@lucide/vue'
 
 definePageMeta({
-  title: 'Coffee-date preview · Lonely Radish'
+  title: 'Activity-date preview · Lonely Radish'
 })
 
 const matches = [
   {
     name: 'Maya',
-    detail: 'Flat white, design books, low-key galleries',
+    detail: 'Design books, low-key galleries, Sunday markets',
     time: 'Thu 6:30 PM',
     place: 'Shoreditch',
     tone: 'bg-[#F6E1E1]',
   },
   {
     name: 'Theo',
-    detail: 'Filter coffee, jazz bars, long walks',
+    detail: 'Jazz bars, bookshops, long walks',
     time: 'Sat 10:00 AM',
     place: 'Brixton',
     tone: 'bg-[#E7F3D5]',
   },
   {
     name: 'Nina',
-    detail: 'Iced latte, indie films, quiet corners',
+    detail: 'Indie films, city walks, casual food spots',
     time: 'Sun 2:00 PM',
     place: 'Hackney',
     tone: 'bg-[#DCECF5]',
@@ -30,9 +30,9 @@ const matches = [
 ]
 
 const flow = [
-  'Pick a coffee mood and date window',
+  'Pick an activity and date window',
   'Browse a small table of compatible people',
-  'Choose a public cafe suggestion',
+  'Choose a public place to meet',
   'Confirm the plan without endless chat',
 ]
 </script>
@@ -41,14 +41,14 @@ const flow = [
   <main class="min-h-screen bg-[#FBF7F1] px-5 py-10 text-[#211A16] sm:px-8">
     <section class="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-start">
       <div class="space-y-6">
-        <p class="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-sm font-medium shadow-sm">
-          <Coffee class="size-4" aria-hidden="true" />
+        <!-- <p class="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-sm font-medium shadow-sm">
+          <Sparkles class="size-4" aria-hidden="true" />
           Mock product screen
-        </p>
+        </p> -->
 
         <div class="space-y-4">
           <h1 class="max-w-2xl text-4xl font-semibold leading-tight sm:text-5xl">
-            Browse matches built around an actual coffee date.
+            Browse matches built around something you both want to do.
           </h1>
           <p class="max-w-xl text-[#6B5C52]">
             This placeholder shows the intended dating flow without requiring auth, real profiles, or backend data.
@@ -64,7 +64,7 @@ const flow = [
           <div class="rounded-lg bg-white p-4 shadow-sm">
             <ShieldCheck class="size-5 text-[#2F7D63]" aria-hidden="true" />
             <p class="mt-3 text-sm font-semibold">Public first</p>
-            <p class="mt-1 text-sm text-[#6B5C52]">Cafe suggestions only</p>
+            <p class="mt-1 text-sm text-[#6B5C52]">Public activity suggestions only</p>
           </div>
         </div>
 

@@ -15,8 +15,8 @@ describe("mock access and billing page contracts", () => {
     expect(unavailable).toContain("title: 'Feature preview · Lonely Radish'");
     expect(unavailable).toContain("Premium dating tools are mocked for now.");
 
-    expect(comingSoon).toContain("title: 'Coffee-date preview · Lonely Radish'");
-    expect(comingSoon).toContain("Browse matches built around an actual coffee date.");
+    expect(comingSoon).toContain("title: 'Activity-date preview · Lonely Radish'");
+    expect(comingSoon).toContain("Browse matches built around something you both want to do.");
   });
 
   it("keeps billing and upgrade flows local to the prototype", () => {

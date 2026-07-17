@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ArrowRight, Coffee, UserRound } from '@lucide/vue'
+import { ArrowRight, Sparkles, UserRound } from '@lucide/vue'
 
 definePageMeta({
   title: 'Mock onboarding · Lonely Radish'
@@ -34,7 +34,7 @@ definePageMeta({
           to="/coming-soon"
           class="inline-flex items-center justify-center gap-2 rounded-lg border border-[#D8C8B6] bg-[#FBF7F1] px-5 py-3 text-sm font-semibold transition hover:bg-[#F3E8DA]"
         >
-          <Coffee class="size-4" aria-hidden="true" />
+          <Sparkles class="size-4" aria-hidden="true" />
           Browse mock matches
         </NuxtLink>
       </div>

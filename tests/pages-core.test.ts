@@ -15,12 +15,12 @@ describe('core page contracts', () => {
     expect(source).toContain('Last updated:')
   })
 
-  it('home page keeps SEO metadata and coffee-date call to action', () => {
+  it('home page keeps SEO metadata and activity-date call to action', () => {
     const source = readPage('index.vue')
-    expect(source).toContain("title: 'Coffee dates without the endless chat'")
+    expect(source).toContain("title: 'Meet through activities you both want to do'")
     expect(source).toContain('Start matching')
-    expect(source).toContain('People browsing now')
-    expect(source).toContain('Skip the endless swiping. Say yes to a coffee.')
+    expect(source).toContain('New activity matches are ready to browse.')
+    expect(source).toContain('Skip the endless swiping. Say yes to a plan.')
     expect(source).toContain('text-[#2A1520] sm:text-6xl')
     expect(source).toContain('user.value?.firstName')
   })

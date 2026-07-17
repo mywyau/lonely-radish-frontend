@@ -32,7 +32,7 @@ definePageMeta({
       <FooterPageSectionHeading :icon="BookOpen">About Lonely Radish</FooterPageSectionHeading>
       <p class="text-gray-700">
         Lonely Radish is a web application designed to help adults discover and plan
-        casual, public coffee dates with clearer intent and less endless messaging.
+        casual, public activity dates with clearer intent and less endless messaging.
       </p>
     </section>
 

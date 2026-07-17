@@ -1,15 +1,15 @@
 <template>
-  <footer class="mt-12 border-t border-[#F2C8D0] bg-[#FFF6F7]">
+  <footer class="mt-12 border-t border-[#E8D8C4] bg-[#FBF7F1]">
     <div class="max-w-5xl mx-auto px-5 py-8 text-sm text-[#2A1520]">
 
       <!-- Brand -->
       <div class="text-center sm:text-left">
-        <NuxtLink to="/" class="font-semibold text-lg text-[#B4234A] hover:text-[#8F1839]">
+        <NuxtLink to="/" class="font-semibold text-lg text-black hover:text-gray-600">
           Lonely Radish
         </NuxtLink>
 
         <p class="mt-2 text-[#6E4D58] text-sm sm:max-w-sm">
-          Casual coffee dates with clearer intent and less endless chat.
+          Casual dates to meet new people and form relationships.
         </p>
       </div>
 

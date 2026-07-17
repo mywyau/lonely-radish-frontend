@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useMeStateV2 } from '@/composables/useMeStateV2'
-import { Coffee, HeartHandshake, Menu, ShieldCheck, X } from '@lucide/vue'
+import { HeartHandshake, Menu, ShieldCheck, Sparkles, X } from '@lucide/vue'
 
 const { entitlement, resolve } = useMeStateV2()
 
@@ -41,7 +41,7 @@ onMounted(() => {
           <span class="inline-flex items-center gap-1.5"><HeartHandshake class="size-4" aria-hidden="true" />Browse</span>
         </NuxtLink>
         <NuxtLink to="/coming-soon" class="nav-link hover:text-gray-600">
-          <span class="inline-flex items-center gap-1.5"><Coffee class="size-4" aria-hidden="true" />Coffee Dates</span>
+          <span class="inline-flex items-center gap-1.5"><Sparkles class="size-4" aria-hidden="true" />Activities</span>
         </NuxtLink>
         <NuxtLink to="/coming-soon" class="nav-link hover:text-gray-600">
           <span class="inline-flex items-center gap-1.5"><ShieldCheck class="size-4" aria-hidden="true" />Safety</span>
@@ -50,10 +50,7 @@ onMounted(() => {
         <!-- Logged In Desktop -->
         <template>
           <NuxtLink v-if="entitlement?.plan === 'free' || entitlement?.subscription_status !== 'active'" to="/upgrade"
-            class="font-medium bg-clip-text text-transparent
-                   bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500
-                   hover:from-pink-700 hover:via-purple-700 hover:to-indigo-700
-                   transition hover:scale-105 hover:saturate-150">
+            class="font-medium text-[#B4234A] transition hover:text-[#8F1839]">
             Plus
           </NuxtLink>
 
@@ -88,7 +85,7 @@ onMounted(() => {
         </NuxtLink>
 
         <NuxtLink to="/coming-soon" class="mobile-primary block" @click="closeMobile">
-          Coffee Dates
+          Activities
         </NuxtLink>
 
         <NuxtLink to="/coming-soon" class="mobile-primary block" @click="closeMobile">
@@ -102,10 +99,7 @@ onMounted(() => {
 
         <template>
           <NuxtLink v-if="entitlement?.plan === 'free' || entitlement?.subscription_status !== 'active'" to="/upgrade"
-            class="mobile-secondary font-medium block bg-clip-text text-transparent
-               bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600
-               hover:from-pink-700 hover:via-purple-700 hover:to-indigo-700
-               transition hover:scale-105 hover:saturate-150" @click="closeMobile">
+            class="mobile-secondary block font-medium text-[#B4234A] transition hover:text-[#8F1839]" @click="closeMobile">
             Plus
           </NuxtLink>
 

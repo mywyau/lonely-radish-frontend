@@ -24,13 +24,13 @@ const isSubscribed = computed(() =>
 </script>
 
 <template>
-  <main class="min-h-[70vh] px-4 pt-6 pb-6">
-    <div class="max-w-md mx-auto">
-      <div class="p-10 text-center space-y-6">
-        <div class="max-w-md w-full text-center space-y-6">
+  <main class="min-h-[70vh] bg-[#FBF7F1] px-4 pb-8 pt-6 text-[#2A1520]">
+    <div class="mx-auto max-w-md">
+      <div class="space-y-6 rounded-lg bg-white p-8 text-center shadow-[0_12px_28px_rgba(180,35,74,0.08)] sm:p-10">
+        <div class="w-full max-w-md space-y-6 text-center">
 
           <div class="flex justify-center">
-            <div class="flex h-16 w-16 items-center justify-center rounded-full bg-[#F6E1E1] text-[#7A6FCB]">
+            <div class="flex h-16 w-16 items-center justify-center rounded-full bg-[#FCE3E8] text-[#B4234A]">
               <Info class="h-8 w-8" aria-hidden="true" />
             </div>
           </div>
@@ -39,43 +39,40 @@ const isSubscribed = computed(() =>
             Payment cancelled
           </h1>
 
-          <p class="text-gray-600">
+          <p class="text-[#6E4D58]">
             No worries! Your payment was cancelled and no charges were made.
           </p>
 
-          <p class="text-sm text-gray-500">
+          <p class="text-sm text-[#6E4D58]">
             If you’d like to try again, please choose a plan below.
           </p>
 
           <div class="space-y-3 pt-4">
-            <p class="text-sm text-gray-500">
+            <p class="text-sm text-[#6E4D58]">
               Choose a plan
             </p>
 
-            <!-- Monthly (Pastel themed) -->
-            <button class="block w-full rounded-xl py-3 font-medium transition shadow-sm"
-              style="background-color:#A8CAE0;" :class="isSubscribed
+            <button class="block w-full rounded-lg bg-[#FCE3E8] px-3 py-3 font-medium transition shadow-sm"
+              :class="isSubscribed
                 ? 'opacity-60 cursor-not-allowed'
-                : 'hover:brightness-110 active:scale-[0.98]'" :disabled="isSubscribed" @click="upgrade('monthly')">
+                : 'hover:bg-[#F7D4DC] active:scale-[0.98]'" :disabled="isSubscribed" @click="upgrade('monthly')">
               <span class="block">Monthly plan · £{{ monthlyPrice }}</span>
-              <span class="block text-xs text-gray-700 mt-0.5">Flexible month-to-month billing</span>
+              <span class="mt-0.5 block text-xs text-[#6E4D58]">Flexible month-to-month billing</span>
             </button>
 
-            <!-- Yearly (KEEP BLACK) -->
-            <button class="block w-full rounded-xl text-black px-3 py-3 font-medium transition shadow-md" :class="isSubscribed
+            <button class="block w-full rounded-lg bg-[#B4234A] px-3 py-3 font-medium text-white transition shadow-[0_12px_26px_rgba(180,35,74,0.18)]" :class="isSubscribed
               ? 'opacity-60 cursor-not-allowed'
-              : 'hover:bg-gray-800 active:scale-[0.98]'" :disabled="isSubscribed" @click="upgrade('yearly')"
-              style="background-color:rgba(244,205,39,0.35);">
+              : 'hover:bg-[#8F1839] active:scale-[0.98]'" :disabled="isSubscribed" @click="upgrade('yearly')">
               <span class="block">Yearly plan · £{{ yearlyPrice }}</span>
-              <span class="block text-xs text-gray-700 mt-0.5">≈ £{{ yearlyMonthlyEquivalent }}/mo · Get 2 months free</span>
+              <span class="mt-0.5 block text-xs text-white/80">≈ £{{ yearlyMonthlyEquivalent }}/mo · Save £{{ yearlySavings }}</span>
             </button>
           </div>
 
-          <NuxtLink to="/coming-soon" class="block pt-4 text-sm text-gray-500 hover:underline">
+          <NuxtLink to="/coming-soon" class="block pt-4 text-sm text-[#6E4D58] hover:text-[#B4234A] hover:underline">
             Continue without upgrading
           </NuxtLink>
 
-          <p class="text-sm text-gray-400 pt-4">
+          <p class="pt-4 text-sm text-[#7C5963]">
             You can safely close this page.
           </p>
 

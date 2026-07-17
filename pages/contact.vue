@@ -27,7 +27,7 @@ definePageMeta({
       </a>
 
       <p class="text-gray-800 text-xs sm:text-sm">
-        Have a question, found an issue, or want to share feedback on the coffee-date app?
+        Have a question, found an issue, or want to share feedback on the activity-date app?
         We would love to hear from you.
       </p>
 
@@ -41,14 +41,6 @@ definePageMeta({
 
 
 <style>
-.contact-page {
-  --pink: #EAB8E4;
-  --purple: #D6A3D1;
-  --blue: #A8CAE0;
-  --yellow: #F4CD27;
-  --blush: #F6E1E1;
-}
-
 /* Clean block card */
 .contact-card {
   border-radius: 24px;
