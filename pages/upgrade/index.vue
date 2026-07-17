@@ -51,7 +51,7 @@ function upgrade(plan: 'monthly' | 'yearly') {
 
 
       <!-- Card -->
-      <div class="space-y-6 rounded-lg bg-white p-6 text-center shadow-[0_12px_28px_rgba(180,35,74,0.08)] md:p-10">
+      <div class="space-y-6 p-6 text-center md:p-10">
 
         <!-- Icon -->
         <div class="flex justify-center">

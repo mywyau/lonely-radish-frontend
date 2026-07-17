@@ -9,7 +9,7 @@
         </NuxtLink>
 
         <p class="mt-2 text-[#6E4D58] text-sm sm:max-w-sm">
-          Casual dates to meet new people and form relationships.
+          Casual dates to meet new people and have fun.
         </p>
       </div>
 

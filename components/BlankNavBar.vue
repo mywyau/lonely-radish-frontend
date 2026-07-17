@@ -295,7 +295,7 @@ onBeforeUnmount(() => {
   margin-top: 10px;
   width: 220px;
   border-radius: 10px;
-  border: 1px solid rgba(180, 35, 74, 0.14);
+  /* border: 1px solid rgba(180, 35, 74, 0.14); */
   background: rgba(255, 255, 255, 0.96);
   backdrop-filter: blur(10px);
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.12);

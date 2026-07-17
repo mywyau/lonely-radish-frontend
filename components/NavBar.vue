@@ -38,13 +38,19 @@ onMounted(() => {
         </NuxtLink>
 
         <NuxtLink to="/coming-soon" class="nav-link hover:text-gray-600">
-          <span class="inline-flex items-center gap-1.5"><HeartHandshake class="size-4" aria-hidden="true" />Browse</span>
+          <span class="inline-flex items-center gap-1.5">
+            <HeartHandshake class="size-4" aria-hidden="true" />Browse
+          </span>
         </NuxtLink>
         <NuxtLink to="/coming-soon" class="nav-link hover:text-gray-600">
-          <span class="inline-flex items-center gap-1.5"><Sparkles class="size-4" aria-hidden="true" />Activities</span>
+          <span class="inline-flex items-center gap-1.5">
+            <Sparkles class="size-4" aria-hidden="true" />Activities
+          </span>
         </NuxtLink>
         <NuxtLink to="/coming-soon" class="nav-link hover:text-gray-600">
-          <span class="inline-flex items-center gap-1.5"><ShieldCheck class="size-4" aria-hidden="true" />Safety</span>
+          <span class="inline-flex items-center gap-1.5">
+            <ShieldCheck class="size-4" aria-hidden="true" />Safety
+          </span>
         </NuxtLink>
 
         <!-- Logged In Desktop -->
@@ -62,8 +68,8 @@ onMounted(() => {
       </nav>
 
       <!-- Mobile Hamburger -->
-      <button type="button" class="md:hidden relative z-50 inline-flex h-10 w-10 shrink-0 items-center justify-center" @click="toggleMobile"
-        aria-label="Toggle menu" :aria-expanded="mobileOpen ? 'true' : 'false'">
+      <button type="button" class="md:hidden relative z-50 inline-flex h-10 w-10 shrink-0 items-center justify-center"
+        @click="toggleMobile" aria-label="Toggle menu" :aria-expanded="mobileOpen ? 'true' : 'false'">
         <X v-if="mobileOpen" class="h-6 w-6" aria-hidden="true" />
         <Menu v-else class="h-6 w-6" aria-hidden="true" />
       </button>
@@ -76,7 +82,7 @@ onMounted(() => {
       <!-- Primary Links -->
       <div class="space-y-4 py-4">
 
-          <NuxtLink to="/coming-soon" class="mobile-primary block" @click="closeMobile">
+        <NuxtLink to="/coming-soon" class="mobile-primary block" @click="closeMobile">
           Matches
         </NuxtLink>
 
@@ -99,7 +105,8 @@ onMounted(() => {
 
         <template>
           <NuxtLink v-if="entitlement?.plan === 'free' || entitlement?.subscription_status !== 'active'" to="/upgrade"
-            class="mobile-secondary block font-medium text-[#B4234A] transition hover:text-[#8F1839]" @click="closeMobile">
+            class="mobile-secondary block font-medium text-[#B4234A] transition hover:text-[#8F1839]"
+            @click="closeMobile">
             Plus
           </NuxtLink>
 
@@ -115,7 +122,4 @@ onMounted(() => {
   </header>
 </template>
 
-<style>
-
-
-</style>
+<style></style>
