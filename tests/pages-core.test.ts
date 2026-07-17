@@ -41,6 +41,8 @@ describe('core page contracts', () => {
     expect(activities).toContain('Co-op game session')
     expect(matches).toContain("title: 'Browse Matches · Lonely Radish'")
     expect(matches).toContain('People matched around shared plans.')
+    expect(matches).toContain('Five active matches max')
+    expect(matches).toContain('maxActiveMatches = 5')
     expect(nav).toContain("to: '/activities'")
     expect(nav).toContain("to: '/matches'")
     expect(nav).not.toContain("label: 'Availability'")

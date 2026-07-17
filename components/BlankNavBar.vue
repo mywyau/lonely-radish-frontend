@@ -91,6 +91,12 @@ onBeforeUnmount(() => {
             Match preferences
           </NuxtLink>
 
+          <NuxtLink to="/photos"
+            class="w-full flex items-center rounded-lg px-3 py-2 text-sm text-[#2A1520] hover:bg-[#F3E8DA] transition"
+            @click="closeMenu">
+            Profile photos
+          </NuxtLink>
+
           <NuxtLink to="/upgrade"
             class="w-full flex items-center rounded-lg px-3 py-2 text-sm font-semibold hover:bg-[#F3E8DA] transition"
             @click="closeMenu">

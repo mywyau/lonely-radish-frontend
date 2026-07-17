@@ -43,16 +43,29 @@ describe("mock access and billing page contracts", () => {
   it("account page uses local mock data instead of protected API calls", () => {
     const account = readPage("account/v2/index.vue");
     const preferences = readPage("preferences.vue");
+    const photos = readPage("photos.vue");
     const nav = readFileSync(resolve(process.cwd(), "components/BlankNavBar.vue"), "utf8");
 
     expect(account).toContain("Mock profile");
     expect(account).toContain("Auth is disabled for now.");
     expect(account).toContain("Save mock profile");
     expect(account).toContain('to="/preferences"');
+    expect(account).toContain('to="/photos"');
     expect(preferences).toContain("title: 'Match Preferences · Lonely Radish'");
     expect(preferences).toContain("Save preferences");
     expect(preferences).toContain("Preferences saved locally.");
+    expect(preferences).toContain("Add your own activity");
+    expect(preferences).toContain("Selected activity tags");
+    expect(preferences).toContain("preferenceLevels");
+    expect(preferences).toContain("name: 'Sports'");
+    expect(preferences).toContain("name: 'Gaming'");
+    expect(preferences).toContain("Include remote gaming meetups");
+    expect(photos).toContain("title: 'Profile Photos · Lonely Radish'");
+    expect(photos).toContain("Save mock photos");
+    expect(photos).toContain("URL.createObjectURL");
+    expect(photos).toContain("Photos saved locally.");
     expect(nav).toContain("Match preferences");
+    expect(nav).toContain("Profile photos");
     expect(account).not.toContain("/api/account/v2/profile");
     expect(account).not.toContain("getAccessToken");
   });

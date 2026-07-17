@@ -113,7 +113,7 @@ const flow = [
           class="inline-flex items-center justify-center gap-2 rounded-lg bg-[#211A16] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#3A302A]"
         >
           <HeartHandshake class="size-4" aria-hidden="true" />
-          Open mock profile
+          Open profile
         </NuxtLink>
       </div>
     </section>

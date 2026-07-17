@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { CalendarDays, MapPin, ShieldCheck, SlidersHorizontal, Sparkles, UsersRound } from '@lucide/vue'
+import { CalendarDays, Gamepad2, MapPin, ShieldCheck, SlidersHorizontal, Sparkles, Trophy, UsersRound } from '@lucide/vue'
 
 definePageMeta({
   title: 'Match Preferences · Lonely Radish',
@@ -10,16 +10,52 @@ const preferences = reactive({
   ageRange: '28-36',
   neighbourhoods: ['East London', 'Hackney', 'Shoreditch'],
   activityPace: 'Low-key first',
-  activityTypes: ['Gallery walks', 'Markets', 'Indie films'],
+  activityPreferences: [
+    { name: 'Gallery walks', level: 'Love', mode: 'In person' },
+    { name: 'Markets', level: 'Open to', mode: 'In person' },
+    { name: 'Co-op games', level: 'Love', mode: 'Remote' },
+    { name: 'Park tennis', level: 'Open to', mode: 'In person' },
+  ],
   timing: ['Weekday evenings', 'Weekend afternoons'],
   publicOnly: true,
+  remoteMeetups: true,
   smallerMatchPool: true,
 })
 
 const saved = ref(false)
+const customActivity = ref('')
 
-const activityOptions = ['Gallery walks', 'Markets', 'Indie films', 'Live music', 'Food spots', 'Bookshops']
+const preferenceLevels = ['Love', 'Open to', 'Not for me']
+const meetupModes = ['In person', 'Remote', 'Either']
+const activityCategories = [
+  {
+    name: 'Culture',
+    options: ['Gallery walks', 'Museums', 'Theatre', 'Indie films', 'Live music', 'Comedy nights'],
+  },
+  {
+    name: 'Food and drink',
+    options: ['Markets', 'Casual food spots', 'Cooking classes', 'Dessert crawl', 'Picnic', 'Supper clubs'],
+  },
+  {
+    name: 'Outdoors',
+    options: ['Riverside walks', 'Hikes', 'Parks', 'Cycling', 'Street photography', 'Botanical gardens'],
+  },
+  {
+    name: 'Sports',
+    options: ['Park tennis', 'Climbing', 'Running clubs', 'Table tennis', 'Casual football', 'Swimming'],
+  },
+  {
+    name: 'Gaming',
+    options: ['Co-op games', 'Puzzle rooms', 'Party games', 'Strategy games', 'Cosy games', 'Board games'],
+  },
+  {
+    name: 'Learning',
+    options: ['Workshops', 'Talks', 'Language exchange', 'Bookshops', 'Craft classes', 'Trivia nights'],
+  },
+]
 const timingOptions = ['Weekday evenings', 'Friday night', 'Weekend mornings', 'Weekend afternoons']
+
+const selectedActivityNames = computed(() => preferences.activityPreferences.map(activity => activity.name))
 
 function toggleValue(list: string[], value: string) {
   const index = list.indexOf(value)
@@ -29,6 +65,40 @@ function toggleValue(list: string[], value: string) {
   }
 
   list.push(value)
+}
+
+function getActivity(name: string) {
+  return preferences.activityPreferences.find(activity => activity.name === name)
+}
+
+function addActivity(name: string, mode = 'In person') {
+  const trimmed = name.trim()
+  if (!trimmed || getActivity(trimmed)) return
+
+  preferences.activityPreferences.push({
+    name: trimmed,
+    level: 'Open to',
+    mode,
+  })
+}
+
+function toggleActivity(name: string, mode = 'In person') {
+  const activity = getActivity(name)
+  if (activity) {
+    preferences.activityPreferences = preferences.activityPreferences.filter(item => item.name !== name)
+    return
+  }
+
+  addActivity(name, mode)
+}
+
+function removeActivity(name: string) {
+  preferences.activityPreferences = preferences.activityPreferences.filter(activity => activity.name !== name)
+}
+
+function addCustomActivity() {
+  addActivity(customActivity.value, preferences.remoteMeetups ? 'Either' : 'In person')
+  customActivity.value = ''
 }
 
 function savePreferences() {
@@ -119,21 +189,134 @@ function savePreferences() {
                 <option>Low-key first</option>
                 <option>Open to something lively</option>
                 <option>Prefer daytime plans</option>
+                <option>Remote first</option>
               </select>
             </label>
           </div>
 
-          <div class="mt-5 flex flex-wrap gap-2">
-            <button
-              v-for="option in activityOptions"
-              :key="option"
-              type="button"
-              class="rounded-full px-3 py-2 text-sm font-semibold transition"
-              :class="preferences.activityTypes.includes(option) ? 'bg-[#B4234A] text-white' : 'bg-[#F3E8DA] text-[#4D2F39] hover:bg-[#FCE3E8]'"
-              @click="toggleValue(preferences.activityTypes, option)"
+          <div class="mt-6 rounded-lg bg-[#FBF7F1] p-4">
+            <label class="block text-sm font-medium">
+              Add your own activity
+              <div class="mt-2 flex flex-col gap-2 sm:flex-row">
+                <input
+                  v-model="customActivity"
+                  class="field mt-0"
+                  placeholder="Bouldering, karaoke, chess, paddleboarding..."
+                  type="text"
+                  @keydown.enter.prevent="addCustomActivity"
+                >
+                <button
+                  type="button"
+                  class="rounded-lg bg-[#B4234A] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#8F1839]"
+                  @click="addCustomActivity"
+                >
+                  Add activity
+                </button>
+              </div>
+            </label>
+          </div>
+
+          <div class="mt-7 space-y-5">
+            <div
+              v-for="category in activityCategories"
+              :key="category.name"
+              class="rounded-lg bg-[#FBF7F1] p-4"
             >
-              {{ option }}
-            </button>
+              <div class="flex items-start gap-3">
+                <component
+                  :is="category.name === 'Sports' ? Trophy : category.name === 'Gaming' ? Gamepad2 : Sparkles"
+                  class="mt-1 size-5 text-[#B4234A]"
+                  aria-hidden="true"
+                />
+                <div>
+                  <h3 class="text-sm font-semibold text-[#4D2F39]">
+                    {{ category.name }}
+                  </h3>
+                  <p v-if="category.name === 'Sports'" class="mt-1 text-sm text-[#6E4D58]">
+                    Choose movement-friendly ideas for active, public meetups.
+                  </p>
+                  <p v-else-if="category.name === 'Gaming'" class="mt-1 text-sm text-[#6E4D58]">
+                    Match around online-first plans before deciding whether to meet offline.
+                  </p>
+                  <p v-else class="mt-1 text-sm text-[#6E4D58]">
+                    Tap any activity to add it to your selected preferences.
+                  </p>
+                </div>
+              </div>
+
+              <div class="mt-4 flex flex-wrap gap-2">
+                <button
+                  v-for="option in category.options"
+                  :key="option"
+                  type="button"
+                  class="rounded-full px-3 py-2 text-sm font-semibold transition"
+                  :class="selectedActivityNames.includes(option) ? 'bg-[#B4234A] text-white' : 'bg-white text-[#4D2F39] hover:bg-[#FCE3E8]'"
+                  @click="toggleActivity(option, category.name === 'Gaming' ? 'Remote' : 'In person')"
+                >
+                  {{ option }}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-7 rounded-lg bg-[#FCE3E8] p-4">
+            <h3 class="text-sm font-semibold text-[#4D2F39]">
+              Selected activity tags
+            </h3>
+            <p class="mt-1 text-sm text-[#6E4D58]">
+              Mark each tag as something you love, are open to, or would rather avoid.
+            </p>
+
+            <div class="mt-4 grid gap-3">
+              <article
+                v-for="activity in preferences.activityPreferences"
+                :key="activity.name"
+                class="rounded-lg bg-white/75 p-4"
+              >
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p class="font-semibold text-[#2A1520]">
+                      {{ activity.name }}
+                    </p>
+                    <button
+                      type="button"
+                      class="mt-1 text-xs font-semibold text-[#8F1839] hover:underline"
+                      @click="removeActivity(activity.name)"
+                    >
+                      Remove
+                    </button>
+                  </div>
+
+                  <div class="flex flex-col gap-2 sm:items-end">
+                    <div class="flex flex-wrap gap-1">
+                      <button
+                        v-for="level in preferenceLevels"
+                        :key="level"
+                        type="button"
+                        class="rounded-full px-2.5 py-1 text-xs font-semibold transition"
+                        :class="activity.level === level ? 'bg-[#B4234A] text-white' : 'bg-[#F3E8DA] text-[#4D2F39] hover:bg-[#FCE3E8]'"
+                        @click="activity.level = level"
+                      >
+                        {{ level }}
+                      </button>
+                    </div>
+
+                    <div class="flex flex-wrap gap-1">
+                      <button
+                        v-for="mode in meetupModes"
+                        :key="mode"
+                        type="button"
+                        class="rounded-full px-2.5 py-1 text-xs font-semibold transition"
+                        :class="activity.mode === mode ? 'bg-[#6E8B52] text-white' : 'bg-[#EAF2DE] text-[#4D2F39] hover:bg-[#DDECCB]'"
+                        @click="activity.mode = mode"
+                      >
+                        {{ mode }}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </article>
+            </div>
           </div>
         </section>
 
@@ -166,6 +349,14 @@ function savePreferences() {
                 Public places only
               </span>
               <input v-model="preferences.publicOnly" type="checkbox">
+            </label>
+
+            <label class="flex items-center justify-between gap-4 rounded-lg bg-[#FBF7F1] px-4 py-3 text-sm font-medium">
+              <span class="inline-flex items-center gap-2">
+                <Gamepad2 class="size-4 text-[#6E8B52]" aria-hidden="true" />
+                Include remote gaming meetups
+              </span>
+              <input v-model="preferences.remoteMeetups" type="checkbox">
             </label>
 
             <label class="flex items-center justify-between gap-4 rounded-lg bg-[#FBF7F1] px-4 py-3 text-sm font-medium">

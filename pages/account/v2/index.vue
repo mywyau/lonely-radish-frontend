@@ -44,7 +44,7 @@ function saveProfile() {
               {{ profile.firstName.charAt(0) }}
             </div>
             <div>
-              <p class="text-sm text-[#6E4D58]">Mock profile</p>
+              <p class="text-sm text-[#6E4D58]">Profile</p>
               <h1 class="text-2xl font-semibold">{{ fullName }}</h1>
             </div>
           </div>
@@ -72,6 +72,12 @@ function saveProfile() {
           >
             Match preferences
           </NuxtLink>
+          <NuxtLink
+            to="/photos"
+            class="ml-3 mt-5 inline-flex rounded-lg bg-[#F3E8DA] px-4 py-2 text-sm font-semibold text-[#8F1839] transition hover:bg-[#FCE3E8]"
+          >
+            Profile photos
+          </NuxtLink>
         </div>
       </aside>
 
@@ -80,7 +86,7 @@ function saveProfile() {
           <div class="flex items-start gap-3">
             <UserRound class="mt-1 size-5 text-[#B4234A]" aria-hidden="true" />
             <div>
-              <h2 class="text-xl font-semibold">Profile basics</h2>
+              <h2 class="text-xl font-semibold">Account Details</h2>
               <p class="mt-1 text-sm text-[#6E4D58]">
                 Draft the minimum profile data needed for an activity-based matching flow.
               </p>
@@ -115,7 +121,7 @@ function saveProfile() {
 
             <div class="sm:col-span-2">
               <button type="submit" class="rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#8F1839]">
-                Save mock profile
+                Save profile
               </button>
               <span v-if="saved" class="ml-3 text-sm font-medium text-[#6E8B52]">Saved locally.</span>
             </div>

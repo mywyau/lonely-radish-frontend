@@ -35,8 +35,12 @@ const matches = [
   },
 ]
 
+const maxActiveMatches = 5
+const activeMatchCount = matches.length
+const remainingMatchSlots = maxActiveMatches - activeMatchCount
+
 const summary = [
-  { label: 'Ready to plan', value: '6' },
+  { label: 'Active matches', value: `${activeMatchCount}/${maxActiveMatches}` },
   { label: 'Nearby today', value: '4' },
   { label: 'Public-first', value: '100%' },
 ]
@@ -52,7 +56,7 @@ const summary = [
             People matched around shared plans.
           </h1>
           <p class="mt-4 max-w-xl text-[#6E4D58]">
-            This mock view shows matches grouped by activity intent, timing, and public-place preferences.
+            This mock view shows matches grouped by activity intent, timing, and public-place preferences. You can hold up to five active matches at a time.
           </p>
         </div>
 
@@ -70,10 +74,10 @@ const summary = [
         <div class="rounded-lg bg-[#2A1520] p-5 text-white shadow-[0_14px_32px_rgba(42,21,32,0.16)]">
           <ShieldCheck class="size-6 text-[#F7B7C4]" aria-hidden="true" />
           <h2 class="mt-4 text-lg font-semibold">
-            Public plans first
+            Five active matches max
           </h2>
           <p class="mt-2 text-sm leading-6 text-white/72">
-            Availability lives in the profile for now. Match cards focus on the shared activity and a safe place to meet.
+            Keep the match list focused. You have {{ remainingMatchSlots }} open slots before you need to plan, pass, or close an existing match.
           </p>
         </div>
       </div>
