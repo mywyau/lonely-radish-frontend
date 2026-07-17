@@ -42,10 +42,17 @@ describe("mock access and billing page contracts", () => {
 
   it("account page uses local mock data instead of protected API calls", () => {
     const account = readPage("account/v2/index.vue");
+    const preferences = readPage("preferences.vue");
+    const nav = readFileSync(resolve(process.cwd(), "components/BlankNavBar.vue"), "utf8");
 
     expect(account).toContain("Mock profile");
     expect(account).toContain("Auth is disabled for now.");
     expect(account).toContain("Save mock profile");
+    expect(account).toContain('to="/preferences"');
+    expect(preferences).toContain("title: 'Match Preferences · Lonely Radish'");
+    expect(preferences).toContain("Save preferences");
+    expect(preferences).toContain("Preferences saved locally.");
+    expect(nav).toContain("Match preferences");
     expect(account).not.toContain("/api/account/v2/profile");
     expect(account).not.toContain("getAccessToken");
   });

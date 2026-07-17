@@ -66,6 +66,12 @@ function saveProfile() {
           >
             View plans
           </NuxtLink>
+          <NuxtLink
+            to="/preferences"
+            class="ml-3 mt-5 inline-flex rounded-lg bg-[#FCE3E8] px-4 py-2 text-sm font-semibold text-[#8F1839] transition hover:bg-[#F7D4DC]"
+          >
+            Match preferences
+          </NuxtLink>
         </div>
       </aside>
 
