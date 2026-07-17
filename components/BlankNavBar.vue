@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { login, logout } from '@/composables/useAuth'
 import { useMeStateV2 } from '@/composables/useMeStateV2'
-import { AudioLines, CalendarCheck, CircleHelp, House, Keyboard, Layers, Menu, Rocket, Tags, X } from '@lucide/vue'
+import { CalendarDays, Coffee, HeartHandshake, House, Menu, ShieldCheck, Sparkles, X } from '@lucide/vue'
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 
 const { isLoggedIn, user, resolve } = useMeStateV2()
@@ -16,14 +16,10 @@ const menuRoot = ref<HTMLElement | null>(null)
 const navLinks = computed(() => {
   const links = [
     { to: '/', label: 'Home', requiresAuth: false, icon: House },
-    { to: '/daily/vocab/v2/start-quiz', label: 'Daily Quiz', requiresAuth: true, icon: CalendarCheck },
-    { to: '/daily/jyutping/v2', label: 'Daily Jyutping Quiz', requiresAuth: true, icon: AudioLines },
-    { to: '/levels', label: 'Levels', requiresAuth: false, icon: Layers },
-    { to: '/quiz', label: 'Level Quiz', requiresAuth: false, icon: CircleHelp },
-    { to: '/dojo/level', label: 'Level Dojo', requiresAuth: false, icon: Keyboard },
-    { to: '/topics', label: 'Topics', requiresAuth: false, icon: Tags },
-    { to: '/topics/quiz', label: 'Topic Quiz', requiresAuth: false, icon: CircleHelp },
-    { to: '/dojo/topic', label: 'Topic Dojo', requiresAuth: false, icon: Keyboard },
+    { to: '/coming-soon', label: 'Browse Matches', requiresAuth: false, icon: HeartHandshake },
+    { to: '/coming-soon', label: 'Coffee Dates', requiresAuth: false, icon: Coffee },
+    { to: '/coming-soon', label: 'Availability', requiresAuth: true, icon: CalendarDays },
+    { to: '/coming-soon', label: 'Safety', requiresAuth: false, icon: ShieldCheck },
   ]
 
   return links.filter(link => !link.requiresAuth || isLoggedIn.value)
@@ -79,7 +75,7 @@ onBeforeUnmount(() => {
     <div class="max-w-5xl mx-auto flex items-center justify-between px-4 py-3">
 
       <NuxtLink to="/" class="brand-logo text-2xl font-bold text-black hover:text-gray-700">
-        TaroTea
+        Lonely Radish
       </NuxtLink>
 
       <div ref="menuRoot" class="relative">
@@ -135,11 +131,11 @@ onBeforeUnmount(() => {
     </div>
 
     <button type="button" class="trigger-visibility-btn" :class="{ 'is-open': navOpen }"
-      :aria-label="navOpen ? 'Close Warp panel' : 'Open Warp panel'" :aria-expanded="navOpen ? 'true' : 'false'"
-      aria-controls="warp-navigation-panel" @click.stop="toggleNav">
+      :aria-label="navOpen ? 'Close navigation panel' : 'Open navigation panel'" :aria-expanded="navOpen ? 'true' : 'false'"
+      aria-controls="app-navigation-panel" @click.stop="toggleNav">
       <span class="rocket-burst" aria-hidden="true"></span>
-      <Rocket class="portal-icon" aria-hidden="true" />
-      <span class="sr-only">{{ navOpen ? 'Close Warp panel' : 'Open Warp panel' }}</span>
+      <Sparkles class="portal-icon" aria-hidden="true" />
+      <span class="sr-only">{{ navOpen ? 'Close navigation panel' : 'Open navigation panel' }}</span>
     </button>
 
     <transition name="fade">
@@ -147,11 +143,11 @@ onBeforeUnmount(() => {
     </transition>
 
     <transition name="slide-left">
-      <aside v-if="navOpen" id="warp-navigation-panel" class="nav-drawer" aria-label="Main navigation panel">
+      <aside v-if="navOpen" id="app-navigation-panel" class="nav-drawer" aria-label="Main navigation panel">
         <div class="px-4 py-4 border-b border-black/20">
           <span class="flex items-center gap-2 text-xl font-semibold text-black">
-            <Rocket class="h-5 w-5" aria-hidden="true" />
-            Warp
+            <Coffee class="h-5 w-5" aria-hidden="true" />
+            Coffee table
           </span>
         </div>
 
@@ -171,11 +167,11 @@ onBeforeUnmount(() => {
 <style scoped>
 .header-shell {
   z-index: 80;
-  --pink: #EAB8E4;
-  --purple: #D6A3D1;
-  --blue: #A8CAE0;
-  --yellow: #F4CD27;
-  --blush: #F6E1E1;
+  --cream: #FBF7F1;
+  --coffee: #211A16;
+  --foam: #E8D8C4;
+  --sage: #9BB8A2;
+  --clay: #B05D45;
 }
 
 .menu-btn {
@@ -253,14 +249,14 @@ onBeforeUnmount(() => {
   transform: translate(-50%, -50%) scale(0.35);
   z-index: -1;
   box-shadow:
-    -0.18rem -1.42rem 0 -0.03rem rgba(159, 91, 181, 0.95),
-    0.58rem -1.18rem 0 -0.08rem rgba(133, 78, 161, 0.9),
-    1.42rem -0.36rem 0 -0.05rem rgba(181, 123, 195, 0.92),
-    1.28rem 0.84rem 0 -0.08rem rgba(115, 65, 150, 0.86),
-    0.24rem 1.44rem 0 -0.04rem rgba(159, 91, 181, 0.92),
-    -0.72rem 1.1rem 0 -0.08rem rgba(181, 123, 195, 0.9),
-    -1.44rem 0.42rem 0 -0.05rem rgba(133, 78, 161, 0.9),
-    -1.08rem -0.82rem 0 -0.1rem rgba(159, 91, 181, 0.86);
+    -0.18rem -1.42rem 0 -0.03rem rgba(176, 93, 69, 0.95),
+    0.58rem -1.18rem 0 -0.08rem rgba(155, 184, 162, 0.9),
+    1.42rem -0.36rem 0 -0.05rem rgba(232, 216, 196, 0.92),
+    1.28rem 0.84rem 0 -0.08rem rgba(119, 84, 61, 0.86),
+    0.24rem 1.44rem 0 -0.04rem rgba(176, 93, 69, 0.92),
+    -0.72rem 1.1rem 0 -0.08rem rgba(232, 216, 196, 0.9),
+    -1.44rem 0.42rem 0 -0.05rem rgba(155, 184, 162, 0.9),
+    -1.08rem -0.82rem 0 -0.1rem rgba(119, 84, 61, 0.86);
   pointer-events: none;
 }
 
@@ -279,14 +275,14 @@ onBeforeUnmount(() => {
   width: 0.2rem;
   height: 0.2rem;
   box-shadow:
-    0.22rem -1.72rem 0 -0.04rem rgba(115, 65, 150, 0.84),
-    1.52rem -0.96rem 0 -0.03rem rgba(159, 91, 181, 0.9),
-    1.72rem 0.24rem 0 -0.06rem rgba(181, 123, 195, 0.86),
-    0.78rem 1.58rem 0 -0.04rem rgba(133, 78, 161, 0.86),
-    -0.32rem 1.78rem 0 -0.06rem rgba(159, 91, 181, 0.88),
-    -1.56rem 0.92rem 0 -0.03rem rgba(115, 65, 150, 0.82),
-    -1.72rem -0.28rem 0 -0.06rem rgba(181, 123, 195, 0.86),
-    -0.84rem -1.44rem 0 -0.05rem rgba(133, 78, 161, 0.86);
+    0.22rem -1.72rem 0 -0.04rem rgba(119, 84, 61, 0.84),
+    1.52rem -0.96rem 0 -0.03rem rgba(176, 93, 69, 0.9),
+    1.72rem 0.24rem 0 -0.06rem rgba(232, 216, 196, 0.86),
+    0.78rem 1.58rem 0 -0.04rem rgba(155, 184, 162, 0.86),
+    -0.32rem 1.78rem 0 -0.06rem rgba(176, 93, 69, 0.88),
+    -1.56rem 0.92rem 0 -0.03rem rgba(119, 84, 61, 0.82),
+    -1.72rem -0.28rem 0 -0.06rem rgba(232, 216, 196, 0.86),
+    -0.84rem -1.44rem 0 -0.05rem rgba(155, 184, 162, 0.86);
 }
 
 .rocket-burst::after {
@@ -294,14 +290,14 @@ onBeforeUnmount(() => {
   height: 0.16rem;
   background: transparent;
   box-shadow:
-    0.96rem -1.68rem 0 -0.03rem rgba(181, 123, 195, 0.78),
-    1.9rem -0.08rem 0 -0.04rem rgba(115, 65, 150, 0.84),
-    1.22rem 1.22rem 0 -0.03rem rgba(159, 91, 181, 0.86),
-    -0.04rem 2.02rem 0 -0.05rem rgba(181, 123, 195, 0.8),
-    -1.18rem 1.42rem 0 -0.04rem rgba(133, 78, 161, 0.84),
-    -1.92rem 0.04rem 0 -0.03rem rgba(159, 91, 181, 0.82),
-    -1.34rem -1.16rem 0 -0.04rem rgba(181, 123, 195, 0.8),
-    0.04rem -1.98rem 0 -0.05rem rgba(115, 65, 150, 0.82);
+    0.96rem -1.68rem 0 -0.03rem rgba(232, 216, 196, 0.78),
+    1.9rem -0.08rem 0 -0.04rem rgba(119, 84, 61, 0.84),
+    1.22rem 1.22rem 0 -0.03rem rgba(176, 93, 69, 0.86),
+    -0.04rem 2.02rem 0 -0.05rem rgba(232, 216, 196, 0.8),
+    -1.18rem 1.42rem 0 -0.04rem rgba(155, 184, 162, 0.84),
+    -1.92rem 0.04rem 0 -0.03rem rgba(176, 93, 69, 0.82),
+    -1.34rem -1.16rem 0 -0.04rem rgba(232, 216, 196, 0.8),
+    0.04rem -1.98rem 0 -0.05rem rgba(119, 84, 61, 0.82);
 }
 
 .trigger-visibility-btn:hover .rocket-burst,
@@ -342,7 +338,7 @@ onBeforeUnmount(() => {
   inset: 0;
   z-index: 50;
   pointer-events: none;
-  background: rgba(246, 225, 225, 0.22);
+  background: rgba(33, 26, 22, 0.18);
 }
 
 .nav-drawer {
@@ -354,7 +350,7 @@ onBeforeUnmount(() => {
   flex-direction: column;
   height: 100vh;
   width: min(20rem, 88vw);
-  background-color: rgba(236, 224, 248, 0.86);
+  background-color: rgba(251, 247, 241, 0.92);
   backdrop-filter: blur(8px);
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.12);
 }

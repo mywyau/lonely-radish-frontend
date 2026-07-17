@@ -2,7 +2,7 @@
 import { BadgePoundSterling, CreditCard, Mail, ReceiptText, RotateCw, Trash2 } from '@lucide/vue'
 
 definePageMeta({
-  title: 'Refund Policy · TaroTea'
+  title: 'Refund Policy · Lonely Radish'
 })
 </script>
 
@@ -24,7 +24,7 @@ definePageMeta({
     <section class="space-y-4 text-gray-700">
       <p>
         This Refund Policy explains how refunds are handled for subscriptions
-        purchased on TaroTea.
+        purchased on Lonely Radish.
       </p>
     </section>
 
@@ -32,7 +32,7 @@ definePageMeta({
       <FooterPageSectionHeading :icon="CreditCard">Digital subscriptions</FooterPageSectionHeading>
 
       <p class="text-gray-700">
-        TaroTea provides access to digital learning content through monthly or yearly
+        Lonely Radish provides access to digital dating-app features through monthly or yearly
         subscriptions.
       </p>
 
@@ -66,7 +66,7 @@ definePageMeta({
       <FooterPageSectionHeading :icon="Trash2">Account deletion</FooterPageSectionHeading>
 
       <p class="text-gray-700">
-        Deleting your account permanently removes your access to TaroTea and any associated data.
+        Deleting your account permanently removes your access to Lonely Radish and any associated data.
       </p>
 
       <p class="text-gray-700">

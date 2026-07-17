@@ -1,6 +1,6 @@
 <script setup lang="ts">
 definePageMeta({
-  title: 'Coming soon · TaroTea'
+  title: 'Coming soon · Lonely Radish'
 })
 </script>
 
@@ -9,9 +9,9 @@ definePageMeta({
 
     <!--  -->
 
-    <h1 class="text-3xl font-semibold">Content Not Available 🚧</h1>
+    <h1 class="text-3xl font-semibold">Content Not Available</h1>
     <p class="text-gray-600">
-      This content isn’t available yet.
+      This feature is not available yet.
     </p>
   </main>
 </template>

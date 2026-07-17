@@ -5,11 +5,11 @@
       <!-- Brand -->
       <div class="text-center sm:text-left">
         <NuxtLink to="/" class="font-semibold text-lg hover:underline">
-          TaroTea
+          Lonely Radish
         </NuxtLink>
 
         <p class="mt-2 text-gray-800 text-sm sm:max-w-sm">
-          Learn and understand everyday Cantonese.
+          Casual coffee dates with clearer intent and less endless chat.
         </p>
       </div>
 
@@ -39,7 +39,7 @@
 
       <!-- Copyright -->
       <div class="mt-8 text-center text-xs text-gray-700">
-        © {{ new Date().getFullYear() }} TaroTea
+        © {{ new Date().getFullYear() }} Lonely Radish
       </div>
 
     </div>

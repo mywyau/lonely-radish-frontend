@@ -6,11 +6,11 @@ describe('legal and policy page contracts', () => {
     const terms = readPage('terms-of-service.vue')
     const refund = readPage('refund-policy.vue')
 
-    expect(terms).toContain("title: 'Terms of Service · TaroTea'")
+    expect(terms).toContain("title: 'Terms of Service · Lonely Radish'")
     expect(terms).toContain('Governing law')
     expect(terms).toContain('mailto:contact@tarotea.co.uk')
 
-    expect(refund).toContain("title: 'Refund Policy · TaroTea'")
+    expect(refund).toContain("title: 'Refund Policy · Lonely Radish'")
     expect(refund).toContain('non-refundable')
     expect(refund).toContain('mailto:billing@tarotea.co.uk')
   })

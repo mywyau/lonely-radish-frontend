@@ -9,13 +9,13 @@ describe("auth and billing page contracts", () => {
     const unavailable = readPage("content-not-available.vue");
     const comingSoon = readPage("coming-soon.vue");
 
-    expect(signIn).toContain("title: 'Please sign in · TaroTea'");
+    expect(signIn).toContain("title: 'Please sign in · Lonely Radish'");
     expect(signIn).toContain("Sign in / Create account");
 
-    expect(unavailable).toContain("title: 'Coming soon · TaroTea'");
+    expect(unavailable).toContain("title: 'Coming soon · Lonely Radish'");
     expect(unavailable).toContain("Content Not Available");
 
-    expect(comingSoon).toContain("title: 'Coming soon · TaroTea'");
+    expect(comingSoon).toContain("title: 'Coming soon · Lonely Radish'");
     expect(comingSoon).toContain("Coming soon");
   });
 
@@ -26,7 +26,7 @@ describe("auth and billing page contracts", () => {
 
     expect(success).toContain("/api/billing/me");
     expect(success).toContain("Payment successful");
-    expect(success).toContain("Continue learning");
+    expect(success).toContain("Continue to matching");
 
     expect(cancel).toContain("Payment cancelled");
     expect(cancel).toContain("upgrade('monthly')");

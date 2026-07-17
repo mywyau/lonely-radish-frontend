@@ -3,7 +3,7 @@ import { login } from '@/composables/useAuth'
 import { ArrowRight, LogIn } from '@lucide/vue';
 
 definePageMeta({
-  title: 'Please sign in · TaroTea'
+  title: 'Please sign in · Lonely Radish'
 })
 
 const route = useRoute()
@@ -37,7 +37,7 @@ async function startLogin() {
       </button>
 
       <p class="text-gray-600 text-sm mt-10 max-w-md mx-auto">
-        Sign in to view this content and continue your journey.
+        Sign in to view this feature and continue setting up your coffee-date profile.
       </p>
 
       <p class="text-gray-600 text-sm mt-4 max-w-md mx-auto">

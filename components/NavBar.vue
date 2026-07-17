@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { loginWithGoogle, logout } from '@/composables/useAuth'
 import { useMeStateV2 } from '@/composables/useMeStateV2'
-import { Menu, X } from '@lucide/vue'
+import { Coffee, HeartHandshake, Menu, ShieldCheck, X } from '@lucide/vue'
 
 const { isLoggedIn, entitlement, resolve } = useMeStateV2()
 
@@ -34,20 +34,25 @@ onMounted(() => {
 
       <!-- Logo -->
       <NuxtLink to="/" class="text-2xl font-bold text-primary-600 hover:text-gray-600">
-        TaroTea
+        Lonely Radish
       </NuxtLink>
 
       <!-- Desktop Navigation -->
       <nav class="hidden md:flex items-center gap-6">
 
-        <NuxtLink v-if="isLoggedIn" to="/daily/v3" class="nav-link hover:text-gray-600">
-          Daily
+        <NuxtLink v-if="isLoggedIn" to="/coming-soon" class="nav-link hover:text-gray-600">
+          Matches
         </NuxtLink>
 
-        <NuxtLink to="/topics" class="nav-link hover:text-gray-600">Topics</NuxtLink>
-        <NuxtLink to="/topics/quiz" class="nav-link hover:text-gray-600">Topic Quiz</NuxtLink>
-        <NuxtLink to="/levels" class="nav-link hover:text-gray-600">Levels</NuxtLink>
-        <NuxtLink to="/quiz" class="nav-link hover:text-gray-600">Level Quiz</NuxtLink>
+        <NuxtLink to="/coming-soon" class="nav-link hover:text-gray-600">
+          <span class="inline-flex items-center gap-1.5"><HeartHandshake class="size-4" aria-hidden="true" />Browse</span>
+        </NuxtLink>
+        <NuxtLink to="/coming-soon" class="nav-link hover:text-gray-600">
+          <span class="inline-flex items-center gap-1.5"><Coffee class="size-4" aria-hidden="true" />Coffee Dates</span>
+        </NuxtLink>
+        <NuxtLink to="/coming-soon" class="nav-link hover:text-gray-600">
+          <span class="inline-flex items-center gap-1.5"><ShieldCheck class="size-4" aria-hidden="true" />Safety</span>
+        </NuxtLink>
 
         <!-- Logged In Desktop -->
         <template v-if="isLoggedIn">
@@ -57,7 +62,7 @@ onMounted(() => {
                    bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500
                    hover:from-pink-700 hover:via-purple-700 hover:to-indigo-700
                    transition hover:scale-105 hover:saturate-150">
-            Upgrade
+            Plus
           </NuxtLink>
 
           <NuxtLink to="/stats" class="nav-link hover:text-gray-600">
@@ -95,24 +100,20 @@ onMounted(() => {
       <!-- Primary Links -->
       <div class="space-y-4 py-4">
 
-        <NuxtLink v-if="isLoggedIn" to="/daily/v3" class="mobile-primary block" @click="closeMobile">
-          Daily
+          <NuxtLink v-if="isLoggedIn" to="/coming-soon" class="mobile-primary block" @click="closeMobile">
+          Matches
         </NuxtLink>
 
-        <NuxtLink to="/topics" class="mobile-primary block" @click="closeMobile">
-          Topics
+        <NuxtLink to="/coming-soon" class="mobile-primary block" @click="closeMobile">
+          Browse
         </NuxtLink>
 
-        <NuxtLink to="/topics/quiz" class="mobile-primary block" @click="closeMobile">
-          Topic Quiz
+        <NuxtLink to="/coming-soon" class="mobile-primary block" @click="closeMobile">
+          Coffee Dates
         </NuxtLink>
 
-        <NuxtLink to="/levels" class="mobile-primary block" @click="closeMobile">
-          Levels
-        </NuxtLink>
-
-        <NuxtLink to="/quiz" class="mobile-primary block" @click="closeMobile">
-          Level Quiz
+        <NuxtLink to="/coming-soon" class="mobile-primary block" @click="closeMobile">
+          Safety
         </NuxtLink>
 
       </div>
@@ -127,7 +128,7 @@ onMounted(() => {
                bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600
                hover:from-pink-700 hover:via-purple-700 hover:to-indigo-700
                transition hover:scale-105 hover:saturate-150" @click="closeMobile">
-            Upgrade
+            Plus
           </NuxtLink>
 
           <NuxtLink to="/stats" class="mobile-primary block" @click="closeMobile">
@@ -147,7 +148,7 @@ onMounted(() => {
 
         <template v-else>
           <button type="button" class="mobile-secondary text-blue-600 hover:text-blue-400 block text-left w-full"
-            @click="login">
+            @click="loginWithGoogle">
             Login
           </button>
         </template>

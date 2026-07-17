@@ -2,7 +2,7 @@
 import { Mail } from '@lucide/vue';
 
 definePageMeta({
-  title: 'Contact · TaroTea'
+  title: 'Contact · Lonely Radish'
 })
 </script>
 
@@ -27,8 +27,8 @@ definePageMeta({
       </a>
 
       <p class="text-gray-800 text-xs sm:text-sm">
-        Have a question, found an issue, or want to share feedback?
-        We’d love to hear from you.
+        Have a question, found an issue, or want to share feedback on the coffee-date app?
+        We would love to hear from you.
       </p>
 
       <p class="text-xs text-gray-600">

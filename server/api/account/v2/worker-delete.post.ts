@@ -1,9 +1,9 @@
 import { Receiver } from "@upstash/qstash";
 import { redactIdentifier } from "~/server/utils/logging/redact";
 import { createError, defineEventHandler, getHeader, readRawBody } from "h3";
-import Stripe from "stripe";
 
 import { db } from "~/server/repositories/db";
+import { stripe } from "~/server/services/billing/stripeClient";
 import { deleteAuth0User } from "@/server/utils/auth0";
 import { deleteUserData } from "@/server/utils/deleteUserData";
 
@@ -196,10 +196,6 @@ export default defineEventHandler(async (event) => {
 
     // 1. Cancel Stripe first
     if (user.stripe_customer_id) {
-      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-        apiVersion: "2023-10-16",
-      });
-
       const subs = await stripe.subscriptions.list({
         customer: user.stripe_customer_id,
         status: "all",

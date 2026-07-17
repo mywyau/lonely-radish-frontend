@@ -75,8 +75,8 @@ const isSubscribed = computed(() =>
             </button>
           </div>
 
-          <NuxtLink to="/levels" class="block pt-4 text-sm text-gray-500 hover:underline">
-            Continue learning without upgrading
+          <NuxtLink to="/coming-soon" class="block pt-4 text-sm text-gray-500 hover:underline">
+            Continue without upgrading
           </NuxtLink>
 
           <p class="text-sm text-gray-400 pt-4">

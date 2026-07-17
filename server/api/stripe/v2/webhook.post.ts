@@ -1,12 +1,9 @@
 import { createError, getHeader, readRawBody } from "h3";
-import Stripe from "stripe";
 import { enqueueStripeEventJob } from "~/server/services/billing/stripeEnqueueHelper";
+import { stripe } from "~/server/services/billing/stripeClient";
 import { insertStripeEvent } from "~/server/services/billing/stripeEventRepository";
 import { redactIdentifier } from "~/server/utils/logging/redact";
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2023-10-16",
-});
+import type Stripe from "stripe";
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 

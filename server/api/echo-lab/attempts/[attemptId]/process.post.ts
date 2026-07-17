@@ -15,9 +15,32 @@ import {
   buildResult,
 } from "~/server/utils/whisper/helpers";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+function createOpenAIClient() {
+  if (process.env.OPENAI_API_KEY) {
+    return new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+  }
+
+  if (process.env.NODE_ENV !== "test") {
+    console.warn("[openai] Missing OPENAI_API_KEY; using mock transcription client");
+  }
+
+  return {
+    audio: {
+      transcriptions: {
+        async create() {
+          return {
+            text: "",
+            logprobs: [],
+          };
+        },
+      },
+    },
+  };
+}
+
+const openai = createOpenAIClient();
 
 type EchoLabAttemptRow = {
   attempt_id: string;

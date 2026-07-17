@@ -69,7 +69,7 @@ function upgrade(plan: 'monthly' | 'yearly') {
         </h1>
 
         <p class="text-gray-600 max-w-xl mx-auto">
-          Unlock all content and learn Cantonese without limits.
+          Unlock premium matching, planning, and profile tools as they become available.
         </p>
 
         <!-- Benefits -->
@@ -127,8 +127,8 @@ function upgrade(plan: 'monthly' | 'yearly') {
 
         <!-- Continue without upgrading -->
         <p v-if="!isSubscribed" class="text-sm text-gray-500">
-          <NuxtLink to="/levels" class="hover:underline">
-            Continue learning without upgrading
+          <NuxtLink to="/coming-soon" class="hover:underline">
+            Continue without upgrading
           </NuxtLink>
         </p>
 

@@ -2,7 +2,7 @@
 import { Baby, CalendarClock, Contact, Database, FileText, Handshake, LockKeyhole, Mail, RotateCw, Scale, ShieldCheck, Trash2 } from '@lucide/vue'
 
 definePageMeta({
-  title: 'Privacy Notice · TaroTea'
+  title: 'Privacy Notice · Lonely Radish'
 })
 
 </script>
@@ -24,15 +24,15 @@ definePageMeta({
 
     <section class="space-y-4 text-gray-700">
       <p>
-        TaroTea (“we”, “us”, “our”) respects your privacy and is committed to protecting
+        Lonely Radish (“we”, “us”, “our”) respects your privacy and is committed to protecting
         your personal data. This Privacy Notice explains how we collect, use, store and
-        protect your information when you use TaroTea.
+        protect your information when you use Lonely Radish.
       </p>
 
       <p>
-        TaroTea is a web application for learning Cantonese. We only collect information
+        Lonely Radish is a web application for casual coffee-date discovery. We only collect information
         that is needed to provide the service, manage accounts, process subscriptions,
-        improve reliability, and support learning features.
+        improve reliability, and support matching, messaging, safety, and date-planning features.
       </p>
     </section>
 
@@ -40,7 +40,7 @@ definePageMeta({
       <FooterPageSectionHeading :icon="Contact">Who we are</FooterPageSectionHeading>
 
       <p class="text-gray-700">
-        TaroTea is operated as a Cantonese learning web application.
+        Lonely Radish is operated as a casual dating web application.
       </p>
 
       <p class="text-gray-700">
@@ -56,7 +56,7 @@ definePageMeta({
       <FooterPageSectionHeading :icon="Database">What data we collect</FooterPageSectionHeading>
 
       <p class="text-gray-700">
-        We collect different types of information depending on how you use TaroTea.
+        We collect different types of information depending on how you use Lonely Radish.
       </p>
 
       <ul class="list-disc pl-6 space-y-2 text-gray-700">
@@ -71,14 +71,15 @@ definePageMeta({
         </li>
 
         <li>
-          <strong>Learning progress:</strong> such as XP, streaks, completed quizzes,
-          unlocked words, quiz answers, accuracy, and related progress data.
+          <strong>Dating profile and preference information:</strong> such as profile text,
+          coffee preferences, neighbourhood preferences, availability windows, prompts,
+          likes, matches, and related interaction data.
         </li>
 
         <li>
-          <strong>Pronunciation and speech feature data:</strong> if you use speech or
-          pronunciation features, we may process the audio you submit, transcripts,
-          scores, feedback, and usage counts for those features.
+          <strong>Communication and safety data:</strong> such as messages, reports,
+          moderation signals, blocks, and safety-related interactions where those features
+          are available.
         </li>
 
         <li>
@@ -94,7 +95,7 @@ definePageMeta({
         </li>
 
         <li>
-          <strong>Preferences:</strong> such as your selected audio voice preference
+          <strong>Preferences:</strong> such as your selected coffee-date and notification preferences
           where you choose to save it.
         </li>
       </ul>
@@ -106,9 +107,9 @@ definePageMeta({
       <ul class="list-disc pl-6 space-y-2 text-gray-700">
         <li>To create and manage your account</li>
         <li>To log you in and keep your account secure</li>
-        <li>To provide access to free and paid content</li>
-        <li>To track learning progress, XP, streaks, unlocks and quiz results</li>
-        <li>To provide pronunciation, audio and speech feedback features</li>
+        <li>To provide access to free and paid features</li>
+        <li>To support profiles, matching, availability, messaging, and date planning</li>
+        <li>To support safety, moderation, reporting, and blocking features</li>
         <li>To process subscriptions, billing and account upgrades</li>
         <li>To prevent abuse, fraud or misuse of the service</li>
         <li>To debug errors, improve reliability and maintain the app</li>
@@ -125,8 +126,8 @@ definePageMeta({
 
       <ul class="list-disc pl-6 space-y-2 text-gray-700">
         <li>
-          <strong>Contract:</strong> to provide the TaroTea service you sign up for,
-          including account access, paid features, learning progress and subscription
+          <strong>Contract:</strong> to provide the Lonely Radish service you sign up for,
+          including account access, paid features, matching, messaging and subscription
           management.
         </li>
 
@@ -151,7 +152,7 @@ definePageMeta({
       <FooterPageSectionHeading :icon="Handshake">Third-party services</FooterPageSectionHeading>
 
       <p class="text-gray-700">
-        We use trusted third-party providers to operate TaroTea. These providers only
+        We use trusted third-party providers to operate Lonely Radish. These providers only
         process data as needed to provide their services to us.
       </p>
 
@@ -165,13 +166,12 @@ definePageMeta({
         </li>
 
         <li>
-          <strong>OpenAI:</strong> speech-to-text and pronunciation-related processing,
-          where you choose to use pronunciation features.
+          <strong>OpenAI:</strong> optional AI-assisted app features, if introduced and used.
         </li>
 
         <li>
           <strong>Hosting, database, storage and infrastructure providers:</strong>
-          to host the app, store content, deliver audio files, run background jobs,
+          to host the app, store content, run background jobs,
           cache data, monitor reliability and protect the service.
         </li>
       </ul>
@@ -186,7 +186,7 @@ definePageMeta({
       <FooterPageSectionHeading :icon="FileText">Cookies and similar technologies</FooterPageSectionHeading>
 
       <p class="text-gray-700">
-        TaroTea uses cookies and similar technologies to operate the app, keep users
+        Lonely Radish uses cookies and similar technologies to operate the app, keep users
         signed in, remember preferences, and protect the service. We do not use advertising
         cookies.
       </p>
@@ -220,11 +220,10 @@ definePageMeta({
                 Preference cookies
               </td>
               <td class="py-2 pr-4">
-                Used to remember choices you make in the app, such as your preferred
-                audio voice.
+                Used to remember choices you make in the app, such as saved preferences.
               </td>
               <td class="py-2 pr-4">
-                <code class="rounded bg-gray-100 px-1 py-0.5">audio-voice</code>
+                App preference cookies
               </td>
             </tr>
 
@@ -246,15 +245,13 @@ definePageMeta({
       </div>
 
       <p class="text-gray-700">
-        The <code class="rounded bg-gray-100 px-1 py-0.5">audio-voice</code> preference
-        stores whether you selected male or female audio playback. It is used only to
-        keep your chosen audio voice across pages and is not used for advertising,
-        analytics or tracking across other websites.
+        Preference cookies are used only to keep your chosen settings across pages and are
+        not used for advertising or tracking across other websites.
       </p>
 
       <p class="text-gray-700">
-        You can change your audio voice preference using the audio voice switch in the
-        app. You can also delete cookies through your browser settings.
+        You can change app preferences where controls are provided. You can also delete
+        cookies through your browser settings.
       </p>
     </section>
 
@@ -272,8 +269,8 @@ definePageMeta({
         </li>
 
         <li>
-          Learning progress is kept while your account is active so we can provide
-          progress tracking, XP, streaks and unlocked content.
+          Profile, preference, match, message, and safety data is kept while your account
+          is active, unless deleted earlier or retained where legally required.
         </li>
 
         <li>
@@ -324,8 +321,8 @@ definePageMeta({
       <FooterPageSectionHeading :icon="Trash2">Account deletion</FooterPageSectionHeading>
 
       <p class="text-gray-700">
-        You may request deletion of your TaroTea account at any time. When an account is
-        deleted, we aim to remove account information, learning progress and related app
+        You may request deletion of your Lonely Radish account at any time. When an account is
+        deleted, we aim to remove account information, profile data, matching data and related app
         data from active systems, subject to any information we must keep for legal,
         billing, security or fraud-prevention reasons.
       </p>
@@ -346,7 +343,7 @@ definePageMeta({
       <FooterPageSectionHeading :icon="Baby">Children</FooterPageSectionHeading>
 
       <p class="text-gray-700">
-        TaroTea is not intended for children under 13. If you believe a child has provided
+        Lonely Radish is not intended for children under 18. If you believe a child has provided
         us with personal data, please contact us so we can review and take appropriate
         action.
       </p>

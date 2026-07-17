@@ -43,15 +43,15 @@ useHead({
 
 useSeoMeta({
   ogUrl: `${baseUrl}/`,
-  ogTitle: 'TaroTea · Learn Cantonese',
-  ogDescription: 'Learn natural Cantonese with exercises, vocabulary, audio and quizzes.',
-  twitterTitle: 'TaroTea · Learn Cantonese',
-  twitterDescription: 'Learn natural Cantonese with exercises, vocabulary, audio and quizzes.',
+  ogTitle: 'Lonely Radish · Coffee-date dating',
+  ogDescription: 'A casual dating app for low-pressure coffee dates, clear availability, and thoughtful introductions.',
+  twitterTitle: 'Lonely Radish · Coffee-date dating',
+  twitterDescription: 'A casual dating app for low-pressure coffee dates, clear availability, and thoughtful introductions.',
 })
 </script>
 
 <template>
-  <div class="min-h-screen flex flex-col overflow-x-hidden bg-[#F6E1E1]/30">
+  <div class="min-h-screen flex flex-col overflow-x-hidden bg-[#FBF7F1]">
     <BlankNavBar />
 
     <BackLink

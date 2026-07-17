@@ -1,159 +1,87 @@
 <script setup lang="ts">
-useSeoMeta({
-  title: 'Learn Cantonese in 15 minutes a day',
-  description: 'Learn natural Cantonese with vocabulary, sentence quizzes, audio-only drills, and writing practice.',
-  ogTitle: 'Learn Cantonese in 15 minutes a day | TaroTea',
-  ogDescription: 'Build everyday Cantonese with short, focused practice sessions.',
-})
-
 import {
-  CalendarCheck,
-  CircleHelp,
-  GraduationCap,
-  Layers,
-  PenLine,
-  Tags,
-  TrendingUp,
-  UsersRound,
-  Sword,
+  CalendarDays,
+  CheckCircle2,
+  Coffee,
+  HeartHandshake,
+  MapPin,
+  MessageCircle,
+  ShieldCheck,
+  Sparkles,
 } from '@lucide/vue'
+import { login } from '@/composables/useAuth'
+
+useSeoMeta({
+  title: 'Coffee dates without the endless chat',
+  description: 'A casual dating app for matching over low-pressure coffee dates, clear availability, and thoughtful introductions.',
+  ogTitle: 'Coffee dates without the endless chat | Lonely Radish',
+  ogDescription: 'Meet people who want a real coffee date, not weeks of vague messaging.',
+})
 
 const { data: stats } = await useFetch('/api/total-users-stats', {
   server: true,
   lazy: true,
 })
 
-type HeadingLetter = {
-  letter: string
-  gradient: boolean
-  index: number
-}
-
-type HeadingWord = {
-  letters: HeadingLetter[]
-  trailingSpace: boolean
-}
-
-const headingSegments = [
-  { text: 'Learn and improve your Cantonese in just ', gradient: false },
-  { text: '15 minutes', gradient: true },
-  { text: ' a day', gradient: false },
-]
-
-const headingLetters = headingSegments.flatMap((segment) =>
-  Array.from(segment.text).map((letter) => ({
-    letter,
-    gradient: segment.gradient,
-  })),
-)
-
-const headingWords = headingLetters.reduce<HeadingWord[]>((words, item, index) => {
-  if (item.letter === ' ') {
-    const currentWord = words.at(-1)
-
-    if (currentWord) {
-      currentWord.trailingSpace = true
-    }
-
-    return words
-  }
-
-  if (index === 0 || headingLetters[index - 1]?.letter === ' ') {
-    words.push({ letters: [], trailingSpace: false })
-  }
-
-  words.at(-1)?.letters.push({
-    letter: item.letter,
-    gradient: item.gradient,
-    index,
-  })
-
-  return words
-}, [])
-
-const headingText = headingSegments.map((segment) => segment.text).join('')
-
-const learningModes = [
-  {
-    title: 'Daily practice',
-    description: 'Short sessions designed for consistency, even with a busy schedule. Run a short quiz whenever you want',
-    bgClass: 'brand-card-yellow',
-    icon: CalendarCheck,
-  },
-  {
-    title: 'Multiple activities',
-    description: 'Switch between multiple quiz types, practice pronunciation and typing skills with various activities.',
-    bgClass: 'brand-card-blue',
-    icon: Layers,
-  },
-  {
-    title: 'Progress-driven',
-    description: 'See your growth and keep momentum with clear goals and repetition. Track progress via XP and unlock more words for free. Visualise which words are familiar and words that you may need to work on easily.',
-    bgClass: 'brand-card-pink',
-    icon: TrendingUp,
-  },
-  {
-    title: 'Learn how to write',
-    description: 'Grab your pen and paper! Watch and learn how to write traditional chinese characters by following the Hanzi Writer strokes.',
-    bgClass: 'brand-card-green',
-    icon: PenLine,
-  },
-]
-
 const currentUsers = ref<number | null>(null)
-const isStartPanelFlipped = ref(false)
-const generalGreeting = ref('')
-const momentumMessage = ref('')
-const { isLoggedIn, user, resolve: resolveMeState } = useMeStateV2()
-
-function flipStartPanel() {
-  isStartPanelFlipped.value = !isStartPanelFlipped.value
-}
-
-function formatGreeting(baseGreeting: string) {
-  const firstName = user.value?.firstName?.trim()
-
-  return firstName ? `${baseGreeting}, ${firstName}!` : `${baseGreeting}!`
-}
-
-function getTimeBasedGreeting(hour: number) {
-  if (hour < 5) {
-    return 'Burning the midnight oil'
-  }
-
-  if (hour < 12) {
-    return 'Good morning'
-  }
-
-  if (hour < 18) {
-    return 'Good afternoon'
-  }
-
-  return 'Good evening'
-}
-
-function getTimeBasedMomentumMessage(hour: number) {
-  if (hour < 5) {
-    return 'A little late-night Cantonese practice can still keep your progress glowing.'
-  }
-
-  if (hour < 18) {
-    return "Keep that momentum going, you're on the right track."
-  }
-
-  return 'Wind down with a quick Cantonese session and keep your progress moving.'
-}
-
-function updateGeneralGreeting() {
-  const currentHour = new Date().getHours()
-
-  generalGreeting.value = formatGreeting(getTimeBasedGreeting(currentHour))
-  momentumMessage.value = getTimeBasedMomentumMessage(currentHour)
-}
 const sessionCookie = useCookie<string>('online_session_id', {
   maxAge: 60 * 60 * 24 * 365,
   sameSite: 'lax',
 })
+
+const { isLoggedIn, user, resolve: resolveMeState } = useMeStateV2()
+let currentUsersInterval: ReturnType<typeof setInterval> | undefined
+
+const greeting = computed(() => {
+  const firstName = user.value?.firstName?.trim()
+  return firstName ? `Welcome back, ${firstName}` : 'Welcome back'
+})
+
+const featuredMatches = [
+  {
+    name: 'Maya',
+    detail: 'Flat white, art walks, Sunday markets',
+    time: 'Free Thu evening',
+    tone: 'bg-[#F6E1E1]',
+  },
+  {
+    name: 'Theo',
+    detail: 'Filter coffee, bookshops, live jazz',
+    time: 'Free Sat morning',
+    tone: 'bg-[#E7F3D5]',
+  },
+  {
+    name: 'Nina',
+    detail: 'Iced latte, indie films, city walks',
+    time: 'Free after work',
+    tone: 'bg-[#DCECF5]',
+  },
+]
+
+const dateFlow = [
+  {
+    title: 'Pick your coffee mood',
+    description: 'Set what you are up for: quick espresso, slow weekend cafe, or a walk with takeaway cups.',
+    icon: Coffee,
+  },
+  {
+    title: 'Match around real availability',
+    description: 'See people who have overlapping windows, nearby neighbourhoods, and the same low-pressure intent.',
+    icon: CalendarDays,
+  },
+  {
+    title: 'Move from chat to plan',
+    description: 'Use a lightweight prompt and suggested cafe shortlist so a match can become a date quickly.',
+    icon: MessageCircle,
+  },
+]
+
+const principles = [
+  'Coffee-first profiles with date intent up front',
+  'Availability windows before open-ended chatting',
+  'Safety nudges, public-place defaults, and easy reporting',
+  'No swipe marathon: a small daily table of thoughtful matches',
+]
 
 async function refreshCurrentUsers() {
   if (!sessionCookie.value && import.meta.client) {
@@ -170,450 +98,361 @@ async function refreshCurrentUsers() {
   currentUsers.value = data.currentUsers
 }
 
-watch(
-  () => user.value?.firstName,
-  () => {
-    updateGeneralGreeting()
-  },
-)
+function startOnboarding() {
+  if (isLoggedIn.value) {
+    return navigateTo('/coming-soon')
+  }
+
+  return login()
+}
 
 onMounted(() => {
   void resolveMeState()
-  updateGeneralGreeting()
   void refreshCurrentUsers()
-  const interval = setInterval(() => {
+
+  currentUsersInterval = setInterval(() => {
     void refreshCurrentUsers()
   }, 30_000)
-
-  onBeforeUnmount(() => {
-    clearInterval(interval)
-  })
 })
 
+onBeforeUnmount(() => {
+  if (currentUsersInterval) {
+    clearInterval(currentUsersInterval)
+  }
+})
 </script>
 
 <template>
-  <main class="relative max-w-4xl mx-auto py-16 sm:py-20 px-6 min-h-screen">
+  <main class="min-h-screen bg-[#FBF7F1] text-[#211A16]">
+    <section class="hero-shell">
+      <img
+        src="/images/coffee-date-hero.png"
+        alt="Two coffees on a cafe table beside a phone"
+        class="hero-image"
+      >
+      <div class="hero-scrim" />
 
-    <section class="text-center">
-      <div v-if="isLoggedIn && generalGreeting" class="mt-2 mb-6 rounded-2xl bg-gradient-to-r from-pink-400 via-violet-400 to-sky-400">
-        <div class="rounded-2xl bg-white/85 backdrop-blur-sm px-5 py-4 sm:px-7 sm:py-5">
-          <p class="text-base sm:text-lg font-semibold text-gray-900">
-            {{ generalGreeting }}
+      <div class="relative z-10 mx-auto flex min-h-[calc(100vh-5rem)] max-w-6xl flex-col justify-end px-5 pb-8 pt-24 sm:px-8 lg:min-h-[42rem] lg:pb-12">
+        <div v-if="isLoggedIn" class="mb-5 max-w-md rounded-lg bg-white/82 px-4 py-3 text-sm shadow-sm backdrop-blur">
+          <p class="font-semibold text-[#211A16]">
+            {{ greeting }}
           </p>
-          <p class="text-sm sm:text-base text-gray-700 mt-1">
-            {{ momentumMessage }}
+          <p class="mt-1 text-[#5F5149]">
+            Your coffee-date queue is being prepared.
           </p>
+        </div>
+
+        <div class="max-w-3xl">
+          <p class="mb-4 inline-flex items-center gap-2 rounded-full bg-white/82 px-3 py-1 text-sm font-medium text-[#4E3E35] shadow-sm backdrop-blur">
+            <Coffee class="size-4" aria-hidden="true" />
+            Casual dates, clear plans, good coffee
+          </p>
+
+          <h1 class="max-w-3xl text-4xl font-semibold leading-[1.05] tracking-tight text-white drop-shadow sm:text-6xl">
+            Meet for coffee, not for endless chat.
+          </h1>
+
+          <p class="mt-5 max-w-2xl text-base leading-7 text-white/92 drop-shadow sm:text-lg">
+            Lonely Radish is a dating app base for people who want simple, public, low-pressure first dates.
+            Match by cafe style, neighbourhood, and availability before the conversation drifts.
+          </p>
+
+          <div class="mt-7 flex flex-col gap-3 sm:flex-row">
+            <button type="button" class="primary-action" @click="startOnboarding">
+              <Sparkles class="size-5" aria-hidden="true" />
+              Start matching
+            </button>
+
+            <NuxtLink to="/coming-soon" class="secondary-action">
+              Preview date flow
+            </NuxtLink>
+          </div>
         </div>
       </div>
-
-      <h1 class="heading-fly-in text-3xl sm:text-4xl font-semibold tracking-tight text-gray-900"
-        :aria-label="headingText">
-        <span v-for="(word, wordIndex) in headingWords" :key="`heading-word-${wordIndex}`" aria-hidden="true"
-          class="heading-fly-in-word">
-          <span v-for="item in word.letters" :key="`${item.letter}-${item.index}`" class="heading-fly-in-letter"
-            :class="{ 'brand-text-gradient': item.gradient }" :style="{ animationDelay: `${item.index * 32}ms` }">{{
-              item.letter }}</span><span v-if="word.trailingSpace">&nbsp;</span>
-        </span>
-      </h1>
-
-      <div class="grid grid-cols-2 sm:grid-cols-2 gap-4 mt-6 max-w-2xl mx-auto">
-        <div class="relative rounded-xl p-5 text-center brand-card-green ">
-          <div class="inline-flex items-center justify-center gap-2 text-2xl font-semibold text-gray-900">
-            <span>{{ currentUsers ?? '—' }}</span>
-            <UsersRound class="size-[1em]" :stroke-width="2.2" />
-          </div>
-          <div class="text-sm text-gray-700 mt-1">
-            Current users online
-          </div>
-        </div>
-
-        <div class="relative rounded-xl p-5 text-center brand-card-pink">
-          <div class="inline-flex items-center justify-center gap-2 text-2xl font-semibold text-gray-900">
-            <span>{{ stats?.totalUsers ?? '—' }}</span>
-            <GraduationCap class="size-[1em]" :stroke-width="2.2" />
-          </div>
-          <div class="text-sm text-gray-700 mt-1">
-            Learners
-          </div>
-        </div>
-      </div>
-
-      <p class="text-base sm:text-lg text-gray-800 mt-10 max-w-2xl mx-auto">
-        Build confidence with quick, focused and fun activities that help you remember what you learn.
-        Practice at you own pace, no daily streaks or annoying birds. Grind whatever, whenever you want.
-      </p>
     </section>
 
-    <section class="mt-10 sm:mt-12 start-learning-flip hover:brightness-105"
-      aria-label="Start learning Cantonese today">
-      <div class="start-learning-scene" :class="{ 'is-flipped': isStartPanelFlipped }" @click="flipStartPanel">
+    <section class="mx-auto grid max-w-6xl gap-4 px-5 py-6 sm:grid-cols-3 sm:px-8">
+      <article class="metric-card">
+        <span class="metric-value">{{ currentUsers ?? '-' }}</span>
+        <span class="metric-label">People browsing now</span>
+      </article>
+
+      <article class="metric-card">
+        <span class="metric-value">{{ stats?.totalUsers ?? '-' }}</span>
+        <span class="metric-label">Early members</span>
+      </article>
+
+      <article class="metric-card">
+        <span class="metric-value">30m</span>
+        <span class="metric-label">Default first-date window</span>
+      </article>
+    </section>
+
+    <section class="mx-auto grid max-w-6xl gap-8 px-5 py-10 sm:px-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-start">
+      <div>
+        <p class="section-kicker">Discovery base</p>
+        <h2 class="section-heading">
+          A calmer matching surface built around one real plan.
+        </h2>
+        <p class="mt-4 max-w-xl text-[#6B5C52]">
+          The app should feel more like choosing a table than performing for a feed. Profiles highlight coffee preferences,
+          first-date rhythm, availability, and the kind of conversation someone actually wants.
+        </p>
+
+        <ul class="mt-6 space-y-3">
+          <li v-for="principle in principles" :key="principle" class="flex gap-3 text-sm text-[#4D4038]">
+            <CheckCircle2 class="mt-0.5 size-5 shrink-0 text-[#2F7D63]" aria-hidden="true" />
+            <span>{{ principle }}</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="grid gap-3">
         <article
-          class="start-learning-face start-learning-face-front rounded-2xl p-5 sm:p-8 brand-cta-topic-bg text-gray-900 shadow-sm">
-          <div class="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <h2 class="text-xl sm:mt-2 sm:text-2xl font-semibold tracking-tight">
-                Start learning Cantonese today
-              </h2>
-              <p class="start-learning-copy text-sm sm:text-base text-gray-800 mt-2 max-w-2xl">
-                Explore themed word collections, then reinforce what you discover with topic quizzes built around
-                everyday conversations.
-              </p>
+          v-for="match in featuredMatches"
+          :key="match.name"
+          class="match-card"
+          :class="match.tone"
+        >
+          <div class="avatar-mark">
+            {{ match.name.charAt(0) }}
+          </div>
+          <div class="min-w-0 flex-1">
+            <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+              <h3 class="text-lg font-semibold">
+                {{ match.name }}
+              </h3>
+              <span class="inline-flex items-center gap-1 text-xs font-medium text-[#5B4E46]">
+                <MapPin class="size-3.5" aria-hidden="true" />
+                2 km away
+              </span>
             </div>
+            <p class="mt-1 text-sm text-[#5E5148]">
+              {{ match.detail }}
+            </p>
           </div>
-
-          <div class="start-learning-actions mt-4 sm:mt-5 flex flex-wrap gap-3">
-            <NuxtLink to="/topics" class="start-learning-icon-link start-learning-icon-link-primary"
-              aria-label="Explore Topics" title="Explore Topics" @click.stop>
-              <Tags class="start-learning-action-icon" aria-hidden="true" />
-              <span class="sr-only">Explore Topics</span>
-            </NuxtLink>
-            <NuxtLink to="/topics/quiz" class="start-learning-icon-link" aria-label="Topic quizzes"
-              title="Topic quizzes" @click.stop>
-              <CircleHelp class="start-learning-action-icon" aria-hidden="true" />
-              <span class="sr-only">Topic quizzes</span>
-            </NuxtLink>
-            <NuxtLink to="/dojo/topic" class="start-learning-icon-link" aria-label="Enter Topic Dojo"
-              title="Enter Topic Dojo" @click.stop>
-              <Sword class="start-learning-action-icon start-learning-dojo-icon" aria-hidden="true" />
-              <span class="sr-only">Enter Topic Dojo</span>
-            </NuxtLink>
-          </div>
-        </article>
-
-        <article
-          class="start-learning-face start-learning-face-back rounded-2xl p-5 sm:p-8 brand-cta-level-bg text-gray-900 shadow-sm">
-          <div class="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <h2 class="text-xl sm:mt-2 sm:text-2xl font-semibold tracking-tight">
-                Start learning Cantonese today
-              </h2>
-              <p class="start-learning-copy text-sm sm:text-base text-gray-800 mt-2 max-w-2xl">
-                Work through content in structured levels at your own pace, then practice and train with activities that
-                build
-                confidence step by step.
-              </p>
-            </div>
-          </div>
-
-          <div class="start-learning-actions mt-4 sm:mt-5 flex flex-wrap gap-3">
-            <NuxtLink to="/levels" class="start-learning-icon-link start-learning-icon-link-primary"
-              aria-label="Explore Levels" title="Explore Levels" @click.stop>
-              <GraduationCap class="start-learning-action-icon" aria-hidden="true" />
-              <span class="sr-only">Explore Levels</span>
-            </NuxtLink>
-            <NuxtLink to="/quiz" class="start-learning-icon-link" aria-label="Level quizzes"
-              title="Level quizzes" @click.stop>
-              <CircleHelp class="start-learning-action-icon" aria-hidden="true" />
-              <span class="sr-only">Level quizzes</span>
-            </NuxtLink>
-            <NuxtLink to="/dojo/level" class="start-learning-icon-link" aria-label="Enter Level Dojo"
-              title="Enter Level Dojo" @click.stop>
-              <Sword class="start-learning-action-icon start-learning-dojo-icon" aria-hidden="true" />
-              <span class="sr-only">Enter Level Dojo</span>
-            </NuxtLink>
-          </div>
+          <span class="availability-pill">{{ match.time }}</span>
         </article>
       </div>
     </section>
 
-    <section class="mt-14">
-      <h2 class="text-sm uppercase tracking-wide text-gray-500 mb-4">
-        How you learn
-      </h2>
-
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <article v-for="mode in learningModes" :key="mode.title" :class="mode.bgClass"
-          class="relative rounded-xl p-5 pr-16">
-          <div class="absolute right-4 top-4 inline-flex size-9 items-center justify-center text-gray-900">
-            <component :is="mode.icon" class="size-5" :stroke-width="2.2" />
+    <section class="bg-[#211A16] px-5 py-12 text-white sm:px-8">
+      <div class="mx-auto max-w-6xl">
+        <div class="mb-7 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+          <div>
+            <p class="section-kicker text-[#DABFA4]">How it works</p>
+            <h2 class="section-heading max-w-2xl text-white">
+              Keep the product opinionated: match, suggest a cafe, meet in public.
+            </h2>
           </div>
+          <NuxtLink to="/contact" class="text-sm font-semibold text-[#F3D8B8] hover:text-white">
+            Give feedback
+          </NuxtLink>
+        </div>
 
-          <h3 class="font-semibold text-gray-900">
-            {{ mode.title }}
-          </h3>
-
-          <p class="text-sm text-gray-800 mt-2">
-            {{ mode.description }}
-          </p>
-        </article>
+        <div class="grid gap-4 md:grid-cols-3">
+          <article v-for="step in dateFlow" :key="step.title" class="flow-card">
+            <component :is="step.icon" class="size-6 text-[#E8C79F]" aria-hidden="true" />
+            <h3 class="mt-4 font-semibold">
+              {{ step.title }}
+            </h3>
+            <p class="mt-2 text-sm leading-6 text-white/72">
+              {{ step.description }}
+            </p>
+          </article>
+        </div>
       </div>
+    </section>
+
+    <section class="mx-auto grid max-w-6xl gap-5 px-5 py-12 sm:px-8 md:grid-cols-2">
+      <article class="foundation-card">
+        <ShieldCheck class="size-7 text-[#2F7D63]" aria-hidden="true" />
+        <h2 class="mt-4 text-2xl font-semibold">
+          Safety belongs in the core flow.
+        </h2>
+        <p class="mt-3 text-sm leading-6 text-[#66584F]">
+          This base is set up around public meetup defaults, clear date windows, profile context, and account controls.
+          The next product layer should add verification, moderation, reporting, and venue safety guidance before launch.
+        </p>
+      </article>
+
+      <article class="foundation-card">
+        <HeartHandshake class="size-7 text-[#B05D45]" aria-hidden="true" />
+        <h2 class="mt-4 text-2xl font-semibold">
+          Designed for intentional casual dating.
+        </h2>
+        <p class="mt-3 text-sm leading-6 text-[#66584F]">
+          The positioning is not marriage-market serious or swipe-game frantic. It is for people who are open to meeting,
+          want chemistry in person, and prefer a simple first date that can end gracefully.
+        </p>
+      </article>
     </section>
   </main>
 </template>
 
 <style scoped>
-.brand-card-green {
-  background-color: #E7F3D5;
-}
-
-.brand-card-pink {
-  background-color: #F6E1E1;
-}
-
-.brand-card-lilac {
-  background-color: #EAB8E4;
-}
-
-.brand-card-blue {
-  background-color: #A8CAE0;
-}
-
-.brand-card-yellow {
-  background-color: rgba(244, 205, 39, 0.35);
-}
-
-.brand-cta-bg,
-.brand-cta-level-bg {
-  background: linear-gradient(135deg, #F6E1E1 0%, #EAB8E4 50%, #A8CAE0 100%);
-}
-
-.brand-cta-topic-bg {
-  background: linear-gradient(135deg, #E7F3D5 0%, #C8E9E1 48%, #A8CAE0 100%);
-}
-
-.start-learning-flip {
-  perspective: 1200px;
-}
-
-.start-learning-scene {
+.hero-shell {
   position: relative;
-  min-height: clamp(15.75rem, 30vw, 18rem);
-  cursor: pointer;
-  outline: none;
-  outline: none;
-  transform-style: preserve-3d;
-  transition: transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.start-learning-scene.is-flipped {
-  transform: rotateY(180deg);
-}
-
-.start-learning-face {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  min-height: clamp(15.75rem, 30vw, 18rem);
+  min-height: calc(100vh - 5rem);
   overflow: hidden;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  transform-style: preserve-3d;
-  transition: box-shadow 220ms ease, filter 220ms ease;
+  background: #211a16;
 }
 
-.start-learning-face::before {
+.hero-image {
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.72), transparent 34%), rgba(255, 255, 255, 0.12);
-  content: '';
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 220ms ease;
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
 }
 
-.start-learning-face>* {
-  position: relative;
-  z-index: 1;
+.hero-scrim {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(33, 26, 22, 0.78), rgba(33, 26, 22, 0.34) 48%, rgba(33, 26, 22, 0.1)),
+    linear-gradient(0deg, rgba(33, 26, 22, 0.52), rgba(33, 26, 22, 0.06) 42%);
 }
 
-/* .start-learning-scene:hover .start-learning-face {
-  box-shadow: 0 24px 60px rgba(94, 166, 214, 0.34), 0 0 0 1px rgba(255, 255, 255, 0.72) inset;
-  filter: saturate(1.10) brightness(1.04);
-} */
-
-/* .start-learning-scene:hover .start-learning-face::before {
-  opacity: 1;
-} */
-
-.start-learning-face-back {
-  pointer-events: none;
-  transform: rotateY(180deg);
-}
-
-.start-learning-scene.is-flipped .start-learning-face-front {
-  pointer-events: none;
-}
-
-.start-learning-scene.is-flipped .start-learning-face-back {
-  pointer-events: auto;
-}
-
-.start-learning-face :is(a, button) {
-  transform: translateZ(1px);
-}
-
-.start-learning-icon-link {
+.primary-action,
+.secondary-action {
   display: inline-flex;
+  min-height: 3rem;
   align-items: center;
   justify-content: center;
-  width: 2.9rem;
-  min-width: 2.9rem;
-  height: 2.9rem;
-  color: rgba(17, 24, 39, 0.92);
-  background: rgba(255, 255, 255, 0.34);
-  border: 1px solid rgba(17, 24, 39, 0.22);
-  border-radius: 9999px;
-  transition: background 180ms ease, color 180ms ease, transform 180ms ease;
+  gap: 0.55rem;
+  border-radius: 999px;
+  padding: 0.8rem 1.15rem;
+  font-weight: 700;
+  transition: transform 160ms ease, background 160ms ease, color 160ms ease;
 }
 
-.start-learning-icon-link-primary {
-  color: #fff;
-  background: rgba(17, 24, 39, 0.92);
-  border-color: rgba(17, 24, 39, 0.92);
+.primary-action {
+  background: #ffffff;
+  color: #211a16;
 }
 
-.start-learning-icon-link:hover,
-.start-learning-icon-link:focus-visible {
-  color: rgba(17, 24, 39, 0.96);
-  background: rgba(255, 255, 255, 0.64);
-  transform: translateY(-0.06rem);
+.secondary-action {
+  border: 1px solid rgba(255, 255, 255, 0.62);
+  color: #ffffff;
 }
 
-.start-learning-icon-link-primary:hover,
-.start-learning-icon-link-primary:focus-visible {
-  color: #fff;
-  background: rgba(17, 24, 39, 0.82);
+.primary-action:hover,
+.secondary-action:hover {
+  transform: translateY(-1px);
 }
 
-.start-learning-icon-link:focus-visible {
-  outline: 3px solid rgba(240, 121, 202, 0.55);
-  outline-offset: 3px;
+.secondary-action:hover {
+  background: rgba(255, 255, 255, 0.12);
 }
 
-.start-learning-action-icon {
-  width: 1.35rem;
-  height: 1.35rem;
-  stroke-width: 2.35;
-  transition: transform 180ms ease;
+.metric-card,
+.foundation-card {
+  border: 1px solid rgba(33, 26, 22, 0.1);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.76);
+  box-shadow: 0 12px 28px rgba(33, 26, 22, 0.06);
 }
 
-.start-learning-icon-link:hover .start-learning-action-icon,
-.start-learning-icon-link:focus-visible .start-learning-action-icon {
-  transform: scale(1.06);
+.metric-card {
+  display: flex;
+  min-height: 7rem;
+  flex-direction: column;
+  justify-content: center;
+  padding: 1.25rem;
 }
 
-.start-learning-icon-link:hover .start-learning-dojo-icon,
-.start-learning-icon-link:focus-visible .start-learning-dojo-icon {
-  transform: rotate(-8deg) scale(1.06);
+.metric-value {
+  font-size: clamp(2rem, 6vw, 3.25rem);
+  font-weight: 750;
+  line-height: 1;
 }
 
-
-.start-learning-copy {
-  text-wrap: pretty;
+.metric-label {
+  margin-top: 0.55rem;
+  color: #6b5c52;
+  font-size: 0.9rem;
 }
 
-.heading-fly-in {
-  text-wrap: balance;
+.section-kicker {
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #9a624b;
 }
 
-.heading-fly-in-letter {
-  display: inline-block;
-  opacity: 0;
-  transform: translate3d(var(--letter-start-x, 0), var(--letter-start-y, 0), 0) rotate(var(--letter-start-rotate, 0deg)) scale(0.72);
-  animation: heading-letter-fly-in 720ms cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
-  will-change: transform, opacity;
+.section-heading {
+  margin-top: 0.55rem;
+  font-size: clamp(2rem, 4vw, 3.15rem);
+  font-weight: 720;
+  line-height: 1.05;
+  letter-spacing: 0;
 }
 
-.heading-fly-in-letter:nth-child(4n + 1) {
-  --letter-start-x: -1.8rem;
-  --letter-start-y: -2.1rem;
-  --letter-start-rotate: -18deg;
+.match-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  border-radius: 8px;
+  padding: 1rem;
+  color: #211a16;
+  box-shadow: 0 10px 24px rgba(33, 26, 22, 0.08);
 }
 
-.heading-fly-in-letter:nth-child(4n + 2) {
-  --letter-start-x: 1.6rem;
-  --letter-start-y: -1.5rem;
-  --letter-start-rotate: 16deg;
+.avatar-mark {
+  display: inline-flex;
+  height: 3.25rem;
+  width: 3.25rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.68);
+  font-size: 1.35rem;
+  font-weight: 800;
 }
 
-.heading-fly-in-letter:nth-child(4n + 3) {
-  --letter-start-x: -1.2rem;
-  --letter-start-y: 2rem;
-  --letter-start-rotate: 12deg;
+.availability-pill {
+  flex-shrink: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.7);
+  padding: 0.45rem 0.7rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #4b3f38;
 }
 
-.heading-fly-in-letter:nth-child(4n) {
-  --letter-start-x: 1.8rem;
-  --letter-start-y: 1.4rem;
-  --letter-start-rotate: -14deg;
+.flow-card {
+  min-height: 14rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.07);
+  padding: 1.25rem;
 }
 
-.heading-fly-in-word {
-  display: inline-block;
-  white-space: nowrap;
+.foundation-card {
+  padding: 1.4rem;
 }
-
-@keyframes heading-letter-fly-in {
-  0% {
-    opacity: 0;
-    transform: translate3d(var(--letter-start-x, 0), var(--letter-start-y, 0), 0) rotate(var(--letter-start-rotate, 0deg)) scale(0.72);
-  }
-
-  70% {
-    opacity: 1;
-  }
-
-  100% {
-    opacity: 1;
-    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
-  }
-}
-
 
 @media (max-width: 640px) {
-  .start-learning-scene,
-  .start-learning-face {
-    min-height: 16.5rem;
+  .hero-shell {
+    min-height: 42rem;
   }
 
-  .start-learning-face {
-    justify-content: center;
-  }
-}
-
-@media (max-width: 360px) {
-
-  .start-learning-scene,
-  .start-learning-face {
-    min-height: 18.5rem;
+  .hero-scrim {
+    background:
+      linear-gradient(0deg, rgba(33, 26, 22, 0.86), rgba(33, 26, 22, 0.18) 72%),
+      linear-gradient(90deg, rgba(33, 26, 22, 0.48), rgba(33, 26, 22, 0.08));
   }
 
-  .start-learning-actions {
-    grid-template-columns: 1fr;
+  .match-card {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .availability-pill {
+    margin-left: 4.25rem;
   }
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .start-learning-scene {
-    transition-duration: 1ms;
-  }
-
-  .heading-fly-in-letter {
-    animation: none;
-    opacity: 1;
-    transform: none;
-  }
-}
-
-.brand-text-gradient {
-  background: linear-gradient(90deg, #f079ca 50%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-/* .brand-text-gradient {
-  background: linear-gradient(
-      90deg,
-      #8972ff 0%,
-      #7795f9 50%,
-      #f977d0 100%,
-    );
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-} */
 </style>

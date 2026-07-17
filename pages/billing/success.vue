@@ -195,10 +195,10 @@ onBeforeUnmount(() => {
         </p>
 
         <div class="space-y-3 pt-4">
-          <NuxtLink to="/levels"
+          <NuxtLink to="/coming-soon"
             class="block w-full rounded-lg text-black py-3 font-medium hover:brightness-110 transition"
             style="background-color:#D6A3D1;">
-            Continue learning
+            Continue to matching
           </NuxtLink>
 
           <NuxtLink to="/account/v2" class="block text-sm text-gray-500 hover:underline">
@@ -211,7 +211,7 @@ onBeforeUnmount(() => {
         </p>
 
         <p class="text-xs text-gray-400 pt-4">
-          Thank you for supporting TaroTea!
+          Thank you for supporting Lonely Radish!
         </p>
       </template>
 

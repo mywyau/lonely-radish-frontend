@@ -52,18 +52,18 @@ export default defineNuxtConfig({
       },
       titleTemplate: (titleChunk) => {
         return titleChunk
-          ? `${titleChunk} · TaroTea`
-          : "TaroTea · Learn Cantonese";
+          ? `${titleChunk} · Lonely Radish`
+          : "Lonely Radish · Coffee-date dating";
       },
       meta: [
         {
           name: "description",
           content:
-            "Learn natural Cantonese with exercises, vocabulary, audio and quizzes.",
+            "A casual dating app for low-pressure coffee dates, clear availability, and thoughtful introductions.",
         },
         {
           property: "og:site_name",
-          content: "TaroTea",
+          content: "Lonely Radish",
         },
         {
           property: "og:type",
