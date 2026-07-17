@@ -65,21 +65,20 @@ const dateFlow = [
   },
   {
     title: 'Meet someone nearby',
-    description: 'Browse people who are close enough to meet without turning it into a whole production.',
+    description: 'Browse people who are close are nearby.',
     icon: CalendarDays,
   },
   {
     title: 'Keep it easy',
-    description: 'Chat just enough to choose a place, then see if the spark is there in person.',
+    description: 'Choose a place and time and let life take the lead. Meet and cash in for a cheap coffee',
     icon: MessageCircle,
   },
 ]
 
 const principles = [
-  'People who are open to meeting, not just collecting matches',
-  'Coffee preferences, neighbourhoods, and simple plans up front',
-  'Public places first, with safety reminders built in',
-  'A smaller set of people to consider, so it feels less like scrolling',
+  'People who are open to forming new relationships',
+  // 'Coffee preferences, neighbourhoods, and simple plans up front',
+  'Public places first, with safety reminders and confirmations on meetups.',
 ]
 
 async function refreshCurrentUsers() {
@@ -177,8 +176,7 @@ onBeforeUnmount(() => {
           Skip the endless swiping. Say yes to a coffee.
         </h2>
         <p class="mt-4 max-w-xl text-[#6E4D58]">
-          LonelyRadish is for people who would rather meet for a drink than spend weeks guessing over messages.
-          Keep it public, casual, and easy to say yes to.
+          LonelyRadish is for people who just want to chat over coffee.
         </p>
 
         <ul class="mt-6 space-y-3">
@@ -222,7 +220,7 @@ onBeforeUnmount(() => {
       <div class="mx-auto max-w-6xl">
         <div class="mb-7 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div>
-            <p class="section-kicker text-[#F7B7C4]">How it works</p>
+            <!-- <p class="section-kicker text-[#F7B7C4]">How it works</p> -->
             <h2 class="section-heading max-w-2xl text-white">
               From match to coffee without making it complicated.
             </h2>
@@ -250,22 +248,20 @@ onBeforeUnmount(() => {
       <article class="foundation-card">
         <ShieldCheck class="size-7 text-[#6E8B52]" aria-hidden="true" />
         <h2 class="mt-4 text-2xl font-semibold">
-          Meet somewhere public and easy.
+          Meet somewhere safe and public.
         </h2>
         <p class="mt-3 text-sm leading-6 text-[#6E4D58]">
-          First coffees should feel simple and comfortable. Pick a public cafe, share only what you want,
-          and keep the first meet-up light.
+          First coffees should feel simple and comfortable. Pick a public cafe or a safe place to chat and connect.
         </p>
       </article>
 
       <article class="foundation-card">
         <HeartHandshake class="size-7 text-[#B4234A]" aria-hidden="true" />
         <h2 class="mt-4 text-2xl font-semibold">
-          Casual does not have to mean careless.
+          Keep it cool, keep it chill.
         </h2>
         <p class="mt-3 text-sm leading-6 text-[#6E4D58]">
-          Come as you are, meet for a coffee, and see if there is a reason to meet again.
-          No big performance, no pressure to turn every chat into something serious.
+          Come as you are, meet for a coffee, and connect with new people.
         </p>
       </article>
     </section>

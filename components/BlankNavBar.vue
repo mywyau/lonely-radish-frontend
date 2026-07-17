@@ -178,7 +178,7 @@ onBeforeUnmount(() => {
   margin: auto;
   width: 2.00rem;
   height: 2.00rem;
-  color: #B4234A;
+  color: #111111;
   stroke-width: 2.4;
   transform-origin: center;
   transition: transform 160ms ease;
