@@ -67,7 +67,7 @@ onBeforeUnmount(() => {
   <header class="header-shell sticky top-0 z-40">
     <div class="max-w-5xl mx-auto flex items-center justify-between px-4 py-3">
 
-      <NuxtLink to="/" class="brand-logo text-2xl font-bold text-[#B4234A] hover:text-[#8F1839]">
+      <NuxtLink to="/" class="brand-logo text-2xl font-bold text-black hover:text-gray-600">
         Lonely Radish
       </NuxtLink>
 
@@ -75,8 +75,8 @@ onBeforeUnmount(() => {
 
         <button type="button" class="menu-btn" @click.stop="toggleMenu" aria-label="Open account menu"
           :aria-expanded="menuOpen ? 'true' : 'false'">
-          <X v-if="menuOpen" class="h-5 w-5 text-[#2A1520] hover:text-[#B4234A]" aria-hidden="true" />
-          <Menu v-else class="h-5 w-5 text-[#2A1520] hover:text-[#B4234A]" aria-hidden="true" />
+          <X v-if="menuOpen" class="h-5 w-5 text-black hover:text-gray-600" aria-hidden="true" />
+          <Menu v-else class="h-5 w-5 text-black hover:text-gray-600" aria-hidden="true" />
         </button>
 
         <div v-if="menuOpen" class="menu-panel">
