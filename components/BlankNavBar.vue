@@ -67,7 +67,7 @@ onBeforeUnmount(() => {
   <header class="header-shell sticky top-0 z-40">
     <div class="max-w-5xl mx-auto flex items-center justify-between px-4 py-3">
 
-      <NuxtLink to="/" class="brand-logo text-2xl font-bold text-black hover:text-gray-700">
+      <NuxtLink to="/" class="brand-logo text-2xl font-bold text-[#B4234A] hover:text-[#8F1839]">
         Lonely Radish
       </NuxtLink>
 
@@ -75,23 +75,23 @@ onBeforeUnmount(() => {
 
         <button type="button" class="menu-btn" @click.stop="toggleMenu" aria-label="Open account menu"
           :aria-expanded="menuOpen ? 'true' : 'false'">
-          <X v-if="menuOpen" class="h-5 w-5 hover:text-gray-700" aria-hidden="true" />
-          <Menu v-else class="h-5 w-5 hover:text-gray-700" aria-hidden="true" />
+          <X v-if="menuOpen" class="h-5 w-5 text-[#2A1520] hover:text-[#B4234A]" aria-hidden="true" />
+          <Menu v-else class="h-5 w-5 text-[#2A1520] hover:text-[#B4234A]" aria-hidden="true" />
         </button>
 
         <div v-if="menuOpen" class="menu-panel">
           <NuxtLink to="/account/v2"
-            class="w-full flex items-center rounded-xl px-3 py-2 text-sm text-black hover:bg-black/5 transition"
+            class="w-full flex items-center rounded-lg px-3 py-2 text-sm text-[#2A1520] hover:bg-[#FCE3E8] transition"
             @click="closeMenu">
             {{ accountLabel }}
           </NuxtLink>
 
           <NuxtLink to="/upgrade"
-            class="w-full flex items-center rounded-xl px-3 py-2 text-sm font-semibold hover:bg-black hover:brightness-125 transition"
+            class="w-full flex items-center rounded-lg px-3 py-2 text-sm font-semibold hover:bg-[#FCE3E8] transition"
             @click="closeMenu">
 
             <span
-              class="bg-gradient-to-r from-[#d48fd0] via-[#b57bc3] via-[#6faed6] to-[#d48fd0] bg-clip-text text-transparent">
+              class="text-[#B4234A]">
               Upgrade
             </span>
           </NuxtLink>
@@ -114,7 +114,7 @@ onBeforeUnmount(() => {
     <transition name="slide-left">
       <aside v-if="navOpen" id="app-navigation-panel" class="nav-drawer" aria-label="Main navigation panel">
         <div class="px-4 py-4 border-b border-black/20">
-          <span class="flex items-center gap-2 text-xl font-semibold text-black">
+          <span class="flex items-center gap-2 text-xl font-semibold text-[#2A1520]">
             <Coffee class="h-5 w-5" aria-hidden="true" />
             Coffee table
           </span>
@@ -136,11 +136,11 @@ onBeforeUnmount(() => {
 <style scoped>
 .header-shell {
   z-index: 80;
-  --cream: #FBF7F1;
-  --coffee: #211A16;
-  --foam: #E8D8C4;
-  --sage: #9BB8A2;
-  --clay: #B05D45;
+  --radish-milk: #FFF6F7;
+  --radish-ink: #2A1520;
+  --radish-blush: #FCE3E8;
+  --radish-leaf: #6E8B52;
+  --radish-root: #B4234A;
 }
 
 .menu-btn {
@@ -178,7 +178,7 @@ onBeforeUnmount(() => {
   margin: auto;
   width: 2.00rem;
   height: 2.00rem;
-  color: rgba(15, 15, 15, 0.9);
+  color: #B4234A;
   stroke-width: 2.4;
   transform-origin: center;
   transition: transform 160ms ease;
@@ -191,7 +191,7 @@ onBeforeUnmount(() => {
   inset: 0.45rem;
   border-radius: inherit;
   background:
-    radial-gradient(circle, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.18) 62%, transparent 70%);
+    radial-gradient(circle, rgba(252, 227, 232, 0.9), rgba(255, 246, 247, 0.28) 62%, transparent 70%);
   z-index: -2;
 }
 
@@ -218,14 +218,14 @@ onBeforeUnmount(() => {
   transform: translate(-50%, -50%) scale(0.35);
   z-index: -1;
   box-shadow:
-    -0.18rem -1.42rem 0 -0.03rem rgba(176, 93, 69, 0.95),
-    0.58rem -1.18rem 0 -0.08rem rgba(155, 184, 162, 0.9),
-    1.42rem -0.36rem 0 -0.05rem rgba(232, 216, 196, 0.92),
-    1.28rem 0.84rem 0 -0.08rem rgba(119, 84, 61, 0.86),
-    0.24rem 1.44rem 0 -0.04rem rgba(176, 93, 69, 0.92),
-    -0.72rem 1.1rem 0 -0.08rem rgba(232, 216, 196, 0.9),
-    -1.44rem 0.42rem 0 -0.05rem rgba(155, 184, 162, 0.9),
-    -1.08rem -0.82rem 0 -0.1rem rgba(119, 84, 61, 0.86);
+    -0.18rem -1.42rem 0 -0.03rem rgba(180, 35, 74, 0.95),
+    0.58rem -1.18rem 0 -0.08rem rgba(110, 139, 82, 0.9),
+    1.42rem -0.36rem 0 -0.05rem rgba(252, 227, 232, 0.92),
+    1.28rem 0.84rem 0 -0.08rem rgba(143, 24, 57, 0.86),
+    0.24rem 1.44rem 0 -0.04rem rgba(180, 35, 74, 0.92),
+    -0.72rem 1.1rem 0 -0.08rem rgba(252, 227, 232, 0.9),
+    -1.44rem 0.42rem 0 -0.05rem rgba(110, 139, 82, 0.9),
+    -1.08rem -0.82rem 0 -0.1rem rgba(143, 24, 57, 0.86);
   pointer-events: none;
 }
 
@@ -244,14 +244,14 @@ onBeforeUnmount(() => {
   width: 0.2rem;
   height: 0.2rem;
   box-shadow:
-    0.22rem -1.72rem 0 -0.04rem rgba(119, 84, 61, 0.84),
-    1.52rem -0.96rem 0 -0.03rem rgba(176, 93, 69, 0.9),
-    1.72rem 0.24rem 0 -0.06rem rgba(232, 216, 196, 0.86),
-    0.78rem 1.58rem 0 -0.04rem rgba(155, 184, 162, 0.86),
-    -0.32rem 1.78rem 0 -0.06rem rgba(176, 93, 69, 0.88),
-    -1.56rem 0.92rem 0 -0.03rem rgba(119, 84, 61, 0.82),
-    -1.72rem -0.28rem 0 -0.06rem rgba(232, 216, 196, 0.86),
-    -0.84rem -1.44rem 0 -0.05rem rgba(155, 184, 162, 0.86);
+    0.22rem -1.72rem 0 -0.04rem rgba(143, 24, 57, 0.84),
+    1.52rem -0.96rem 0 -0.03rem rgba(180, 35, 74, 0.9),
+    1.72rem 0.24rem 0 -0.06rem rgba(252, 227, 232, 0.86),
+    0.78rem 1.58rem 0 -0.04rem rgba(110, 139, 82, 0.86),
+    -0.32rem 1.78rem 0 -0.06rem rgba(180, 35, 74, 0.88),
+    -1.56rem 0.92rem 0 -0.03rem rgba(143, 24, 57, 0.82),
+    -1.72rem -0.28rem 0 -0.06rem rgba(252, 227, 232, 0.86),
+    -0.84rem -1.44rem 0 -0.05rem rgba(110, 139, 82, 0.86);
 }
 
 .rocket-burst::after {
@@ -259,14 +259,14 @@ onBeforeUnmount(() => {
   height: 0.16rem;
   background: transparent;
   box-shadow:
-    0.96rem -1.68rem 0 -0.03rem rgba(232, 216, 196, 0.78),
-    1.9rem -0.08rem 0 -0.04rem rgba(119, 84, 61, 0.84),
-    1.22rem 1.22rem 0 -0.03rem rgba(176, 93, 69, 0.86),
-    -0.04rem 2.02rem 0 -0.05rem rgba(232, 216, 196, 0.8),
-    -1.18rem 1.42rem 0 -0.04rem rgba(155, 184, 162, 0.84),
-    -1.92rem 0.04rem 0 -0.03rem rgba(176, 93, 69, 0.82),
-    -1.34rem -1.16rem 0 -0.04rem rgba(232, 216, 196, 0.8),
-    0.04rem -1.98rem 0 -0.05rem rgba(119, 84, 61, 0.82);
+    0.96rem -1.68rem 0 -0.03rem rgba(252, 227, 232, 0.78),
+    1.9rem -0.08rem 0 -0.04rem rgba(143, 24, 57, 0.84),
+    1.22rem 1.22rem 0 -0.03rem rgba(180, 35, 74, 0.86),
+    -0.04rem 2.02rem 0 -0.05rem rgba(252, 227, 232, 0.8),
+    -1.18rem 1.42rem 0 -0.04rem rgba(110, 139, 82, 0.84),
+    -1.92rem 0.04rem 0 -0.03rem rgba(180, 35, 74, 0.82),
+    -1.34rem -1.16rem 0 -0.04rem rgba(252, 227, 232, 0.8),
+    0.04rem -1.98rem 0 -0.05rem rgba(143, 24, 57, 0.82);
 }
 
 .trigger-visibility-btn:hover .rocket-burst,
@@ -295,7 +295,8 @@ onBeforeUnmount(() => {
   margin-top: 10px;
   width: 220px;
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(180, 35, 74, 0.14);
+  background: rgba(255, 246, 247, 0.92);
   backdrop-filter: blur(10px);
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.12);
   padding: 10px;
@@ -307,7 +308,7 @@ onBeforeUnmount(() => {
   inset: 0;
   z-index: 50;
   pointer-events: none;
-  background: rgba(33, 26, 22, 0.18);
+  background: rgba(42, 21, 32, 0.2);
 }
 
 .nav-drawer {
@@ -319,7 +320,7 @@ onBeforeUnmount(() => {
   flex-direction: column;
   height: 100vh;
   width: min(20rem, 88vw);
-  background-color: rgba(251, 247, 241, 0.92);
+  background-color: rgba(255, 246, 247, 0.94);
   backdrop-filter: blur(8px);
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.12);
 }
@@ -338,7 +339,7 @@ onBeforeUnmount(() => {
   border-radius: 0.75rem;
   padding: 0.65rem 0.75rem;
   font-size: 0.95rem;
-  color: #111827;
+  color: #2A1520;
   transition: background 120ms ease;
 }
 
@@ -346,16 +347,16 @@ onBeforeUnmount(() => {
   width: 1.1rem;
   height: 1.1rem;
   flex-shrink: 0;
-  color: rgba(17, 24, 39, 0.72);
+  color: rgba(180, 35, 74, 0.78);
   stroke-width: 2.15;
 }
 
 .drawer-link:hover {
-  background: rgba(0, 0, 0, 0.06);
+  background: rgba(180, 35, 74, 0.1);
 }
 
 .drawer-link-active {
-  background: rgba(255, 255, 255, 0.5);
+  background: rgba(252, 227, 232, 0.82);
 }
 
 .fade-enter-active,

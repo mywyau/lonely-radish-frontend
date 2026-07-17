@@ -28,7 +28,7 @@ useSeoMeta({
 </script>
 
 <template>
-  <div class="min-h-screen flex flex-col overflow-x-hidden bg-[#FBF7F1]">
+  <div class="min-h-screen flex flex-col overflow-x-hidden bg-[#FFF6F7]">
     <BlankNavBar />
 
     <BackLink

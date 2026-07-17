@@ -12,9 +12,9 @@ import {
 
 useSeoMeta({
   title: 'Coffee dates without the endless chat',
-  description: 'A casual dating app for matching over low-pressure coffee dates, clear availability, and thoughtful introductions.',
+  description: 'Meet new people nearby for simple, low-pressure coffee dates.',
   ogTitle: 'Coffee dates without the endless chat | Lonely Radish',
-  ogDescription: 'Meet people who want a real coffee date, not weeks of vague messaging.',
+  ogDescription: 'Find someone nearby, pick a cafe, and meet for a casual coffee.',
 })
 
 const { data: stats } = await useFetch('/api/total-users-stats', {
@@ -41,45 +41,45 @@ const featuredMatches = [
     name: 'Maya',
     detail: 'Flat white, art walks, Sunday markets',
     time: 'Free Thu evening',
-    tone: 'bg-[#F6E1E1]',
+    tone: 'bg-[#FCE3E8]',
   },
   {
     name: 'Theo',
     detail: 'Filter coffee, bookshops, live jazz',
     time: 'Free Sat morning',
-    tone: 'bg-[#E7F3D5]',
+    tone: 'bg-[#EAF2DE]',
   },
   {
     name: 'Nina',
     detail: 'Iced latte, indie films, city walks',
     time: 'Free after work',
-    tone: 'bg-[#DCECF5]',
+    tone: 'bg-[#F7D4DC]',
   },
 ]
 
 const dateFlow = [
   {
     title: 'Pick your coffee mood',
-    description: 'Set what you are up for: quick espresso, slow weekend cafe, or a walk with takeaway cups.',
+    description: 'Say whether you feel like a quick espresso, a slow weekend cafe, or a walk with takeaway cups.',
     icon: Coffee,
   },
   {
-    title: 'Match around real availability',
-    description: 'See people who have overlapping windows, nearby neighbourhoods, and the same low-pressure intent.',
+    title: 'Meet someone nearby',
+    description: 'Browse people who are close enough to meet without turning it into a whole production.',
     icon: CalendarDays,
   },
   {
-    title: 'Move from chat to plan',
-    description: 'Use a lightweight prompt and suggested cafe shortlist so a match can become a date quickly.',
+    title: 'Keep it easy',
+    description: 'Chat just enough to choose a place, then see if the spark is there in person.',
     icon: MessageCircle,
   },
 ]
 
 const principles = [
-  'Coffee-first profiles with date intent up front',
-  'Availability windows before open-ended chatting',
-  'Safety nudges, public-place defaults, and easy reporting',
-  'No swipe marathon: a small daily table of thoughtful matches',
+  'People who are open to meeting, not just collecting matches',
+  'Coffee preferences, neighbourhoods, and simple plans up front',
+  'Public places first, with safety reminders built in',
+  'A smaller set of people to consider, so it feels less like scrolling',
 ]
 
 async function refreshCurrentUsers() {
@@ -118,38 +118,31 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <main class="min-h-screen bg-[#FBF7F1] text-[#211A16]">
+  <main class="min-h-screen bg-[#FFF6F7] text-[#2A1520]">
     <section class="hero-shell">
-      <img
-        src="/images/coffee-date-hero.png"
-        alt="Two coffees on a cafe table beside a phone"
-        class="hero-image"
-      >
-      <div class="hero-scrim" />
-
-      <div class="relative z-10 mx-auto flex min-h-[calc(100vh-5rem)] max-w-6xl flex-col justify-end px-5 pb-8 pt-24 sm:px-8 lg:min-h-[42rem] lg:pb-12">
-        <div v-if="isLoggedIn" class="mb-5 max-w-md rounded-lg bg-white/82 px-4 py-3 text-sm shadow-sm backdrop-blur">
-          <p class="font-semibold text-[#211A16]">
+      <div class="mx-auto flex min-h-[calc(100vh-5rem)] max-w-6xl flex-col justify-end px-5 pb-8 pt-24 sm:px-8 lg:min-h-[40rem] lg:pb-12">
+        <div v-if="isLoggedIn" class="mb-5 max-w-md rounded-lg border border-[#F2C8D0] bg-white px-4 py-3 text-sm shadow-sm">
+          <p class="font-semibold text-[#2A1520]">
             {{ greeting }}
           </p>
-          <p class="mt-1 text-[#5F5149]">
-            Your coffee-date queue is being prepared.
+          <p class="mt-1 text-[#6E4D58]">
+            New coffee matches are ready to browse.
           </p>
         </div>
 
         <div class="max-w-3xl">
-          <p class="mb-4 inline-flex items-center gap-2 rounded-full bg-white/82 px-3 py-1 text-sm font-medium text-[#4E3E35] shadow-sm backdrop-blur">
+          <p class="mb-4 inline-flex items-center gap-2 rounded-full border border-[#F2C8D0] bg-white px-3 py-1 text-sm font-medium text-[#8F1839] shadow-sm">
             <Coffee class="size-4" aria-hidden="true" />
-            Casual dates, clear plans, good coffee
+            Casual coffee dates nearby
           </p>
 
-          <h1 class="max-w-3xl text-4xl font-semibold leading-[1.05] tracking-tight text-white drop-shadow sm:text-6xl">
+          <h1 class="max-w-3xl text-4xl font-semibold leading-[1.05] tracking-tight text-[#2A1520] sm:text-6xl">
             Meet for coffee, not for endless chat.
           </h1>
 
-          <p class="mt-5 max-w-2xl text-base leading-7 text-white/92 drop-shadow sm:text-lg">
-            Lonely Radish is a dating app base for people who want simple, public, low-pressure first dates.
-            Match by cafe style, neighbourhood, and availability before the conversation drifts.
+          <p class="mt-5 max-w-2xl text-base leading-7 text-[#6E4D58] sm:text-lg">
+            Find someone nearby who is up for a simple coffee. Choose a cafe, keep it relaxed,
+            and see how the conversation feels in person.
           </p>
 
           <div class="mt-7 flex flex-col gap-3 sm:flex-row">
@@ -159,14 +152,14 @@ onBeforeUnmount(() => {
             </button>
 
             <NuxtLink to="/coming-soon" class="secondary-action">
-              Preview date flow
+              Browse the preview
             </NuxtLink>
           </div>
         </div>
       </div>
     </section>
 
-    <section class="mx-auto grid max-w-6xl gap-4 px-5 py-6 sm:grid-cols-3 sm:px-8">
+    <section class="mx-auto grid max-w-4xl gap-4 px-5 py-6 sm:grid-cols-2 sm:px-8">
       <article class="metric-card">
         <span class="metric-value">{{ currentUsers ?? '-' }}</span>
         <span class="metric-label">People browsing now</span>
@@ -176,27 +169,22 @@ onBeforeUnmount(() => {
         <span class="metric-value">{{ stats?.totalUsers ?? '-' }}</span>
         <span class="metric-label">Early members</span>
       </article>
-
-      <article class="metric-card">
-        <span class="metric-value">30m</span>
-        <span class="metric-label">Default first-date window</span>
-      </article>
     </section>
 
     <section class="mx-auto grid max-w-6xl gap-8 px-5 py-10 sm:px-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-start">
       <div>
-        <p class="section-kicker">Discovery base</p>
+        <p class="section-kicker">Meet casually</p>
         <h2 class="section-heading">
-          A calmer matching surface built around one real plan.
+          Skip the endless swiping. Say yes to a coffee.
         </h2>
-        <p class="mt-4 max-w-xl text-[#6B5C52]">
-          The app should feel more like choosing a table than performing for a feed. Profiles highlight coffee preferences,
-          first-date rhythm, availability, and the kind of conversation someone actually wants.
+        <p class="mt-4 max-w-xl text-[#6E4D58]">
+          Lonely Radish is for people who would rather meet for a drink than spend weeks guessing over messages.
+          Keep it public, casual, and easy to say yes to.
         </p>
 
         <ul class="mt-6 space-y-3">
-          <li v-for="principle in principles" :key="principle" class="flex gap-3 text-sm text-[#4D4038]">
-            <CheckCircle2 class="mt-0.5 size-5 shrink-0 text-[#2F7D63]" aria-hidden="true" />
+          <li v-for="principle in principles" :key="principle" class="flex gap-3 text-sm text-[#4D2F39]">
+            <CheckCircle2 class="mt-0.5 size-5 shrink-0 text-[#6E8B52]" aria-hidden="true" />
             <span>{{ principle }}</span>
           </li>
         </ul>
@@ -217,12 +205,12 @@ onBeforeUnmount(() => {
               <h3 class="text-lg font-semibold">
                 {{ match.name }}
               </h3>
-              <span class="inline-flex items-center gap-1 text-xs font-medium text-[#5B4E46]">
+              <span class="inline-flex items-center gap-1 text-xs font-medium text-[#6E4D58]">
                 <MapPin class="size-3.5" aria-hidden="true" />
                 2 km away
               </span>
             </div>
-            <p class="mt-1 text-sm text-[#5E5148]">
+            <p class="mt-1 text-sm text-[#6E4D58]">
               {{ match.detail }}
             </p>
           </div>
@@ -231,23 +219,23 @@ onBeforeUnmount(() => {
       </div>
     </section>
 
-    <section class="bg-[#211A16] px-5 py-12 text-white sm:px-8">
+    <section class="bg-[#2A1520] px-5 py-12 text-white sm:px-8">
       <div class="mx-auto max-w-6xl">
         <div class="mb-7 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div>
-            <p class="section-kicker text-[#DABFA4]">How it works</p>
+            <p class="section-kicker text-[#F7B7C4]">How it works</p>
             <h2 class="section-heading max-w-2xl text-white">
-              Keep the product opinionated: match, suggest a cafe, meet in public.
+              From match to coffee without making it complicated.
             </h2>
           </div>
-          <NuxtLink to="/contact" class="text-sm font-semibold text-[#F3D8B8] hover:text-white">
+          <NuxtLink to="/contact" class="text-sm font-semibold text-[#F7B7C4] hover:text-white">
             Give feedback
           </NuxtLink>
         </div>
 
         <div class="grid gap-4 md:grid-cols-3">
           <article v-for="step in dateFlow" :key="step.title" class="flow-card">
-            <component :is="step.icon" class="size-6 text-[#E8C79F]" aria-hidden="true" />
+            <component :is="step.icon" class="size-6 text-[#F7B7C4]" aria-hidden="true" />
             <h3 class="mt-4 font-semibold">
               {{ step.title }}
             </h3>
@@ -261,24 +249,24 @@ onBeforeUnmount(() => {
 
     <section class="mx-auto grid max-w-6xl gap-5 px-5 py-12 sm:px-8 md:grid-cols-2">
       <article class="foundation-card">
-        <ShieldCheck class="size-7 text-[#2F7D63]" aria-hidden="true" />
+        <ShieldCheck class="size-7 text-[#6E8B52]" aria-hidden="true" />
         <h2 class="mt-4 text-2xl font-semibold">
-          Safety belongs in the core flow.
+          Meet somewhere public and easy.
         </h2>
-        <p class="mt-3 text-sm leading-6 text-[#66584F]">
-          This base is set up around public meetup defaults, clear date windows, profile context, and account controls.
-          The next product layer should add verification, moderation, reporting, and venue safety guidance before launch.
+        <p class="mt-3 text-sm leading-6 text-[#6E4D58]">
+          First coffees should feel simple and comfortable. Pick a public cafe, share only what you want,
+          and keep the first meet-up light.
         </p>
       </article>
 
       <article class="foundation-card">
-        <HeartHandshake class="size-7 text-[#B05D45]" aria-hidden="true" />
+        <HeartHandshake class="size-7 text-[#B4234A]" aria-hidden="true" />
         <h2 class="mt-4 text-2xl font-semibold">
-          Designed for intentional casual dating.
+          Casual does not have to mean careless.
         </h2>
-        <p class="mt-3 text-sm leading-6 text-[#66584F]">
-          The positioning is not marriage-market serious or swipe-game frantic. It is for people who are open to meeting,
-          want chemistry in person, and prefer a simple first date that can end gracefully.
+        <p class="mt-3 text-sm leading-6 text-[#6E4D58]">
+          Come as you are, meet for a coffee, and see if there is a reason to meet again.
+          No big performance, no pressure to turn every chat into something serious.
         </p>
       </article>
     </section>
@@ -290,23 +278,8 @@ onBeforeUnmount(() => {
   position: relative;
   min-height: calc(100vh - 5rem);
   overflow: hidden;
-  background: #211a16;
-}
-
-.hero-image {
-  position: absolute;
-  inset: 0;
-  height: 100%;
-  width: 100%;
-  object-fit: cover;
-}
-
-.hero-scrim {
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(90deg, rgba(33, 26, 22, 0.78), rgba(33, 26, 22, 0.34) 48%, rgba(33, 26, 22, 0.1)),
-    linear-gradient(0deg, rgba(33, 26, 22, 0.52), rgba(33, 26, 22, 0.06) 42%);
+  background: linear-gradient(180deg, #fff6f7 0%, #fce3e8 100%);
+  border-bottom: 1px solid rgba(180, 35, 74, 0.12);
 }
 
 .primary-action,
@@ -323,13 +296,13 @@ onBeforeUnmount(() => {
 }
 
 .primary-action {
-  background: #ffffff;
-  color: #211a16;
+  background: #b4234a;
+  color: #ffffff;
 }
 
 .secondary-action {
-  border: 1px solid rgba(255, 255, 255, 0.62);
-  color: #ffffff;
+  border: 1px solid rgba(180, 35, 74, 0.28);
+  color: #8f1839;
 }
 
 .primary-action:hover,
@@ -338,15 +311,15 @@ onBeforeUnmount(() => {
 }
 
 .secondary-action:hover {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.68);
 }
 
 .metric-card,
 .foundation-card {
-  border: 1px solid rgba(33, 26, 22, 0.1);
+  border: 1px solid rgba(180, 35, 74, 0.14);
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.76);
-  box-shadow: 0 12px 28px rgba(33, 26, 22, 0.06);
+  box-shadow: 0 12px 28px rgba(180, 35, 74, 0.08);
 }
 
 .metric-card {
@@ -365,7 +338,7 @@ onBeforeUnmount(() => {
 
 .metric-label {
   margin-top: 0.55rem;
-  color: #6b5c52;
+  color: #6e4d58;
   font-size: 0.9rem;
 }
 
@@ -374,7 +347,7 @@ onBeforeUnmount(() => {
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #9a624b;
+  color: #b4234a;
 }
 
 .section-heading {
@@ -391,8 +364,8 @@ onBeforeUnmount(() => {
   gap: 1rem;
   border-radius: 8px;
   padding: 1rem;
-  color: #211a16;
-  box-shadow: 0 10px 24px rgba(33, 26, 22, 0.08);
+  color: #2a1520;
+  box-shadow: 0 10px 24px rgba(180, 35, 74, 0.1);
 }
 
 .avatar-mark {
@@ -415,12 +388,12 @@ onBeforeUnmount(() => {
   padding: 0.45rem 0.7rem;
   font-size: 0.75rem;
   font-weight: 800;
-  color: #4b3f38;
+  color: #4d2f39;
 }
 
 .flow-card {
   min-height: 14rem;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(247, 183, 196, 0.18);
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.07);
   padding: 1.25rem;
@@ -432,13 +405,7 @@ onBeforeUnmount(() => {
 
 @media (max-width: 640px) {
   .hero-shell {
-    min-height: 42rem;
-  }
-
-  .hero-scrim {
-    background:
-      linear-gradient(0deg, rgba(33, 26, 22, 0.86), rgba(33, 26, 22, 0.18) 72%),
-      linear-gradient(90deg, rgba(33, 26, 22, 0.48), rgba(33, 26, 22, 0.08));
+    min-height: 36rem;
   }
 
   .match-card {

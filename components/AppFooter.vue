@@ -1,14 +1,14 @@
 <template>
-  <footer class="mt-12 border-t border-gray-200">
-    <div class="max-w-5xl mx-auto px-5 py-8 text-sm text-black">
+  <footer class="mt-12 border-t border-[#F2C8D0] bg-[#FFF6F7]">
+    <div class="max-w-5xl mx-auto px-5 py-8 text-sm text-[#2A1520]">
 
       <!-- Brand -->
       <div class="text-center sm:text-left">
-        <NuxtLink to="/" class="font-semibold text-lg hover:underline">
+        <NuxtLink to="/" class="font-semibold text-lg text-[#B4234A] hover:text-[#8F1839]">
           Lonely Radish
         </NuxtLink>
 
-        <p class="mt-2 text-gray-800 text-sm sm:max-w-sm">
+        <p class="mt-2 text-[#6E4D58] text-sm sm:max-w-sm">
           Casual coffee dates with clearer intent and less endless chat.
         </p>
       </div>
@@ -34,7 +34,7 @@
       </div>
 
       <!-- Copyright -->
-      <div class="mt-8 text-center text-xs text-gray-700">
+      <div class="mt-8 text-center text-xs text-[#7C5963]">
         © {{ new Date().getFullYear() }} Lonely Radish
       </div>
 
