@@ -121,11 +121,11 @@ onBeforeUnmount(() => {
   <main class="min-h-screen bg-[#FFF6F7] text-[#2A1520]">
     <section class="hero-shell">
       <div class="mx-auto flex min-h-[calc(100vh-5rem)] max-w-6xl flex-col justify-end px-5 pb-8 pt-24 sm:px-8 lg:min-h-[40rem] lg:pb-12">
-        <div v-if="isLoggedIn" class="mb-5 max-w-md rounded-lg border border-[#F2C8D0] bg-white px-4 py-3 text-sm shadow-sm">
-          <p class="font-semibold text-[#2A1520]">
+        <div v-if="isLoggedIn" class="mb-7 max-w-xl rounded-lg border border-[#F2C8D0] bg-white px-6 py-5 shadow-sm">
+          <p class="text-lg font-semibold text-[#2A1520]">
             {{ greeting }}
           </p>
-          <p class="mt-1 text-[#6E4D58]">
+          <p class="mt-2 text-base leading-6 text-[#6E4D58]">
             New coffee matches are ready to browse.
           </p>
         </div>
@@ -141,8 +141,7 @@ onBeforeUnmount(() => {
           </h1>
 
           <p class="mt-5 max-w-2xl text-base leading-7 text-[#6E4D58] sm:text-lg">
-            Find someone nearby who is up for a simple coffee. Choose a cafe, keep it relaxed,
-            and see how the conversation feels in person.
+            Find someone nearby who is up for a simple coffee. Choose a cafe, meet interesting new people.
           </p>
 
           <div class="mt-7 flex flex-col gap-3 sm:flex-row">
@@ -178,7 +177,7 @@ onBeforeUnmount(() => {
           Skip the endless swiping. Say yes to a coffee.
         </h2>
         <p class="mt-4 max-w-xl text-[#6E4D58]">
-          Lonely Radish is for people who would rather meet for a drink than spend weeks guessing over messages.
+          LonelyRadish is for people who would rather meet for a drink than spend weeks guessing over messages.
           Keep it public, casual, and easy to say yes to.
         </p>
 
