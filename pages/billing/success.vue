@@ -38,7 +38,7 @@ const plan = computed(() => route.query.plan === "yearly" ? "Yearly" : "Monthly"
       </div>
 
       <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
-        <NuxtLink to="/coming-soon" class="rounded-lg bg-[#211A16] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#3A302A]">
+        <NuxtLink to="/matches" class="rounded-lg bg-[#211A16] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#3A302A]">
           Continue to matching
         </NuxtLink>
         <NuxtLink to="/account/v2" class="rounded-lg border border-[#D8C8B6] bg-[#FBF7F1] px-5 py-3 text-sm font-semibold transition hover:bg-[#F3E8DA]">

@@ -112,7 +112,7 @@ function upgrade(plan: 'monthly' | 'yearly') {
 
         <!-- Continue without upgrading -->
         <p v-if="!isSubscribed" class="text-sm text-[#6E4D58]">
-          <NuxtLink to="/coming-soon" class="hover:text-[#B4234A] hover:underline">
+          <NuxtLink to="/matches" class="hover:text-[#B4234A] hover:underline">
             Continue without upgrading
           </NuxtLink>
         </p>

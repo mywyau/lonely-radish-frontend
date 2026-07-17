@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { describe, it, expect } from 'vitest'
 import { readPage } from './pageTestUtils'
 
@@ -19,9 +21,25 @@ describe('core page contracts', () => {
     const source = readPage('index.vue')
     expect(source).toContain("title: 'Meet through activities you both want to do'")
     expect(source).toContain('Start matching')
+    expect(source).toContain("navigateTo('/activities')")
+    expect(source).toContain('to="/matches"')
     expect(source).toContain('New activity matches are ready to browse.')
     expect(source).toContain('Skip the endless swiping. Say yes to a plan.')
     expect(source).toContain('text-[#2A1520] sm:text-6xl')
     expect(source).toContain('user.value?.firstName')
+  })
+
+  it('mock activity and match pages are routed separately from the preview page', () => {
+    const activities = readPage('activities.vue')
+    const matches = readPage('matches.vue')
+    const nav = readFileSync(resolve(process.cwd(), 'components/BlankNavBar.vue'), 'utf8')
+
+    expect(activities).toContain("title: 'Activities · Lonely Radish'")
+    expect(activities).toContain('Browse plans you would actually enjoy.')
+    expect(matches).toContain("title: 'Browse Matches · Lonely Radish'")
+    expect(matches).toContain('People matched around shared plans.')
+    expect(nav).toContain("to: '/activities'")
+    expect(nav).toContain("to: '/matches'")
+    expect(nav).not.toContain("label: 'Availability'")
   })
 })

@@ -33,21 +33,21 @@ onMounted(() => {
       <!-- Desktop Navigation -->
       <nav class="hidden md:flex items-center gap-6">
 
-        <NuxtLink to="/coming-soon" class="nav-link hover:text-gray-600">
+        <NuxtLink to="/matches" class="nav-link hover:text-gray-600">
           Matches
         </NuxtLink>
 
-        <NuxtLink to="/coming-soon" class="nav-link hover:text-gray-600">
+        <NuxtLink to="/matches" class="nav-link hover:text-gray-600">
           <span class="inline-flex items-center gap-1.5">
             <HeartHandshake class="size-4" aria-hidden="true" />Browse
           </span>
         </NuxtLink>
-        <NuxtLink to="/coming-soon" class="nav-link hover:text-gray-600">
+        <NuxtLink to="/activities" class="nav-link hover:text-gray-600">
           <span class="inline-flex items-center gap-1.5">
             <Sparkles class="size-4" aria-hidden="true" />Activities
           </span>
         </NuxtLink>
-        <NuxtLink to="/coming-soon" class="nav-link hover:text-gray-600">
+        <NuxtLink to="/content-not-available" class="nav-link hover:text-gray-600">
           <span class="inline-flex items-center gap-1.5">
             <ShieldCheck class="size-4" aria-hidden="true" />Safety
           </span>
@@ -82,19 +82,19 @@ onMounted(() => {
       <!-- Primary Links -->
       <div class="space-y-4 py-4">
 
-        <NuxtLink to="/coming-soon" class="mobile-primary block" @click="closeMobile">
+        <NuxtLink to="/matches" class="mobile-primary block" @click="closeMobile">
           Matches
         </NuxtLink>
 
-        <NuxtLink to="/coming-soon" class="mobile-primary block" @click="closeMobile">
+        <NuxtLink to="/matches" class="mobile-primary block" @click="closeMobile">
           Browse
         </NuxtLink>
 
-        <NuxtLink to="/coming-soon" class="mobile-primary block" @click="closeMobile">
+        <NuxtLink to="/activities" class="mobile-primary block" @click="closeMobile">
           Activities
         </NuxtLink>
 
-        <NuxtLink to="/coming-soon" class="mobile-primary block" @click="closeMobile">
+        <NuxtLink to="/content-not-available" class="mobile-primary block" @click="closeMobile">
           Safety
         </NuxtLink>
 

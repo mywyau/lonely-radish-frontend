@@ -1,0 +1,94 @@
+<script setup lang="ts">
+import { CalendarDays, MapPin, Music, Palette, Sparkles, Utensils, Waves } from '@lucide/vue'
+
+definePageMeta({
+  title: 'Activities · Lonely Radish',
+})
+
+const activityGroups = [
+  {
+    title: 'Easy first plans',
+    description: 'Low-pressure activities that work well when you are meeting someone new.',
+    activities: [
+      { name: 'Gallery wander', detail: 'Browse an exhibition, then decide if you want a second stop.', icon: Palette, tone: 'bg-[#FCE3E8]' },
+      { name: 'Market loop', detail: 'Walk stalls, try something small, keep the plan flexible.', icon: Sparkles, tone: 'bg-[#F3E8DA]' },
+      { name: 'Riverside walk', detail: 'A public route with space to talk without sitting across a table.', icon: Waves, tone: 'bg-[#EAF2DE]' },
+    ],
+  },
+  {
+    title: 'When you want more energy',
+    description: 'Plans with a bit more pace, useful when messages already feel comfortable.',
+    activities: [
+      { name: 'Live music set', detail: 'Pick a small venue with an easy exit and a clear start time.', icon: Music, tone: 'bg-[#F7D4DC]' },
+      { name: 'Casual food crawl', detail: 'Choose a neighbourhood and try one or two quick spots.', icon: Utensils, tone: 'bg-[#FCE3E8]' },
+      { name: 'Weekend pop-up', detail: 'Meet around an event so there is already something to react to.', icon: CalendarDays, tone: 'bg-[#F3E8DA]' },
+    ],
+  },
+]
+</script>
+
+<template>
+  <main class="min-h-screen bg-[#FBF7F1] px-5 py-10 text-[#2A1520] sm:px-8">
+    <section class="mx-auto max-w-6xl">
+      <div class="max-w-3xl">
+        <p class="section-kicker">Activities</p>
+        <h1 class="mt-2 text-4xl font-semibold leading-tight sm:text-5xl">
+          Browse plans you would actually enjoy.
+        </h1>
+        <p class="mt-4 max-w-2xl text-[#6E4D58]">
+          Pick activities that make a first meet-up feel natural. These are mocked for now, but show how the product can move beyond generic matching.
+        </p>
+      </div>
+
+      <div class="mt-10 grid gap-8">
+        <section v-for="group in activityGroups" :key="group.title" class="space-y-4">
+          <div>
+            <h2 class="text-2xl font-semibold">
+              {{ group.title }}
+            </h2>
+            <p class="mt-2 max-w-2xl text-sm leading-6 text-[#6E4D58]">
+              {{ group.description }}
+            </p>
+          </div>
+
+          <div class="grid gap-4 md:grid-cols-3">
+            <article
+              v-for="activity in group.activities"
+              :key="activity.name"
+              class="rounded-lg p-5 shadow-[0_10px_24px_rgba(180,35,74,0.08)]"
+              :class="activity.tone"
+            >
+              <component :is="activity.icon" class="size-6 text-[#B4234A]" aria-hidden="true" />
+              <h3 class="mt-4 text-lg font-semibold">
+                {{ activity.name }}
+              </h3>
+              <p class="mt-2 text-sm leading-6 text-[#4D2F39]">
+                {{ activity.detail }}
+              </p>
+              <div class="mt-5 flex flex-wrap gap-2 text-xs font-semibold text-[#4D2F39]">
+                <span class="inline-flex items-center gap-1 rounded-full bg-white/65 px-3 py-1">
+                  <MapPin class="size-3.5" aria-hidden="true" />
+                  Nearby
+                </span>
+                <span class="inline-flex items-center gap-1 rounded-full bg-white/65 px-3 py-1">
+                  <CalendarDays class="size-3.5" aria-hidden="true" />
+                  This week
+                </span>
+              </div>
+            </article>
+          </div>
+        </section>
+      </div>
+    </section>
+  </main>
+</template>
+
+<style scoped>
+.section-kicker {
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #b4234a;
+}
+</style>

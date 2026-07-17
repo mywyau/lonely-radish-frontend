@@ -31,7 +31,7 @@ definePageMeta({
           <ArrowRight class="size-4" aria-hidden="true" />
         </NuxtLink>
         <NuxtLink
-          to="/coming-soon"
+          to="/matches"
           class="inline-flex items-center justify-center gap-2 rounded-lg border border-[#D8C8B6] bg-[#FBF7F1] px-5 py-3 text-sm font-semibold transition hover:bg-[#F3E8DA]"
         >
           <Sparkles class="size-4" aria-hidden="true" />

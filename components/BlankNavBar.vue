@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useMeStateV2 } from '@/composables/useMeStateV2'
-import { CalendarDays, HeartHandshake, House, Menu, ShieldCheck, Sparkles, X } from '@lucide/vue'
+import { HeartHandshake, House, Menu, ShieldCheck, Sparkles, X } from '@lucide/vue'
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 
 const { user, resolve } = useMeStateV2()
@@ -15,9 +15,8 @@ const menuRoot = ref<HTMLElement | null>(null)
 const navLinks = computed(() => {
   const links = [
     { to: '/', label: 'Home', icon: House },
-    { to: '/coming-soon', label: 'Browse Matches', icon: HeartHandshake },
-    { to: '/coming-soon', label: 'Activities', icon: Sparkles },
-    { to: '/coming-soon', label: 'Availability', icon: CalendarDays },
+    { to: '/matches', label: 'Browse Matches', icon: HeartHandshake },
+    { to: '/activities', label: 'Activities', icon: Sparkles },
     { to: '/content-not-available', label: 'Safety', icon: ShieldCheck },
   ]
 

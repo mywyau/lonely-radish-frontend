@@ -96,7 +96,7 @@ async function refreshCurrentUsers() {
 }
 
 function startOnboarding() {
-  return navigateTo('/coming-soon')
+  return navigateTo('/activities')
 }
 
 onMounted(() => {
@@ -148,8 +148,8 @@ onBeforeUnmount(() => {
               Start matching
             </button>
 
-            <NuxtLink to="/coming-soon" class="secondary-action">
-              Browse the preview
+            <NuxtLink to="/matches" class="secondary-action">
+              Browse matches
             </NuxtLink>
           </div>
         </div>
