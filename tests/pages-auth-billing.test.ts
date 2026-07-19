@@ -56,6 +56,11 @@ describe("mock access and billing page contracts", () => {
     expect(preferences).toContain("title: 'Match Preferences · Lonely Radish'");
     expect(preferences).toContain("Save preferences");
     expect(preferences).toContain("Preferences saved locally.");
+    expect(preferences).toContain('id="distance-unit"');
+    expect(preferences).toContain('type="range"');
+    expect(preferences).toContain('preferences.minimumAge');
+    expect(preferences).toContain('preferences.maximumAge');
+    expect(preferences).not.toContain('preferences.neighbourhood');
     expect(preferences).toContain('to="/preferences/activities"');
     expect(preferences).toContain('to="/preferences/dating"');
     expect(activityPreferences).toContain("title: 'Activity Interests · Lonely Radish'");

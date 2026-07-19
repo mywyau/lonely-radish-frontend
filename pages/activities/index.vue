@@ -2,7 +2,7 @@
 import { Bike, CalendarDays, Gamepad2, MapPin, Music, Palette, Sparkles, Trophy, Utensils, Video, Waves } from '@lucide/vue'
 
 definePageMeta({
-  title: 'Activities · Lonely Radish',
+  title: 'Date Ideas · Lonely Radish',
 })
 
 const activityGroups = [
@@ -53,12 +53,12 @@ function activityPath(name: string) {
   <main class="min-h-screen bg-[#FBF7F1] px-5 py-10 text-[#2A1520] sm:px-8">
     <section class="mx-auto max-w-6xl">
       <div class="max-w-3xl">
-        <p class="section-kicker">Activities</p>
+        <p class="section-kicker">Discover</p>
         <h1 class="mt-2 text-4xl font-semibold leading-tight sm:text-5xl">
-          Browse plans you would actually enjoy.
+          Start with a date you would actually enjoy.
         </h1>
         <p class="mt-4 max-w-2xl text-[#6E4D58]">
-          Pick activities that make a first meet-up feel natural. These are mocked for now, but show how the product can move beyond generic matching.
+          Choose a date idea, then meet compatible people nearby who would genuinely enjoy doing it with you.
         </p>
       </div>
 
@@ -98,7 +98,7 @@ function activityPath(name: string) {
                   {{ activity.timing }}
                 </span>
               </div>
-              <span class="mt-5 inline-flex text-sm font-semibold text-[#8F1839] group-hover:underline">See interested people →</span>
+              <span class="mt-5 inline-flex text-sm font-semibold text-[#8F1839] group-hover:underline">See potential dates →</span>
             </NuxtLink>
           </div>
         </section>

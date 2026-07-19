@@ -15,8 +15,8 @@ const menuRoot = ref<HTMLElement | null>(null)
 const navLinks = computed(() => {
   const links = [
     { to: '/', label: 'Home', icon: House },
-    { to: '/matches', label: 'Browse Matches', icon: HeartHandshake },
-    { to: '/activities', label: 'Activities', icon: Sparkles },
+    { to: '/activities', label: 'Discover date ideas', icon: Sparkles },
+    { to: '/matches', label: 'Matches & plans', icon: HeartHandshake },
     { to: '/content-not-available', label: 'Safety', icon: ShieldCheck },
   ]
 
@@ -127,7 +127,7 @@ onBeforeUnmount(() => {
         <div class="px-4 py-4 border-b border-black/20">
           <span class="flex items-center gap-2 text-xl font-semibold text-[#2A1520]">
             <Sparkles class="h-5 w-5" aria-hidden="true" />
-            Activity table
+            Plan a date
           </span>
         </div>
 

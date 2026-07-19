@@ -34,14 +34,14 @@ useHead(() => ({ title: `${activityName.value} Matches · Lonely Radish` }))
     <section class="mx-auto max-w-5xl">
       <div class="rounded-lg bg-[#2A1520] p-6 text-white shadow-[0_14px_32px_rgba(42,21,32,0.16)] sm:p-8">
         <Sparkles class="size-6 text-[#F7B7C4]" aria-hidden="true" />
-        <p class="mt-5 text-xs font-extrabold uppercase tracking-widest text-[#F7B7C4]">Activity matches</p>
-        <h1 class="mt-2 text-3xl font-semibold sm:text-4xl">People interested in {{ activityName }}</h1>
-        <p class="mt-3 max-w-2xl text-sm leading-6 text-white/75">These people also chose this activity and fit your current age, distance, sexual, racial, and ethnic preferences.</p>
+        <p class="mt-5 text-xs font-extrabold uppercase tracking-widest text-[#F7B7C4]">Potential dates</p>
+        <h1 class="mt-2 text-3xl font-semibold sm:text-4xl">Who would enjoy a {{ activityName.toLowerCase() }}?</h1>
+        <p class="mt-3 max-w-2xl text-sm leading-6 text-white/75">These compatible people fit your current preferences and would enjoy this date idea too.</p>
       </div>
 
       <div v-if="visiblePeople.length" class="mt-8">
         <div class="flex flex-wrap items-center justify-between gap-3">
-          <p class="inline-flex items-center gap-2 text-sm font-semibold text-[#6E4D58]"><UsersRound class="size-4" />{{ visiblePeople.length }} compatible people</p>
+          <p class="inline-flex items-center gap-2 text-sm font-semibold text-[#6E4D58]"><UsersRound class="size-4" />{{ visiblePeople.length }} potential dates</p>
           <NuxtLink to="/preferences" class="text-sm font-semibold text-[#8F1839] hover:underline">Review match preferences</NuxtLink>
         </div>
 
@@ -61,7 +61,10 @@ useHead(() => ({ title: `${activityName.value} Matches · Lonely Radish` }))
                 <span class="inline-flex items-center gap-1 rounded-full bg-white/70 px-3 py-1.5"><ShieldCheck class="size-3.5" />{{ person.reason }}</span>
               </div>
             </div>
-            <button type="button" class="mt-5 inline-flex items-center gap-2 rounded-lg bg-[#B4234A] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#8F1839]"><HeartHandshake class="size-4" />Interested</button>
+            <div class="mt-5 flex flex-wrap gap-2">
+              <NuxtLink :to="`/profiles/${person.name.toLowerCase()}`" class="inline-flex items-center rounded-lg bg-white/75 px-4 py-2.5 text-sm font-semibold text-[#8F1839] transition hover:bg-white">View profile</NuxtLink>
+              <NuxtLink :to="`/plans/${person.name.toLowerCase()}?activity=${slug}`" class="inline-flex items-center gap-2 rounded-lg bg-[#B4234A] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#8F1839]"><HeartHandshake class="size-4" />Suggest a date</NuxtLink>
+            </div>
           </article>
         </div>
       </div>

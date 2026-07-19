@@ -1,149 +1,44 @@
 <script setup lang="ts">
-import { CalendarDays, HeartHandshake, MapPin, ShieldCheck, Sparkles } from '@lucide/vue'
+import { CalendarCheck, CalendarDays, ChevronRight, Clock3, HeartHandshake, MapPin, Sparkles } from '@lucide/vue'
 
-definePageMeta({
-  title: 'Browse Matches · Lonely Radish',
-})
+definePageMeta({ title: 'Matches & Plans · Lonely Radish' })
 
-const matches = [
-  {
-    name: 'Maya',
-    activity: 'Gallery wander',
-    detail: 'Design books, low-key exhibitions, Sunday markets',
-    time: 'Thu evening',
-    place: 'Shoreditch',
-    score: 'Strong activity overlap',
-    tone: 'bg-[#FCE3E8]',
-  },
-  {
-    name: 'Theo',
-    activity: 'Live music set',
-    detail: 'Jazz bars, bookshops, long walks',
-    time: 'Sat morning',
-    place: 'Brixton',
-    score: 'Similar pace',
-    tone: 'bg-[#EAF2DE]',
-  },
-  {
-    name: 'Nina',
-    activity: 'Indie film',
-    detail: 'Small cinemas, city walks, casual food spots',
-    time: 'Sun afternoon',
-    place: 'Hackney',
-    score: 'Close nearby',
-    tone: 'bg-[#F3E8DA]',
-  },
-]
-
-const maxActiveMatches = 5
-const activeMatchCount = matches.length
-const remainingMatchSlots = maxActiveMatches - activeMatchCount
-
-const summary = [
-  { label: 'Active matches', value: `${activeMatchCount}/${maxActiveMatches}` },
-  { label: 'Nearby today', value: '4' },
-  { label: 'Public-first', value: '100%' },
+const sections = [
+  { title: 'New matches', description: 'You both want to meet. Choose a date idea and start making a plan.', items: [
+    { name: 'Maya', slug: 'maya', activity: 'Gallery wander', place: 'Shoreditch', status: 'Choose a time', icon: HeartHandshake, tone: 'bg-[#FCE3E8]' },
+  ] },
+  { title: 'Planning', description: 'A date idea is chosen and needs one or two more details.', items: [
+    { name: 'Nina', slug: 'nina', activity: 'Indie film', place: 'Hackney', status: 'Venue needed', icon: Clock3, tone: 'bg-[#F3E8DA]' },
+  ] },
+  { title: 'Confirmed dates', description: 'Everything is agreed. Keep communication focused on practical details.', items: [
+    { name: 'Alex', slug: 'alex', activity: 'Climbing taster', place: 'Bethnal Green', status: 'Friday · 7:00pm', icon: CalendarCheck, tone: 'bg-[#EAF2DE]' },
+  ] },
 ]
 </script>
 
 <template>
   <main class="min-h-screen bg-[#FBF7F1] px-5 py-10 text-[#2A1520] sm:px-8">
-    <section class="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
-      <div class="space-y-6">
-        <div>
-          <p class="section-kicker">Matches</p>
-          <h1 class="mt-2 text-4xl font-semibold leading-tight sm:text-5xl">
-            People matched around shared plans.
-          </h1>
-          <p class="mt-4 max-w-xl text-[#6E4D58]">
-            This mock view shows matches grouped by activity intent, timing, and public-place preferences. You can hold up to five active matches at a time.
-          </p>
-        </div>
+    <section class="mx-auto max-w-5xl">
+      <p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">Matches & plans</p>
+      <h1 class="mt-2 text-4xl font-semibold sm:text-5xl">Turn mutual interest into a real date.</h1>
+      <p class="mt-4 max-w-2xl leading-7 text-[#6E4D58]">Every match has a clear next step: choose what to do, agree a time and public venue, then meet.</p>
 
-        <div class="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
-          <article v-for="item in summary" :key="item.label" class="rounded-lg bg-white p-4 shadow-[0_10px_24px_rgba(180,35,74,0.08)]">
-            <p class="text-3xl font-semibold">
-              {{ item.value }}
-            </p>
-            <p class="mt-1 text-sm text-[#6E4D58]">
-              {{ item.label }}
-            </p>
-          </article>
-        </div>
-
-        <div class="rounded-lg bg-[#2A1520] p-5 text-white shadow-[0_14px_32px_rgba(42,21,32,0.16)]">
-          <ShieldCheck class="size-6 text-[#F7B7C4]" aria-hidden="true" />
-          <h2 class="mt-4 text-lg font-semibold">
-            Five active matches max
-          </h2>
-          <p class="mt-2 text-sm leading-6 text-white/72">
-            Keep the match list focused. You have {{ remainingMatchSlots }} open slots before you need to plan, pass, or close an existing match.
-          </p>
-        </div>
-      </div>
-
-      <div class="grid gap-4">
-        <article
-          v-for="match in matches"
-          :key="match.name"
-          class="rounded-lg p-5 shadow-[0_10px_24px_rgba(180,35,74,0.08)]"
-          :class="match.tone"
-        >
-          <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div class="flex min-w-0 gap-4">
-              <div class="flex size-12 shrink-0 items-center justify-center rounded-full bg-white/75 text-lg font-semibold text-[#B4234A]">
-                {{ match.name.charAt(0) }}
+      <div class="mt-9 grid gap-8">
+        <section v-for="section in sections" :key="section.title">
+          <h2 class="text-2xl font-semibold">{{ section.title }}</h2>
+          <p class="mt-1 text-sm leading-6 text-[#6E4D58]">{{ section.description }}</p>
+          <div class="mt-4 grid gap-3">
+            <NuxtLink v-for="match in section.items" :key="match.name" :to="`/plans/${match.slug}`" class="group rounded-lg p-5 shadow-[0_10px_24px_rgba(180,35,74,0.08)] transition hover:-translate-y-0.5" :class="match.tone">
+              <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div class="flex min-w-0 gap-4"><div class="flex size-12 shrink-0 items-center justify-center rounded-full bg-white/75 text-lg font-semibold text-[#B4234A]">{{ match.name.charAt(0) }}</div><div><h3 class="text-lg font-semibold">{{ match.name }}</h3><p class="mt-1 inline-flex items-center gap-1 text-sm font-semibold text-[#8F1839]"><Sparkles class="size-3.5" />{{ match.activity }}</p><p class="mt-1 inline-flex items-center gap-1 text-xs text-[#6E4D58]"><MapPin class="size-3.5" />{{ match.place }}</p></div></div>
+                <div class="flex items-center justify-between gap-4 sm:justify-end"><span class="inline-flex items-center gap-1 rounded-full bg-white/70 px-3 py-2 text-xs font-semibold"><component :is="match.icon" class="size-3.5" />{{ match.status }}</span><ChevronRight class="size-5 transition group-hover:translate-x-1" /></div>
               </div>
-              <div class="min-w-0">
-                <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
-                  <h2 class="text-lg font-semibold">
-                    {{ match.name }}
-                  </h2>
-                  <span class="inline-flex items-center gap-1 text-xs font-semibold text-[#6E4D58]">
-                    <MapPin class="size-3.5" aria-hidden="true" />
-                    {{ match.place }}
-                  </span>
-                </div>
-                <p class="mt-1 text-sm font-semibold text-[#8F1839]">
-                  {{ match.activity }}
-                </p>
-                <p class="mt-2 text-sm leading-6 text-[#4D2F39]">
-                  {{ match.detail }}
-                </p>
-              </div>
-            </div>
-
-            <div class="flex flex-wrap gap-2 text-xs font-semibold text-[#4D2F39] sm:justify-end">
-              <span class="inline-flex items-center gap-1 rounded-full bg-white/65 px-3 py-1">
-                <CalendarDays class="size-3.5" aria-hidden="true" />
-                {{ match.time }}
-              </span>
-              <span class="inline-flex items-center gap-1 rounded-full bg-white/65 px-3 py-1">
-                <Sparkles class="size-3.5" aria-hidden="true" />
-                {{ match.score }}
-              </span>
-            </div>
+            </NuxtLink>
           </div>
-        </article>
-
-        <NuxtLink
-          to="/activities"
-          class="inline-flex items-center justify-center gap-2 rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#8F1839]"
-        >
-          <HeartHandshake class="size-4" aria-hidden="true" />
-          Browse activity ideas
-        </NuxtLink>
+        </section>
       </div>
+
+      <NuxtLink to="/activities" class="mt-9 inline-flex items-center gap-2 rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white"><CalendarDays class="size-4" />Discover another date idea</NuxtLink>
     </section>
   </main>
 </template>
-
-<style scoped>
-.section-kicker {
-  font-size: 0.78rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #b4234a;
-}
-</style>
