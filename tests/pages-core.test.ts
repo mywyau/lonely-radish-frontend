@@ -30,7 +30,8 @@ describe('core page contracts', () => {
   })
 
   it('mock activity and match pages are routed separately from the preview page', () => {
-    const activities = readPage('activities.vue')
+    const activities = readPage('activities/index.vue')
+    const activityMatches = readPage('activities/[slug].vue')
     const matches = readPage('matches.vue')
     const nav = readFileSync(resolve(process.cwd(), 'components/BlankNavBar.vue'), 'utf8')
 
@@ -39,6 +40,11 @@ describe('core page contracts', () => {
     expect(activities).toContain('Sports and active plans')
     expect(activities).toContain('Gaming and remote meetups')
     expect(activities).toContain('Co-op game session')
+    expect(activities).toContain(':to="activityPath(activity.name)"')
+    expect(activities).toContain('See interested people')
+    expect(activityMatches).toContain('People interested in {{ activityName }}')
+    expect(activityMatches).toContain('fit your current age, distance, sexual, racial, and ethnic preferences')
+    expect(activityMatches).toContain('No activity matches found')
     expect(matches).toContain("title: 'Browse Matches · Lonely Radish'")
     expect(matches).toContain('People matched around shared plans.')
     expect(matches).toContain('Five active matches max')

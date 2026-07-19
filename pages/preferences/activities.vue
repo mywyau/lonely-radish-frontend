@@ -30,7 +30,7 @@ function save() { saved.value = true; window.setTimeout(() => { saved.value = fa
       <form class="mt-8 space-y-5" @submit.prevent="save">
         <section class="rounded-lg bg-white p-6 shadow-[0_12px_28px_rgba(180,35,74,0.08)]">
           <label class="text-sm font-semibold">Add your own activity</label>
-          <div class="mt-2 flex gap-2"><input v-model="customActivity" class="min-w-0 flex-1 rounded-lg border border-[#E8D8C4] bg-[#FBF7F1] px-4 py-3" placeholder="Karaoke, pottery, paddleboarding..." @keydown.enter.prevent="addCustom"><button type="button" class="rounded-lg bg-[#B4234A] px-4 text-sm font-semibold text-white" @click="addCustom">Add</button></div>
+          <div class="mt-2 flex flex-col gap-2 sm:flex-row"><input v-model="customActivity" class="min-w-0 flex-1 rounded-lg border border-[#E8D8C4] bg-[#FBF7F1] px-4 py-3" placeholder="Karaoke, pottery, paddleboarding..." @keydown.enter.prevent="addCustom"><button type="button" class="min-h-11 rounded-lg bg-[#B4234A] px-4 text-sm font-semibold text-white" @click="addCustom">Add</button></div>
         </section>
 
         <section v-for="group in groups" :key="group.name" class="rounded-lg bg-white p-6 shadow-[0_10px_24px_rgba(180,35,74,0.08)]">

@@ -14,7 +14,7 @@
       </div>
 
       <!-- Links -->
-      <div class="mt-6 grid grid-cols-2 gap-y-3 gap-x-6 text-sm sm:flex sm:flex-row sm:justify-end sm:gap-6 sm:mt-4">
+      <div class="mt-6 grid grid-cols-1 gap-3 text-center text-sm min-[360px]:grid-cols-2 min-[360px]:text-left sm:mt-4 sm:flex sm:flex-row sm:justify-end sm:gap-6">
 
         <NuxtLink to="/contact" class="hover:underline">
           Contact

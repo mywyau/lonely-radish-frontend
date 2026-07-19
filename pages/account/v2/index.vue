@@ -60,24 +60,11 @@ function saveProfile() {
           <p class="mt-2 text-sm leading-6 text-white/72">
             Free prototype access. Premium matching and planning controls are mocked on the upgrade page.
           </p>
-          <NuxtLink
-            to="/upgrade"
-            class="mt-5 inline-flex rounded-lg bg-white px-4 py-2 text-sm font-semibold text-[#8F1839] transition hover:bg-[#F3E8DA]"
-          >
-            View plans
-          </NuxtLink>
-          <NuxtLink
-            to="/preferences"
-            class="ml-3 mt-5 inline-flex rounded-lg bg-[#FCE3E8] px-4 py-2 text-sm font-semibold text-[#8F1839] transition hover:bg-[#F7D4DC]"
-          >
-            Match preferences
-          </NuxtLink>
-          <NuxtLink
-            to="/photos"
-            class="ml-3 mt-5 inline-flex rounded-lg bg-[#F3E8DA] px-4 py-2 text-sm font-semibold text-[#8F1839] transition hover:bg-[#FCE3E8]"
-          >
-            Profile photos
-          </NuxtLink>
+          <div class="mt-5 flex flex-col gap-2 min-[400px]:flex-row min-[400px]:flex-wrap">
+            <NuxtLink to="/upgrade" class="inline-flex justify-center rounded-lg bg-white px-4 py-2 text-sm font-semibold text-[#8F1839] transition hover:bg-[#F3E8DA]">View plans</NuxtLink>
+            <NuxtLink to="/preferences" class="inline-flex justify-center rounded-lg bg-[#FCE3E8] px-4 py-2 text-sm font-semibold text-[#8F1839] transition hover:bg-[#F7D4DC]">Match preferences</NuxtLink>
+            <NuxtLink to="/photos" class="inline-flex justify-center rounded-lg bg-[#F3E8DA] px-4 py-2 text-sm font-semibold text-[#8F1839] transition hover:bg-[#FCE3E8]">Profile photos</NuxtLink>
+          </div>
         </div>
       </aside>
 
@@ -119,11 +106,11 @@ function saveProfile() {
               <input v-model="profile.availability" class="field" type="text">
             </label>
 
-            <div class="sm:col-span-2">
+            <div class="flex flex-col items-start gap-2 sm:col-span-2 sm:flex-row sm:items-center">
               <button type="submit" class="rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#8F1839]">
                 Save profile
               </button>
-              <span v-if="saved" class="ml-3 text-sm font-medium text-[#6E8B52]">Saved locally.</span>
+              <span v-if="saved" class="text-sm font-medium text-[#6E8B52]">Saved locally.</span>
             </div>
           </form>
         </section>

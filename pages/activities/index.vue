@@ -43,6 +43,10 @@ const activityGroups = [
     ],
   },
 ]
+
+function activityPath(name: string) {
+  return `/activities/${name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}`
+}
 </script>
 
 <template>
@@ -70,10 +74,11 @@ const activityGroups = [
           </div>
 
           <div class="grid gap-4 md:grid-cols-3">
-            <article
+            <NuxtLink
               v-for="activity in group.activities"
               :key="activity.name"
-              class="rounded-lg p-5 shadow-[0_10px_24px_rgba(180,35,74,0.08)]"
+              :to="activityPath(activity.name)"
+              class="group rounded-lg p-5 shadow-[0_10px_24px_rgba(180,35,74,0.08)] transition hover:-translate-y-1 hover:shadow-[0_16px_30px_rgba(180,35,74,0.14)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#B4234A]"
               :class="activity.tone"
             >
               <component :is="activity.icon" class="size-6 text-[#B4234A]" aria-hidden="true" />
@@ -93,7 +98,8 @@ const activityGroups = [
                   {{ activity.timing }}
                 </span>
               </div>
-            </article>
+              <span class="mt-5 inline-flex text-sm font-semibold text-[#8F1839] group-hover:underline">See interested people →</span>
+            </NuxtLink>
           </div>
         </section>
       </div>

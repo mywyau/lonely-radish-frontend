@@ -353,9 +353,11 @@ onBeforeUnmount(() => {
 }
 
 .match-card {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  column-gap: 0.875rem;
+  row-gap: 0.75rem;
   border-radius: 8px;
   padding: 1rem;
   color: #2a1520;
@@ -376,6 +378,8 @@ onBeforeUnmount(() => {
 }
 
 .availability-pill {
+  grid-column: 2;
+  justify-self: start;
   flex-shrink: 0;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.7);
@@ -383,6 +387,31 @@ onBeforeUnmount(() => {
   font-size: 0.75rem;
   font-weight: 800;
   color: #4d2f39;
+}
+
+@media (min-width: 640px) {
+  .match-card {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .availability-pill {
+    grid-column: auto;
+    justify-self: auto;
+  }
+}
+
+@media (max-width: 374px) {
+  .match-card {
+    padding: 0.875rem;
+  }
+
+  .avatar-mark {
+    height: 2.75rem;
+    width: 2.75rem;
+    font-size: 1.1rem;
+  }
 }
 
 .flow-card {
