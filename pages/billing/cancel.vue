@@ -26,7 +26,7 @@ const isSubscribed = computed(() =>
 <template>
   <main class="min-h-[70vh] bg-[#FBF7F1] px-4 pb-8 pt-6 text-[#2A1520]">
     <div class="mx-auto max-w-md">
-      <div class="space-y-6 rounded-lg bg-white p-8 text-center shadow-[0_12px_28px_rgba(180,35,74,0.08)] sm:p-10">
+      <div class="space-y-6 rounded-lg p-8 text-center sm:p-10">
         <div class="w-full max-w-md space-y-6 text-center">
 
           <div class="flex justify-center">
@@ -72,7 +72,7 @@ const isSubscribed = computed(() =>
             Continue without upgrading
           </NuxtLink>
 
-          <p class="pt-4 text-sm text-[#7C5963]">
+          <p class="pt-4 text-sm font-bold text-[#7C5963]">
             You can safely close this page.
           </p>
 
