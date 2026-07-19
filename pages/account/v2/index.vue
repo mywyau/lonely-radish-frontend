@@ -6,9 +6,9 @@ definePageMeta({
 });
 
 const profile = reactive({
-  firstName: "Maya",
-  lastName: "Lee",
-  neighbourhood: "East London",
+  firstName: "Johnathan",
+  lastName: "Ball",
+  // neighbourhood: "East London",
   activity: "Gallery walk",
   availability: "Thu evenings, Sat mornings",
 });
@@ -75,7 +75,7 @@ function saveProfile() {
             <div>
               <h2 class="text-xl font-semibold">Account Details</h2>
               <p class="mt-1 text-sm text-[#6E4D58]">
-                Draft the minimum profile data needed for an activity-based matching flow.
+                Edit your account details here. These will only be shared with matches.
               </p>
             </div>
           </div>
@@ -91,10 +91,10 @@ function saveProfile() {
               <input v-model="profile.lastName" class="field" type="text">
             </label>
 
-            <label class="block text-sm font-medium">
+            <!-- <label class="block text-sm font-medium">
               Neighbourhood
               <input v-model="profile.neighbourhood" class="field" type="text">
-            </label>
+            </label> -->
 
             <label class="block text-sm font-medium">
               Preferred activity
@@ -115,13 +115,13 @@ function saveProfile() {
           </form>
         </section>
 
-        <section class="grid gap-3 sm:grid-cols-2">
+        <!-- <section class="grid gap-3 sm:grid-cols-2">
           <article v-for="item in datePreferences" :key="item.label" class="rounded-lg bg-white p-5 shadow-[0_10px_24px_rgba(180,35,74,0.08)]">
             <component :is="item.icon" class="size-5 text-[#B4234A]" aria-hidden="true" />
             <p class="mt-3 text-sm font-semibold">{{ item.label }}</p>
             <p class="mt-1 text-sm text-[#6E4D58]">{{ item.value }}</p>
           </article>
-        </section>
+        </section> -->
 
         <section class="rounded-lg bg-[#FCE3E8] p-6 shadow-[0_10px_24px_rgba(180,35,74,0.08)]">
           <div class="flex items-start gap-3">
