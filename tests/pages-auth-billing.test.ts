@@ -53,6 +53,7 @@ describe("mock access and billing page contracts", () => {
     expect(account).toContain("Save profile");
     expect(account).toContain("useMockProfile()");
     expect(account).toContain("persistProfile()");
+    expect(account).toContain("profile.value.firstName");
     expect(account).toContain('to="/preferences"');
     expect(account).toContain('to="/photos"');
     expect(preferences).toContain("title: 'Match Preferences · Lonely Radish'");
@@ -80,6 +81,8 @@ describe("mock access and billing page contracts", () => {
     expect(photos).toContain("URL.createObjectURL");
     expect(photos).toContain("Photos saved locally.");
     expect(nav).toContain("Match preferences");
+    expect(nav).toContain("accountProfile.value.firstName");
+    expect(nav).toContain("loadProfile()");
     expect(nav).toContain("Profile photos");
     expect(account).not.toContain("/api/account/v2/profile");
     expect(account).not.toContain("getAccessToken");

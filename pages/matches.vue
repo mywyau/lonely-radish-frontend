@@ -28,12 +28,16 @@ const sections = [
           <h2 class="text-2xl font-semibold">{{ section.title }}</h2>
           <p class="mt-1 text-sm leading-6 text-[#6E4D58]">{{ section.description }}</p>
           <div class="mt-4 grid gap-3">
-            <NuxtLink v-for="match in section.items" :key="match.name" :to="`/plans/${match.slug}`" class="group rounded-lg p-5 shadow-[0_10px_24px_rgba(180,35,74,0.08)] transition hover:-translate-y-0.5" :class="match.tone">
+            <article v-for="match in section.items" :key="match.name" class="rounded-lg p-5 shadow-[0_10px_24px_rgba(180,35,74,0.08)]" :class="match.tone">
               <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div class="flex min-w-0 gap-4"><div class="flex size-12 shrink-0 items-center justify-center rounded-full bg-white/75 text-lg font-semibold text-[#B4234A]">{{ match.name.charAt(0) }}</div><div><h3 class="text-lg font-semibold">{{ match.name }}</h3><p class="mt-1 inline-flex items-center gap-1 text-sm font-semibold text-[#8F1839]"><Sparkles class="size-3.5" />{{ match.activity }}</p><p class="mt-1 inline-flex items-center gap-1 text-xs text-[#6E4D58]"><MapPin class="size-3.5" />{{ match.place }}</p></div></div>
-                <div class="flex items-center justify-between gap-4 sm:justify-end"><span class="inline-flex items-center gap-1 rounded-full bg-white/70 px-3 py-2 text-xs font-semibold"><component :is="match.icon" class="size-3.5" />{{ match.status }}</span><ChevronRight class="size-5 transition group-hover:translate-x-1" /></div>
+                <span class="inline-flex w-fit items-center gap-1 rounded-full bg-white/70 px-3 py-2 text-xs font-semibold"><component :is="match.icon" class="size-3.5" />{{ match.status }}</span>
               </div>
-            </NuxtLink>
+              <div class="mt-5 flex flex-col gap-2 min-[380px]:flex-row">
+                <NuxtLink :to="`/plans/${match.slug}`" class="group inline-flex items-center justify-center gap-2 rounded-lg bg-[#B4234A] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#8F1839]">Continue planning<ChevronRight class="size-4 transition group-hover:translate-x-1" /></NuxtLink>
+                <NuxtLink :to="`/profiles/${match.slug}`" class="inline-flex items-center justify-center rounded-lg bg-white/75 px-4 py-2.5 text-sm font-semibold text-[#8F1839] transition hover:bg-white">View {{ match.name }}’s profile</NuxtLink>
+              </div>
+            </article>
           </div>
         </section>
       </div>

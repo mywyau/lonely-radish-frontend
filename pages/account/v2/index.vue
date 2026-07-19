@@ -11,7 +11,7 @@ const saved = ref(false);
 const showDeletePanel = ref(false);
 const deleteConfirmInput = ref("");
 
-const fullName = computed(() => `${profile.firstName} ${profile.lastName}`.trim());
+const fullName = computed(() => `${profile.value.firstName} ${profile.value.lastName}`.trim());
 
 const datePreferences = [
   { icon: Sparkles, label: "Activity mood", value: "Gallery walk, market, or low-key gig" },

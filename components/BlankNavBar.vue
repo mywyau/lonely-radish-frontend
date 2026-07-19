@@ -4,8 +4,9 @@ import { HeartHandshake, House, Menu, ShieldCheck, Sparkles, X } from '@lucide/v
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 
 const { user, resolve } = useMeStateV2()
+const { profile: accountProfile, loadProfile } = useMockProfile()
 
-const accountLabel = computed(() => user.value?.firstName || 'Account')
+const accountLabel = computed(() => accountProfile.value.firstName.trim() || user.value?.firstName || 'Account')
 const route = useRoute()
 
 const menuOpen = ref(false)
@@ -50,6 +51,7 @@ function onDocumentKeydown(e: KeyboardEvent) {
 }
 
 onMounted(() => {
+  loadProfile()
   resolve()
   document.addEventListener('click', onDocumentClick)
   document.addEventListener('keydown', onDocumentKeydown)

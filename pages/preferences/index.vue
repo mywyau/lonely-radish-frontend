@@ -97,7 +97,7 @@ function savePreferences() {
           <div class="mt-5 flex flex-wrap gap-2"><button v-for="option in timingOptions" :key="option" type="button" class="rounded-full px-3 py-2 text-sm font-semibold" :class="preferences.timing.includes(option) ? 'bg-[#6E8B52] text-white' : 'bg-[#F3E8DA] text-[#4D2F39]'" @click="toggleTiming(option)">{{ option }}</button></div>
           <div class="mt-6 grid gap-3">
             <label class="option-row"><span class="inline-flex items-center gap-2"><ShieldCheck class="size-4 text-[#6E8B52]" />Public places only</span><input v-model="preferences.publicOnly" type="checkbox"></label>
-            <label class="option-row"><span class="inline-flex items-center gap-2"><UsersRound class="size-4 text-[#6E8B52]" />Show a smaller, more relevant match pool</span><input v-model="preferences.smallerMatchPool" type="checkbox"></label>
+            <!-- <label class="option-row"><span class="inline-flex items-center gap-2"><UsersRound class="size-4 text-[#6E8B52]" />Show a smaller, more relevant match pool</span><input v-model="preferences.smallerMatchPool" type="checkbox"></label> -->
           </div>
         </section>
         <div class="flex flex-col items-start gap-3 sm:flex-row sm:items-center"><button type="submit" class="w-full rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white sm:w-auto">Save preferences</button><span v-if="saved" class="text-sm font-semibold text-[#6E8B52]">Preferences saved locally.</span></div>
