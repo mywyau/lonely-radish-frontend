@@ -42,24 +42,32 @@ describe("mock access and billing page contracts", () => {
 
   it("account page uses local mock data instead of protected API calls", () => {
     const account = readPage("account/v2/index.vue");
-    const preferences = readPage("preferences.vue");
+    const preferences = readPage("preferences/index.vue");
+    const activityPreferences = readPage("preferences/activities.vue");
+    const datingPreferences = readPage("preferences/dating.vue");
     const photos = readPage("photos.vue");
     const nav = readFileSync(resolve(process.cwd(), "components/BlankNavBar.vue"), "utf8");
 
-    expect(account).toContain("Mock profile");
+    expect(account).toContain(">Profile<");
     expect(account).toContain("Auth is disabled for now.");
-    expect(account).toContain("Save mock profile");
+    expect(account).toContain("Save profile");
     expect(account).toContain('to="/preferences"');
     expect(account).toContain('to="/photos"');
     expect(preferences).toContain("title: 'Match Preferences · Lonely Radish'");
     expect(preferences).toContain("Save preferences");
     expect(preferences).toContain("Preferences saved locally.");
-    expect(preferences).toContain("Add your own activity");
-    expect(preferences).toContain("Selected activity tags");
-    expect(preferences).toContain("preferenceLevels");
-    expect(preferences).toContain("name: 'Sports'");
-    expect(preferences).toContain("name: 'Gaming'");
-    expect(preferences).toContain("Include remote gaming meetups");
+    expect(preferences).toContain('to="/preferences/activities"');
+    expect(preferences).toContain('to="/preferences/dating"');
+    expect(activityPreferences).toContain("title: 'Activity Interests · Lonely Radish'");
+    expect(activityPreferences).toContain("Add your own activity");
+    expect(activityPreferences).toContain("Save activity interests");
+    expect(activityPreferences).toContain("name: 'Sports'");
+    expect(activityPreferences).toContain("name: 'Gaming'");
+    expect(datingPreferences).toContain("title: 'Dating Preferences · Lonely Radish'");
+    expect(datingPreferences).toContain("Sexual preference");
+    expect(datingPreferences).toContain("Racial and ethnic preferences");
+    expect(datingPreferences).toContain("No racial or ethnic preference");
+    expect(datingPreferences).toContain("Save dating preferences");
     expect(photos).toContain("title: 'Profile Photos · Lonely Radish'");
     expect(photos).toContain("Save mock photos");
     expect(photos).toContain("URL.createObjectURL");
