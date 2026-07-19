@@ -5,13 +5,7 @@ definePageMeta({
   title: "Mock Account · Lonely Radish",
 });
 
-const profile = reactive({
-  firstName: "Johnathan",
-  lastName: "Ball",
-  // neighbourhood: "East London",
-  activity: "Gallery walk",
-  availability: "Thu evenings, Sat mornings",
-});
+const { profile, loadProfile, saveProfile: persistProfile } = useMockProfile();
 
 const saved = ref(false);
 const showDeletePanel = ref(false);
@@ -27,11 +21,14 @@ const datePreferences = [
 ];
 
 function saveProfile() {
+  persistProfile();
   saved.value = true;
   window.setTimeout(() => {
     saved.value = false;
   }, 2200);
 }
+
+onMounted(loadProfile);
 </script>
 
 <template>

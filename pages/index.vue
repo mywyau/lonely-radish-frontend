@@ -28,10 +28,11 @@ const sessionCookie = useCookie<string>('online_session_id', {
 })
 
 const { isLoggedIn, user, resolve: resolveMeState } = useMeStateV2()
+const { profile: accountProfile, loadProfile } = useMockProfile()
 let currentUsersInterval: ReturnType<typeof setInterval> | undefined
 
 const greeting = computed(() => {
-  const firstName = user.value?.firstName?.trim()
+  const firstName = accountProfile.value.firstName.trim() || user.value?.firstName?.trim()
   return firstName ? `Welcome back, ${firstName}` : 'Welcome back'
 })
 
@@ -100,6 +101,7 @@ function startOnboarding() {
 }
 
 onMounted(() => {
+  loadProfile()
   void resolveMeState()
   void refreshCurrentUsers()
 

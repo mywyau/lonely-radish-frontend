@@ -51,6 +51,8 @@ describe("mock access and billing page contracts", () => {
     expect(account).toContain(">Profile<");
     expect(account).toContain("Auth is disabled for now.");
     expect(account).toContain("Save profile");
+    expect(account).toContain("useMockProfile()");
+    expect(account).toContain("persistProfile()");
     expect(account).toContain('to="/preferences"');
     expect(account).toContain('to="/photos"');
     expect(preferences).toContain("title: 'Match Preferences · Lonely Radish'");
