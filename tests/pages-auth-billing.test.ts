@@ -68,6 +68,9 @@ describe("mock access and billing page contracts", () => {
     expect(preferences).toContain('to="/preferences/dating"');
     expect(activityPreferences).toContain("title: 'Activity Interests · Lonely Radish'");
     expect(activityPreferences).toContain("Add your own activity");
+    expect(activityPreferences).toContain("const selectionLimit = 10");
+    expect(activityPreferences).toContain("including activities you add yourself");
+    expect(activityPreferences).toContain("!limitReached.value");
     expect(activityPreferences).toContain("Save activity interests");
     expect(activityPreferences).toContain("name: 'Sports'");
     expect(activityPreferences).toContain("name: 'Gaming'");
