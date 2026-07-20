@@ -52,7 +52,7 @@ onMounted(async () => {
         <div class="rounded-lg bg-white p-6 shadow-[0_12px_28px_rgba(180,35,74,0.08)]">
           <div class="flex items-center gap-4">
             <div class="flex size-14 items-center justify-center rounded-full bg-[#FCE3E8] text-xl font-semibold text-[#B4234A]">
-              {{ profile.firstName.charAt(0).toUpperCase() || '·' }}
+              {{ profile.firstName.charAt(0).toUpperCase() || '?' }}
             </div>
             <div>
               <p class="text-sm text-[#6E4D58]">Profile</p>
