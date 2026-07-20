@@ -69,7 +69,7 @@ onMounted(loadInterest)
               <NuxtLink :to="`/profiles/${person.name.toLowerCase()}`" class="inline-flex items-center rounded-lg bg-white/75 px-4 py-2.5 text-sm font-semibold text-[#8F1839] transition hover:bg-white">View profile</NuxtLink>
               <button type="button" :disabled="hasUsedDailyInterest" class="inline-flex items-center gap-2 rounded-lg bg-[#B4234A] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#8F1839] disabled:cursor-not-allowed disabled:bg-[#D7A7B3]" @click="showInterest(person.name.toLowerCase(), person.name)"><HeartHandshake class="size-4" />{{ isTodaysChoice(person.name.toLowerCase()) ? 'Interest sent' : 'Show interest' }}</button>
             </div>
-            <p v-if="hasUsedDailyInterest" class="mt-3 text-xs leading-5 text-[#6E4D58]" role="status"><template v-if="isTodaysChoice(person.name.toLowerCase())">You chose {{ person.name }} today.</template><template v-else>Your daily interest went to {{ todaysInterest?.profileName }}.</template> You can choose someone again tomorrow.</p>
+            <p v-if="hasUsedDailyInterest" class="mt-3 text-xs leading-5 text-[#6E4D58]" role="status"><template v-if="isTodaysChoice(person.name.toLowerCase())">You chose {{ person.name }} today.</template><template v-else>Your daily interest went to {{ todaysInterest?.profileName }}.</template> You can send interest in someone else tomorrow.</p>
           </article>
         </div>
       </div>
