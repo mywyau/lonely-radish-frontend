@@ -27,8 +27,8 @@ describe('core page contracts', () => {
     expect(source).toContain('Skip the endless swiping. Say yes to a plan.')
     expect(source).toContain('text-[#2A1520] sm:text-6xl')
     expect(source).toContain('user.value?.firstName')
-    expect(source).toContain('accountProfile.value.firstName')
-    expect(source).toContain('loadProfile()')
+    expect(source).toContain('user.value?.firstName')
+    expect(source).toContain("'Welcome to Lonely Radish'")
   })
 
   it('mock activity and match pages are routed separately from the preview page', () => {

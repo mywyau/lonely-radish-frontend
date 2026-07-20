@@ -6,10 +6,10 @@ export type MockProfile = {
 }
 
 const defaultProfile: MockProfile = {
-  firstName: 'Johnathan',
-  lastName: 'Ball',
-  activity: 'Gallery walk',
-  availability: 'Thu evenings, Sat mornings',
+  firstName: '',
+  lastName: '',
+  activity: '',
+  availability: '',
 }
 
 const storageKey = 'lonely-radish-profile'
@@ -27,6 +27,15 @@ export function useMockProfile() {
 
     try {
       const parsed = JSON.parse(stored) as Partial<MockProfile>
+      const isLegacyPrototypeProfile = parsed.firstName === 'Johnathan'
+        && parsed.lastName === 'Ball'
+        && parsed.activity === 'Gallery walk'
+        && parsed.availability === 'Thu evenings, Sat mornings'
+      if (isLegacyPrototypeProfile) {
+        window.localStorage.removeItem(storageKey)
+        profile.value = { ...defaultProfile }
+        return
+      }
       profile.value = {
         firstName: typeof parsed.firstName === 'string' ? parsed.firstName : defaultProfile.firstName,
         lastName: typeof parsed.lastName === 'string' ? parsed.lastName : defaultProfile.lastName,

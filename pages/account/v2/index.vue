@@ -52,11 +52,11 @@ onMounted(async () => {
         <div class="rounded-lg bg-white p-6 shadow-[0_12px_28px_rgba(180,35,74,0.08)]">
           <div class="flex items-center gap-4">
             <div class="flex size-14 items-center justify-center rounded-full bg-[#FCE3E8] text-xl font-semibold text-[#B4234A]">
-              {{ profile.firstName.charAt(0) }}
+              {{ profile.firstName.charAt(0).toUpperCase() || '·' }}
             </div>
             <div>
               <p class="text-sm text-[#6E4D58]">Profile</p>
-              <h1 class="text-2xl font-semibold">{{ fullName }}</h1>
+              <h1 class="text-2xl font-semibold">{{ fullName || 'Complete your profile' }}</h1>
             </div>
           </div>
 
@@ -94,12 +94,12 @@ onMounted(async () => {
           <form class="mt-6 grid gap-4 sm:grid-cols-2" @submit.prevent="saveProfile">
             <label class="block text-sm font-medium">
               First name
-              <input v-model="profile.firstName" class="field" type="text">
+              <input v-model="profile.firstName" class="field" type="text" autocomplete="given-name" placeholder="Your first name">
             </label>
 
             <label class="block text-sm font-medium">
               Last name
-              <input v-model="profile.lastName" class="field" type="text">
+              <input v-model="profile.lastName" class="field" type="text" autocomplete="family-name" placeholder="Your last name">
             </label>
 
             <!-- <label class="block text-sm font-medium">
@@ -109,12 +109,12 @@ onMounted(async () => {
 
             <label class="block text-sm font-medium">
               Preferred activity
-              <input v-model="profile.activity" class="field" type="text">
+              <input v-model="profile.activity" class="field" type="text" placeholder="An activity you enjoy">
             </label>
 
             <label class="block text-sm font-medium sm:col-span-2">
               Availability
-              <input v-model="profile.availability" class="field" type="text">
+              <input v-model="profile.availability" class="field" type="text" placeholder="When are you usually free?">
             </label>
 
             <div class="flex flex-col items-start gap-2 sm:col-span-2 sm:flex-row sm:items-center">
@@ -149,7 +149,7 @@ onMounted(async () => {
                 class="mt-4 rounded-lg bg-white/80 px-4 py-2 text-sm font-semibold text-[#8F1839] transition hover:bg-white"
                 @click="showDeletePanel = true"
               >
-                Show delete mock
+                Show delete
               </button>
 
               <div v-else class="mt-4 space-y-3">
@@ -165,7 +165,7 @@ onMounted(async () => {
                   :disabled="deleteConfirmInput.trim().toLowerCase() !== 'delete'"
                   @click="showDeletePanel = false; deleteConfirmInput = ''"
                 >
-                  Close mock delete flow
+                  Delete Profile
                 </button>
               </div>
             </div>

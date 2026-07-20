@@ -11,7 +11,7 @@ const groups = [
   { name: 'Gaming', options: ['Co-op games', 'Puzzle rooms', 'Party games', 'Strategy games', 'Cosy games', 'Board games'] },
   { name: 'Learning', options: ['Workshops', 'Talks', 'Language exchange', 'Bookshops', 'Craft classes', 'Trivia nights'] },
 ]
-const selected = ref(['Gallery walks', 'Markets', 'Co-op games', 'Park tennis'])
+const selected = ref<string[]>([])
 const customActivity = ref('')
 const saved = ref(false)
 const selectionLimit = 10
