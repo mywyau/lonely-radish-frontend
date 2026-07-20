@@ -44,3 +44,4 @@ Keep `DATABASE_URL` out of client runtime configuration and never prefix it with
 - `20260720_billing_and_deletion.sql`: billing and deletion support.
 - `20260720_product_schema.sql`: profiles, preferences, discovery, matching, planning, and safety.
 - `20260720_seed_activities.sql`: initial activity catalogue.
+- `20260721_add_onboarding_state.sql`: first-login onboarding completion state.

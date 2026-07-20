@@ -78,7 +78,7 @@ onBeforeUnmount(() => {
             Profile photos
           </h1>
           <p class="mt-3 text-sm leading-6 text-white/72">
-            Add a few clear photos for the mock profile. Files stay in your browser for this prototype.
+            Add a few clear photos for your profile.
           </p>
         </div>
 

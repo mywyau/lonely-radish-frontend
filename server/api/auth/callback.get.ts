@@ -1,6 +1,7 @@
 import { createRemoteJWKSet, jwtVerify } from 'jose'
 import { createError, getQuery, sendRedirect } from 'h3'
 import { ensureUser } from '~/server/services/auth/ensureUser'
+import { db } from '~/server/repositories/db'
 import { useAuthFlowSession, useAuthSession } from '~/server/utils/authSession'
 
 function required(name: 'AUTH0_DOMAIN' | 'AUTH0_CLIENT_ID' | 'AUTH0_CLIENT_SECRET' | 'SITE_URL') {
@@ -42,6 +43,10 @@ export default defineEventHandler(async (event) => {
   await session.update({ user: { sub: payload.sub, email: payload.email,
     emailVerified: payload.email_verified === true, name: typeof payload.name === 'string' ? payload.name : undefined } })
   const returnTo = flow.data.returnTo || '/'
+  const onboarding = await db.query('select onboarding_completed_at from users where id=$1', [payload.sub])
   await flow.clear()
+  if (!onboarding.rows[0]?.onboarding_completed_at) {
+    return sendRedirect(event, `/onboarding?redirect=${encodeURIComponent(returnTo)}`, 302)
+  }
   return sendRedirect(event, returnTo, 302)
 })

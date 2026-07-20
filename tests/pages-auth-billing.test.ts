@@ -63,7 +63,8 @@ describe("auth and billing page contracts", () => {
     expect(preferences).toContain("Save preferences");
     expect(preferences).toContain("Preferences saved.");
     expect(preferences).toContain('id="distance-unit"');
-    expect(preferences).toContain('type="range"');
+    expect(preferences).toContain('id="minimum-age"');
+    expect(preferences).toContain('id="maximum-age"');
     expect(preferences).toContain('preferences.minimumAge');
     expect(preferences).toContain('preferences.maximumAge');
     expect(preferences).not.toContain('preferences.neighbourhood');
