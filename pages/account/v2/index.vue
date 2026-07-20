@@ -2,10 +2,12 @@
 import { CalendarDays, HeartHandshake, MapPin, ShieldCheck, Sparkles, Trash2, UserRound } from "@lucide/vue";
 
 definePageMeta({
-  title: "Mock Account · Lonely Radish",
+  title: "Account · Lonely Radish",
+  middleware: "logged-in",
 });
 
 const { profile, loadProfile, saveProfile: persistProfile } = useMockProfile();
+const { user, resolve } = useMeStateV2();
 
 const saved = ref(false);
 const showDeletePanel = ref(false);
@@ -20,7 +22,14 @@ const datePreferences = [
   { icon: ShieldCheck, label: "Safety", value: "Public places only" },
 ];
 
-function saveProfile() {
+async function saveProfile() {
+  const updated = await $fetch<{ firstName: string | null; lastName: string | null }>("/api/account/v2/profile", {
+    method: "POST", body: { firstName: profile.value.firstName, lastName: profile.value.lastName },
+  });
+  if (user.value) {
+    user.value.firstName = updated.firstName;
+    user.value.lastName = updated.lastName;
+  }
   persistProfile();
   saved.value = true;
   window.setTimeout(() => {
@@ -28,7 +37,12 @@ function saveProfile() {
   }, 2200);
 }
 
-onMounted(loadProfile);
+onMounted(async () => {
+  loadProfile();
+  await resolve();
+  if (user.value?.firstName) profile.value.firstName = user.value.firstName;
+  if (user.value?.lastName) profile.value.lastName = user.value.lastName;
+});
 </script>
 
 <template>
@@ -47,7 +61,7 @@ onMounted(loadProfile);
           </div>
 
           <p class="mt-5 text-sm leading-6 text-[#6E4D58]">
-            Auth is disabled for now. This account screen uses local prototype data so the full product shell can be reviewed.
+            Signed in as {{ user?.email }}. Your account name is saved securely to your profile.
           </p>
         </div>
 
@@ -107,7 +121,7 @@ onMounted(loadProfile);
               <button type="submit" class="rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#8F1839]">
                 Save profile
               </button>
-              <span v-if="saved" class="text-sm font-medium text-[#6E8B52]">Saved locally.</span>
+              <span v-if="saved" class="text-sm font-medium text-[#6E8B52]">Profile saved.</span>
             </div>
           </form>
         </section>

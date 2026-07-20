@@ -1,40 +1,32 @@
 import type { Entitlement, MeState, MeUser } from "~/types/auth/entitlements";
 
-const mockEntitlement: Entitlement = {
-  plan: "free",
-  subscription_status: "active",
-  cancel_at_period_end: false,
-};
-
-const mockUser: MeUser = {
-  id: "local-demo-user",
-  email: "demo@lonelyradish.app",
-  firstName: "Maya",
-  lastName: "Lee",
-  entitlement: mockEntitlement,
-};
-
 export function useMeStateV2() {
   const state = useState<MeState>("meStateV2", () => ({
-    status: "logged-in",
-    user: mockUser,
+    status: "loading",
   }));
+  const resolved = useState<boolean>("meResolvedV2", () => false);
 
-  const resolve = async () => {
-    state.value = {
-      status: "logged-in",
-      user: mockUser,
-    };
+  const resolve = async ({ force = false } = {}) => {
+    if (resolved.value && !force) return;
+    if (process.server) return;
+    state.value = { status: "loading" };
+    try {
+      state.value = { status: "logged-in", user: await $fetch<MeUser>("/api/meV2") };
+    } catch {
+      state.value = { status: "logged-out" };
+    } finally {
+      resolved.value = true;
+    }
   };
 
-  const authReady = computed(() => true);
-  const isLoading = computed(() => false);
-  const isLoggedIn = computed(() => true);
-  const isLoggedOut = computed(() => false);
-  const user = computed<MeUser>(() => mockUser);
-  const entitlement = computed<Entitlement>(() => mockEntitlement);
-  const isCanceling = computed(() => false);
-  const currentPeriodEnd = computed<Date | null>(() => null);
+  const authReady = computed(() => state.value.status !== "loading");
+  const isLoading = computed(() => state.value.status === "loading");
+  const isLoggedIn = computed(() => state.value.status === "logged-in");
+  const isLoggedOut = computed(() => state.value.status === "logged-out");
+  const user = computed<MeUser | null>(() => state.value.status === "logged-in" ? state.value.user : null);
+  const entitlement = computed<Entitlement | null>(() => user.value?.entitlement ?? null);
+  const isCanceling = computed(() => entitlement.value?.cancel_at_period_end === true);
+  const currentPeriodEnd = computed<Date | null>(() => entitlement.value?.current_period_end ? new Date(entitlement.value.current_period_end) : null);
 
   return {
     state,

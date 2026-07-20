@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Heart, Info, UsersRound } from '@lucide/vue'
 
-definePageMeta({ title: 'Dating Preferences · Lonely Radish' })
+definePageMeta({ title: 'Dating Preferences · Lonely Radish', middleware: 'logged-in' })
 
 const genderOptions = ['Women', 'Men', 'Non-binary people']
 const raceEthnicityOptions = ['Asian', 'Black / African / Caribbean', 'Hispanic / Latino', 'Middle Eastern', 'North African', 'Native / Indigenous', 'Pacific Islander', 'White', 'Multiracial / multi-ethnic']

@@ -1,3 +1,6 @@
-export default defineNuxtRouteMiddleware(() => {
-  return;
+export default defineNuxtRouteMiddleware(async (to) => {
+  if (import.meta.server) return;
+  const { isLoggedIn, resolve } = useMeStateV2();
+  await resolve();
+  if (!isLoggedIn.value) return navigateTo({ path: "/please-sign-in", query: { redirect: to.fullPath } });
 });

@@ -3,6 +3,7 @@ import { Camera, ImagePlus, ShieldCheck, Star, Trash2, UploadCloud } from '@luci
 
 definePageMeta({
   title: 'Profile Photos · Lonely Radish',
+  middleware: 'logged-in',
 })
 
 type PhotoPreview = {

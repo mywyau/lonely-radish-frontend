@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Gamepad2, Sparkles, Trophy } from '@lucide/vue'
 
-definePageMeta({ title: 'Activity Interests · Lonely Radish' })
+definePageMeta({ title: 'Activity Interests · Lonely Radish', middleware: 'logged-in' })
 
 const groups = [
   { name: 'Culture', options: ['Gallery walks', 'Museums', 'Theatre', 'Indie films', 'Live music', 'Comedy nights'] },

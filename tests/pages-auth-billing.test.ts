@@ -3,14 +3,16 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { readPage } from "./pageTestUtils";
 
-describe("mock access and billing page contracts", () => {
-  it("replaces auth gates with prototype screens", () => {
+describe("auth and billing page contracts", () => {
+  it("provides a real sign-in gate", () => {
     const signIn = readPage("please-sign-in.vue");
     const unavailable = readPage("content-not-available.vue");
     const comingSoon = readPage("coming-soon.vue");
 
-    expect(signIn).toContain("title: 'Mock onboarding · Lonely Radish'");
-    expect(signIn).toContain("Auth disabled for prototype");
+    expect(signIn).toContain("title: 'Sign in · Lonely Radish'");
+    expect(signIn).toContain("login(returnTo)");
+    expect(signIn).toContain("signup(returnTo)");
+    expect(signIn).toContain("Create account");
 
     expect(unavailable).toContain("title: 'Feature preview · Lonely Radish'");
     expect(unavailable).toContain("Premium dating tools are mocked for now.");
@@ -40,7 +42,7 @@ describe("mock access and billing page contracts", () => {
     expect(upgradeComposable).toContain('path: "/billing/success"');
   });
 
-  it("account page uses local mock data instead of protected API calls", () => {
+  it("protects the account page and saves authenticated profile names", () => {
     const account = readPage("account/v2/index.vue");
     const preferences = readPage("preferences/index.vue");
     const activityPreferences = readPage("preferences/activities.vue");
@@ -49,7 +51,8 @@ describe("mock access and billing page contracts", () => {
     const nav = readFileSync(resolve(process.cwd(), "components/BlankNavBar.vue"), "utf8");
 
     expect(account).toContain(">Profile<");
-    expect(account).toContain("Auth is disabled for now.");
+    expect(account).toContain('middleware: "logged-in"');
+    expect(account).toContain("Signed in as {{ user?.email }}");
     expect(account).toContain("Save profile");
     expect(account).toContain("useMockProfile()");
     expect(account).toContain("persistProfile()");
@@ -87,7 +90,7 @@ describe("mock access and billing page contracts", () => {
     expect(nav).toContain("accountProfile.value.firstName");
     expect(nav).toContain("loadProfile()");
     expect(nav).toContain("Profile photos");
-    expect(account).not.toContain("/api/account/v2/profile");
+    expect(account).toContain("/api/account/v2/profile");
     expect(account).not.toContain("getAccessToken");
   });
 });

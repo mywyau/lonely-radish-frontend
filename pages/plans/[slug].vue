@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { CalendarDays, Check, MapPin, MessageCircle, ShieldCheck, Sparkles } from '@lucide/vue'
 
+definePageMeta({ middleware: 'logged-in' })
+
 const route = useRoute()
 const names: Record<string, string> = { maya: 'Maya', nina: 'Nina', alex: 'Alex' }
 const activityLabels: Record<string, string> = { 'gallery-wander': 'Gallery wander', 'indie-film': 'Indie film', 'climbing-taster': 'Climbing taster' }

@@ -2,7 +2,7 @@
 import { CircleCheck } from '@lucide/vue'
 
 definePageMeta({
-  title: 'Mock callback · Lonely Radish',
+  title: 'Authentication callback · Lonely Radish',
   ssr: false,
 })
 </script>
@@ -13,12 +13,12 @@ definePageMeta({
       <div class="mx-auto flex size-14 items-center justify-center rounded-full bg-[#E7F3D5]">
         <CircleCheck class="size-8 text-[#2F7D63]" aria-hidden="true" />
       </div>
-      <h1 class="mt-6 text-3xl font-semibold">Mock auth callback</h1>
+      <h1 class="mt-6 text-3xl font-semibold">Authentication has moved</h1>
       <p class="mt-3 text-[#6B5C52]">
-        Auth is disabled for now, so this route simply confirms the prototype state.
+        Sign-in callbacks are now completed securely by the server.
       </p>
       <NuxtLink to="/account/v2" class="mt-6 inline-flex rounded-lg bg-[#211A16] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#3A302A]">
-        Open mock account
+        Continue to account
       </NuxtLink>
     </section>
   </main>

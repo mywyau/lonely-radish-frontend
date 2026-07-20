@@ -31,6 +31,8 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
+    auth0ClientSecret: process.env.AUTH0_CLIENT_SECRET,
+    authSessionSecret: process.env.AUTH_SESSION_SECRET || process.env.AUTH0_CLIENT_SECRET,
     qstashUrl: process.env.QSTASH_URL,
     qstashCurrentSigningKey: process.env.QSTASH_CURRENT_SIGNING_KEY,
     qstashNextSigningKey: process.env.QSTASH_NEXT_SIGNING_KEY,

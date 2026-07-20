@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { useMeStateV2 } from '@/composables/useMeStateV2'
 import { HeartHandshake, House, Menu, ShieldCheck, Sparkles, X } from '@lucide/vue'
+import { login, logout, signup } from '@/composables/useAuth'
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 
-const { user, resolve } = useMeStateV2()
+const { user, isLoggedIn, resolve } = useMeStateV2()
 const { profile: accountProfile, loadProfile } = useMockProfile()
 
-const accountLabel = computed(() => accountProfile.value.firstName.trim() || user.value?.firstName || 'Account')
+const accountLabel = computed(() => user.value?.firstName || accountProfile.value.firstName.trim() || 'Account')
 const route = useRoute()
 
 const menuOpen = ref(false)
@@ -29,6 +30,10 @@ function toggleMenu() {
 }
 function closeMenu() {
   menuOpen.value = false
+}
+async function handleLogout() {
+  closeMenu()
+  await logout()
 }
 
 function toggleNav() {
@@ -81,25 +86,25 @@ onBeforeUnmount(() => {
         </button>
 
         <div v-if="menuOpen" class="menu-panel">
-          <NuxtLink to="/account/v2"
+          <NuxtLink v-if="isLoggedIn" to="/account/v2"
             class="w-full flex items-center rounded-lg px-3 py-2 text-sm text-[#2A1520] hover:bg-[#F3E8DA] transition"
             @click="closeMenu">
             {{ accountLabel }}
           </NuxtLink>
 
-          <NuxtLink to="/preferences"
+          <NuxtLink v-if="isLoggedIn" to="/preferences"
             class="w-full flex items-center rounded-lg px-3 py-2 text-sm text-[#2A1520] hover:bg-[#F3E8DA] transition"
             @click="closeMenu">
             Match preferences
           </NuxtLink>
 
-          <NuxtLink to="/photos"
+          <NuxtLink v-if="isLoggedIn" to="/photos"
             class="w-full flex items-center rounded-lg px-3 py-2 text-sm text-[#2A1520] hover:bg-[#F3E8DA] transition"
             @click="closeMenu">
             Profile photos
           </NuxtLink>
 
-          <NuxtLink to="/upgrade"
+          <NuxtLink v-if="isLoggedIn" to="/upgrade"
             class="w-full flex items-center rounded-lg px-3 py-2 text-sm font-semibold hover:bg-[#F3E8DA] transition"
             @click="closeMenu">
 
@@ -108,6 +113,12 @@ onBeforeUnmount(() => {
               Upgrade
             </span>
           </NuxtLink>
+          <div v-if="isLoggedIn" class="my-2 h-px bg-[#E8D8C4]" />
+          <button v-if="isLoggedIn" type="button" class="w-full rounded-lg px-3 py-2 text-left text-sm font-semibold text-[#8F1839] hover:bg-[#FCE3E8]" @click="handleLogout">Log out</button>
+          <template v-else>
+            <button type="button" class="w-full rounded-lg px-3 py-2 text-left text-sm font-semibold text-black hover:bg-[#F3E8DA]" @click="login(route.fullPath)">Log in</button>
+            <button type="button" class="mt-1 w-full rounded-lg bg-[#B4234A] px-3 py-2 text-left text-sm font-semibold text-white" @click="signup(route.fullPath)">Create account</button>
+          </template>
         </div>
       </div>
     </div>

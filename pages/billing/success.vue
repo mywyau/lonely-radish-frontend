@@ -12,7 +12,7 @@ const plan = computed(() => route.query.plan === "yearly" ? "Yearly" : "Monthly"
 
 <template>
   <main class="min-h-[70vh] bg-[#FBF7F1] px-5 py-16 text-[#211A16]">
-    <section class="mx-auto max-w-2xl rounded-lg bg-white p-6 text-center shadow-sm sm:p-8">
+    <section class="mx-auto max-w-2xl rounded-lg p-6 text-center sm:p-8">
       <div class="mx-auto flex size-16 items-center justify-center rounded-full bg-[#E7F3D5]">
         <CircleCheck class="size-9 text-[#2F7D63]" aria-hidden="true" />
       </div>
@@ -23,7 +23,7 @@ const plan = computed(() => route.query.plan === "yearly" ? "Yearly" : "Monthly"
       </p>
 
       <div class="mt-8 grid gap-3 text-left sm:grid-cols-3">
-        <div class="rounded-lg bg-[#FBF7F1] p-4">
+        <!-- <div class="rounded-lg bg-[#FBF7F1] p-4">
           <HeartHandshake class="size-5 text-[#B05D45]" aria-hidden="true" />
           <p class="mt-3 text-sm font-semibold">More matches</p>
         </div>
@@ -34,7 +34,7 @@ const plan = computed(() => route.query.plan === "yearly" ? "Yearly" : "Monthly"
         <div class="rounded-lg bg-[#FBF7F1] p-4">
           <Sparkles class="size-5 text-[#B05D45]" aria-hidden="true" />
           <p class="mt-3 text-sm font-semibold">Activity planning</p>
-        </div>
+        </div> -->
       </div>
 
       <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">

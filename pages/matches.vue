@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { CalendarCheck, CalendarDays, ChevronRight, Clock3, HeartHandshake, MapPin, Sparkles } from '@lucide/vue'
 
-definePageMeta({ title: 'Matches & Plans · Lonely Radish' })
+definePageMeta({ title: 'Matches & Plans · Lonely Radish', middleware: 'logged-in' })
 
 const sections = [
   { title: 'New matches', description: 'You both want to meet. Choose a date idea and start making a plan.', items: [

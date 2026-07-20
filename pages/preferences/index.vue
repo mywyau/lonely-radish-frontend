@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { CalendarDays, ChevronRight, Heart, MapPin, ShieldCheck, Sparkles, UsersRound } from '@lucide/vue'
 
-definePageMeta({ title: 'Match Preferences · Lonely Radish' })
+definePageMeta({ title: 'Match Preferences · Lonely Radish', middleware: 'logged-in' })
 
 const preferences = reactive({
   distance: 4,

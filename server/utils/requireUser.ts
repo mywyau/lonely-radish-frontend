@@ -1,5 +1,5 @@
-import { createError, getHeader } from "h3";
-import { verifyAuth0Token } from "./auth0";
+import { createError } from "h3";
+import { useAuthSession } from "./authSession";
 
 type AuthUser = {
   sub: string;
@@ -8,44 +8,7 @@ type AuthUser = {
 };
 
 export async function requireUser(event: any): Promise<AuthUser> {
-  const authHeader = getHeader(event, "authorization");
-
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    throw createError({
-      statusCode: 401,
-      statusMessage: "Missing Authorization header",
-    });
-  }
-
-  const token = authHeader.slice("Bearer ".length);
-
-  if (!token || token === "undefined" || !token.includes(".")) {
-    throw createError({
-      statusCode: 401,
-      statusMessage: "Malformed token",
-    });
-  }
-
-  try {
-    const payload = await verifyAuth0Token(token);
-
-    if (!payload?.sub) {
-      throw createError({
-        statusCode: 401,
-        statusMessage: "Invalid token (no sub)",
-      });
-    }
-
-    return {
-      sub: payload.sub,
-      email: payload.email,
-      email_verified: payload.email_verified,
-    };
-  } catch (err) {
-    console.error("JWT verification failed:", err);
-    throw createError({
-      statusCode: 401,
-      statusMessage: "Invalid or expired token",
-    });
-  }
+  const session = await useAuthSession(event);
+  if (!session.data.user?.sub) throw createError({ statusCode: 401, statusMessage: "Unauthenticated" });
+  return { sub: session.data.user.sub, email: session.data.user.email, email_verified: session.data.user.emailVerified };
 }

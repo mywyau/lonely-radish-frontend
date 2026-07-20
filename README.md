@@ -54,6 +54,18 @@ If billing cancellation fails, deletion is blocked and must be retried.
 
 ## Local Development
 
+### Authentication configuration
+
+Authentication uses Auth0's Authorization Code flow for a Regular Web Application.
+Copy `.env.example` to `.env`, then configure these Auth0 application URLs:
+
+- Allowed Callback URL: `${SITE_URL}/api/auth/callback`
+- Allowed Logout URL: `${SITE_URL}`
+- Allowed Web Origin: `${SITE_URL}`
+
+Keep `AUTH0_CLIENT_SECRET` and `AUTH_SESSION_SECRET` server-side. Neither belongs in
+`runtimeConfig.public` or a `NUXT_PUBLIC_*` variable.
+
 ### 1) Clean local build artifacts
 
 ```bash

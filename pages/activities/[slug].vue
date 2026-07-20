@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { CalendarDays, HeartHandshake, MapPin, ShieldCheck, Sparkles, UsersRound } from '@lucide/vue'
 
+definePageMeta({ middleware: 'logged-in' })
+
 const route = useRoute()
 const { todaysInterest, hasUsedDailyInterest, loadInterest, showInterest, isTodaysChoice } = useDailyInterest()
 
