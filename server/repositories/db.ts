@@ -15,6 +15,12 @@ function createMockDb() {
         rowCount: 0,
       }
     },
+    async connect() {
+      return {
+        query: async <T = Record<string, unknown>>() => ({ rows: [] as T[], rowCount: 0 }),
+        release() {},
+      }
+    },
   }
 }
 

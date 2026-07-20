@@ -1,39 +1,46 @@
-# Database schema (current)
+# Database setup
 
-_Last updated: 2026-06-11_
+The application uses PostgreSQL through the server-only `DATABASE_URL`. Auth0 remains the identity provider; its stable `sub` claim is stored as `users.id` and is used by all foreign keys.
 
-## users
+## Connect and migrate
 
-Stores Auth0 users mirrored into the app DB.
+1. Copy `.env.example` to `.env` and set `DATABASE_URL`.
+2. For a serverless deployment such as Vercel, use the provider's transaction-pooler connection string. Keep a direct connection available for migrations if your provider recommends it.
+3. Apply every migration in order:
 
-Columns:
-- id (text, PK) — Auth0 `sub`
-- email (text)
-- first_name (text, nullable)
-- last_name (text, nullable)
-- created_at (timestamptz)
-- stripe_customer_id (text, nullable)
-- deleting_at (timestamptz, nullable)
+```sh
+npm run db:migrate
+```
 
-Notes:
-- Users are recreated on login via `/api/auth/post-login`
-- Deletion sets `deleting_at` before cascading deletes
+The runner creates `schema_migrations`, locks concurrent migration runs, verifies checksums, and skips migrations already applied. Do not edit an applied migration; add a new dated SQL file instead.
 
----
+## Product data
 
-## entitlements
+- `users`: Auth0 identity, account role (`member`, `moderator`, or `admin`), timezone, and lifecycle state.
+- `profiles`: public dating/activity profile and discoverability state.
+- `profile_photos`: up to six ordered image records. Image bytes belong in object storage; this table stores their URLs and metadata.
+- `activities`: the managed activity catalogue.
+- `profile_activities`: up to ten ordered activities per profile, including self-declared labels.
+- `match_preferences`: shared location/age settings plus dating, gender, sexual, racial, and ethnic preferences.
+- `availability`: short, ordered availability labels.
+- `daily_interests`: one outgoing expression of interest per sender per local calendar day.
+- `matches`: one canonical row for a pair after mutual interest.
+- `date_proposals` and `proposal_times`: structured date coordination without requiring open-ended chat.
+- `blocks` and `reports`: safety records.
+- `entitlements`, `billing_subscriptions`, and `stripe_events`: subscription state and webhook idempotency.
+- `account_deletion_jobs`: asynchronous account-erasure work.
 
-Tracks access level and billing state.
+Database constraints enforce the six-photo, ten-activity, three-proposal-time, and one-interest-per-day limits. The API also validates these limits to return useful errors.
 
-Columns:
-- user_id (text, PK, FK → users.id)
-- plan (text) — free | monthly | yearly
-- subscription_status (text)
-- cancel_at_period_end (boolean)
-- current_period_end (timestamptz)
-- canceled_at (timestamptz, nullable)
+## Security model
 
-Notes:
-- Stripe is source of truth for billing
-- Entitlements default to `free`
-- Deleted when user is deleted
+All product routes require the encrypted Auth0 session and derive the user ID server-side. Client input can never select its own user ID. The public tables have row-level security enabled and direct access revoked from Supabase's `anon` and `authenticated` roles; the Nuxt server connection is the data-access boundary.
+
+Keep `DATABASE_URL` out of client runtime configuration and never prefix it with `NUXT_PUBLIC_`. Use a restricted production database role rather than an owner role after migrations have run.
+
+## Migration files
+
+- `20260611_add_user_names.sql`: establishes the base Auth0 user table.
+- `20260720_billing_and_deletion.sql`: billing and deletion support.
+- `20260720_product_schema.sql`: profiles, preferences, discovery, matching, planning, and safety.
+- `20260720_seed_activities.sql`: initial activity catalogue.

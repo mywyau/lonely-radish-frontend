@@ -61,7 +61,7 @@ describe("auth and billing page contracts", () => {
     expect(account).toContain('to="/photos"');
     expect(preferences).toContain("title: 'Match Preferences · Lonely Radish'");
     expect(preferences).toContain("Save preferences");
-    expect(preferences).toContain("Preferences saved locally.");
+    expect(preferences).toContain("Preferences saved.");
     expect(preferences).toContain('id="distance-unit"');
     expect(preferences).toContain('type="range"');
     expect(preferences).toContain('preferences.minimumAge');

@@ -33,10 +33,15 @@ function updateMaximumAge(event: Event) {
   preferences.maximumAge = Math.max(value, preferences.minimumAge)
 }
 
-function savePreferences() {
+async function savePreferences() {
+  await $fetch('/api/preferences/general', { method: 'PUT', body: preferences })
   saved.value = true
   window.setTimeout(() => { saved.value = false }, 2200)
 }
+
+onMounted(async () => {
+  Object.assign(preferences, await $fetch('/api/preferences/general'))
+})
 </script>
 
 <template>
@@ -100,7 +105,7 @@ function savePreferences() {
             <!-- <label class="option-row"><span class="inline-flex items-center gap-2"><UsersRound class="size-4 text-[#6E8B52]" />Show a smaller, more relevant match pool</span><input v-model="preferences.smallerMatchPool" type="checkbox"></label> -->
           </div>
         </section>
-        <div class="flex flex-col items-start gap-3 sm:flex-row sm:items-center"><button type="submit" class="w-full rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white sm:w-auto">Save preferences</button><span v-if="saved" class="text-sm font-semibold text-[#6E8B52]">Preferences saved locally.</span></div>
+        <div class="flex flex-col items-start gap-3 sm:flex-row sm:items-center"><button type="submit" class="w-full rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white sm:w-auto">Save preferences</button><span v-if="saved" class="text-sm font-semibold text-[#6E8B52]">Preferences saved.</span></div>
       </form>
     </section>
   </main>

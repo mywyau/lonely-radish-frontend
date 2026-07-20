@@ -29,7 +29,11 @@ function addCustom() {
   if (name && !alreadySelected && !limitReached.value) selected.value.push(name)
   customActivity.value = ''
 }
-function save() { saved.value = true; window.setTimeout(() => { saved.value = false }, 2200) }
+async function save() { await $fetch('/api/preferences/activities', { method: 'PUT', body: { activities: selected.value } }); saved.value = true; window.setTimeout(() => { saved.value = false }, 2200) }
+onMounted(async () => {
+  const response = await $fetch<{ selected: Array<{ name: string }> }>('/api/preferences/activities')
+  selected.value = response.selected.map(item => item.name)
+})
 </script>
 
 <template>
@@ -52,7 +56,7 @@ function save() { saved.value = true; window.setTimeout(() => { saved.value = fa
         </section>
 
         <section v-if="selected.length" class="rounded-lg bg-[#FCE3E8] p-5"><h2 class="font-semibold">Your interests ({{ selected.length }}/{{ selectionLimit }})</h2><div class="mt-3 flex flex-wrap gap-2"><button v-for="activity in selected" :key="activity" type="button" class="rounded-full bg-white px-3 py-2 text-sm font-semibold text-[#8F1839]" :aria-label="`Remove ${activity}`" @click="toggle(activity)">{{ activity }} ×</button></div></section>
-        <div class="flex flex-wrap items-center gap-3"><button type="submit" class="rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white">Save activity interests</button><NuxtLink to="/preferences" class="px-3 py-2 text-sm font-semibold text-[#8F1839]">Back to match preferences</NuxtLink><span v-if="saved" class="text-sm font-semibold text-[#6E8B52]">Activity interests saved locally.</span></div>
+        <div class="flex flex-wrap items-center gap-3"><button type="submit" class="rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white">Save activity interests</button><NuxtLink to="/preferences" class="px-3 py-2 text-sm font-semibold text-[#8F1839]">Back to match preferences</NuxtLink><span v-if="saved" class="text-sm font-semibold text-[#6E8B52]">Activity interests saved.</span></div>
       </form>
     </section>
   </main>

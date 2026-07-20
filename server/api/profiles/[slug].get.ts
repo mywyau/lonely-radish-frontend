@@ -1,0 +1,23 @@
+import { createError, getRouterParam, setHeader } from 'h3'
+import { db } from '~/server/repositories/db'
+import { requireUser } from '~/server/utils/requireUser'
+
+export default defineEventHandler(async (event) => {
+  setHeader(event, 'Cache-Control', 'private, no-store')
+  const viewer = await requireUser(event)
+  const slug = getRouterParam(event, 'slug')
+  const { rows } = await db.query(`select p.user_id as "userId",p.slug,p.display_name as name,
+    extract(year from age(current_date,p.date_of_birth))::int as age,p.pronouns,p.bio,p.neighbourhood as place
+    from profiles p join users u on u.id=p.user_id
+    where p.slug=$1 and p.visibility='active' and u.account_status='active'
+      and p.user_id<>$2 and not exists(select 1 from blocks b where
+        (b.blocker_id=$2 and b.blocked_id=p.user_id) or (b.blocker_id=p.user_id and b.blocked_id=$2))`, [slug,viewer.sub])
+  const profile = rows[0]
+  if (!profile) throw createError({ statusCode: 404, statusMessage: 'Profile not found' })
+  const [photos, activities, availability] = await Promise.all([
+    db.query(`select public_url as src,alt_text as alt,position from profile_photos where user_id=$1 order by position`, [profile.userId]),
+    db.query(`select coalesce(a.name,pa.custom_label) as name from profile_activities pa left join activities a on a.id=pa.activity_id where pa.user_id=$1 order by pa.position`, [profile.userId]),
+    db.query(`select label from availability where user_id=$1 order by position`, [profile.userId]),
+  ])
+  return { ...profile, photos: photos.rows, activities: activities.rows.map(row => row.name), availability: availability.rows.map(row => row.label) }
+})

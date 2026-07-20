@@ -13,7 +13,8 @@ function toggleGender(value: string) { preferences.openToEveryone = false; toggl
 function selectEveryone() { preferences.openToEveryone = true; preferences.genders.splice(0) }
 function toggleRaceEthnicity(value: string) { preferences.noRaceEthnicityPreference = false; toggle(preferences.raceEthnicities, value); if (!preferences.raceEthnicities.length) preferences.noRaceEthnicityPreference = true }
 function selectNoRacePreference() { preferences.noRaceEthnicityPreference = true; preferences.raceEthnicities.splice(0) }
-function save() { saved.value = true; window.setTimeout(() => { saved.value = false }, 2200) }
+async function save() { await $fetch('/api/preferences/dating', { method: 'PUT', body: preferences }); saved.value = true; window.setTimeout(() => { saved.value = false }, 2200) }
+onMounted(async () => { Object.assign(preferences, await $fetch('/api/preferences/dating')) })
 </script>
 
 <template>
@@ -41,7 +42,7 @@ function save() { saved.value = true; window.setTimeout(() => { saved.value = fa
           <div class="mt-5 flex gap-2 rounded-lg bg-[#F3E8DA] p-4 text-sm leading-6 text-[#4D2F39]"><Info class="mt-0.5 size-4 shrink-0" /><p>Identity is personal and nuanced. These broad options are only matching controls; they do not define how another person identifies.</p></div>
         </section>
 
-        <div class="flex flex-wrap items-center gap-3"><button type="submit" class="rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white">Save dating preferences</button><NuxtLink to="/preferences" class="px-3 py-2 text-sm font-semibold text-[#8F1839]">Back to match preferences</NuxtLink><span v-if="saved" class="text-sm font-semibold text-[#6E8B52]">Dating preferences saved locally.</span></div>
+        <div class="flex flex-wrap items-center gap-3"><button type="submit" class="rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white">Save dating preferences</button><NuxtLink to="/preferences" class="px-3 py-2 text-sm font-semibold text-[#8F1839]">Back to match preferences</NuxtLink><span v-if="saved" class="text-sm font-semibold text-[#6E8B52]">Dating preferences saved.</span></div>
       </form>
     </section>
   </main>
