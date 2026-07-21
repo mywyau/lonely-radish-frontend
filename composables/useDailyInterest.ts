@@ -5,6 +5,7 @@ export type DailyInterest = {
 }
 
 const storageKey = 'lonely-radish-daily-interest'
+const dailyInterestLimit = 5
 
 function localDateKey(date = new Date()) {
   const year = date.getFullYear()
@@ -14,15 +15,16 @@ function localDateKey(date = new Date()) {
 }
 
 export function useDailyInterest() {
-  const interest = useState<DailyInterest | null>('daily-interest', () => null)
+  const interests = useState<DailyInterest[]>('daily-interests', () => [])
   const loaded = useState<boolean>('daily-interest-loaded', () => false)
   const errorMessage = useState<string | null>('daily-interest-error', () => null)
   const successMessage = useState<string | null>('daily-interest-success', () => null)
   const sending = useState<boolean>('daily-interest-sending', () => false)
   const activeMatchCount = useState<number>('active-match-count', () => 0)
 
-  const todaysInterest = computed(() => interest.value?.date === localDateKey() ? interest.value : null)
-  const hasUsedDailyInterest = computed(() => Boolean(todaysInterest.value))
+  const todaysInterests = computed(() => interests.value.filter(interest => interest.date === localDateKey()))
+  const todaysInterest = computed(() => todaysInterests.value[0] ?? null)
+  const hasUsedDailyInterest = computed(() => todaysInterests.value.length >= dailyInterestLimit)
   const atMatchLimit = computed(() => activeMatchCount.value >= 5)
 
   async function loadInterest() {
@@ -31,8 +33,8 @@ export function useDailyInterest() {
     successMessage.value = null
 
     try {
-      const response = await $fetch<{ interest: DailyInterest | null; activeMatchCount: number }>('/api/interests/today')
-      interest.value = response.interest
+      const response = await $fetch<{ interests: DailyInterest[]; activeMatchCount: number }>('/api/interests/today')
+      interests.value = response.interests
       activeMatchCount.value = response.activeMatchCount
       return
     } catch {
@@ -44,7 +46,7 @@ export function useDailyInterest() {
     try {
       const parsed = JSON.parse(stored) as Partial<DailyInterest>
       if (typeof parsed.profileSlug === 'string' && typeof parsed.profileName === 'string' && typeof parsed.date === 'string') {
-        interest.value = parsed as DailyInterest
+        interests.value = [parsed as DailyInterest]
       }
     } catch {
       window.localStorage.removeItem(storageKey)
@@ -58,32 +60,32 @@ export function useDailyInterest() {
     sending.value = true
     try {
       const response = await $fetch<{ interest: DailyInterest; matched?: boolean }>('/api/interests', { method: 'POST', body: { profileSlug } })
-      interest.value = response.interest
+      interests.value.push(response.interest)
       if (response.matched) activeMatchCount.value += 1
     } catch (error) {
       const failure = error as { statusCode?: number; response?: { status?: number }; data?: { statusCode?: number; statusMessage?: string } }
       const status = failure.statusCode || failure.response?.status || failure.data?.statusCode
       if (status === 404 && ['maya', 'nina', 'alex'].includes(profileSlug)) {
-        interest.value = { profileSlug, profileName, date: localDateKey() }
+        interests.value.push({ profileSlug, profileName, date: localDateKey() })
       } else {
         errorMessage.value = status === 409 && failure.data?.statusMessage?.includes('already sent interest')
           ? 'You have already sent interest to this person.'
           : status === 409 && failure.data?.statusMessage?.includes('already matched')
           ? 'You have already matched with this person.'
-          : status === 409 ? 'You have already shown interest in someone today.' : 'We could not save your interest. Please try again.'
+          : status === 409 ? 'You have reached today’s limit of 5 interests.' : 'We could not save your interest. Please try again.'
         return false
       }
     } finally {
       sending.value = false
     }
-    window.localStorage.setItem(storageKey, JSON.stringify(interest.value))
+    window.localStorage.setItem(storageKey, JSON.stringify(interests.value.at(-1)))
     successMessage.value = `Interest sent to ${profileName}. You can review it in Sent interests.`
     return true
   }
 
   function isTodaysChoice(profileSlug: string) {
-    return todaysInterest.value?.profileSlug === profileSlug
+    return todaysInterests.value.some(interest => interest.profileSlug === profileSlug)
   }
 
-  return { todaysInterest, hasUsedDailyInterest, activeMatchCount, atMatchLimit, errorMessage, successMessage, sending, loadInterest, showInterest, isTodaysChoice }
+  return { todaysInterest, todaysInterests, hasUsedDailyInterest, dailyInterestLimit, activeMatchCount, atMatchLimit, errorMessage, successMessage, sending, loadInterest, showInterest, isTodaysChoice }
 }

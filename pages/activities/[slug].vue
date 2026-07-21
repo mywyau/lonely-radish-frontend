@@ -84,7 +84,7 @@ onMounted(async () => {
             </div>
             <p v-if="person.interestSent" class="mt-3 text-xs leading-5 text-[#4D2F39]" role="status">You have already shown interest in {{ person.name }}. You can review it under Sent interests.</p>
             <p v-else-if="atMatchLimit" class="mt-3 text-xs leading-5 text-[#694C00]" role="status">You already have five active matches. Complete or remove one before matching with someone new.</p>
-            <p v-else-if="hasUsedDailyInterest" class="mt-3 text-xs leading-5 text-[#6E4D58]" role="status"><template v-if="isTodaysChoice(person.slug)">You chose {{ person.name }} today.</template><template v-else>Your daily interest went to {{ todaysInterest?.profileName }}.</template> Go about your day, have a break. You can send interest in someone else tomorrow.</p>
+            <p v-else-if="hasUsedDailyInterest" class="mt-3 text-xs leading-5 text-[#6E4D58]" role="status"><template v-if="isTodaysChoice(person.slug)">You sent interest to {{ person.name }} today.</template><template v-else>You have sent your 5 interests for today.</template> You can send more tomorrow.</p>
           </article>
         </div>
       </div>

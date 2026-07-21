@@ -12,5 +12,5 @@ export default defineEventHandler(async (event) => {
     db.query(`select count(*)::int as count from matches where status='active'
       and (user_one_id=$1 or user_two_id=$1)`, [sub]),
   ])
-  return { interest: daily.rows[0] ?? null, activeMatchCount: active.rows[0]?.count || 0 }
+  return { interests: daily.rows, activeMatchCount: active.rows[0]?.count || 0 }
 })

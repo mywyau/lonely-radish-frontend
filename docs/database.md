@@ -25,7 +25,7 @@ See `docs/supabase-storage.md` for the private bucket and signed-upload setup.
 - `profile_activities`: up to ten ordered activities per profile, including self-declared labels.
 - `match_preferences`: shared location/age settings plus dating, gender, sexual, racial, and ethnic preferences.
 - `availability`: short, ordered availability labels.
-- `daily_interests`: one outgoing expression of interest per sender per local calendar day.
+- `daily_interests`: up to five outgoing expressions of interest per sender per local calendar day.
 - `matches`: one canonical row for a pair after mutual interest.
 - `notifications`: private match-ending and post-date outcome notices.
 - `date_proposals` and `proposal_times`: structured date coordination without requiring open-ended chat.
