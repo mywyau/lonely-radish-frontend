@@ -6,10 +6,12 @@ type SentInterest = { id: string; slug: string; name: string; place?: string; se
 const interests = ref<SentInterest[]>([])
 const loading = ref(true)
 const errorMessage = ref('')
+const { todaysInterests, dailyInterestLimit, loadInterest } = useDailyInterest()
 onMounted(async () => {
+  const dailyRequest = loadInterest()
   try { interests.value = (await $fetch<{ interests: SentInterest[] }>('/api/interests/sent')).interests }
   catch (error: any) { errorMessage.value = error?.data?.statusMessage || 'Sent interests could not be loaded.' }
-  finally { loading.value = false }
+  finally { await dailyRequest; loading.value = false }
 })
 </script>
 
@@ -19,6 +21,7 @@ onMounted(async () => {
       <p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">Your activity</p>
       <h1 class="mt-2 text-4xl font-semibold">Sent interests</h1>
       <p class="mt-3 max-w-2xl text-[#6E4D58]">A record of the people you chose. Interest remains private unless they choose you too.</p>
+      <DailyInterestCounter class="mt-6" :count="todaysInterests.length" :limit="dailyInterestLimit" />
       <div v-if="loading" class="mt-8 rounded-lg bg-white p-8 text-center text-[#6E4D58]">Loading sent interests…</div>
       <p v-else-if="errorMessage" class="mt-8 rounded-lg bg-[#FCE3E8] p-4 text-sm font-semibold text-[#8F1839]">{{ errorMessage }}</p>
       <div v-else-if="interests.length" class="mt-8 grid gap-3">

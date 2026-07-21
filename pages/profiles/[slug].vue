@@ -4,7 +4,7 @@ import { CalendarDays, HeartHandshake, MapPin, ShieldCheck, Sparkles, UserRound 
 definePageMeta({ middleware: 'logged-in' })
 
 const route = useRoute()
-const { todaysInterest, hasUsedDailyInterest, atMatchLimit, errorMessage, successMessage, sending, loadInterest, showInterest, isTodaysChoice } = useDailyInterest()
+const { todaysInterests, dailyInterestLimit, hasUsedDailyInterest, atMatchLimit, errorMessage, successMessage, sending, loadInterest, showInterest, isTodaysChoice } = useDailyInterest()
 
 const profiles = {
   maya: {
@@ -90,6 +90,7 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
           <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1"><h1 class="text-3xl font-semibold">{{ profile.name }}, {{ profile.age }}</h1><span class="text-sm text-[#6E4D58]">{{ profile.pronouns }}</span></div>
           <p v-if="profile.place || profile.distance" class="mt-2 inline-flex items-center gap-1 text-sm text-[#6E4D58]"><MapPin class="size-4" /><span>{{ [profile.place, profile.distance].filter(Boolean).join(' · ') }}</span></p>
           <div v-if="profile.matchReason" class="mt-5 rounded-lg bg-[#EAF2DE] p-4"><p class="inline-flex items-center gap-2 text-sm font-semibold"><Sparkles class="size-4 text-[#6E8B52]" />Strong activity overlap</p><p class="mt-1 text-xs leading-5 text-[#4D2F39]">{{ profile.matchReason }}</p></div>
+          <DailyInterestCounter class="mt-5" :count="todaysInterests.length" :limit="dailyInterestLimit" />
           <button type="button" :disabled="sending || profile.isMatched || profile.interestSent || atMatchLimit || hasUsedDailyInterest" class="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#8F1839] disabled:cursor-not-allowed disabled:bg-[#D7A7B3]" @click="showInterest(profileSlug, profile.name)"><HeartHandshake class="size-4" />{{ sending ? 'Sending…' : profile.isMatched ? `Already matched with ${profile.name}` : profile.interestSent ? 'Interest already sent' : atMatchLimit ? '5-match limit reached' : isTodaysChoice(profileSlug) ? `Interest sent to ${profile.name}` : 'Show interest' }}</button>
           <p v-if="profile.isMatched" class="mt-3 rounded-lg bg-[#EAF2DE] p-3 text-xs leading-5 text-[#4D2F39]" role="status">You and {{ profile.name }} have already matched. You can continue from Matches & plans.</p>
           <p v-else-if="profile.interestSent" class="mt-3 rounded-lg bg-[#F3E8DA] p-3 text-xs leading-5 text-[#4D2F39]" role="status">You have already shown interest in {{ profile.name }}. You cannot send it again.</p>

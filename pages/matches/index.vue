@@ -15,6 +15,7 @@ const loading = ref(true)
 const errorMessage = ref('')
 const matches = ref<MatchCard[]>([])
 const totalMatches = ref(0)
+const interestReceivedCount = ref(0)
 const notifications = ref<MatchNotification[]>([])
 const pendingReject = ref<MatchCard | null>(null)
 const rejecting = ref(false)
@@ -63,9 +64,10 @@ function planUrl(match: MatchCard) {
 
 async function loadMatches() {
   if (import.meta.dev) previewRejected.value = Boolean(window.localStorage.getItem('lonely-radish-preview-rejected-match'))
-  const result = await $fetch<{ matches: MatchCard[]; totalMatches: number }>('/api/matches')
+  const result = await $fetch<{ matches: MatchCard[]; totalMatches: number; interestReceivedCount: number }>('/api/matches')
   matches.value = result.matches
   totalMatches.value = result.totalMatches
+  interestReceivedCount.value = result.interestReceivedCount
   if (import.meta.dev && !previewRejected.value) {
     matches.value = [previewMatch, ...matches.value.filter(match => match.id !== previewMatch.id)].slice(0, 5)
     totalMatches.value += 1
@@ -110,7 +112,8 @@ onMounted(async () => {
       <p class="mt-4 max-w-2xl leading-7 text-[#6E4D58]">Every match has a clear next step: choose what to do, agree a time and public venue, then meet.</p>
       <NuxtLink to="/matches/past" class="mt-4 inline-flex text-sm font-semibold text-[#8F1839] hover:underline">View past connections →</NuxtLink>
 
-      <div class="mt-7 grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-4">
+      <div class="mt-7 grid grid-cols-2 gap-2 sm:grid-cols-5 sm:gap-4">
+        <div class="summary-card col-span-2 sm:col-span-1"><strong>{{ interestReceivedCount }}</strong><span>People interested in you</span></div>
         <div class="summary-card"><strong>{{ totalMatches }}</strong><span>Total matches</span></div>
         <div class="summary-card"><strong>{{ counts.fresh }}</strong><span>New</span></div>
         <div class="summary-card"><strong>{{ counts.planning }}</strong><span>Planning</span></div>

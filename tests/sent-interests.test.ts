@@ -21,6 +21,7 @@ describe('sent interest feedback and history', () => {
     expect(page).toContain("'/api/interests/sent'")
     expect(page).toContain("interest.ended ? 'Match ended' : 'Interest sent'")
     expect(page).toContain("interest.ended ? '/matches/past'")
+    expect(page).toContain('DailyInterestCounter')
   })
 
   it('prevents sending interest to the same person twice', () => {

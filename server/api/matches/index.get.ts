@@ -6,7 +6,8 @@ import { signedPhotoUrl } from '~/server/utils/supabaseStorage'
 export default defineEventHandler(async (event) => {
   setHeader(event, 'Cache-Control', 'private, no-store')
   const { sub } = await requireUser(event)
-  const { rows } = await db.query(`select m.id,p.slug,p.display_name as name,p.neighbourhood as place,
+  const [{ rows }, receivedInterest] = await Promise.all([
+    db.query(`select m.id,p.slug,p.display_name as name,p.neighbourhood as place,
     count(*) over()::int as "totalMatches",
     photo.storage_key as "photoStorageKey",photo.public_url as "legacyPhotoUrl",m.matched_at as "matchedAt",
     proposal.id as "proposalId",proposal.status as "proposalStatus",proposal.activity_label as activity,
@@ -24,7 +25,13 @@ export default defineEventHandler(async (event) => {
     left join date_follow_ups my_followup on my_followup.proposal_id=proposal.id and my_followup.user_id=$1
     left join date_follow_ups their_followup on their_followup.proposal_id=proposal.id and their_followup.user_id<>$1
     where m.status='active' and (m.user_one_id=$1 or m.user_two_id=$1)
-      and p.visibility='active' order by coalesce(proposal.updated_at,m.matched_at) desc limit 5`, [sub])
+      and p.visibility='active' order by coalesce(proposal.updated_at,m.matched_at) desc limit 5`, [sub]),
+    db.query(`select count(distinct di.sender_id)::int as count
+      from daily_interests di
+      join users u on u.id=di.sender_id and u.account_status='active'
+      join profiles p on p.user_id=di.sender_id and p.visibility='active'
+      where di.recipient_id=$1`, [sub]),
+  ])
 
   const matches = await Promise.all(rows.map(async row => {
     const proposalStatus = row.proposalStatus as string | null
@@ -38,5 +45,5 @@ export default defineEventHandler(async (event) => {
       dateHasPassed, bothFollowedUp, followUpResult, hasFollowedUp: Boolean(row.myFollowUpAt),
       isInviter: row.inviterId === sub, needsResponse: proposalStatus === 'pending' && row.inviteeId === sub }
   }))
-  return { matches, totalMatches: rows[0]?.totalMatches || 0 }
+  return { matches, totalMatches: rows[0]?.totalMatches || 0, interestReceivedCount: receivedInterest.rows[0]?.count || 0 }
 })

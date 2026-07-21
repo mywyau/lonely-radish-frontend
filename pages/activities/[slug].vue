@@ -4,7 +4,7 @@ import { CalendarDays, HeartHandshake, MapPin, ShieldCheck, Sparkles, UsersRound
 definePageMeta({ middleware: 'logged-in' })
 
 const route = useRoute()
-const { todaysInterest, hasUsedDailyInterest, atMatchLimit, errorMessage, successMessage, sending, loadInterest, showInterest, isTodaysChoice } = useDailyInterest()
+const { todaysInterests, dailyInterestLimit, hasUsedDailyInterest, atMatchLimit, errorMessage, successMessage, sending, loadInterest, showInterest, isTodaysChoice } = useDailyInterest()
 
 const activityNames: Record<string, string> = {
   'gallery-wander': 'Gallery wander', 'market-loop': 'Market loop', 'riverside-walk': 'Riverside walk',
@@ -58,6 +58,7 @@ onMounted(async () => {
           <p class="inline-flex items-center gap-2 text-sm font-semibold text-[#6E4D58]"><UsersRound class="size-4" />{{ visiblePeople.length }} potential dates</p>
           <NuxtLink to="/preferences" class="text-sm font-semibold text-[#8F1839] hover:underline">Review match preferences</NuxtLink>
         </div>
+        <DailyInterestCounter class="mt-4" :count="todaysInterests.length" :limit="dailyInterestLimit" />
         <p v-if="successMessage" class="mt-4 rounded-lg bg-[#EAF2DE] p-4 text-sm font-semibold text-[#4D2F39]" role="status">{{ successMessage }} <NuxtLink to="/interests/sent" class="ml-1 text-[#8F1839] underline">View sent interests</NuxtLink></p>
         <p v-if="errorMessage" class="mt-4 rounded-lg bg-[#FCE3E8] p-4 text-sm font-semibold text-[#8F1839]" role="alert">{{ errorMessage }}</p>
 
