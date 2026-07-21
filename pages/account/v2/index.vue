@@ -11,6 +11,7 @@ const { user, resolve } = useMeStateV2();
 
 const saved = ref(false);
 const showDeletePanel = ref(false);
+const showFinalDeleteConfirmation = ref(false);
 const deleteConfirmInput = ref("");
 const deletingAccount = ref(false);
 const deleteError = ref("");
@@ -237,9 +238,9 @@ onMounted(async () => {
                   type="button"
                   class="rounded-lg bg-[#8F1839] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
                   :disabled="deleteConfirmInput.trim().toLowerCase() !== 'delete' || deletingAccount || deletionQueued"
-                  @click="deleteAccount"
+                  @click="showFinalDeleteConfirmation = true; deleteError = ''"
                 >
-                  {{ deletingAccount ? 'Starting deletion…' : deletionQueued ? 'Deletion queued' : 'Permanently delete account' }}
+                  Continue to final confirmation
                 </button>
                 <button v-if="!deletionQueued" type="button" class="ml-2 rounded-lg bg-white/80 px-4 py-2 text-sm font-semibold text-[#4D2F39]" :disabled="deletingAccount" @click="showDeletePanel = false; deleteConfirmInput = ''; deleteError = ''">Cancel</button>
                 <p v-if="deletionQueued" class="rounded-lg bg-white/75 p-3 text-sm font-semibold text-[#4D2F39]" role="status">Deletion has started. You are being signed out.</p>
@@ -250,6 +251,22 @@ onMounted(async () => {
         </section>
       </div>
     </section>
+
+    <Teleport to="body">
+      <div v-if="showFinalDeleteConfirmation" class="fixed inset-0 z-50 flex items-center justify-center bg-[#2A1520]/70 p-5" @click.self="!deletingAccount && (showFinalDeleteConfirmation = false)">
+        <section role="dialog" aria-modal="true" aria-labelledby="delete-confirmation-title" class="w-full max-w-md rounded-lg bg-white p-6 shadow-2xl">
+          <Trash2 class="size-7 text-[#8F1839]" aria-hidden="true" />
+          <h2 id="delete-confirmation-title" class="mt-4 text-2xl font-semibold">Delete your account permanently?</h2>
+          <p class="mt-3 text-sm leading-6 text-[#6E4D58]">This is your final confirmation. Your profile, photos, matches, plans and sign-in account will be queued for permanent deletion. This cannot be undone.</p>
+          <p class="mt-4 rounded-lg bg-[#FCE3E8] p-3 text-sm font-semibold text-[#8F1839]">Account: {{ user?.email }}</p>
+          <p v-if="deleteError" class="mt-3 text-sm font-semibold text-[#8F1839]" role="alert">{{ deleteError }}</p>
+          <div class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+            <button type="button" class="rounded-lg bg-[#F3E8DA] px-5 py-3 text-sm font-semibold text-[#4D2F39]" :disabled="deletingAccount" @click="showFinalDeleteConfirmation = false">Keep my account</button>
+            <button type="button" class="rounded-lg bg-[#8F1839] px-5 py-3 text-sm font-semibold text-white disabled:opacity-50" :disabled="deletingAccount || deletionQueued" @click="deleteAccount">{{ deletingAccount ? 'Starting deletion…' : deletionQueued ? 'Deletion queued' : 'Yes, permanently delete' }}</button>
+          </div>
+        </section>
+      </div>
+    </Teleport>
   </main>
 </template>
 

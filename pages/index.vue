@@ -67,18 +67,27 @@ const featuredMatches = [
 
 const dateFlow = [
   {
-    title: 'Pick an activity',
-    description: 'Choose the kind of plan you would actually enjoy, from a gallery walk to a film, market, gig, sports or a simple stroll.',
-    icon: Sparkles,
+    kicker: 'New match',
+    title: 'You and Maya matched',
+    description: 'You both chose gallery walks.',
+    detail: 'Gallery walks · 2 km away',
+    action: 'Start planning',
+    icon: HeartHandshake,
   },
   {
-    title: 'Meet someone nearby',
-    description: 'Browse people nearby who want to do something similar, at a time that works for both of you.',
+    kicker: 'Date proposal',
+    title: 'Gallery walk',
+    description: 'Choose a time and public venue. Suggest a small change if needed.',
+    detail: 'Sat, 2:00 pm · Barbican Centre',
+    action: 'Review plan',
     icon: CalendarDays,
   },
   {
-    title: 'Keep it easy',
-    description: 'Agree the plan and get stuck in. Keep meet-ups feeling natural instead of overplanned.',
+    kicker: 'Plan confirmed',
+    title: 'You’re all set',
+    description: 'Reschedule simply, or optionally share contact details once matched.',
+    detail: 'Public venue · Contact sharing off',
+    action: 'View date',
     icon: MessageCircle,
   },
 ]
@@ -228,7 +237,7 @@ onBeforeUnmount(() => {
           <div>
             <!-- <p class="section-kicker text-[#F7B7C4]">How it works</p> -->
             <h2 class="section-heading max-w-2xl text-white">
-              From match to shared plan without making it complicated.
+              Match. Make a plan. Meet.
             </h2>
           </div>
           <NuxtLink to="/contact" class="text-sm font-semibold text-[#F7B7C4] hover:text-white">
@@ -238,13 +247,14 @@ onBeforeUnmount(() => {
 
         <div class="grid gap-4 md:grid-cols-3">
           <article v-for="step in dateFlow" :key="step.title" class="flow-card">
-            <component :is="step.icon" class="size-6 text-[#F7B7C4]" aria-hidden="true" />
-            <h3 class="mt-4 font-semibold">
+            <div class="flex items-center justify-between gap-3"><component :is="step.icon" class="size-6 text-[#F7B7C4]" aria-hidden="true" /><span class="rounded-full bg-white/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-[#F7B7C4]">{{ step.kicker }}</span></div>
+            <h3 class="mt-5 text-lg font-semibold">
               {{ step.title }}
             </h3>
-            <p class="mt-2 text-sm leading-6 text-white/72">
+            <p class="mt-2 text-sm leading-5 text-white/72">
               {{ step.description }}
             </p>
+            <div class="mt-5 rounded-lg bg-white/10 p-3"><p class="text-xs font-semibold text-white/85">{{ step.detail }}</p><span class="mt-3 inline-flex rounded-full bg-[#F7B7C4] px-3 py-1.5 text-xs font-bold text-[#2A1520]">{{ step.action }}</span></div>
           </article>
         </div>
       </div>
@@ -408,7 +418,7 @@ onBeforeUnmount(() => {
 }
 
 .flow-card {
-  min-height: 14rem;
+  min-height: 16rem;
   border: 1px solid rgba(247, 183, 196, 0.18);
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.07);

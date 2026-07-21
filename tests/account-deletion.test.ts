@@ -8,7 +8,10 @@ describe('account deletion', () => {
   it('requires typed confirmation and queues the authenticated account', () => {
     const page = read('pages/account/v2/index.vue')
     expect(page).toContain("$fetch('/api/account/v2', { method: 'DELETE'")
-    expect(page).toContain('Permanently delete account')
+    expect(page).toContain('Continue to final confirmation')
+    expect(page).toContain('Delete your account permanently?')
+    expect(page).toContain('Yes, permanently delete')
+    expect(page).toContain('role="dialog"')
     expect(page).toContain("window.location.assign('/api/auth/logout')")
     const endpoint = read('server/api/account/v2/index.delete.ts')
     expect(endpoint).toContain('Confirmation text did not match')

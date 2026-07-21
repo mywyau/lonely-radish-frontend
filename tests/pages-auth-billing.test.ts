@@ -31,6 +31,8 @@ describe("auth and billing page contracts", () => {
 
     expect(cancel).toContain("Payment cancelled");
     expect(cancel).toContain("upgrade('monthly')");
+    expect(cancel).toContain('const monthlyPrice = 7.99');
+    expect(cancel).toContain('const yearlyPrice = 55.99');
 
     expect(upgrade).toContain("Upgrade your plan");
     expect(upgrade).not.toContain("/please-sign-in");

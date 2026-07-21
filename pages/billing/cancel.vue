@@ -8,8 +8,8 @@ import { hasPaidAccess } from '~/utils/paidAccess';
 
 const { authReady, entitlement } = useMeStateV2();
 
-const monthlyPrice = 4.99
-const yearlyPrice = 49.99
+const monthlyPrice = 7.99
+const yearlyPrice = 55.99
 const yearlySavings = (monthlyPrice * 12 - yearlyPrice).toFixed(2)
 const yearlyMonthlyEquivalent = (yearlyPrice / 12).toFixed(2)
 
