@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ArrowLeft, ArrowRight, Check, HeartHandshake, Sparkles, UserRound } from '@lucide/vue'
+import { ArrowLeft, ArrowRight, Check, HeartHandshake, ImagePlus, Sparkles, UserRound } from '@lucide/vue'
 
 definePageMeta({ title: 'Set up your profile · Lonely Radish', middleware: 'logged-in' })
 
@@ -10,6 +10,7 @@ const loading = ref(true)
 const saving = ref(false)
 const errorMessage = ref('')
 const step = ref(1)
+const photoCount = ref(0)
 const profile = reactive({ firstName: '', lastName: '', displayName: '', slug: '', dateOfBirth: '', pronouns: '', bio: '' })
 const catalog = ref<Array<{ name: string; category: string }>>([])
 const selectedActivities = ref<string[]>([])
@@ -32,6 +33,7 @@ async function load() {
   ])
   if (status.complete) return router.replace('/')
   step.value = status.nextStep
+  photoCount.value = status.photoCount || 0
   profile.firstName = user.value?.firstName || ''
   profile.lastName = user.value?.lastName || ''
   if (profileData.profile) Object.assign(profile, {
@@ -69,7 +71,7 @@ async function saveActivities() {
   finally { saving.value = false }
 }
 
-async function finish() {
+async function savePreferences() {
   errorMessage.value = ''; saving.value = true
   try {
     await Promise.all([
@@ -79,6 +81,14 @@ async function finish() {
         openToEveryone: preferences.openToEveryone, raceEthnicities: preferences.raceEthnicities,
         noRaceEthnicityPreference: preferences.noRaceEthnicityPreference } }),
     ])
+    step.value = 4
+  } catch (error: any) { errorMessage.value = error?.data?.statusMessage || 'We could not save your preferences.' }
+  finally { saving.value = false }
+}
+
+async function finish() {
+  errorMessage.value = ''; saving.value = true
+  try {
     await $fetch('/api/onboarding/complete', { method: 'POST' })
     const redirect = typeof route.query.redirect === 'string' && route.query.redirect.startsWith('/') && !route.query.redirect.startsWith('//')
       ? route.query.redirect : '/'
@@ -95,9 +105,9 @@ onMounted(() => { load().catch(() => { errorMessage.value = 'We could not load o
     <section class="mx-auto max-w-3xl">
       <div class="mb-7 flex items-center justify-between gap-4">
         <div><p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">Profile setup</p><h1 class="mt-2 text-3xl font-semibold sm:text-4xl">Let’s make introductions easier.</h1></div>
-        <span class="shrink-0 rounded-full bg-[#FCE3E8] px-3 py-2 text-sm font-semibold text-[#8F1839]">{{ step }} of 3</span>
+        <span class="shrink-0 rounded-full bg-[#FCE3E8] px-3 py-2 text-sm font-semibold text-[#8F1839]">{{ step }} of 4</span>
       </div>
-      <div class="mb-6 grid grid-cols-3 gap-2" aria-label="Onboarding progress"><span v-for="number in 3" :key="number" class="h-2 rounded-full" :class="number <= step ? 'bg-[#B4234A]' : 'bg-[#E8D8C4]'" /></div>
+      <div class="mb-6 grid grid-cols-4 gap-2" aria-label="Onboarding progress"><span v-for="number in 4" :key="number" class="h-2 rounded-full" :class="number <= step ? 'bg-[#B4234A]' : 'bg-[#E8D8C4]'" /></div>
 
       <div v-if="loading" class="rounded-lg bg-white p-8 text-center text-[#6E4D58]">Loading your profile…</div>
 
@@ -123,7 +133,7 @@ onMounted(() => { load().catch(() => { errorMessage.value = 'We could not load o
         <div class="actions"><button class="secondary" type="button" @click="step = 1"><ArrowLeft class="size-4" />Back</button><button :disabled="saving || !selectedActivities.length" class="primary" type="submit">{{ saving ? 'Saving…' : 'Continue' }}<ArrowRight class="size-4" /></button></div>
       </form>
 
-      <form v-else class="onboarding-card" @submit.prevent="finish">
+      <form v-else-if="step === 3" class="onboarding-card" @submit.prevent="savePreferences">
         <div class="step-title"><HeartHandshake class="size-5 text-[#B4234A]" /><div><h2>Your match preferences</h2><p>Set a useful starting point. Every setting remains editable later.</p></div></div>
         <div class="mt-6 grid gap-5 sm:grid-cols-2">
           <label>Maximum distance <span class="value">{{ preferences.distance }} km</span><input v-model.number="preferences.distance" type="range" min="1" max="100"></label>
@@ -132,8 +142,17 @@ onMounted(() => { load().catch(() => { errorMessage.value = 'We could not load o
         <fieldset><legend>When are you usually free?</legend><div class="choices"><button v-for="option in timingOptions" :key="option" type="button" class="choice" :class="preferences.timing.includes(option) && 'selected'" @click="toggle(preferences.timing, option)">{{ option }}</button></div></fieldset>
         <fieldset><legend>Who are you open to meeting?</legend><label class="check"><input v-model="preferences.openToEveryone" type="checkbox"> I’m open to everyone</label><div v-if="!preferences.openToEveryone" class="choices"><button v-for="option in genderOptions" :key="option" type="button" class="choice" :class="preferences.genders.includes(option) && 'selected'" @click="toggle(preferences.genders, option)">{{ option }}</button></div></fieldset>
         <label class="check mt-5"><input v-model="preferences.publicOnly" type="checkbox"> Only suggest public places for first meetings</label>
-        <div class="actions"><button class="secondary" type="button" @click="step = 2"><ArrowLeft class="size-4" />Back</button><button :disabled="saving || preferences.minimumAge > preferences.maximumAge" class="primary" type="submit"><Check class="size-4" />{{ saving ? 'Finishing…' : 'Finish setup' }}</button></div>
+        <div class="actions"><button class="secondary" type="button" @click="step = 2"><ArrowLeft class="size-4" />Back</button><button :disabled="saving || preferences.minimumAge > preferences.maximumAge" class="primary" type="submit">{{ saving ? 'Saving…' : 'Continue' }}<ArrowRight class="size-4" /></button></div>
       </form>
+
+      <section v-else class="onboarding-card">
+        <div class="step-title"><ImagePlus class="size-5 text-[#B4234A]" /><div><h2>Add a profile photo</h2><p>Profiles need at least one recent photo before they can enter discovery. You can add up to six.</p></div></div>
+        <div class="mt-6 rounded-lg bg-[#FBF7F1] p-5 text-sm leading-6 text-[#6E4D58]">
+          <p v-if="photoCount">You have {{ photoCount }} {{ photoCount === 1 ? 'photo' : 'photos' }} ready.</p>
+          <p v-else>Upload a JPEG, PNG, or WebP image up to 5 MB. You will return here when it is ready.</p>
+        </div>
+        <div class="actions"><button class="secondary" type="button" @click="step = 3"><ArrowLeft class="size-4" />Back</button><NuxtLink to="/photos?onboarding=1" class="secondary"><ImagePlus class="size-4" />{{ photoCount ? 'Manage photos' : 'Upload a photo' }}</NuxtLink><button v-if="photoCount" :disabled="saving" class="primary" type="button" @click="finish"><Check class="size-4" />{{ saving ? 'Finishing…' : 'Finish setup' }}</button></div>
+      </section>
       <p v-if="errorMessage" class="mt-4 rounded-lg bg-[#FCE3E8] p-4 text-sm font-semibold text-[#8F1839]" role="alert">{{ errorMessage }}</p>
     </section>
   </main>

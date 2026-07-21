@@ -19,6 +19,8 @@ The runner creates `schema_migrations`, locks concurrent migration runs, verifie
 - `users`: Auth0 identity, account role (`member`, `moderator`, or `admin`), timezone, and lifecycle state.
 - `profiles`: public dating/activity profile and discoverability state.
 - `profile_photos`: up to six ordered image records. Image bytes belong in object storage; this table stores their URLs and metadata.
+
+See `docs/supabase-storage.md` for the private bucket and signed-upload setup.
 - `activities`: the managed activity catalogue.
 - `profile_activities`: up to ten ordered activities per profile, including self-declared labels.
 - `match_preferences`: shared location/age settings plus dating, gender, sexual, racial, and ethnic preferences.

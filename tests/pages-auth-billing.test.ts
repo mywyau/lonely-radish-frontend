@@ -84,9 +84,9 @@ describe("auth and billing page contracts", () => {
     expect(datingPreferences).toContain("No racial or ethnic preference");
     expect(datingPreferences).toContain("Save dating preferences");
     expect(photos).toContain("title: 'Profile Photos · Lonely Radish'");
-    expect(photos).toContain("Save mock photos");
-    expect(photos).toContain("URL.createObjectURL");
-    expect(photos).toContain("Photos saved locally.");
+    expect(photos).toContain("Save photo order");
+    expect(photos).toContain("uploadToSignedUrl");
+    expect(photos).toContain("Photo order saved.");
     expect(nav).toContain("Match preferences");
     expect(nav).toContain("accountProfile.value.firstName");
     expect(nav).toContain("loadProfile()");

@@ -44,6 +44,8 @@ export default defineNuxtConfig({
       auth0ClientId: process.env.AUTH0_CLIENT_ID,
       auth0Audience: process.env.AUTH0_AUDIENCE,
       siteUrl: process.env.SITE_URL || "http://localhost:3000",
+      supabaseUrl: process.env.NUXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL,
+      supabasePublishableKey: process.env.NUXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
     },
   },
 

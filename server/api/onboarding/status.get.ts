@@ -9,14 +9,16 @@ export default defineEventHandler(async (event) => {
     (nullif(trim(u.first_name),'') is not null and nullif(trim(u.last_name),'') is not null
       and p.user_id is not null and p.date_of_birth is not null and nullif(trim(p.bio),'') is not null) as "profileComplete",
     (select count(*)::int from profile_activities pa where pa.user_id=u.id) as "activityCount",
+    (select count(*)::int from profile_photos pp where pp.user_id=u.id) as "photoCount",
     (mp.user_id is not null) as "preferencesComplete"
     from users u left join profiles p on p.user_id=u.id
     left join match_preferences mp on mp.user_id=u.id where u.id=$1`, [sub])
   const state = rows[0]
-  if (!state) return { complete: false, nextStep: 1, profileComplete: false, activityCount: 0, preferencesComplete: false }
+  if (!state) return { complete: false, nextStep: 1, profileComplete: false, activityCount: 0, photoCount: 0, preferencesComplete: false }
   const profileComplete = state.profileComplete === true
   const activityCount = Number(state.activityCount || 0)
   const preferencesComplete = state.preferencesComplete === true
-  const nextStep = !profileComplete ? 1 : activityCount < 1 ? 2 : !preferencesComplete ? 3 : 4
-  return { complete: Boolean(state.completedAt), completedAt: state.completedAt, nextStep, profileComplete, activityCount, preferencesComplete }
+  const photoCount = Number(state.photoCount || 0)
+  const nextStep = !profileComplete ? 1 : activityCount < 1 ? 2 : !preferencesComplete ? 3 : photoCount < 1 ? 4 : 5
+  return { complete: Boolean(state.completedAt), completedAt: state.completedAt, nextStep, profileComplete, activityCount, photoCount, preferencesComplete }
 })
