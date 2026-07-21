@@ -19,6 +19,10 @@ describe('matches and date planning dashboard', () => {
     expect(read('server/api/proposals/[id].put.ts')).toContain("status='pending',selected_time_id=null")
     expect(read('pages/plans/[slug].vue')).toContain('Save date changes')
     expect(read('pages/plans/[slug].vue')).toContain("respond('accepted', time.id)")
+    expect(read('pages/plans/[slug].vue')).toContain('Send suggested changes')
+    expect(read('pages/plans/[slug].vue')).toContain('type="datetime-local"')
+    expect(read('pages/plans/[slug].vue')).toContain('4. Enter a public venue')
+    expect(read('server/api/proposals/[id].put.ts')).toContain('case when invitee_id=$2 then activity_label')
   })
 
   it('shows at most five matches and confirms removal before notifying the other person', () => {

@@ -15,10 +15,13 @@ export default defineEventHandler(async (event) => {
   const client = await db.connect()
   try {
     await client.query('begin')
-    const proposal = await client.query(`update date_proposals set activity_label=$3,invite_note=$4,venue=$5,
+    const proposal = await client.query(`update date_proposals set
+      activity_label=case when invitee_id=$2 then activity_label else $3 end,
+      invite_note=case when invitee_id=$2 then invite_note else $4 end,venue=$5,
       status='pending',selected_time_id=null,confirmed_at=null,inviter_id=$2,
       invitee_id=case when inviter_id=$2 then invitee_id else inviter_id end
-      where id=$1 and (inviter_id=$2 or invitee_id=$2) returning id,status,match_id as "matchId",invitee_id as "inviteeId"`, [id,sub,activity,inviteNote,venue])
+      where id=$1 and (inviter_id=$2 or invitee_id=$2) returning id,status,match_id as "matchId",invitee_id as "inviteeId",
+        activity_label as activity,invite_note as "inviteNote"`, [id,sub,activity,inviteNote,venue])
     if (!proposal.rows[0]) throw createError({ statusCode: 404, statusMessage: 'Date proposal not found' })
     await client.query('delete from proposal_times where proposal_id=$1', [id])
     for (const [index,time] of times.entries()) await client.query(`insert into proposal_times(proposal_id,proposed_at,position)
@@ -26,6 +29,6 @@ export default defineEventHandler(async (event) => {
     await client.query(`insert into notifications(recipient_id,actor_id,match_id,proposal_id,kind)
       values($1,$2,$3,$4,'proposal_updated')`, [proposal.rows[0].inviteeId,sub,proposal.rows[0].matchId,id])
     await client.query('commit')
-    return { ...proposal.rows[0], activity, inviteNote, venue, times: times.map(time => time.toISOString()) }
+    return { ...proposal.rows[0], venue, times: times.map(time => time.toISOString()) }
   } catch (error) { await client.query('rollback'); throw error } finally { client.release() }
 })

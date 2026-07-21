@@ -144,52 +144,16 @@ onMounted(async () => {
             <li>Avoid screenshots, heavy filters, or group-only photos.</li>
           </ul>
         </div>
+
+        <section class="rounded-lg bg-white p-5 shadow-[0_12px_28px_rgba(180,35,74,0.08)]">
+          <div class="flex items-start gap-3"><ImagePlus class="mt-1 size-5 shrink-0 text-[#B4234A]" aria-hidden="true" /><div><h2 class="text-xl font-semibold">Upload photos</h2><p class="mt-1 text-sm text-[#6E4D58]">Choose up to six JPEG, PNG, or WebP images, up to 5 MB each.</p></div></div>
+          <button type="button" :disabled="uploading || photoSlots === 0" class="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#B4234A] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#8F1839] disabled:opacity-50" @click="openFilePicker"><UploadCloud class="size-4" aria-hidden="true" />{{ uploading ? 'Uploading…' : 'Add photos' }}</button>
+          <input ref="fileInput" accept="image/*" class="sr-only" multiple type="file" @change="onFilesSelected">
+          <div class="mt-4 rounded-lg border border-dashed border-[#D8C8B6] bg-[#FBF7F1] p-4 text-center"><p class="text-sm font-semibold text-[#4D2F39]">{{ photos.length }} / 6 photos selected</p><p class="mt-1 text-sm text-[#6E4D58]">{{ photoSlots }} slots remaining</p></div>
+        </section>
       </aside>
 
       <div class="space-y-5">
-        <section class="rounded-lg bg-white p-6 shadow-[0_12px_28px_rgba(180,35,74,0.08)]">
-          <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div class="flex items-start gap-3">
-              <ImagePlus class="mt-1 size-5 text-[#B4234A]" aria-hidden="true" />
-              <div>
-                <h2 class="text-xl font-semibold">Upload photos</h2>
-                <p class="mt-1 text-sm text-[#6E4D58]">
-                  Choose up to six JPEG, PNG, or WebP images, up to 5 MB each.
-                </p>
-                <p class="mt-1 text-xs text-[#8A6A74]">Drag photos into place, or use Earlier and Later. Photo 1 is shown first on your profile.</p>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              :disabled="uploading || photoSlots === 0"
-              class="inline-flex items-center justify-center gap-2 rounded-lg bg-[#B4234A] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#8F1839]"
-              @click="openFilePicker"
-            >
-              <UploadCloud class="size-4" aria-hidden="true" />
-              {{ uploading ? 'Uploading…' : 'Add photos' }}
-            </button>
-          </div>
-
-          <input
-            ref="fileInput"
-            accept="image/*"
-            class="sr-only"
-            multiple
-            type="file"
-            @change="onFilesSelected"
-          >
-
-          <div class="mt-6 rounded-lg border border-dashed border-[#D8C8B6] bg-[#FBF7F1] p-6 text-center">
-            <p class="text-sm font-semibold text-[#4D2F39]">
-              {{ photos.length }} / 6 photos selected
-            </p>
-            <p class="mt-1 text-sm text-[#6E4D58]">
-              {{ photoSlots }} slots remaining
-            </p>
-          </div>
-        </section>
-
         <section class="rounded-lg bg-white p-6 shadow-[0_12px_28px_rgba(180,35,74,0.08)]">
           <div class="flex items-start gap-3">
             <Eye class="mt-1 size-5 text-[#B4234A]" aria-hidden="true" />
