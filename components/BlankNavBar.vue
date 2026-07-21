@@ -23,7 +23,7 @@ const navLinks = computed(() => {
     { to: '/matches/past', label: 'Past connections', icon: History },
     { to: '/interests/sent', label: 'Sent interests', icon: Send },
     { to: '/notifications', label: unreadCount.value ? `Notifications (${unreadCount.value})` : 'Notifications', icon: Bell },
-    { to: '/content-not-available', label: 'Safety', icon: ShieldCheck },
+    { to: '/account/blocked', label: 'Safety & blocked users', icon: ShieldCheck },
   ]
 
   return links
@@ -109,6 +109,12 @@ onBeforeUnmount(() => {
             class="w-full flex items-center rounded-lg px-3 py-2 text-sm text-[#2A1520] hover:bg-[#F3E8DA] transition"
             @click="closeMenu">
             Profile photos
+          </NuxtLink>
+
+          <NuxtLink v-if="isLoggedIn" to="/account/blocked"
+            class="w-full flex items-center rounded-lg px-3 py-2 text-sm text-[#2A1520] hover:bg-[#F3E8DA] transition"
+            @click="closeMenu">
+            Blocked users
           </NuxtLink>
 
           <NuxtLink v-if="isLoggedIn" to="/upgrade"

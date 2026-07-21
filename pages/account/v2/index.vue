@@ -134,6 +134,7 @@ onMounted(async () => {
                 Save profile
               </button>
               <NuxtLink to="/preferences/schedule" class="rounded-lg bg-[#F3E8DA] px-5 py-3 text-sm font-semibold text-[#8F1839]">Edit schedule and safety</NuxtLink>
+              <NuxtLink to="/account/blocked" class="rounded-lg bg-[#F3E8DA] px-5 py-3 text-sm font-semibold text-[#8F1839]">Manage blocked users</NuxtLink>
               <span v-if="saved" class="text-sm font-medium text-[#6E8B52]">Profile saved.</span>
             </div>
           </form>
