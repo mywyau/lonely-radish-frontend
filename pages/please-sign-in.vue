@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ArrowRight, Sparkles, UserRound } from '@lucide/vue'
-import { login, signup } from '@/composables/useAuth'
+import { login, loginWithAnotherAccount, signup } from '@/composables/useAuth'
 
 definePageMeta({
   title: 'Sign in · Lonely Radish'
@@ -8,6 +8,7 @@ definePageMeta({
 const route = useRoute()
 const returnTo = computed(() => typeof route.query.redirect === 'string' ? route.query.redirect : '/')
 const authError = computed(() => typeof route.query.error === 'string' ? route.query.error : '')
+const cancelled = computed(() => /access denied|cancel|denied|permissions/i.test(authError.value))
 </script>
 
 <template>
@@ -26,7 +27,7 @@ const authError = computed(() => typeof route.query.error === 'string' ? route.q
         </div>
       </div>
 
-      <p v-if="authError" class="mt-6 rounded-lg bg-[#FCE3E8] p-4 text-sm text-[#8F1839]">{{ authError }}</p>
+      <div v-if="authError" class="mt-6 rounded-lg bg-[#FCE3E8] p-4 text-sm text-[#8F1839]" role="alert"><p>{{ cancelled ? 'Sign-in was cancelled. No account information was shared.' : authError }}</p><p v-if="cancelled" class="mt-2 text-[#6E4D58]">You can try again or choose a different account.</p></div>
       <div class="mt-8 grid gap-3 sm:grid-cols-2">
         <button
           type="button"
@@ -45,6 +46,7 @@ const authError = computed(() => typeof route.query.error === 'string' ? route.q
           Create account
         </button>
       </div>
+      <button type="button" class="mt-4 inline-flex w-full items-center justify-center rounded-lg border border-[#D8C8B6] bg-white px-5 py-3 text-sm font-semibold text-[#4D2F39] transition hover:bg-[#FBF7F1]" @click="loginWithAnotherAccount(returnTo)">Use another account</button>
       <NuxtLink to="/" class="mt-5 inline-flex text-sm font-semibold text-[#6E4D58] hover:text-[#B4234A]">Return home</NuxtLink>
     </section>
   </main>

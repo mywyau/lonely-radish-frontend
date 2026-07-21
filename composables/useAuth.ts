@@ -33,6 +33,12 @@ export async function loginWithGoogle(targetUrl?: string | null) {
   await login(targetUrl);
 }
 
+export async function loginWithAnotherAccount(targetUrl?: string | null) {
+  if (!import.meta.client) return;
+  const returnTo = encodeURIComponent(normalizeLoginRedirectPath(targetUrl));
+  window.location.assign(`/api/auth/login?mode=switch&returnTo=${returnTo}`);
+}
+
 export async function signup(targetUrl?: string | null) {
   if (!import.meta.client) return;
   const returnTo = encodeURIComponent(normalizeLoginRedirectPath(targetUrl));

@@ -31,5 +31,6 @@ export default defineEventHandler(async (event) => {
     authorizeUrl.searchParams.set('screen_hint', 'signup')
     authorizeUrl.searchParams.set('prompt', 'login')
   }
+  if (query.mode === 'switch') authorizeUrl.searchParams.set('prompt', 'select_account')
   return sendRedirect(event, authorizeUrl.toString(), 302)
 })
