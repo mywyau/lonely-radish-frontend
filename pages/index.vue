@@ -38,18 +38,27 @@ const greeting = computed(() => {
 const featuredMatches = [
   {
     name: 'Maya',
+    age: 31,
+    photo: '/images/maya-profile-triptych.png',
+    distance: '2 km away',
     detail: 'Gallery walks, Sunday markets, low-key gigs',
     time: 'Free Thu evening',
     tone: 'bg-[#F3E8DA]',
   },
   {
-    name: 'Theo',
-    detail: 'Bookshops, live jazz, evening walks',
-    time: 'Free Sat morning',
+    name: 'Alex',
+    age: 34,
+    photo: '/images/alex-profile-triptych.png',
+    distance: '4 km away',
+    detail: 'Climbing, book markets, riverside walks',
+    time: 'Free Sun morning',
     tone: 'bg-[#EAF2DE]',
   },
   {
     name: 'Nina',
+    age: 29,
+    photo: '/images/nina-profile-triptych.png',
+    distance: '3 km away',
     detail: 'Indie films, city walks, casual food spots',
     time: 'Free after work',
     tone: 'bg-[#F7D4DC]',
@@ -193,17 +202,15 @@ onBeforeUnmount(() => {
           class="match-card"
           :class="match.tone"
         >
-          <div class="avatar-mark">
-            {{ match.name.charAt(0) }}
-          </div>
+          <div class="match-photo"><img :src="match.photo" :alt="`${match.name} profile example`"></div>
           <div class="min-w-0 flex-1">
             <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
               <h3 class="text-lg font-semibold">
-                {{ match.name }}
+                {{ match.name }}, {{ match.age }}
               </h3>
               <span class="inline-flex items-center gap-1 text-xs font-medium text-[#6E4D58]">
                 <MapPin class="size-3.5" aria-hidden="true" />
-                2 km away
+                {{ match.distance }}
               </span>
             </div>
             <p class="mt-1 text-sm text-[#6E4D58]">
@@ -364,18 +371,8 @@ onBeforeUnmount(() => {
   box-shadow: 0 10px 24px rgba(180, 35, 74, 0.1);
 }
 
-.avatar-mark {
-  display: inline-flex;
-  height: 3.25rem;
-  width: 3.25rem;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.68);
-  font-size: 1.35rem;
-  font-weight: 800;
-}
+.match-photo { height: 4rem; width: 4rem; flex-shrink: 0; overflow: hidden; border-radius: .65rem; background: rgba(255,255,255,.68); }
+.match-photo img { height: 100%; width: 300%; max-width: none; transform: translateX(-33.333%); object-fit: cover; }
 
 .availability-pill {
   grid-column: 2;
@@ -407,11 +404,7 @@ onBeforeUnmount(() => {
     padding: 0.875rem;
   }
 
-  .avatar-mark {
-    height: 2.75rem;
-    width: 2.75rem;
-    font-size: 1.1rem;
-  }
+  .match-photo { height: 3.25rem; width: 3.25rem; }
 }
 
 .flow-card {
@@ -437,7 +430,7 @@ onBeforeUnmount(() => {
   }
 
   .availability-pill {
-    margin-left: 4.25rem;
+    margin-left: 0;
   }
 }
 </style>
