@@ -42,7 +42,7 @@ async function submit() {
   try {
     if (isPreview.value) {
       date.value = {
-        ...date.value, myChoice: meetAgain.value, myMessage: meetAgain.value ? message.value : null,
+        ...date.value, myChoice: meetAgain.value, myMessage: message.value || null,
         bothResponded: true, mutual: meetAgain.value === true, closed: meetAgain.value === false,
         theirChoice: true, canReconsider: meetAgain.value === false,
         theirMessage: 'I had a lovely time too — another gallery trip would be fun.',
@@ -50,7 +50,7 @@ async function submit() {
       return
     }
     await $fetch(`/api/dates/${String(route.params.id)}/follow-up`, { method: 'POST',
-      body: { meetAgain: meetAgain.value, message: meetAgain.value ? message.value : null } })
+      body: { meetAgain: meetAgain.value, message: message.value || null } })
     await load()
   } catch (error: any) { errorMessage.value = error?.data?.statusMessage || 'Your response could not be saved.' }
   finally { saving.value = false }
@@ -88,8 +88,8 @@ onMounted(() => { load().catch((error: any) => { errorMessage.value = error?.dat
         </section>
 
         <section v-if="date.bothResponded" class="mt-5 grid gap-3 rounded-lg bg-white p-5 shadow-[0_12px_28px_rgba(180,35,74,0.08)] sm:grid-cols-2">
-          <div class="rounded-lg bg-[#FBF7F1] p-4"><p class="text-xs font-bold uppercase tracking-wide text-[#6E4D58]">Your answer</p><p class="mt-2 font-semibold">{{ date.myChoice ? 'Yes, I’d meet again' : 'No, I wish them well' }}</p></div>
-          <div class="rounded-lg bg-[#FBF7F1] p-4"><p class="text-xs font-bold uppercase tracking-wide text-[#6E4D58]">{{ date.personName }}’s answer</p><p class="mt-2 font-semibold">{{ date.theirChoice ? 'Yes, I’d meet again' : 'No, I wish them well' }}</p></div>
+          <div class="rounded-lg bg-[#FBF7F1] p-4"><p class="text-xs font-bold uppercase tracking-wide text-[#6E4D58]">Your answer</p><p class="mt-2 font-semibold">{{ date.myChoice ? 'Yes, I’d meet again' : 'No, I wish them well' }}</p><p v-if="date.myMessage" class="mt-3 text-sm italic text-[#4D2F39]">“{{ date.myMessage }}”</p></div>
+          <div class="rounded-lg bg-[#FBF7F1] p-4"><p class="text-xs font-bold uppercase tracking-wide text-[#6E4D58]">{{ date.personName }}’s answer</p><p class="mt-2 font-semibold">{{ date.theirChoice ? 'Yes, I’d meet again' : 'No, I wish them well' }}</p><p v-if="date.theirMessage" class="mt-3 text-sm italic text-[#4D2F39]">“{{ date.theirMessage }}”</p></div>
         </section>
 
         <section v-if="date.mutual" class="mt-5 rounded-lg bg-[#EAF2DE] p-6"><HeartHandshake class="size-7 text-[#6E8B52]" /><h2 class="mt-3 text-2xl font-semibold">You both want to meet again.</h2><p class="mt-2 text-sm leading-6 text-[#4D2F39]">Lovely. You can make another plan together.</p><blockquote v-if="date.theirMessage" class="mt-4 rounded-lg bg-white/75 p-4 text-sm italic text-[#4D2F39]">“{{ date.theirMessage }}”</blockquote><NuxtLink :to="`/plans/${date.personSlug}`" class="mt-5 inline-flex rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white">Plan another date</NuxtLink></section>
@@ -110,8 +110,8 @@ onMounted(() => { load().catch((error: any) => { errorMessage.value = error?.dat
 
         <form v-else-if="date.dateHasPassed" class="mt-5 rounded-lg bg-white p-6 shadow-[0_12px_28px_rgba(180,35,74,0.08)]" @submit.prevent="submit">
           <fieldset><legend class="text-lg font-semibold">How would you like to continue?</legend><div class="mt-4 grid gap-3 sm:grid-cols-2"><button type="button" class="choice" :class="meetAgain === true && 'choice-selected'" @click="meetAgain = true">Yes, I’d meet again</button><button type="button" class="choice" :class="meetAgain === false && 'choice-selected'" @click="meetAgain = false">No, but I wish them well</button></div></fieldset>
-          <label v-if="meetAgain === true" class="mt-5 block text-sm font-semibold">Optional note if you both say yes<textarea v-model="message" maxlength="240" rows="4" class="mt-2 w-full resize-none rounded-lg border border-[#E8D8C4] bg-[#FBF7F1] p-3" placeholder="I had a lovely time and would enjoy doing this again…" /></label>
-          <p class="mt-5 flex items-start gap-2 text-xs leading-5 text-[#6E4D58]"><ShieldCheck class="mt-0.5 size-4 shrink-0" />A no is never shown as a personal rejection. Notes are shared only after a mutual yes.</p>
+          <label v-if="meetAgain !== null" class="mt-5 block text-sm font-semibold">Optional note<textarea v-model="message" maxlength="240" rows="4" class="mt-2 w-full resize-none rounded-lg border border-[#E8D8C4] bg-[#FBF7F1] p-3" :placeholder="meetAgain ? 'I had a lovely time and would enjoy doing this again…' : 'Thank you for meeting me. I wish you all the best…'" /></label>
+          <p class="mt-5 flex items-start gap-2 text-xs leading-5 text-[#6E4D58]"><ShieldCheck class="mt-0.5 size-4 shrink-0" />Your note can accompany either answer. To keep the check-in independent, it is shown after both people respond.</p>
           <button type="submit" :disabled="meetAgain === null || saving" class="mt-5 rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white disabled:opacity-50">{{ saving ? 'Saving…' : 'Submit private answer' }}</button>
         </form>
         <section v-else class="mt-5 rounded-lg bg-[#F3E8DA] p-6"><h2 class="text-xl font-semibold">Check back after your date.</h2><p class="mt-2 text-sm text-[#6E4D58]">This private check-in opens once the confirmed date time has passed.</p></section>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { CalendarDays, HeartHandshake, MapPin, ShieldCheck, Sparkles, UserRound } from '@lucide/vue'
+import { CalendarDays, HeartHandshake, Mail, MapPin, Phone, ShieldCheck, Sparkles, UserRound } from '@lucide/vue'
 
 definePageMeta({ middleware: 'logged-in' })
 
@@ -8,6 +8,7 @@ const { todaysInterests, dailyInterestLimit, hasUsedDailyInterest, atMatchLimit,
 
 const profiles = {
   maya: {
+    isDemo: true,
     name: 'Maya', age: 31, pronouns: 'she/her', place: 'Shoreditch', distance: '2 km away',
     bio: 'I’m a book designer who is happiest wandering around a small exhibition, finding the best thing at a Sunday market, or catching a low-key gig. I’m looking for someone kind and curious who is up for making an actual plan.',
     activities: ['Gallery walks', 'Sunday markets', 'Live music', 'Bookshops', 'Riverside walks'],
@@ -17,6 +18,7 @@ const profiles = {
     matchReason: 'Maya fits your current match preferences and also wants to make a gallery plan.',
   },
   nina: {
+    isDemo: true,
     name: 'Nina', age: 29, pronouns: 'she/her', place: 'Hackney', distance: '3 km away',
     isMatched: true,
     bio: 'I work in community radio and spend a lot of my free time looking for films, food, and corners of London I have not seen before. I appreciate thoughtful people, silly observations, and plans that leave room for a spontaneous second stop.',
@@ -25,8 +27,10 @@ const profiles = {
     availability: ['Wednesday evenings', 'Weekend afternoons'],
     photos: ['/images/nina-profile-triptych.png', '/images/nina-profile-triptych-2.png'],
     matchReason: 'Nina fits your current match preferences and shares your availability for relaxed weekend plans.',
+    contactDetails: { phoneNumber: '+44 7700 900123', contactEmail: 'nina.demo@example.com', socialHandle: '@nina_demo' },
   },
   alex: {
+    isDemo: true,
     name: 'Alex', age: 34, pronouns: 'they/them', place: 'Bethnal Green', distance: '4 km away',
     bio: 'I’m a product researcher, enthusiastic beginner climber, and collector of second-hand books I absolutely intend to read. I like people who are curious, direct, and happy to alternate active plans with a quiet wander and a good snack.',
     activities: ['Climbing', 'Book markets', 'Riverside walks', 'Board games', 'Cooking classes'],
@@ -47,6 +51,12 @@ const galleryPhotos = computed(() => profile.value?.photos.flatMap((photo: strin
   return ['first', 'second', 'third'].map((panel, panelIndex) => ({ src: photo, panel,
     alt: `${profile.value.name} profile photo ${triptychIndex * 3 + panelIndex + 1}` }))
 }).slice(0, 6) ?? [])
+const gallerySlots = computed(() => [
+  ...galleryPhotos.value.map(photo => ({ ...photo, empty: false })),
+  ...Array.from({ length: Math.max(0, 6 - galleryPhotos.value.length) }, (_, index) => ({
+    src: '', panel: null, alt: '', empty: true, slot: galleryPhotos.value.length + index + 1,
+  })),
+])
 
 onMounted(async () => {
   await loadInterest()
@@ -81,12 +91,14 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
     <section v-else-if="profile" class="mx-auto max-w-5xl">
       <div class="grid gap-5 lg:grid-cols-[1.05fr_0.95fr] lg:items-start">
         <section aria-label="Profile photos" class="grid grid-cols-2 gap-2 overflow-hidden rounded-lg sm:grid-cols-3">
-          <div v-for="(photo, index) in galleryPhotos" :key="`${photo.src}-${photo.panel}`" class="profile-photo aspect-square" :class="index === 0 && 'col-span-2 row-span-2'">
-            <img :src="photo.src" :alt="photo.alt || `${profile.name} profile photo`" :class="photo.panel ? ['triptych', `triptych-${photo.panel}`] : 'h-full w-full object-cover'">
+          <div v-for="(photo, index) in gallerySlots" :key="photo.empty ? `empty-${photo.slot}` : `${photo.src}-${photo.panel}`" class="profile-photo aspect-square" :class="[index === 0 && 'col-span-2 row-span-2', photo.empty && 'profile-photo-empty']">
+            <img v-if="!photo.empty" :src="photo.src" :alt="photo.alt || `${profile.name} profile photo`" :class="photo.panel ? ['triptych', `triptych-${photo.panel}`] : 'h-full w-full object-cover'">
+            <div v-else class="flex h-full w-full items-center justify-center" :aria-label="`Empty photo slot ${photo.slot}`"><span class="rounded-full bg-white/70 px-2.5 py-1 text-xs font-semibold text-[#8A6A74]">Photo {{ photo.slot }}</span></div>
           </div>
         </section>
 
         <aside class="rounded-lg bg-white p-5 shadow-[0_12px_28px_rgba(180,35,74,0.08)] sm:p-6 lg:sticky lg:top-24">
+          <p v-if="profile.isDemo" class="mb-3 inline-flex rounded-full bg-[#FFF1C7] px-3 py-1 text-xs font-bold text-[#694C00]">Demo profile</p>
           <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1"><h1 class="text-3xl font-semibold">{{ profile.name }}, {{ profile.age }}</h1><span class="text-sm text-[#6E4D58]">{{ profile.pronouns }}</span></div>
           <p v-if="profile.place || profile.distance" class="mt-2 inline-flex items-center gap-1 text-sm text-[#6E4D58]"><MapPin class="size-4" /><span>{{ [profile.place, profile.distance].filter(Boolean).join(' · ') }}</span></p>
           <div v-if="profile.matchReason" class="mt-5 rounded-lg bg-[#EAF2DE] p-4"><p class="inline-flex items-center gap-2 text-sm font-semibold"><Sparkles class="size-4 text-[#6E8B52]" />Strong activity overlap</p><p class="mt-1 text-xs leading-5 text-[#4D2F39]">{{ profile.matchReason }}</p></div>
@@ -106,7 +118,8 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
 
       <div class="mt-5 grid gap-5 lg:grid-cols-2">
         <section class="rounded-lg bg-white p-5 shadow-[0_10px_24px_rgba(180,35,74,0.08)] sm:p-6"><div class="flex items-center gap-2"><UserRound class="size-5 text-[#B4234A]" /><h2 class="text-xl font-semibold">About me</h2></div><p class="mt-4 leading-7 text-[#4D2F39]">{{ profile.bio }}</p></section>
-        <section class="rounded-lg bg-white p-5 shadow-[0_10px_24px_rgba(180,35,74,0.08)] sm:p-6"><div class="flex items-center gap-2"><CalendarDays class="size-5 text-[#B4234A]" /><h2 class="text-xl font-semibold">Usually free</h2></div><div class="mt-4 flex flex-wrap gap-2"><span v-for="time in profile.availability" :key="time" class="rounded-full bg-[#F3E8DA] px-3 py-2 text-sm font-semibold text-[#4D2F39]">{{ time }}</span></div></section>
+        <section v-if="profile.availability?.length && (profile.isMatched || profile.availabilityVisibleBeforeMatch)" class="rounded-lg bg-white p-5 shadow-[0_10px_24px_rgba(180,35,74,0.08)] sm:p-6"><div class="flex items-center gap-2"><CalendarDays class="size-5 text-[#B4234A]" /><h2 class="text-xl font-semibold">Usually free</h2></div><div class="mt-4 flex flex-wrap gap-2"><span v-for="time in profile.availability" :key="time" class="rounded-full bg-[#F3E8DA] px-3 py-2 text-sm font-semibold text-[#4D2F39]">{{ time }}</span></div></section>
+        <section v-if="profile.contactDetails" class="rounded-lg bg-white p-5 shadow-[0_10px_24px_rgba(180,35,74,0.08)] sm:p-6"><h2 class="text-xl font-semibold">Contact details</h2><p class="mt-2 text-xs leading-5 text-[#6E4D58]">Shared with you because you are an active match.</p><div class="mt-4 space-y-3 text-sm"><a v-if="profile.contactDetails.phoneNumber" :href="`tel:${profile.contactDetails.phoneNumber}`" class="flex items-center gap-2 font-semibold text-[#8F1839]"><Phone class="size-4" />{{ profile.contactDetails.phoneNumber }}</a><a v-if="profile.contactDetails.contactEmail" :href="`mailto:${profile.contactDetails.contactEmail}`" class="flex items-center gap-2 break-all font-semibold text-[#8F1839]"><Mail class="size-4 shrink-0" />{{ profile.contactDetails.contactEmail }}</a><p v-if="profile.contactDetails.socialHandle" class="font-semibold text-[#4D2F39]">{{ profile.contactDetails.socialHandle }}</p></div></section>
         <section class="rounded-lg bg-[#FCE3E8] p-5 sm:p-6"><h2 class="text-xl font-semibold">Activities I’d enjoy together</h2><div class="mt-4 flex flex-wrap gap-2"><span v-for="activity in profile.activities" :key="activity" class="rounded-full bg-white/80 px-3 py-2 text-sm font-semibold text-[#8F1839]">{{ activity }}</span></div></section>
         <section v-if="profile.interests?.length" class="rounded-lg bg-[#EAF2DE] p-5 sm:p-6"><h2 class="text-xl font-semibold">A few more interests</h2><div class="mt-4 flex flex-wrap gap-2"><span v-for="interest in profile.interests" :key="interest" class="rounded-full bg-white/80 px-3 py-2 text-sm font-semibold text-[#4D2F39]">{{ interest }}</span></div></section>
       </div>
@@ -118,6 +131,7 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
 
 <style scoped>
 .profile-photo { position: relative; overflow: hidden; background: #F3E8DA; }
+.profile-photo-empty { border: 2px dashed #CDB9A8; background: rgba(243, 232, 218, .5); }
 .triptych { height: 100%; width: 300%; max-width: none; object-fit: cover; }
 .triptych-first { transform: translateX(0); }
 .triptych-second { transform: translateX(-33.333%); }

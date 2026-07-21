@@ -2,7 +2,7 @@
 import { useMeStateV2 } from '@/composables/useMeStateV2'
 import { Bell, HeartHandshake, History, House, Menu, Send, ShieldCheck, Sparkles, X } from '@lucide/vue'
 import { login, logout, signup } from '@/composables/useAuth'
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
 const { user, isLoggedIn, resolve } = useMeStateV2()
 const { profile: accountProfile, loadProfile } = useMockProfile()
@@ -13,6 +13,7 @@ const route = useRoute()
 const menuOpen = ref(false)
 const navOpen = ref(false)
 const unreadCount = ref(0)
+const matchCount = ref(0)
 const menuRoot = ref<HTMLElement | null>(null)
 
 const navLinks = computed(() => {
@@ -22,6 +23,7 @@ const navLinks = computed(() => {
     { to: '/matches', label: 'Matches & plans', icon: HeartHandshake },
     { to: '/matches/past', label: 'Past connections', icon: History },
     { to: '/interests/sent', label: 'Sent interests', icon: Send },
+    { to: '/interests/received', label: 'Received interests', icon: HeartHandshake },
     { to: '/notifications', label: unreadCount.value ? `Notifications (${unreadCount.value})` : 'Notifications', icon: Bell },
     { to: '/account/blocked', label: 'Safety & blocked users', icon: ShieldCheck },
   ]
@@ -59,15 +61,24 @@ function onDocumentKeydown(e: KeyboardEvent) {
   closeNav()
 }
 
+async function loadNavigationCounts() {
+  if (!isLoggedIn.value) return
+  try {
+    const counts = await $fetch<{ matchCount: number; unreadNotificationCount: number }>('/api/navigation/counts')
+    matchCount.value = counts.matchCount
+    unreadCount.value = counts.unreadNotificationCount
+  } catch { /* Navigation remains usable when counts are temporarily unavailable. */ }
+}
+
 onMounted(async () => {
   loadProfile()
   await resolve()
-  if (isLoggedIn.value) {
-    try { unreadCount.value = (await $fetch<{ unreadCount: number }>('/api/notifications')).unreadCount } catch { /* Navigation remains usable. */ }
-  }
+  await loadNavigationCounts()
   document.addEventListener('click', onDocumentClick)
   document.addEventListener('keydown', onDocumentKeydown)
 })
+
+watch(() => route.fullPath, () => { void loadNavigationCounts() })
 
 onBeforeUnmount(() => {
   document.removeEventListener('click', onDocumentClick)
@@ -84,7 +95,17 @@ onBeforeUnmount(() => {
         Lonely Radish
       </NuxtLink>
 
-      <div ref="menuRoot" class="relative">
+      <div class="flex items-center gap-1">
+        <NuxtLink v-if="isLoggedIn" to="/matches" class="nav-count-link" :aria-label="`${matchCount} active ${matchCount === 1 ? 'match' : 'matches'}`" title="Active matches">
+          <HeartHandshake class="size-5" aria-hidden="true" />
+          <span class="nav-count-badge">{{ matchCount > 99 ? '99+' : matchCount }}</span>
+        </NuxtLink>
+        <NuxtLink v-if="isLoggedIn" to="/notifications" class="nav-count-link" :aria-label="`${unreadCount} unread ${unreadCount === 1 ? 'notification' : 'notifications'}`" title="New notifications">
+          <Bell class="size-5" aria-hidden="true" />
+          <span class="nav-count-badge" :class="unreadCount > 0 && 'nav-count-badge-active'">{{ unreadCount > 99 ? '99+' : unreadCount }}</span>
+        </NuxtLink>
+
+        <div ref="menuRoot" class="relative">
 
         <button type="button" class="menu-btn" @click.stop="toggleMenu" aria-label="Open account menu"
           :aria-expanded="menuOpen ? 'true' : 'false'">
@@ -121,10 +142,7 @@ onBeforeUnmount(() => {
             class="w-full flex items-center rounded-lg px-3 py-2 text-sm font-semibold hover:bg-[#F3E8DA] transition"
             @click="closeMenu">
 
-            <span
-              class="text-[#B4234A]">
-              Upgrade
-            </span>
+            <span class="text-[#B4234A]">Upgrade</span>
           </NuxtLink>
           <div v-if="isLoggedIn" class="my-2 h-px bg-[#E8D8C4]" />
           <button v-if="isLoggedIn" type="button" class="w-full rounded-lg px-3 py-2 text-left text-sm font-semibold text-[#8F1839] hover:bg-[#FCE3E8]" @click="handleLogout">Log out</button>
@@ -133,6 +151,7 @@ onBeforeUnmount(() => {
             <button type="button" class="mt-1 w-full rounded-lg bg-[#B4234A] px-3 py-2 text-left text-sm font-semibold text-white" @click="signup(route.fullPath)">Create account</button>
           </template>
         </div>
+      </div>
       </div>
     </div>
 
@@ -192,6 +211,12 @@ onBeforeUnmount(() => {
 .menu-btn:active {
   transform: scale(0.98);
 }
+
+.nav-count-link { position: relative; display: inline-flex; height: 40px; width: 38px; align-items: center; justify-content: center; border-radius: .5rem; color: #2A1520; transition: background-color 150ms ease; }
+.nav-count-link:hover { background: #F3E8DA; }
+.nav-count-badge { position: absolute; right: 0; top: 0; min-width: 1.1rem; border-radius: 999px; background: #F3E8DA; padding: .08rem .25rem; text-align: center; font-size: .62rem; font-weight: 800; line-height: 1rem; color: #6E4D58; }
+.nav-count-badge-active { background: #B4234A; color: white; }
+@media (max-width: 359px) { .brand-logo { font-size: 1.25rem; } .nav-count-link { width: 34px; } }
 
 .trigger-visibility-btn {
   position: fixed;

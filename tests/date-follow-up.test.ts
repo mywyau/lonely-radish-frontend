@@ -8,9 +8,16 @@ describe('private post-date follow-up', () => {
   it('reveals each answer once both people have responded', () => {
     const get = read('server/api/dates/[id]/follow-up.get.ts')
     expect(get).toContain('theirChoice: bothResponded ? date.theirChoice : null')
-    expect(get).toContain('bothResponded && date.theirChoice === true')
+    expect(get).toContain('theirMessage: bothResponded ? date.theirMessage : null')
     expect(get).toContain('const closed = bothResponded && !mutual')
     expect(read('pages/dates/[id]/follow-up.vue')).toContain('’s answer')
+  })
+
+  it('allows a respectful note with either answer', () => {
+    expect(read('server/api/dates/[id]/follow-up.post.ts')).toContain("text(body.message, 'Message', 240)")
+    const page = read('pages/dates/[id]/follow-up.vue')
+    expect(page).toContain('Your note can accompany either answer')
+    expect(page).toContain('Thank you for meeting me. I wish you all the best')
   })
 
   it('closes a rejected connection without identifying who declined', () => {

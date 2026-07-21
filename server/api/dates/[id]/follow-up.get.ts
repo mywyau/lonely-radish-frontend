@@ -26,6 +26,6 @@ export default defineEventHandler(async (event) => {
     venue: date.venue, dateTime: date.dateTime, dateHasPassed, myChoice: date.myRespondedAt ? date.myChoice : null,
     myMessage: date.myMessage, myReconsideredAt: date.myReconsideredAt, bothResponded, mutual, closed,
     theirChoice: bothResponded ? date.theirChoice : null,
-    theirMessage: bothResponded && date.theirChoice === true ? date.theirMessage : null,
+    theirMessage: bothResponded ? date.theirMessage : null,
     canReconsider: closed && date.myChoice === false && date.theirChoice === true && !date.myReconsideredAt }
 })

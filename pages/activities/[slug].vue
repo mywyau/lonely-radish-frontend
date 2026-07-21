@@ -1,26 +1,20 @@
 <script setup lang="ts">
 import { CalendarDays, HeartHandshake, MapPin, ShieldCheck, Sparkles, UsersRound } from '@lucide/vue'
+import { discoveryCategory } from '~/utils/activityDiscovery'
 
 definePageMeta({ middleware: 'logged-in' })
 
 const route = useRoute()
 const { todaysInterests, dailyInterestLimit, hasUsedDailyInterest, atMatchLimit, errorMessage, successMessage, sending, loadInterest, showInterest, isTodaysChoice } = useDailyInterest()
 
-const activityNames: Record<string, string> = {
-  'gallery-wander': 'Gallery wander', 'market-loop': 'Market loop', 'riverside-walk': 'Riverside walk',
-  'live-music-set': 'Live music set', 'casual-food-crawl': 'Casual food crawl', 'weekend-pop-up': 'Weekend pop-up',
-  'park-tennis-rally': 'Park tennis rally', 'cycle-and-stop': 'Cycle and stop', 'climbing-taster': 'Climbing taster',
-  'co-op-game-session': 'Co-op game session', 'puzzle-room-online': 'Puzzle room online', 'watch-and-play-lobby': 'Watch-and-play lobby',
-}
-
 const slug = computed(() => String(route.params.slug || ''))
-const activityName = computed(() => activityNames[slug.value] || 'This activity')
-const activityExists = computed(() => Boolean(activityNames[slug.value]))
+const activityName = computed(() => discoveryCategory(slug.value)?.name || 'This category')
+const activityExists = computed(() => Boolean(discoveryCategory(slug.value)))
 
 const fallbackPeople = [
-  { slug: 'maya', name: 'Maya', age: 31, place: 'Shoreditch', distance: '2 km away', time: 'Thursday evenings', detail: 'Design books, Sunday markets, and finding small exhibitions.', reason: 'Strong activity overlap', tone: 'bg-[#FCE3E8]' },
-  { slug: 'nina', name: 'Nina', age: 29, place: 'Hackney', distance: '3 km away', time: 'Weekend afternoons', detail: 'City walks, independent venues, and relaxed food spots.', reason: 'Matches your timing', tone: 'bg-[#EAF2DE]' },
-  { slug: 'alex', name: 'Alex', age: 34, place: 'Bethnal Green', distance: '4 km away', time: 'Friday evenings', detail: 'Trying something new, good conversation, and low-key first plans.', reason: 'Matches your preferences', tone: 'bg-[#F3E8DA]' },
+  { slug: 'maya', name: 'Maya', age: 31, place: 'Shoreditch', distance: '2 km away', detail: 'Design books, Sunday markets, and finding small exhibitions.', activityTags: ['Markets', 'Gallery walks'], reason: 'Selected interests', tone: 'bg-[#FCE3E8]' },
+  { slug: 'nina', name: 'Nina', age: 29, place: 'Hackney', distance: '3 km away', detail: 'City walks, independent venues, and relaxed food spots.', activityTags: ['Casual food spots', 'Markets'], reason: 'Selected interests', tone: 'bg-[#EAF2DE]' },
+  { slug: 'alex', name: 'Alex', age: 34, place: 'Bethnal Green', distance: '4 km away', detail: 'Trying something new, good conversation, and low-key first plans.', activityTags: ['Board games', 'Climbing'], reason: 'Selected interests', tone: 'bg-[#F3E8DA]' },
 ]
 const databasePeople = ref<any[]>([])
 const candidatesLoaded = ref(false)
@@ -49,8 +43,8 @@ onMounted(async () => {
       <div class="rounded-lg bg-[#2A1520] p-6 text-white shadow-[0_14px_32px_rgba(42,21,32,0.16)] sm:p-8">
         <Sparkles class="size-6 text-[#F7B7C4]" aria-hidden="true" />
         <p class="mt-5 text-xs font-extrabold uppercase tracking-widest text-[#F7B7C4]">Potential dates</p>
-        <h1 class="mt-2 text-3xl font-semibold sm:text-4xl">Who would enjoy a {{ activityName.toLowerCase() }}?</h1>
-        <p class="mt-3 max-w-2xl text-sm leading-6 text-white/75">These people selected the same activity and are available to receive interest.</p>
+        <h1 class="mt-2 text-3xl font-semibold sm:text-4xl">Meet people interested in {{ activityName.toLowerCase() }}.</h1>
+        <p class="mt-3 max-w-2xl text-sm leading-6 text-white/75">People in this broader category may enjoy different specific activities. Open a profile to see what each person selected.</p>
       </div>
 
       <div v-if="visiblePeople.length" class="mt-8">
@@ -72,11 +66,11 @@ onMounted(async () => {
                   <h2 class="text-xl font-semibold">{{ person.name }}, {{ person.age }}</h2>
                   <p class="mt-1 inline-flex items-center gap-1 text-sm text-[#6E4D58]"><MapPin class="size-3.5" />{{ [person.place, person.distance].filter(Boolean).join(' · ') }}</p>
                   <p class="mt-3 text-sm leading-6 text-[#4D2F39]">{{ person.detail }}</p>
+                  <div v-if="person.activityTags?.length" class="mt-3 flex flex-wrap gap-1.5" :aria-label="`${person.name}'s selected interests in ${activityName}`"><span v-for="tag in person.activityTags" :key="tag" class="rounded-full bg-white/75 px-2.5 py-1 text-xs font-semibold text-[#8F1839]">{{ tag }}</span></div>
                 </div>
               </div>
               <div class="flex shrink-0 flex-wrap gap-2 text-xs font-semibold text-[#4D2F39] sm:max-w-52 sm:justify-end">
-                <span class="inline-flex items-center gap-1 rounded-full bg-white/70 px-3 py-1.5"><CalendarDays class="size-3.5" />{{ person.time }}</span>
-                <span class="inline-flex items-center gap-1 rounded-full bg-white/70 px-3 py-1.5"><ShieldCheck class="size-3.5" />{{ person.reason }}</span>
+                <span class="inline-flex items-center gap-1 rounded-full bg-white/70 px-3 py-1.5"><ShieldCheck class="size-3.5" />{{ person.activityTags?.length }} selected</span>
               </div>
             </div>
             <div class="mt-5 flex flex-wrap gap-2">
@@ -92,11 +86,11 @@ onMounted(async () => {
 
       <div v-else class="mt-8 rounded-lg bg-white p-8 text-center shadow-[0_10px_24px_rgba(180,35,74,0.08)]">
         <UsersRound class="mx-auto size-8 text-[#B4234A]" />
-        <h2 class="mt-4 text-xl font-semibold">No one is interested in this activity yet</h2>
-        <p class="mt-2 text-sm text-[#6E4D58]">No other active profiles have selected this activity yet.</p>
+        <h2 class="mt-4 text-xl font-semibold">No one is browsing in this category yet</h2>
+        <p class="mt-2 text-sm text-[#6E4D58]">No other active profiles have selected interests in this category yet.</p>
       </div>
 
-      <NuxtLink to="/activities" class="mt-8 inline-flex rounded-lg bg-[#F3E8DA] px-5 py-3 text-sm font-semibold text-[#8F1839] hover:bg-[#FCE3E8]">← Browse all activities</NuxtLink>
+      <NuxtLink to="/activities" class="mt-8 inline-flex rounded-lg bg-[#F3E8DA] px-5 py-3 text-sm font-semibold text-[#8F1839] hover:bg-[#FCE3E8]">← Browse all categories</NuxtLink>
     </section>
   </main>
 </template>

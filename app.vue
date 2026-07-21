@@ -31,10 +31,10 @@ useSeoMeta({
   <div class="min-h-screen flex flex-col overflow-x-hidden bg-[#FBF7F1]">
     <BlankNavBar />
 
-    <BackLink
+    <!-- <BackLink
       v-if="showBackLink"
       class="mt-10"
-    />
+    /> -->
 
     <main class="flex-1">
       <ClientOnly>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Camera, ChevronLeft, ChevronRight, GripVertical, ImagePlus, ShieldCheck, Star, Trash2, UploadCloud } from '@lucide/vue'
+import { Camera, ChevronLeft, ChevronRight, Eye, GripVertical, ImagePlus, ShieldCheck, Star, Trash2, UploadCloud } from '@lucide/vue'
 import { createClient } from '@supabase/supabase-js'
 
 definePageMeta({
@@ -188,6 +188,22 @@ onMounted(async () => {
               {{ photoSlots }} slots remaining
             </p>
           </div>
+        </section>
+
+        <section class="rounded-lg bg-white p-6 shadow-[0_12px_28px_rgba(180,35,74,0.08)]">
+          <div class="flex items-start gap-3">
+            <Eye class="mt-1 size-5 text-[#B4234A]" aria-hidden="true" />
+            <div><h2 class="text-xl font-semibold">Profile preview</h2><p class="mt-1 text-sm text-[#6E4D58]">This preview updates as you rearrange your photos. The largest image is your primary photo.</p></div>
+          </div>
+          <div v-if="photos.length" class="mt-5 grid grid-cols-3 gap-2 overflow-hidden rounded-lg bg-[#F3E8DA] p-2" aria-live="polite">
+            <div v-for="(photo, index) in photos" :key="`preview-${photo.id}`" class="relative overflow-hidden rounded-md bg-[#E8D8C4]" :class="index === 0 ? 'col-span-2 row-span-2 aspect-square' : 'aspect-square'">
+              <img :src="photo.url" :alt="`Preview position ${index + 1}: ${photo.name}`" class="h-full w-full object-cover">
+              <span class="absolute bottom-1.5 left-1.5 rounded-full bg-[#2A1520]/85 px-2 py-1 text-[10px] font-bold text-white">{{ index === 0 ? '1 · Primary' : index + 1 }}</span>
+            </div>
+            <div v-for="position in photoSlots" :key="`preview-empty-${position}`" class="flex aspect-square items-center justify-center rounded-md border border-dashed border-[#CDB9A8] bg-white/45 text-xs font-semibold text-[#8A6A74]">{{ photos.length + position }}</div>
+          </div>
+          <div v-else class="mt-5 flex aspect-[16/9] items-center justify-center rounded-lg border border-dashed border-[#D8C8B6] bg-[#FBF7F1] text-center"><div><ImagePlus class="mx-auto size-7 text-[#B4234A]" /><p class="mt-2 text-sm font-semibold">Add a photo to see your profile preview</p></div></div>
+          <p v-if="orderChanged" class="mt-3 text-xs font-semibold text-[#8F1839]">Previewing unsaved changes</p>
         </section>
 
         <section class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

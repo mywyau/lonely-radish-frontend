@@ -8,7 +8,7 @@ export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')
   const body = objectBody(await readBody(event))
   const meetAgain = boolean(body.meetAgain, 'Meet again choice')
-  const message = meetAgain ? text(body.message, 'Message', 240) : null
+  const message = text(body.message, 'Message', 240)
   const client = await db.connect()
   try {
     await client.query('begin')

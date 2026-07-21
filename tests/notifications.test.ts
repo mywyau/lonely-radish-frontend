@@ -13,6 +13,8 @@ describe('notification centre', () => {
     expect(page).toContain('Delete this notification permanently?')
     expect(page).toContain("method: 'DELETE'")
     expect(read('components/BlankNavBar.vue')).toContain("to: '/notifications'")
+    expect(read('components/BlankNavBar.vue')).toContain("'/api/navigation/counts'")
+    expect(read('components/BlankNavBar.vue')).toContain('unreadNotificationCount')
   })
 
   it('creates notifications throughout the match lifecycle', () => {

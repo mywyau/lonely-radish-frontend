@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Bell, CalendarCheck, CalendarDays, ChevronRight, Clock3, HeartHandshake, MapPin, Sparkles, X } from '@lucide/vue'
+import { Bell, CalendarCheck, CalendarDays, ChevronRight, Clock3, HeartHandshake, MapPin, Sparkles, UsersRound, X } from '@lucide/vue'
 
 definePageMeta({ title: 'Matches & Plans · Lonely Radish', middleware: 'logged-in' })
 
@@ -113,11 +113,11 @@ onMounted(async () => {
       <NuxtLink to="/matches/past" class="mt-4 inline-flex text-sm font-semibold text-[#8F1839] hover:underline">View past connections →</NuxtLink>
 
       <div class="mt-7 grid grid-cols-2 gap-2 sm:grid-cols-5 sm:gap-4">
-        <div class="summary-card col-span-2 sm:col-span-1"><strong>{{ interestReceivedCount }}</strong><span>People interested in you</span></div>
-        <div class="summary-card"><strong>{{ totalMatches }}</strong><span>Total matches</span></div>
-        <div class="summary-card"><strong>{{ counts.fresh }}</strong><span>New</span></div>
-        <div class="summary-card"><strong>{{ counts.planning }}</strong><span>Planning</span></div>
-        <div class="summary-card"><strong>{{ counts.confirmed }}</strong><span>Confirmed</span></div>
+        <NuxtLink to="/interests/received" class="summary-card summary-interested col-span-2 sm:col-span-1"><HeartHandshake class="summary-icon" /><strong>{{ interestReceivedCount }}</strong><span>People interested in you</span></NuxtLink>
+        <div class="summary-card summary-total"><UsersRound class="summary-icon" /><strong>{{ totalMatches }}</strong><span>Total matches</span></div>
+        <div class="summary-card summary-new"><Sparkles class="summary-icon" /><strong>{{ counts.fresh }}</strong><span>New</span></div>
+        <div class="summary-card summary-planning"><Clock3 class="summary-icon" /><strong>{{ counts.planning }}</strong><span>Planning</span></div>
+        <div class="summary-card summary-confirmed"><CalendarCheck class="summary-icon" /><strong>{{ counts.confirmed }}</strong><span>Confirmed</span></div>
       </div>
       <p class="mt-3 text-center text-xs text-[#6E4D58]">You can have up to 5 active matches across matching, planning, and confirmed dates.</p>
 
@@ -179,6 +179,12 @@ onMounted(async () => {
 
 <style scoped>
 .summary-card { display: flex; min-width: 0; flex-direction: column; align-items: center; border-radius: .5rem; background: white; padding: 1rem .5rem; box-shadow: 0 8px 20px rgba(180,35,74,.07); }
+.summary-icon { width: 1.1rem; height: 1.1rem; color: #8F1839; margin-bottom: .2rem; }
 .summary-card strong { color: #B4234A; font-size: 1.5rem; }
 .summary-card span { color: #6E4D58; font-size: .75rem; font-weight: 650; }
+.summary-interested { background: #FCE3E8; }
+.summary-total { background: #F3E8DA; }
+.summary-new { background: #FFF1C7; }
+.summary-planning { background: #E8E4F4; }
+.summary-confirmed { background: #EAF2DE; }
 </style>

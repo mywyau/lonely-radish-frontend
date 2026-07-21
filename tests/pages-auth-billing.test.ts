@@ -72,12 +72,17 @@ describe("auth and billing page contracts", () => {
     expect(preferences).toContain('to="/preferences/dating"');
     expect(preferences).toContain('to="/preferences/schedule"');
     expect(activityPreferences).toContain("title: 'Activity Interests · Lonely Radish'");
-    expect(activityPreferences).toContain("Add your own activity");
+    expect(activityPreferences).toContain("Add your own {{ group.name.toLowerCase() }} activity");
     expect(activityPreferences).toContain("const selectionLimit = 10");
-    expect(activityPreferences).toContain("including activities you add yourself");
+    expect(activityPreferences).toContain("add up to 3 of your own activities inside each category");
     expect(activityPreferences).toContain("!limitReached.value");
     expect(activityPreferences).toContain("Save activity interests");
     expect(activityPreferences).toContain("name: 'Sports'");
+    expect(activityPreferences).toContain('customCount(group.name)')
+    expect(activityPreferences).toContain('activities: selected.value')
+    const activityApi = readFileSync(resolve(process.cwd(), 'server/api/preferences/activities.put.ts'), 'utf8')
+    expect(activityApi).toContain('length > 10')
+    expect(activityApi).toContain('length > 3')
     expect(activityPreferences).toContain("name: 'Gaming'");
     expect(datingPreferences).toContain("title: 'Dating Preferences · Lonely Radish'");
     expect(datingPreferences).toContain("Sexual preference");

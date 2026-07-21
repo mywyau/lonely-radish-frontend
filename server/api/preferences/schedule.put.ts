@@ -10,6 +10,7 @@ export default defineEventHandler(async (event) => {
   const body = objectBody(await readBody(event))
   if (!Array.isArray(body.windows) || body.windows.length > 7) badRequest('Choose up to seven availability windows')
   const publicOnly = boolean(body.publicOnly, 'Public places only')
+  const availabilityVisibleBeforeMatch = boolean(body.availabilityVisibleBeforeMatch, 'Availability visibility')
   const windows = body.windows.map(value => {
     const window = objectBody(value)
     const weekday = integer(window.weekday, 'Day', 0, 6)
@@ -27,9 +28,10 @@ export default defineEventHandler(async (event) => {
     for (const [index, window] of windows.entries()) await client.query(`insert into availability
       (user_id,label,position,weekday,start_time,end_time) values($1,$2,$3,$4,$5::time,$6::time)`,
       [sub,window.label,index+1,window.weekday,window.startTime,window.endTime])
-    await client.query(`insert into match_preferences(user_id,public_places_only) values($1,$2)
-      on conflict(user_id) do update set public_places_only=excluded.public_places_only`, [sub,publicOnly])
+    await client.query(`insert into match_preferences(user_id,public_places_only,availability_visible_before_match) values($1,$2,$3)
+      on conflict(user_id) do update set public_places_only=excluded.public_places_only,
+      availability_visible_before_match=excluded.availability_visible_before_match`, [sub,publicOnly,availabilityVisibleBeforeMatch])
     await client.query('commit')
-    return { windows, publicOnly }
+    return { windows, publicOnly, availabilityVisibleBeforeMatch }
   } catch (error) { await client.query('rollback'); throw error } finally { client.release() }
 })

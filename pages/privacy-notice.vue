@@ -72,8 +72,8 @@ definePageMeta({
 
         <li>
           <strong>Dating profile and preference information:</strong> such as profile text,
-          activity preferences, neighbourhood preferences, availability windows, prompts,
-          likes, matches, and related interaction data.
+          activity preferences, availability windows, prompts, optional contact details and
+          sharing settings, likes, matches, and related interaction data.
         </li>
 
         <li>
