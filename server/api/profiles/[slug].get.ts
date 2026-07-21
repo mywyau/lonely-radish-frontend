@@ -13,7 +13,8 @@ export default defineEventHandler(async (event) => {
       ((m.user_one_id=$2 and m.user_two_id=p.user_id) or (m.user_two_id=$2 and m.user_one_id=p.user_id))) as "isMatched",
     exists(select 1 from daily_interests di where di.sender_id=$2 and di.recipient_id=p.user_id) as "interestSent"
     from profiles p join users u on u.id=p.user_id
-    where p.slug=$1 and p.visibility='active' and u.account_status='active'
+    where p.slug=$1 and p.visibility='active' and (u.account_status='active' or
+      (u.account_status='paused' and u.paused_until is not null and u.paused_until<=now()))
       and p.user_id<>$2 and not exists(select 1 from blocks b where
         (b.blocker_id=$2 and b.blocked_id=p.user_id) or (b.blocker_id=p.user_id and b.blocked_id=$2))`, [slug,viewer.sub])
   const profile = rows[0]

@@ -27,7 +27,8 @@ export default defineEventHandler(async (event) => {
     left join lateral (select storage_key,public_url from profile_photos where user_id=p.user_id order by position limit 1) photo on true
     left join lateral (select label from availability where user_id=p.user_id order by position limit 1) free on true
     where lower(a.name)=lower($1) and a.is_active=true and p.user_id<>$2
-      and p.visibility='active' and u.account_status='active'
+      and p.visibility='active' and (u.account_status='active' or
+        (u.account_status='paused' and u.paused_until is not null and u.paused_until<=now()))
       and not exists(select 1 from blocks b where
         (b.blocker_id=$2 and b.blocked_id=p.user_id) or (b.blocker_id=p.user_id and b.blocked_id=$2))
       and not exists(select 1 from matches m where m.status='active' and

@@ -28,7 +28,8 @@ export default defineEventHandler(async (event) => {
       and p.visibility='active' order by coalesce(proposal.updated_at,m.matched_at) desc limit 5`, [sub]),
     db.query(`select count(distinct di.sender_id)::int as count
       from daily_interests di
-      join users u on u.id=di.sender_id and u.account_status='active'
+      join users u on u.id=di.sender_id and (u.account_status='active' or
+        (u.account_status='paused' and u.paused_until is not null and u.paused_until<=now()))
       join profiles p on p.user_id=di.sender_id and p.visibility='active'
       where di.recipient_id=$1 and not exists(select 1 from blocks b where
         (b.blocker_id=$1 and b.blocked_id=di.sender_id) or (b.blocker_id=di.sender_id and b.blocked_id=$1))`, [sub]),

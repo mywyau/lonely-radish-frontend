@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { CalendarDays, HeartHandshake, MapPin, ShieldCheck, Sparkles, Trash2, UserRound } from "@lucide/vue";
+import { CalendarDays, HeartHandshake, MapPin, PauseCircle, ShieldCheck, Sparkles, Trash2, UserRound } from "@lucide/vue";
 
 definePageMeta({
   title: "Account · Lonely Radish",
@@ -15,6 +15,10 @@ const deleteConfirmInput = ref("");
 const deletingAccount = ref(false);
 const deleteError = ref("");
 const deletionQueued = ref(false);
+const pauseState = ref<{ paused: boolean; pausedUntil: string | null }>({ paused: false, pausedUntil: null });
+const pauseChoice = ref('7_days');
+const savingPause = ref(false);
+const pauseError = ref('');
 
 const fullName = computed(() => `${profile.value.firstName} ${profile.value.lastName}`.trim());
 
@@ -54,9 +58,20 @@ async function deleteAccount() {
   }
 }
 
+async function updatePause(choice = pauseChoice.value) {
+  savingPause.value = true;
+  pauseError.value = '';
+  try {
+    const result = await $fetch<{ paused: boolean; pausedUntil: string | null }>('/api/account/pause', { method: 'PUT', body: { choice } });
+    pauseState.value = result;
+  } catch (error: any) { pauseError.value = error?.data?.statusMessage || 'Your pause setting could not be updated.'; }
+  finally { savingPause.value = false; }
+}
+
 onMounted(async () => {
   loadProfile();
   await resolve();
+  try { pauseState.value = await $fetch('/api/account/pause'); } catch { /* Account remains usable if pause status is unavailable. */ }
   if (user.value?.firstName) profile.value.firstName = user.value.firstName;
   if (user.value?.lastName) profile.value.lastName = user.value.lastName;
 });
@@ -147,6 +162,25 @@ onMounted(async () => {
             <p class="mt-1 text-sm text-[#6E4D58]">{{ item.value }}</p>
           </article>
         </section> -->
+
+        <section class="rounded-lg bg-[#EAF2DE] p-6 shadow-[0_10px_24px_rgba(180,35,74,0.08)]">
+          <div class="flex items-start gap-3">
+            <PauseCircle class="mt-1 size-5 text-[#6E8B52]" aria-hidden="true" />
+            <div class="min-w-0 flex-1">
+              <h2 class="text-lg font-semibold">Pause discovery</h2>
+              <p class="mt-2 text-sm leading-6 text-[#4D2F39]">Hide your profile from new people while keeping existing matches, plans, and confirmed dates available.</p>
+              <div v-if="pauseState.paused" class="mt-4 rounded-lg bg-white/75 p-4">
+                <p class="text-sm font-semibold">Your profile is paused<span v-if="pauseState.pausedUntil"> until {{ new Date(pauseState.pausedUntil).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) }}</span><span v-else> indefinitely</span>.</p>
+                <button type="button" class="mt-3 rounded-lg bg-[#B4234A] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50" :disabled="savingPause" @click="updatePause('resume')">{{ savingPause ? 'Resuming…' : 'Resume discovery now' }}</button>
+              </div>
+              <div v-else class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end">
+                <label class="flex-1 text-sm font-semibold">Pause for<select v-model="pauseChoice" class="field"><option value="7_days">7 days</option><option value="30_days">30 days</option><option value="indefinite">Until I resume</option></select></label>
+                <button type="button" class="rounded-lg bg-[#4D2F39] px-4 py-3 text-sm font-semibold text-white disabled:opacity-50" :disabled="savingPause" @click="updatePause()">{{ savingPause ? 'Pausing…' : 'Pause my profile' }}</button>
+              </div>
+              <p v-if="pauseError" class="mt-3 text-sm font-semibold text-[#8F1839]" role="alert">{{ pauseError }}</p>
+            </div>
+          </div>
+        </section>
 
         <section class="rounded-lg bg-[#FCE3E8] p-6 shadow-[0_10px_24px_rgba(180,35,74,0.08)]">
           <div class="flex items-start gap-3">

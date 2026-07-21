@@ -68,7 +68,9 @@ export function useDailyInterest() {
       if (status === 404 && ['maya', 'nina', 'alex'].includes(profileSlug)) {
         interests.value.push({ profileSlug, profileName, date: localDateKey() })
       } else {
-        errorMessage.value = status === 409 && failure.data?.statusMessage?.includes('already sent interest')
+        errorMessage.value = status === 409 && failure.data?.statusMessage?.includes('Resume your profile')
+          ? 'Your profile is paused. Resume discovery in Account before sending new interest.'
+          : status === 409 && failure.data?.statusMessage?.includes('already sent interest')
           ? 'You have already sent interest to this person.'
           : status === 409 && failure.data?.statusMessage?.includes('already matched')
           ? 'You have already matched with this person.'
