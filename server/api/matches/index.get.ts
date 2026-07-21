@@ -30,7 +30,8 @@ export default defineEventHandler(async (event) => {
       from daily_interests di
       join users u on u.id=di.sender_id and u.account_status='active'
       join profiles p on p.user_id=di.sender_id and p.visibility='active'
-      where di.recipient_id=$1`, [sub]),
+      where di.recipient_id=$1 and not exists(select 1 from blocks b where
+        (b.blocker_id=$1 and b.blocked_id=di.sender_id) or (b.blocker_id=di.sender_id and b.blocked_id=$1))`, [sub]),
   ])
 
   const matches = await Promise.all(rows.map(async row => {

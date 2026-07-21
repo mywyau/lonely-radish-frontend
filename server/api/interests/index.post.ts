@@ -11,7 +11,9 @@ export default defineEventHandler(async (event) => {
     await client.query('begin')
     await client.query('select pg_advisory_xact_lock(hashtext($1))', [sub])
     const target = await client.query(`select p.user_id,p.display_name from profiles p join users u on u.id=p.user_id
-      where p.slug=$1 and p.user_id<>$2 and p.visibility='active' and u.account_status='active' for update`, [slug,sub])
+      where p.slug=$1 and p.user_id<>$2 and p.visibility='active' and u.account_status='active'
+      and not exists(select 1 from blocks b where
+        (b.blocker_id=$2 and b.blocked_id=p.user_id) or (b.blocker_id=p.user_id and b.blocked_id=$2)) for update`, [slug,sub])
     if (!target.rows[0]) throw createError({ statusCode: 404, statusMessage: 'Profile not found' })
     const recipientId = target.rows[0].user_id
     const existingMatch = await client.query(`select 1 from matches where status='active' and

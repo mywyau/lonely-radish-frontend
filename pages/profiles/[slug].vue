@@ -100,6 +100,7 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
           <p v-if="successMessage" class="mt-3 rounded-lg bg-[#EAF2DE] p-3 text-xs font-semibold text-[#4D2F39]" role="status">{{ successMessage }} <NuxtLink to="/interests/sent" class="text-[#8F1839] underline">View sent interests</NuxtLink></p>
           <p v-if="errorMessage" class="mt-3 text-xs font-semibold text-[#8F1839]" role="alert">{{ errorMessage }}</p>
           <p class="mt-3 flex items-start gap-2 text-xs leading-5 text-[#6E4D58]"><ShieldCheck class="mt-0.5 size-3.5 shrink-0" />Only share contact details when you feel comfortable. Meet in a public place first.</p>
+          <ProfileSafetyActions :profile-slug="profileSlug" :profile-name="profile.name" />
         </aside>
       </div>
 
