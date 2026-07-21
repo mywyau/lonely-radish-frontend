@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useMeStateV2 } from '@/composables/useMeStateV2'
-import { HeartHandshake, House, Menu, ShieldCheck, Sparkles, X } from '@lucide/vue'
+import { Bell, HeartHandshake, History, House, Menu, Send, ShieldCheck, Sparkles, X } from '@lucide/vue'
 import { login, logout, signup } from '@/composables/useAuth'
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 
@@ -12,6 +12,7 @@ const route = useRoute()
 
 const menuOpen = ref(false)
 const navOpen = ref(false)
+const unreadCount = ref(0)
 const menuRoot = ref<HTMLElement | null>(null)
 
 const navLinks = computed(() => {
@@ -19,6 +20,9 @@ const navLinks = computed(() => {
     { to: '/', label: 'Home', icon: House },
     { to: '/activities', label: 'Discover date ideas', icon: Sparkles },
     { to: '/matches', label: 'Matches & plans', icon: HeartHandshake },
+    { to: '/matches/past', label: 'Past connections', icon: History },
+    { to: '/interests/sent', label: 'Sent interests', icon: Send },
+    { to: '/notifications', label: unreadCount.value ? `Notifications (${unreadCount.value})` : 'Notifications', icon: Bell },
     { to: '/content-not-available', label: 'Safety', icon: ShieldCheck },
   ]
 
@@ -55,9 +59,12 @@ function onDocumentKeydown(e: KeyboardEvent) {
   closeNav()
 }
 
-onMounted(() => {
+onMounted(async () => {
   loadProfile()
-  resolve()
+  await resolve()
+  if (isLoggedIn.value) {
+    try { unreadCount.value = (await $fetch<{ unreadCount: number }>('/api/notifications')).unreadCount } catch { /* Navigation remains usable. */ }
+  }
   document.addEventListener('click', onDocumentClick)
   document.addEventListener('keydown', onDocumentKeydown)
 })

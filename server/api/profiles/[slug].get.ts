@@ -8,7 +8,10 @@ export default defineEventHandler(async (event) => {
   const viewer = await requireUser(event)
   const slug = getRouterParam(event, 'slug')
   const { rows } = await db.query(`select p.user_id as "userId",p.slug,p.display_name as name,
-    extract(year from age(current_date,p.date_of_birth))::int as age,p.pronouns,p.bio,p.neighbourhood as place
+    extract(year from age(current_date,p.date_of_birth))::int as age,p.pronouns,p.bio,p.neighbourhood as place,
+    exists(select 1 from matches m where m.status='active' and
+      ((m.user_one_id=$2 and m.user_two_id=p.user_id) or (m.user_two_id=$2 and m.user_one_id=p.user_id))) as "isMatched",
+    exists(select 1 from daily_interests di where di.sender_id=$2 and di.recipient_id=p.user_id) as "interestSent"
     from profiles p join users u on u.id=p.user_id
     where p.slug=$1 and p.visibility='active' and u.account_status='active'
       and p.user_id<>$2 and not exists(select 1 from blocks b where

@@ -27,6 +27,7 @@ See `docs/supabase-storage.md` for the private bucket and signed-upload setup.
 - `availability`: short, ordered availability labels.
 - `daily_interests`: one outgoing expression of interest per sender per local calendar day.
 - `matches`: one canonical row for a pair after mutual interest.
+- `notifications`: private match-ending and post-date outcome notices.
 - `date_proposals` and `proposal_times`: structured date coordination without requiring open-ended chat.
 - `blocks` and `reports`: safety records.
 - `entitlements`, `billing_subscriptions`, and `stripe_events`: subscription state and webhook idempotency.
@@ -47,3 +48,12 @@ Keep `DATABASE_URL` out of client runtime configuration and never prefix it with
 - `20260720_product_schema.sql`: profiles, preferences, discovery, matching, planning, and safety.
 - `20260720_seed_activities.sql`: initial activity catalogue.
 - `20260721_add_onboarding_state.sql`: first-login onboarding completion state.
+- `20260721_add_confirmed_proposal_time.sql`: the selected time and confirmation state for accepted date proposals.
+- `20260721_add_structured_availability.sql`: weekday and start/end time windows used during date planning.
+- `20260721_add_date_follow_ups.sql`: private post-date meet-again choices and mutually revealed notes.
+- `20260721_add_match_notifications.sql`: persistent notifications when a match or post-date connection closes.
+- `20260722_allow_follow_up_reconsideration.sql`: answer reveal and one-time no-to-yes reconsideration support.
+- `20260722_enforce_five_active_matches.sql`: concurrency-safe five-person active match limit.
+- `20260723_add_notification_center.sql`: actionable match, planning, and post-date notification types.
+- `20260723_prevent_duplicate_interests.sql`: one permanent outgoing interest per pair.
+- `20260723_add_match_end_history.sql`: match-ending actor, reason, timestamp, and past-connections history support.

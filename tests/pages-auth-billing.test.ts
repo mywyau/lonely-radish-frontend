@@ -70,6 +70,7 @@ describe("auth and billing page contracts", () => {
     expect(preferences).not.toContain('preferences.neighbourhood');
     expect(preferences).toContain('to="/preferences/activities"');
     expect(preferences).toContain('to="/preferences/dating"');
+    expect(preferences).toContain('to="/preferences/schedule"');
     expect(activityPreferences).toContain("title: 'Activity Interests · Lonely Radish'");
     expect(activityPreferences).toContain("Add your own activity");
     expect(activityPreferences).toContain("const selectionLimit = 10");

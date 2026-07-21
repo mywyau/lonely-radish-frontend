@@ -7,7 +7,8 @@ describe('daily interest allowance', () => {
     const source = readFileSync(resolve(process.cwd(), 'composables/useDailyInterest.ts'), 'utf8')
 
     expect(source).toContain("const storageKey = 'lonely-radish-daily-interest'")
-    expect(source).toContain('hasUsedDailyInterest.value) return false')
+    expect(source).toContain('hasUsedDailyInterest.value || atMatchLimit.value) return false')
+    expect(source).toContain('activeMatchCount.value >= 5')
     expect(source).toContain('date: localDateKey()')
     expect(source).toContain('window.localStorage.setItem')
   })

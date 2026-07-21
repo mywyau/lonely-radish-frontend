@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { CalendarDays, ChevronRight, Heart, MapPin, ShieldCheck, Sparkles, UsersRound } from '@lucide/vue'
+import { CalendarClock, ChevronRight, Heart, MapPin, Sparkles } from '@lucide/vue'
 
 definePageMeta({ title: 'Match Preferences · Lonely Radish', middleware: 'logged-in' })
 
@@ -11,13 +11,7 @@ const preferences = reactive({
   publicOnly: true,
   smallerMatchPool: true,
 })
-const timingOptions = ['Weekday evenings', 'Friday night', 'Weekend mornings', 'Weekend afternoons']
 const saved = ref(false)
-
-function toggleTiming(value: string) {
-  const index = preferences.timing.indexOf(value)
-  index >= 0 ? preferences.timing.splice(index, 1) : preferences.timing.push(value)
-}
 
 async function savePreferences() {
   await $fetch('/api/preferences/general', { method: 'PUT', body: preferences })
@@ -51,6 +45,12 @@ onMounted(async () => {
           <h2 class="mt-5 text-xl font-semibold">Dating preferences</h2>
           <p class="mt-2 text-sm leading-6 text-[#6E4D58]">Set sexual, racial, and ethnic preferences, or keep your matching pool open.</p>
         </NuxtLink>
+
+        <NuxtLink to="/preferences/schedule" class="group rounded-lg bg-[#F3E8DA] p-6 shadow-[0_10px_24px_rgba(180,35,74,0.08)] transition hover:-translate-y-0.5 sm:col-span-2">
+          <div class="flex items-center justify-between"><CalendarClock class="size-6 text-[#B4234A]" /><ChevronRight class="size-5 transition group-hover:translate-x-1" /></div>
+          <h2 class="mt-5 text-xl font-semibold">Timing and safety</h2>
+          <p class="mt-2 text-sm leading-6 text-[#6E4D58]">Set the days and time ranges when you are usually free, and keep first meetings in public places.</p>
+        </NuxtLink>
       </div>
 
       <form class="mt-8 space-y-5" @submit.prevent="savePreferences">
@@ -80,14 +80,6 @@ onMounted(async () => {
           </div>
         </section>
 
-        <section class="rounded-lg bg-white p-6 shadow-[0_12px_28px_rgba(180,35,74,0.08)]">
-          <div class="flex items-start gap-3"><CalendarDays class="mt-1 size-5 text-[#B4234A]" /><div><h2 class="text-xl font-semibold">Timing and safety</h2><p class="mt-1 text-sm text-[#6E4D58]">Control when and how you would like to meet.</p></div></div>
-          <div class="mt-5 flex flex-wrap gap-2"><button v-for="option in timingOptions" :key="option" type="button" class="rounded-full px-3 py-2 text-sm font-semibold" :class="preferences.timing.includes(option) ? 'bg-[#6E8B52] text-white' : 'bg-[#F3E8DA] text-[#4D2F39]'" @click="toggleTiming(option)">{{ option }}</button></div>
-          <div class="mt-6 grid gap-3">
-            <label class="option-row"><span class="inline-flex items-center gap-2"><ShieldCheck class="size-4 text-[#6E8B52]" />Public places only</span><input v-model="preferences.publicOnly" type="checkbox"></label>
-            <!-- <label class="option-row"><span class="inline-flex items-center gap-2"><UsersRound class="size-4 text-[#6E8B52]" />Show a smaller, more relevant match pool</span><input v-model="preferences.smallerMatchPool" type="checkbox"></label> -->
-          </div>
-        </section>
         <div class="flex flex-col items-start gap-3 sm:flex-row sm:items-center"><button type="submit" :disabled="preferences.minimumAge > preferences.maximumAge" class="w-full rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto">Save preferences</button><span v-if="saved" class="text-sm font-semibold text-[#6E8B52]">Preferences saved.</span></div>
       </form>
     </section>
@@ -100,5 +92,4 @@ onMounted(async () => {
 .field-with-suffix { position: relative; display: block; }
 .field-with-suffix__input { padding-right: 3rem; }
 .field-with-suffix__label { position: absolute; right: .85rem; top: 50%; transform: translateY(-38%); color: #6E4D58; font-size: .875rem; font-weight: 600; pointer-events: none; }
-.option-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; border-radius: .5rem; background: #FBF7F1; padding: .75rem 1rem; font-size: .875rem; font-weight: 500; }
 </style>

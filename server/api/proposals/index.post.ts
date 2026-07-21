@@ -22,6 +22,8 @@ export default defineEventHandler(async (event) => {
       values($1,$2,$3,$4,$5,$6) returning id,status,created_at as "createdAt"`,
       [match.rows[0].id,sub,match.rows[0].user_id,activity,inviteNote,venue])
     for (const [index,time] of times.entries()) await client.query('insert into proposal_times(proposal_id,proposed_at,position) values($1,$2,$3)', [proposal.rows[0].id,time.toISOString(),index+1])
+    await client.query(`insert into notifications(recipient_id,actor_id,match_id,proposal_id,kind)
+      values($1,$2,$3,$4,'proposal_received')`, [match.rows[0].user_id,sub,match.rows[0].id,proposal.rows[0].id])
     await client.query('commit')
     return { ...proposal.rows[0], activity, inviteNote, venue, times: times.map(value => value.toISOString()) }
   } catch (error) { await client.query('rollback'); throw error } finally { client.release() }

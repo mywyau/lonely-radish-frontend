@@ -12,6 +12,9 @@ const { user, resolve } = useMeStateV2();
 const saved = ref(false);
 const showDeletePanel = ref(false);
 const deleteConfirmInput = ref("");
+const deletingAccount = ref(false);
+const deleteError = ref("");
+const deletionQueued = ref(false);
 
 const fullName = computed(() => `${profile.value.firstName} ${profile.value.lastName}`.trim());
 
@@ -35,6 +38,20 @@ async function saveProfile() {
   window.setTimeout(() => {
     saved.value = false;
   }, 2200);
+}
+
+async function deleteAccount() {
+  if (deleteConfirmInput.value.trim().toLowerCase() !== 'delete' || deletingAccount.value) return;
+  deletingAccount.value = true;
+  deleteError.value = '';
+  try {
+    await $fetch('/api/account/v2', { method: 'DELETE', body: { confirm: deleteConfirmInput.value } });
+    deletionQueued.value = true;
+    window.setTimeout(() => { window.location.assign('/api/auth/logout'); }, 1200);
+  } catch (error: any) {
+    deleteError.value = error?.data?.statusMessage || 'Account deletion could not be started. Please try again.';
+    deletingAccount.value = false;
+  }
 }
 
 onMounted(async () => {
@@ -72,7 +89,7 @@ onMounted(async () => {
             Free prototype access. Premium matching and planning controls are mocked on the upgrade page.
           </p>
           <div class="mt-5 flex flex-col gap-2 min-[400px]:flex-row min-[400px]:flex-wrap">
-            <NuxtLink to="/upgrade" class="inline-flex justify-center rounded-lg bg-white px-4 py-2 text-sm font-semibold text-[#8F1839] transition hover:bg-[#F3E8DA]">View plans</NuxtLink>
+            <NuxtLink to="/upgrade" class="inline-flex justify-center rounded-lg bg-white px-4 py-2 text-sm font-semibold text-[#8F1839] transition hover:bg-[#F3E8DA]">View paid plans</NuxtLink>
             <NuxtLink to="/preferences" class="inline-flex justify-center rounded-lg bg-[#FCE3E8] px-4 py-2 text-sm font-semibold text-[#8F1839] transition hover:bg-[#F7D4DC]">Match preferences</NuxtLink>
             <NuxtLink to="/photos" class="inline-flex justify-center rounded-lg bg-[#F3E8DA] px-4 py-2 text-sm font-semibold text-[#8F1839] transition hover:bg-[#FCE3E8]">Profile photos</NuxtLink>
           </div>
@@ -112,15 +129,11 @@ onMounted(async () => {
               <input v-model="profile.activity" class="field" type="text" placeholder="An activity you enjoy">
             </label>
 
-            <label class="block text-sm font-medium sm:col-span-2">
-              Availability
-              <input v-model="profile.availability" class="field" type="text" placeholder="When are you usually free?">
-            </label>
-
             <div class="flex flex-col items-start gap-2 sm:col-span-2 sm:flex-row sm:items-center">
               <button type="submit" class="rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#8F1839]">
                 Save profile
               </button>
+              <NuxtLink to="/preferences/schedule" class="rounded-lg bg-[#F3E8DA] px-5 py-3 text-sm font-semibold text-[#8F1839]">Edit schedule and safety</NuxtLink>
               <span v-if="saved" class="text-sm font-medium text-[#6E8B52]">Profile saved.</span>
             </div>
           </form>
@@ -138,9 +151,9 @@ onMounted(async () => {
           <div class="flex items-start gap-3">
             <Trash2 class="mt-1 size-5 text-[#8F1839]" aria-hidden="true" />
             <div class="min-w-0 flex-1">
-              <h2 class="text-lg font-semibold">Danger zone preview</h2>
+              <h2 class="text-lg font-semibold">Delete account</h2>
               <p class="mt-2 text-sm text-[#4D2F39]">
-                Account deletion is disabled in prototype mode. This block shows the future flow without touching real data.
+                Permanently delete your profile, photos, preferences, interests, matches, date plans, notifications, subscription, and sign-in account. This cannot be undone.
               </p>
 
               <button
@@ -149,24 +162,28 @@ onMounted(async () => {
                 class="mt-4 rounded-lg bg-white/80 px-4 py-2 text-sm font-semibold text-[#8F1839] transition hover:bg-white"
                 @click="showDeletePanel = true"
               >
-                Show delete
+                Delete my account
               </button>
 
               <div v-else class="mt-4 space-y-3">
                 <input
                   v-model="deleteConfirmInput"
                   class="field"
-                  placeholder="Type delete"
+                  placeholder="Type DELETE to confirm"
+                  autocomplete="off"
                   type="text"
                 >
                 <button
                   type="button"
                   class="rounded-lg bg-[#8F1839] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
-                  :disabled="deleteConfirmInput.trim().toLowerCase() !== 'delete'"
-                  @click="showDeletePanel = false; deleteConfirmInput = ''"
+                  :disabled="deleteConfirmInput.trim().toLowerCase() !== 'delete' || deletingAccount || deletionQueued"
+                  @click="deleteAccount"
                 >
-                  Delete Profile
+                  {{ deletingAccount ? 'Starting deletion…' : deletionQueued ? 'Deletion queued' : 'Permanently delete account' }}
                 </button>
+                <button v-if="!deletionQueued" type="button" class="ml-2 rounded-lg bg-white/80 px-4 py-2 text-sm font-semibold text-[#4D2F39]" :disabled="deletingAccount" @click="showDeletePanel = false; deleteConfirmInput = ''; deleteError = ''">Cancel</button>
+                <p v-if="deletionQueued" class="rounded-lg bg-white/75 p-3 text-sm font-semibold text-[#4D2F39]" role="status">Deletion has started. You are being signed out.</p>
+                <p v-if="deleteError" class="text-sm font-semibold text-[#8F1839]" role="alert">{{ deleteError }}</p>
               </div>
             </div>
           </div>

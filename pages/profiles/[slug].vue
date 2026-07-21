@@ -4,7 +4,7 @@ import { CalendarDays, HeartHandshake, MapPin, ShieldCheck, Sparkles, UserRound 
 definePageMeta({ middleware: 'logged-in' })
 
 const route = useRoute()
-const { todaysInterest, hasUsedDailyInterest, errorMessage, loadInterest, showInterest, isTodaysChoice } = useDailyInterest()
+const { todaysInterest, hasUsedDailyInterest, atMatchLimit, errorMessage, successMessage, sending, loadInterest, showInterest, isTodaysChoice } = useDailyInterest()
 
 const profiles = {
   maya: {
@@ -18,6 +18,7 @@ const profiles = {
   },
   nina: {
     name: 'Nina', age: 29, pronouns: 'she/her', place: 'Hackney', distance: '3 km away',
+    isMatched: true,
     bio: 'I work in community radio and spend a lot of my free time looking for films, food, and corners of London I have not seen before. I appreciate thoughtful people, silly observations, and plans that leave room for a spontaneous second stop.',
     activities: ['Indie films', 'City walks', 'Casual food spots', 'Comedy nights', 'Markets'],
     interests: ['Community radio', 'Photography', 'Podcasts', 'Trying new recipes'],
@@ -66,9 +67,13 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
           <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1"><h1 class="text-3xl font-semibold">{{ profile.name }}, {{ profile.age }}</h1><span class="text-sm text-[#6E4D58]">{{ profile.pronouns }}</span></div>
           <p v-if="profile.place || profile.distance" class="mt-2 inline-flex items-center gap-1 text-sm text-[#6E4D58]"><MapPin class="size-4" /><span>{{ [profile.place, profile.distance].filter(Boolean).join(' · ') }}</span></p>
           <div v-if="profile.matchReason" class="mt-5 rounded-lg bg-[#EAF2DE] p-4"><p class="inline-flex items-center gap-2 text-sm font-semibold"><Sparkles class="size-4 text-[#6E8B52]" />Strong activity overlap</p><p class="mt-1 text-xs leading-5 text-[#4D2F39]">{{ profile.matchReason }}</p></div>
-          <button type="button" :disabled="hasUsedDailyInterest" class="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#8F1839] disabled:cursor-not-allowed disabled:bg-[#D7A7B3]" @click="showInterest(profileSlug, profile.name)"><HeartHandshake class="size-4" />{{ isTodaysChoice(profileSlug) ? `Interest sent to ${profile.name}` : 'Show interest' }}</button>
-          <p v-if="hasUsedDailyInterest" class="mt-3 rounded-lg bg-[#FCE3E8] p-3 text-xs leading-5 text-[#6E4D58]" role="status"><template v-if="isTodaysChoice(profileSlug)">You chose {{ profile.name }} today.</template><template v-else>You have already shown interest in {{ todaysInterest?.profileName }} today.</template> You can send someone interest again tomorrow.</p>
+          <button type="button" :disabled="sending || profile.isMatched || profile.interestSent || atMatchLimit || hasUsedDailyInterest" class="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#8F1839] disabled:cursor-not-allowed disabled:bg-[#D7A7B3]" @click="showInterest(profileSlug, profile.name)"><HeartHandshake class="size-4" />{{ sending ? 'Sending…' : profile.isMatched ? `Already matched with ${profile.name}` : profile.interestSent ? 'Interest already sent' : atMatchLimit ? '5-match limit reached' : isTodaysChoice(profileSlug) ? `Interest sent to ${profile.name}` : 'Show interest' }}</button>
+          <p v-if="profile.isMatched" class="mt-3 rounded-lg bg-[#EAF2DE] p-3 text-xs leading-5 text-[#4D2F39]" role="status">You and {{ profile.name }} have already matched. You can continue from Matches & plans.</p>
+          <p v-else-if="profile.interestSent" class="mt-3 rounded-lg bg-[#F3E8DA] p-3 text-xs leading-5 text-[#4D2F39]" role="status">You have already shown interest in {{ profile.name }}. You cannot send it again.</p>
+          <p v-else-if="atMatchLimit" class="mt-3 rounded-lg bg-[#FFF1C7] p-3 text-xs leading-5 text-[#694C00]" role="status">You already have five active matches. Complete or remove one before matching with someone new.</p>
+          <p v-else-if="hasUsedDailyInterest" class="mt-3 rounded-lg bg-[#FCE3E8] p-3 text-xs leading-5 text-[#6E4D58]" role="status"><template v-if="isTodaysChoice(profileSlug)">You chose {{ profile.name }} today.</template><template v-else>You have already shown interest in {{ todaysInterest?.profileName }} today.</template> You can send someone interest again tomorrow.</p>
           <p v-else class="mt-3 text-xs leading-5 text-[#6E4D58]">Choose thoughtfully — you can show interest in one person each day.</p>
+          <p v-if="successMessage" class="mt-3 rounded-lg bg-[#EAF2DE] p-3 text-xs font-semibold text-[#4D2F39]" role="status">{{ successMessage }} <NuxtLink to="/interests/sent" class="text-[#8F1839] underline">View sent interests</NuxtLink></p>
           <p v-if="errorMessage" class="mt-3 text-xs font-semibold text-[#8F1839]" role="alert">{{ errorMessage }}</p>
           <p class="mt-3 flex items-start gap-2 text-xs leading-5 text-[#6E4D58]"><ShieldCheck class="mt-0.5 size-3.5 shrink-0" />Only share contact details when you feel comfortable. Meet in a public place first.</p>
         </aside>

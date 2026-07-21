@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Camera, ImagePlus, ShieldCheck, Star, Trash2, UploadCloud } from '@lucide/vue'
+import { Camera, ChevronLeft, ChevronRight, GripVertical, ImagePlus, ShieldCheck, Star, Trash2, UploadCloud } from '@lucide/vue'
 import { createClient } from '@supabase/supabase-js'
 
 definePageMeta({
@@ -19,8 +19,10 @@ const fileInput = ref<HTMLInputElement | null>(null)
 const photos = ref<PhotoPreview[]>([])
 const primaryPhotoId = ref<string | null>(null)
 const saved = ref(false)
+const orderChanged = ref(false)
 const uploading = ref(false)
 const errorMessage = ref('')
+const draggingPhotoId = ref<string | null>(null)
 const config = useRuntimeConfig()
 const route = useRoute()
 
@@ -70,21 +72,42 @@ async function removePhoto(photo: PhotoPreview) {
   if (primaryPhotoId.value === photo.id) {
     primaryPhotoId.value = photos.value[0]?.id ?? null
   }
+  orderChanged.value = photos.value.length > 0
+}
+
+function movePhoto(fromIndex: number, toIndex: number) {
+  if (fromIndex < 0 || toIndex < 0 || fromIndex >= photos.value.length || toIndex >= photos.value.length || fromIndex === toIndex) return
+  const [photo] = photos.value.splice(fromIndex, 1)
+  photos.value.splice(toIndex, 0, photo)
+  primaryPhotoId.value = photos.value[0]?.id ?? null
+  orderChanged.value = true
+  saved.value = false
 }
 
 function makePrimary(id: string) {
-  const index = photos.value.findIndex(photo => photo.id === id)
-  if (index > 0) photos.value.unshift(...photos.value.splice(index, 1))
-  primaryPhotoId.value = id
+  movePhoto(photos.value.findIndex(photo => photo.id === id), 0)
+}
+
+function startDragging(id: string, event: DragEvent) {
+  draggingPhotoId.value = id
+  event.dataTransfer?.setData('text/plain', id)
+  if (event.dataTransfer) event.dataTransfer.effectAllowed = 'move'
+}
+
+function dropPhoto(targetIndex: number, event: DragEvent) {
+  const id = draggingPhotoId.value || event.dataTransfer?.getData('text/plain')
+  movePhoto(photos.value.findIndex(photo => photo.id === id), targetIndex)
+  draggingPhotoId.value = null
 }
 
 async function savePhotos() {
   errorMessage.value = ''
-  await $fetch('/api/profile/photos', { method: 'PUT', body: { photoIds: photos.value.map(photo => photo.id) } })
-  saved.value = true
-  window.setTimeout(() => {
-    saved.value = false
-  }, 2200)
+  try {
+    await $fetch('/api/profile/photos', { method: 'PUT', body: { photoIds: photos.value.map(photo => photo.id) } })
+    orderChanged.value = false
+    saved.value = true
+    window.setTimeout(() => { saved.value = false }, 2200)
+  } catch (error: any) { errorMessage.value = error?.data?.statusMessage || 'The photo order could not be saved.' }
 }
 
 onMounted(async () => {
@@ -133,6 +156,7 @@ onMounted(async () => {
                 <p class="mt-1 text-sm text-[#6E4D58]">
                   Choose up to six JPEG, PNG, or WebP images, up to 5 MB each.
                 </p>
+                <p class="mt-1 text-xs text-[#8A6A74]">Drag photos into place, or use Earlier and Later. Photo 1 is shown first on your profile.</p>
               </div>
             </div>
 
@@ -168,12 +192,22 @@ onMounted(async () => {
 
         <section class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <article
-            v-for="photo in photos"
+            v-for="(photo, index) in photos"
             :key="photo.id"
-            class="overflow-hidden rounded-lg bg-white shadow-[0_10px_24px_rgba(180,35,74,0.08)]"
+            draggable="true"
+            class="overflow-hidden rounded-lg bg-white shadow-[0_10px_24px_rgba(180,35,74,0.08)] transition"
+            :class="draggingPhotoId === photo.id && 'opacity-50 ring-2 ring-[#B4234A]'"
+            @dragstart="startDragging(photo.id, $event)"
+            @dragend="draggingPhotoId = null"
+            @dragover.prevent
+            @drop.prevent="dropPhoto(index, $event)"
           >
-            <div class="aspect-[4/5] bg-[#F3E8DA]">
+            <div class="relative aspect-[4/5] bg-[#F3E8DA]">
               <img :alt="photo.name" :src="photo.url" class="h-full w-full object-cover">
+              <span class="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-[#2A1520]/90 px-3 py-1.5 text-xs font-bold text-white shadow">
+                <Star v-if="index === 0" class="size-3" aria-hidden="true" />{{ index === 0 ? '1 · Primary' : `Photo ${index + 1}` }}
+              </span>
+              <span class="absolute right-3 top-3 rounded-full bg-white/90 p-2 text-[#4D2F39] shadow" title="Drag to rearrange"><GripVertical class="size-4" aria-hidden="true" /></span>
             </div>
 
             <div class="space-y-3 p-4">
@@ -182,19 +216,22 @@ onMounted(async () => {
                   {{ photo.name }}
                 </p>
                 <p class="mt-1 text-xs text-[#6E4D58]">
-                  {{ photo.size ? `${Math.round(photo.size / 1024)} KB` : `Photo ${photos.indexOf(photo) + 1}` }}
+                  Display position {{ index + 1 }}
                 </p>
               </div>
 
               <div class="flex flex-wrap gap-2">
+                <button type="button" :disabled="index === 0" class="order-button" :aria-label="`Move ${photo.name} earlier`" @click="movePhoto(index, index - 1)"><ChevronLeft class="size-3.5" />Earlier</button>
+                <button type="button" :disabled="index === photos.length - 1" class="order-button" :aria-label="`Move ${photo.name} later`" @click="movePhoto(index, index + 1)">Later<ChevronRight class="size-3.5" /></button>
                 <button
                   type="button"
                   class="inline-flex items-center gap-1 rounded-lg px-3 py-2 text-xs font-semibold transition"
-                  :class="primaryPhotoId === photo.id ? 'bg-[#B4234A] text-white' : 'bg-[#F3E8DA] text-[#8F1839] hover:bg-[#FCE3E8]'"
+                  :disabled="index === 0"
+                  :class="index === 0 ? 'bg-[#B4234A] text-white' : 'bg-[#F3E8DA] text-[#8F1839] hover:bg-[#FCE3E8]'"
                   @click="makePrimary(photo.id)"
                 >
                   <Star class="size-3.5" aria-hidden="true" />
-                  {{ primaryPhotoId === photo.id ? 'Primary' : 'Make primary' }}
+                  {{ index === 0 ? 'Primary' : 'Make primary' }}
                 </button>
 
                 <button
@@ -224,11 +261,11 @@ onMounted(async () => {
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
           <button
             type="button"
-            class="rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#8F1839]"
-            :disabled="uploading"
+            class="rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#8F1839] disabled:cursor-not-allowed disabled:opacity-50"
+            :disabled="uploading || !orderChanged"
             @click="savePhotos"
           >
-            Save photo order
+            {{ orderChanged ? 'Save photo order' : 'Photo order saved' }}
           </button>
           <NuxtLink :to="route.query.onboarding === '1' ? '/onboarding' : '/account/v2'" class="rounded-lg bg-[#F3E8DA] px-5 py-3 text-sm font-semibold text-[#8F1839] transition hover:bg-[#FCE3E8]">
             {{ route.query.onboarding === '1' ? 'Return to onboarding' : 'Back to account' }}
@@ -240,3 +277,8 @@ onMounted(async () => {
     </section>
   </main>
 </template>
+
+<style scoped>
+.order-button { display: inline-flex; align-items: center; gap: .2rem; border-radius: .5rem; background: #F3E8DA; padding: .5rem .65rem; color: #8F1839; font-size: .75rem; font-weight: 650; }
+.order-button:disabled { cursor: not-allowed; opacity: .35; }
+</style>
