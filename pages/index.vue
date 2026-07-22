@@ -69,7 +69,7 @@ const dateFlow = [
   {
     kicker: 'New match',
     title: 'You and Maya matched',
-    description: 'You both chose gallery walks.',
+    description: 'You both like gallery walks.',
     detail: 'Gallery walks · 2 km away',
     action: 'Start planning',
     icon: HeartHandshake,
@@ -77,7 +77,7 @@ const dateFlow = [
   {
     kicker: 'Date proposal',
     title: 'Gallery walk',
-    description: 'Choose a time and public venue. Suggest a small change if needed.',
+    description: 'Choose a time and send details for a public venue. Suggest a small change if needed.',
     detail: 'Sat, 2:00 pm · Barbican Centre',
     action: 'Review plan',
     icon: CalendarDays,
