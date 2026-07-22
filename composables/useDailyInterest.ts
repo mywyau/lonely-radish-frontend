@@ -14,6 +14,10 @@ function localDateKey(date = new Date()) {
   return `${year}-${month}-${day}`
 }
 
+function normaliseInterest(interest: DailyInterest): DailyInterest {
+  return { ...interest, date: String(interest.date).slice(0, 10) }
+}
+
 export function useDailyInterest() {
   const interests = useState<DailyInterest[]>('daily-interests', () => [])
   const loaded = useState<boolean>('daily-interest-loaded', () => false)
@@ -34,7 +38,7 @@ export function useDailyInterest() {
 
     try {
       const response = await $fetch<{ interests: DailyInterest[]; activeMatchCount: number }>('/api/interests/today')
-      interests.value = response.interests
+      interests.value = response.interests.map(normaliseInterest)
       activeMatchCount.value = response.activeMatchCount
       return
     } catch {
@@ -44,10 +48,11 @@ export function useDailyInterest() {
     if (!stored) return
 
     try {
-      const parsed = JSON.parse(stored) as Partial<DailyInterest>
-      if (typeof parsed.profileSlug === 'string' && typeof parsed.profileName === 'string' && typeof parsed.date === 'string') {
-        interests.value = [parsed as DailyInterest]
-      }
+      const parsed = JSON.parse(stored) as Partial<DailyInterest> | Partial<DailyInterest>[]
+      const savedInterests = Array.isArray(parsed) ? parsed : [parsed]
+      interests.value = savedInterests.filter((interest): interest is DailyInterest =>
+        typeof interest.profileSlug === 'string' && typeof interest.profileName === 'string' && typeof interest.date === 'string'
+      ).map(normaliseInterest)
     } catch {
       window.localStorage.removeItem(storageKey)
     }
@@ -63,7 +68,7 @@ export function useDailyInterest() {
     sending.value = true
     try {
       const response = await $fetch<{ interest: DailyInterest; matched?: boolean }>('/api/interests', { method: 'POST', body: { profileSlug } })
-      interests.value.push(response.interest)
+      interests.value.push(normaliseInterest(response.interest))
       if (response.matched) activeMatchCount.value += 1
     } catch (error) {
       const failure = error as { statusCode?: number; response?: { status?: number }; data?: { statusCode?: number; statusMessage?: string } }
@@ -83,7 +88,7 @@ export function useDailyInterest() {
     } finally {
       sending.value = false
     }
-    window.localStorage.setItem(storageKey, JSON.stringify(interests.value.at(-1)))
+    window.localStorage.setItem(storageKey, JSON.stringify(todaysInterests.value))
     successMessage.value = `Interest sent to ${profileName}. You can review it in Sent interests.`
     return true
   }

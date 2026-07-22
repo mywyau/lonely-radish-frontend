@@ -32,7 +32,7 @@ export default defineEventHandler(async (event) => {
     if ((allowance.rows[0]?.count || 0) >= 5) throw createError({ statusCode: 409, statusMessage: 'You have reached today’s limit of 5 interests' })
     const inserted = await client.query(`insert into daily_interests(sender_id,recipient_id,sender_day)
       select $1,$2,(now() at time zone coalesce(timezone,'UTC'))::date from users where id=$1
-      returning sender_day as date`, [sub,recipientId])
+      returning sender_day::text as date`, [sub,recipientId])
     const reverse = await client.query('select 1 from daily_interests where sender_id=$1 and recipient_id=$2 limit 1', [recipientId,sub])
     let matched = false
     if (reverse.rows[0]) {
