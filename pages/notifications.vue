@@ -3,7 +3,7 @@ import { Bell, CalendarCheck, CheckCheck, HeartHandshake, Inbox, Trash2 } from '
 
 definePageMeta({ title: 'Notifications · Lonely Radish', middleware: 'logged-in' })
 
-type Notice = { id: string; kind: string; actorName?: string; proposalId?: string; createdAt: string; readAt?: string }
+type Notice = { id: string; kind: string; actorName?: string; proposalId?: string; message?: string; createdAt: string; readAt?: string }
 const notices = ref<Notice[]>([])
 const unreadCount = ref(0)
 const loading = ref(true)
@@ -17,10 +17,12 @@ const copy: Record<string, (notice: Notice) => string> = {
   proposal_declined: n => `${n.actorName || 'Your match'} declined the proposed date plan.`,
   follow_up_ready: n => `${n.actorName || 'Your date'} completed their post-date check-in.`,
   match_ended: n => `${n.actorName || 'Your match'} ended the match.`,
+  match_apology: n => `${n.actorName || 'A past connection'} sent you an apology note: “${n.message || ''}”`,
   date_follow_up_closed: () => 'Your post-date answers were different and the connection closed.',
   date_follow_up_changed: n => `${n.actorName || 'Your date'} changed their answer and would like to meet again.`,
 }
 function destination(notice: Notice) {
+  if (notice.kind === 'match_apology') return '/matches/past'
   return notice.proposalId && ['follow_up_ready','date_follow_up_closed','date_follow_up_changed'].includes(notice.kind)
     ? `/dates/${notice.proposalId}/follow-up` : '/matches'
 }

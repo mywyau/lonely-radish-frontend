@@ -7,8 +7,10 @@ export default defineEventHandler(async (event) => {
   const { sub } = await requireUser(event)
   const includeRead = getQuery(event).includeRead === 'true'
   const { rows } = await db.query(`select n.id,n.kind,n.created_at as "createdAt",p.display_name as "actorName",
+    apology.message,
     coalesce(n.proposal_id,proposal.id) as "proposalId",n.read_at as "readAt"
     from notifications n left join profiles p on p.user_id=n.actor_id
+    left join match_apology_notes apology on apology.match_id=n.match_id and apology.sender_id=n.actor_id
     left join lateral (select dp.id from date_proposals dp where dp.match_id=n.match_id
       and dp.status='accepted' order by dp.created_at desc limit 1) proposal on true
     where n.recipient_id=$1 and ($2::boolean or n.read_at is null) order by n.created_at desc limit 50`, [sub,includeRead])

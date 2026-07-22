@@ -14,6 +14,7 @@ describe('match-only contact details', () => {
   it('only returns opted-in contact details to active matches', () => {
     const api = read('server/api/profiles/[slug].get.ts')
     expect(api).toContain('profile.isMatched')
+    expect(api).toContain('profile.isMatched\n      ? db.query')
     expect(api).toContain('share_with_matches=true')
     expect(api).toContain('contactDetails: contactDetails.rows[0] ?? null')
   })

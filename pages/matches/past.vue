@@ -2,13 +2,25 @@
 import { CalendarClock, History, UserRound, XCircle } from '@lucide/vue'
 
 definePageMeta({ title: 'Past connections · Lonely Radish', middleware: 'logged-in' })
-type Connection = { id: string; name: string; slug: string; photoUrl?: string; endedReason?: 'removed' | 'post_date'; endedAt?: string; endedByMe?: boolean; activity?: string; proposalId?: string; canReconsider?: boolean; canViewProfile?: boolean }
+type Connection = { id: string; name: string; slug: string; photoUrl?: string; endedReason?: 'removed' | 'post_date'; endedAt?: string; endedByMe?: boolean; activity?: string; proposalId?: string; canReconsider?: boolean; canViewProfile?: boolean; apologySent?: boolean }
 const connections = ref<Connection[]>([])
 const loading = ref(true)
 const errorMessage = ref('')
+const apologyFor = ref<string | null>(null)
+const apologyMessage = ref('')
+const apologySending = ref(false)
 function outcome(connection: Connection) {
   if (connection.endedReason === 'post_date') return 'Closed after your post-date check-in'
   return connection.endedByMe ? 'You ended this match' : 'The other person ended this match'
+}
+async function sendApology(connection: Connection) {
+  if (!apologyMessage.value.trim()) return
+  apologySending.value = true; errorMessage.value = ''
+  try {
+    await $fetch(`/api/matches/${connection.id}/apology`, { method: 'POST', body: { message: apologyMessage.value } })
+    connection.apologySent = true; apologyFor.value = null; apologyMessage.value = ''
+  } catch (error: any) { errorMessage.value = error?.data?.statusMessage || 'Your apology could not be sent.' }
+  finally { apologySending.value = false }
 }
 onMounted(async () => {
   try {
@@ -46,8 +58,11 @@ onMounted(async () => {
           <div class="mt-4 flex flex-wrap gap-2">
             <NuxtLink v-if="connection.canViewProfile" :to="`/profiles/${connection.slug}`" class="rounded-lg bg-[#F3E8DA] px-4 py-2.5 text-sm font-semibold text-[#8F1839]">View profile</NuxtLink>
             <NuxtLink v-if="connection.canReconsider && connection.proposalId" :to="`/dates/${connection.proposalId}/follow-up`" class="rounded-lg bg-[#B4234A] px-4 py-2.5 text-sm font-semibold text-white">Review your answer</NuxtLink>
+            <button v-if="connection.endedByMe && !connection.apologySent" type="button" class="rounded-lg bg-[#FCE3E8] px-4 py-2.5 text-sm font-semibold text-[#8F1839]" @click="apologyFor = connection.id; apologyMessage = ''">Send an apology</button>
+            <span v-else-if="connection.apologySent" class="rounded-lg bg-[#EAF2DE] px-4 py-2.5 text-sm font-semibold text-[#4D2F39]">Apology sent</span>
             <p v-if="!connection.canViewProfile" class="text-xs leading-5 text-[#6E4D58]">Their profile is no longer available from this connection.</p>
           </div>
+          <form v-if="apologyFor === connection.id" class="mt-4 rounded-lg bg-[#FBF7F1] p-4" @submit.prevent="sendApology(connection)"><label class="text-sm font-semibold">Private apology note <span class="font-normal text-[#6E4D58]">(sent once)</span><textarea v-model="apologyMessage" maxlength="500" rows="3" class="mt-2 w-full rounded-lg border border-[#D8C8B6] bg-white p-3 font-normal" placeholder="Keep it brief, respectful, and without pressure." /></label><div class="mt-3 flex gap-2"><button type="submit" :disabled="apologySending || !apologyMessage.trim()" class="rounded-lg bg-[#8F1839] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">{{ apologySending ? 'Sending…' : 'Send privately' }}</button><button type="button" class="px-3 py-2 text-sm font-semibold text-[#6E4D58]" @click="apologyFor = null">Cancel</button></div></form>
         </article>
       </div>
       <div v-else class="mt-8 rounded-lg bg-white p-8 text-center"><History class="mx-auto size-8 text-[#B4234A]" /><h2 class="mt-3 text-xl font-semibold">No past connections.</h2><p class="mt-2 text-sm text-[#6E4D58]">Matches that end will appear here.</p></div>

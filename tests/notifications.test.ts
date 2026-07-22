@@ -23,6 +23,8 @@ describe('notification centre', () => {
     expect(read('server/api/proposals/[id].put.ts')).toContain("'proposal_updated'")
     expect(read('server/api/proposals/[id]/respond.post.ts')).toContain("'date_confirmed'")
     expect(read('server/api/dates/[id]/follow-up.post.ts')).toContain("'follow_up_ready'")
+    expect(read('server/api/matches/[id]/apology.post.ts')).toContain("'match_apology'")
+    expect(read('pages/notifications.vue')).toContain('sent you an apology note')
   })
 
   it('only deletes notifications owned by the signed-in recipient', () => {

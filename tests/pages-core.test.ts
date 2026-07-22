@@ -62,6 +62,7 @@ describe('core page contracts', () => {
     expect(profile).toContain("pronouns: 'they/them'")
     expect(profile).toContain("'Show interest'")
     expect(profile).toContain('Already matched with ${profile.name}')
+    expect(profile).toContain('Unmatched from ${profile.name}')
     expect(profile).toContain('useDailyInterest()')
     expect(activityMatches).toContain('useDailyInterest()')
     expect(matches).toContain("title: 'Matches & Plans · Lonely Radish'")

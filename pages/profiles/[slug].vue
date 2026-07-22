@@ -6,7 +6,7 @@ definePageMeta({ middleware: 'logged-in' })
 const route = useRoute()
 const { todaysInterests, dailyInterestLimit, hasUsedDailyInterest, atMatchLimit, errorMessage, successMessage, sending, loadInterest, showInterest, isTodaysChoice } = useDailyInterest()
 
-const profiles = {
+const profiles: Record<string, any> = {
   maya: {
     isDemo: true,
     name: 'Maya', age: 31, pronouns: 'she/her', place: 'Shoreditch', distance: '2 km away',
@@ -44,6 +44,9 @@ const profiles = {
 const databaseProfile = ref<any>(null)
 const profileLoaded = ref(false)
 const profileLoadError = ref('')
+const apologyMessage = ref('')
+const apologySending = ref(false)
+const apologyError = ref('')
 const profile = computed(() => databaseProfile.value || profiles[route.params.slug as keyof typeof profiles])
 const profileSlug = computed(() => String(route.params.slug))
 const galleryPhotos = computed(() => profile.value?.photos.flatMap((photo: string | { src: string; alt?: string }, triptychIndex: number) => {
@@ -58,6 +61,17 @@ const gallerySlots = computed(() => [
   })),
 ])
 
+async function sendApology() {
+  if (!profile.value?.matchId || !apologyMessage.value.trim()) return
+  apologySending.value = true; apologyError.value = ''
+  try {
+    await $fetch(`/api/matches/${profile.value.matchId}/apology`, { method: 'POST', body: { message: apologyMessage.value } })
+    profile.value.apologySent = true
+    apologyMessage.value = ''
+  } catch (error: any) { apologyError.value = error?.data?.statusMessage || 'Your apology could not be sent.' }
+  finally { apologySending.value = false }
+}
+
 onMounted(async () => {
   await loadInterest()
   try {
@@ -66,6 +80,10 @@ onMounted(async () => {
     databaseProfile.value = null
     const status = error?.statusCode || error?.response?.status || error?.data?.statusCode
     if (status !== 404) profileLoadError.value = 'We could not load this profile. Please try again.'
+    else if (profileSlug.value === 'nina' && import.meta.dev && window.localStorage.getItem('lonely-radish-preview-rejected-match')) {
+      profiles.nina.isMatched = false
+      Object.assign(profiles.nina, { relationshipStatus: 'unmatched', endedByMe: true, apologySent: false })
+    }
   } finally {
     profileLoaded.value = true
   }
@@ -103,8 +121,9 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
           <p v-if="profile.place || profile.distance" class="mt-2 inline-flex items-center gap-1 text-sm text-[#6E4D58]"><MapPin class="size-4" /><span>{{ [profile.place, profile.distance].filter(Boolean).join(' · ') }}</span></p>
           <div v-if="profile.matchReason" class="mt-5 rounded-lg bg-[#EAF2DE] p-4"><p class="inline-flex items-center gap-2 text-sm font-semibold"><Sparkles class="size-4 text-[#6E8B52]" />Strong activity overlap</p><p class="mt-1 text-xs leading-5 text-[#4D2F39]">{{ profile.matchReason }}</p></div>
           <DailyInterestCounter class="mt-5" :count="todaysInterests.length" :limit="dailyInterestLimit" />
-          <button type="button" :disabled="sending || profile.isMatched || profile.interestSent || atMatchLimit || hasUsedDailyInterest" class="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#8F1839] disabled:cursor-not-allowed disabled:bg-[#D7A7B3]" @click="showInterest(profileSlug, profile.name)"><HeartHandshake class="size-4" />{{ sending ? 'Sending…' : profile.isMatched ? `Already matched with ${profile.name}` : profile.interestSent ? 'Interest already sent' : atMatchLimit ? '5-match limit reached' : isTodaysChoice(profileSlug) ? `Interest sent to ${profile.name}` : 'Show interest' }}</button>
+          <button type="button" :disabled="sending || profile.isMatched || profile.relationshipStatus === 'unmatched' || profile.interestSent || atMatchLimit || hasUsedDailyInterest" class="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#8F1839] disabled:cursor-not-allowed disabled:bg-[#D7A7B3]" @click="showInterest(profileSlug, profile.name)"><HeartHandshake class="size-4" />{{ sending ? 'Sending…' : profile.isMatched ? `Already matched with ${profile.name}` : profile.relationshipStatus === 'unmatched' ? `Unmatched from ${profile.name}` : profile.interestSent ? 'Interest already sent' : atMatchLimit ? '5-match limit reached' : isTodaysChoice(profileSlug) ? `Interest sent to ${profile.name}` : 'Show interest' }}</button>
           <p v-if="profile.isMatched" class="mt-3 rounded-lg bg-[#EAF2DE] p-3 text-xs leading-5 text-[#4D2F39]" role="status">You and {{ profile.name }} have already matched. You can continue from Matches & plans.</p>
+          <div v-else-if="profile.relationshipStatus === 'unmatched'" class="mt-3 rounded-lg bg-[#F3E8DA] p-3 text-xs leading-5 text-[#4D2F39]" role="status"><p>You and {{ profile.name }} are no longer matched.</p><form v-if="profile.endedByMe && !profile.apologySent" class="mt-3" @submit.prevent="sendApology"><label class="font-semibold">Send one private apology note<textarea v-model="apologyMessage" maxlength="500" rows="3" class="mt-1 w-full rounded-lg border border-[#D8C8B6] bg-white p-3 font-normal" placeholder="Keep it brief, respectful, and without pressure." /></label><button type="submit" :disabled="apologySending || !apologyMessage.trim()" class="mt-2 rounded-lg bg-[#8F1839] px-3 py-2 font-semibold text-white disabled:opacity-50">{{ apologySending ? 'Sending…' : 'Send apology' }}</button><p v-if="apologyError" class="mt-2 font-semibold text-[#8F1839]" role="alert">{{ apologyError }}</p></form><p v-else-if="profile.apologySent" class="mt-2 font-semibold text-[#6E8B52]">Your apology note has been sent.</p></div>
           <p v-else-if="profile.interestSent" class="mt-3 rounded-lg bg-[#F3E8DA] p-3 text-xs leading-5 text-[#4D2F39]" role="status">You have already shown interest in {{ profile.name }}. You cannot send it again.</p>
           <p v-else-if="atMatchLimit" class="mt-3 rounded-lg bg-[#FFF1C7] p-3 text-xs leading-5 text-[#694C00]" role="status">You already have five active matches. Complete or remove one before matching with someone new.</p>
           <p v-else-if="hasUsedDailyInterest" class="mt-3 rounded-lg bg-[#FCE3E8] p-3 text-xs leading-5 text-[#6E4D58]" role="status"><template v-if="isTodaysChoice(profileSlug)">You sent interest to {{ profile.name }} today.</template><template v-else>You have sent your 5 interests for today.</template> You can send more tomorrow.</p>

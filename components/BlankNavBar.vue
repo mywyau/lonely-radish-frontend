@@ -27,7 +27,7 @@ const navLinks = computed(() => {
     { to: '/interests/sent', label: 'Sent interests', icon: Send },
     { to: '/interests/received', label: 'Received interests', icon: HeartHandshake },
     { to: '/notifications', label: unreadCount.value ? `Notifications (${unreadCount.value})` : 'Notifications', icon: Bell },
-    { to: '/account/blocked', label: 'Safety & blocked users', icon: ShieldCheck },
+    { to: '/account/blocked', label: 'Blocked users', icon: ShieldCheck },
   ]
 
   return links

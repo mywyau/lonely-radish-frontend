@@ -9,11 +9,15 @@ export default defineEventHandler(async (event) => {
   const slug = getRouterParam(event, 'slug')
   const { rows } = await db.query(`select p.user_id as "userId",p.slug,p.display_name as name,
     extract(year from age(current_date,p.date_of_birth))::int as age,p.pronouns,p.bio,p.neighbourhood as place,
-    exists(select 1 from matches m where m.status='active' and
-      ((m.user_one_id=$2 and m.user_two_id=p.user_id) or (m.user_two_id=$2 and m.user_one_id=p.user_id))) as "isMatched",
+    relationship.id as "matchId",relationship.status as "relationshipStatus",
+    relationship.status='active' as "isMatched",relationship.ended_by=$2 as "endedByMe",
+    exists(select 1 from match_apology_notes man where man.match_id=relationship.id and man.sender_id=$2) as "apologySent",
     exists(select 1 from daily_interests di where di.sender_id=$2 and di.recipient_id=p.user_id) as "interestSent"
     ,coalesce(mp.availability_visible_before_match,false) as "availabilityVisibleBeforeMatch"
     from profiles p join users u on u.id=p.user_id left join match_preferences mp on mp.user_id=p.user_id
+    left join lateral (select m.id,m.status,m.ended_by from matches m where
+      (m.user_one_id=$2 and m.user_two_id=p.user_id) or (m.user_two_id=$2 and m.user_one_id=p.user_id)
+      order by coalesce(m.ended_at,m.matched_at) desc limit 1) relationship on true
     where p.slug=$1 and p.visibility='active' and (u.account_status='active' or
       (u.account_status='paused' and u.paused_until is not null and u.paused_until<=now()))
       and p.user_id<>$2 and not exists(select 1 from blocks b where
