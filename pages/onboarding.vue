@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ArrowLeft, ArrowRight, Check, Gamepad2, HeartHandshake, ImagePlus, Sparkles, Trophy, UserRound, UsersRound } from '@lucide/vue'
+import { ArrowLeft, ArrowRight, Brain, Check, Gamepad2, HeartHandshake, ImagePlus, Sparkles, Trophy, UserRound, UsersRound } from '@lucide/vue'
 
 definePageMeta({ title: 'Set up your profile · Lonely Radish', middleware: 'logged-in' })
 
@@ -250,10 +250,10 @@ onMounted(() => { load().catch(() => { errorMessage.value = 'We could not load o
         <div class="mt-6 grid gap-4 sm:grid-cols-2">
           <label>First name <input v-model="profile.firstName" required autocomplete="given-name" placeholder="Your first name"></label>
           <label>Last name <input v-model="profile.lastName" required autocomplete="family-name" placeholder="Your last name"></label>
-          <label>Profile name <input v-model="profile.displayName" required autocomplete="nickname" placeholder="Name shown to other members" @input="profileNameStatus = 'idle'" @blur="checkProfileName"><span v-if="profileNameStatus === 'checking'" class="field-hint">Checking availability…</span><span v-else-if="profileNameStatus === 'available'" class="field-hint success">Name available</span><span v-else-if="profileNameStatus === 'taken'" class="field-hint error">That name is already in use</span></label>
+          <label class="sm:col-span-2">Profile name <input v-model="profile.displayName" required autocomplete="nickname" placeholder="Name shown to other members" @input="profileNameStatus = 'idle'" @blur="checkProfileName"><span v-if="profileNameStatus === 'checking'" class="field-hint">Checking availability…</span><span v-else-if="profileNameStatus === 'available'" class="field-hint success">Name available</span><span v-else-if="profileNameStatus === 'taken'" class="field-hint error">That name is already in use</span></label>
           <label>How do you identify?<select v-model="profile.genderIdentity" required><option value="" disabled>Select an option</option><option value="man">Man</option><option value="woman">Woman</option><option value="neither">Neither / another identity</option></select></label>
+          <label>Pronouns <input v-model="profile.pronouns" autocomplete="off" placeholder="Optional"></label>
           <fieldset class="dob-field sm:col-span-2"><legend>Date of birth</legend><p class="field-hint">You must be 18 or over. This is never shown publicly.</p><div class="dob-grid"><label><span>Day</span><select v-model="birthDate.day" required @change="updateDateOfBirth"><option value="" disabled>Day</option><option v-for="day in birthDays" :key="day" :value="String(day)">{{ day }}</option></select></label><label><span>Month</span><select v-model="birthDate.month" required @change="updateDateOfBirth"><option value="" disabled>Month</option><option v-for="(month, index) in months" :key="month" :value="String(index + 1)">{{ month }}</option></select></label><label><span>Year</span><select v-model="birthDate.year" required @change="updateDateOfBirth"><option value="" disabled>Year</option><option v-for="year in birthYears" :key="year" :value="String(year)">{{ year }}</option></select></label></div></fieldset>
-          <label>Pronouns <input v-model="profile.pronouns" placeholder="Optional"></label>
           <label class="sm:col-span-2">Short bio <textarea v-model="profile.bio" required maxlength="1000" rows="5" placeholder="A little about you and the kind of person you would enjoy meeting…" /></label>
         </div>
         <p class="mt-3 text-xs text-[#6E4D58]">Your surname and date of birth are not displayed on your public profile.</p>
@@ -270,7 +270,7 @@ onMounted(() => { load().catch(() => { errorMessage.value = 'We could not load o
         <div class="step-title"><Sparkles class="size-5 text-[#B4234A]" /><div><h2>What would you enjoy doing?</h2><p>Choose up to 10 interests. Each choice helps people find you through the broader categories in Discover.</p></div></div>
         <div class="mt-6 space-y-4">
           <section v-for="group in activityGroups" :key="group.name" class="activity-group">
-            <div class="flex items-center gap-2"><component :is="group.name === 'Sports' ? Trophy : group.name === 'Gaming' ? Gamepad2 : Sparkles" class="size-5 text-[#B4234A]" /><h3 class="font-semibold">{{ group.name }}</h3></div>
+            <div class="flex items-center gap-2"><component :is="group.name === 'Sports' ? Trophy : group.name === 'Gaming' ? Gamepad2 : group.name === 'Learning' ? Brain : Sparkles" class="size-5 text-[#B4234A]" /><h3 class="font-semibold">{{ group.name }}</h3></div>
             <div class="mt-3 flex flex-wrap gap-2"><button v-for="activity in group.options" :key="activity" type="button" class="choice" :class="activityIsSelected(activity) && 'selected'" :aria-pressed="activityIsSelected(activity)" :disabled="activityLimitReached && !activityIsSelected(activity)" @click="toggleActivity(activity, group.name)">{{ activity }}</button></div>
             <div v-if="selectedActivities.some(activity => activity.custom && activity.category === group.name)" class="mt-3 flex flex-wrap gap-2"><button v-for="activity in selectedActivities.filter(activity => activity.custom && activity.category === group.name)" :key="activity.name" type="button" class="custom-choice" :aria-label="`Remove custom activity ${activity.name}`" @click="toggleActivity(activity.name, group.name, true)">{{ activity.name }} ×</button></div>
             <label class="mt-4 block">Add your own {{ group.name.toLowerCase() }} activity <span class="font-normal text-[#6E4D58]">({{ customActivityCount(group.name) }}/3)</span></label>

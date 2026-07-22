@@ -46,12 +46,12 @@ const featuredMatches = [
     tone: 'bg-[#F3E8DA]',
   },
   {
-    name: 'Alex',
-    age: 34,
-    photo: '/images/alex-profile-triptych.png',
-    distance: '4 km away',
-    detail: 'Climbing, book markets, riverside walks',
-    time: 'Free Sun morning',
+    name: 'Theo',
+    age: 32,
+    photo: '/images/theo-profile-triptych.png',
+    distance: '2 km away',
+    detail: 'Bookshops, live jazz, evening walks',
+    time: 'Free Sat morning',
     tone: 'bg-[#EAF2DE]',
   },
   {
