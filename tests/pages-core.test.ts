@@ -45,7 +45,7 @@ describe('core page contracts', () => {
     expect(activities).toContain("slug: 'games'")
     expect(activities).toContain("`/activities/${category.slug}`")
     expect(activities).toContain('Browse people')
-    expect(activityMatches).toContain('Potential dates')
+    expect(activityMatches).toContain("visiblePeople.length === 1 ? 'person' : 'people'")
     expect(activityMatches).toContain('broader category')
     expect(activityMatches).toContain('No one is browsing in this category yet')
     expect(activityMatches).toContain('`/profiles/${person.slug}`')

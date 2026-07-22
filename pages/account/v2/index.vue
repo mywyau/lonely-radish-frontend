@@ -6,8 +6,8 @@ definePageMeta({
   middleware: "logged-in",
 });
 
-const { profile, loadProfile, saveProfile: persistProfile } = useMockProfile();
-const { user, resolve } = useMeStateV2();
+const { user, entitlement, resolve } = useMeStateV2();
+const profile = reactive({ firstName: "", lastName: "" });
 
 const saved = ref(false);
 const showDeletePanel = ref(false);
@@ -25,7 +25,9 @@ const savingContact = ref(false);
 const contactSaved = ref(false);
 const contactError = ref('');
 
-const fullName = computed(() => `${profile.value.firstName} ${profile.value.lastName}`.trim());
+const fullName = computed(() => `${profile.firstName} ${profile.lastName}`.trim());
+const planLabel = computed(() => entitlement.value?.plan === 'yearly' ? 'Yearly plan' : entitlement.value?.plan === 'monthly' ? 'Monthly plan' : 'Free plan');
+const isPaidPlan = computed(() => entitlement.value?.plan === 'monthly' || entitlement.value?.plan === 'yearly');
 
 const datePreferences = [
   { icon: Sparkles, label: "Activity mood", value: "Gallery walk, market, or low-key gig" },
@@ -36,13 +38,12 @@ const datePreferences = [
 
 async function saveProfile() {
   const updated = await $fetch<{ firstName: string | null; lastName: string | null }>("/api/account/v2/profile", {
-    method: "POST", body: { firstName: profile.value.firstName, lastName: profile.value.lastName },
+    method: "POST", body: { firstName: profile.firstName, lastName: profile.lastName },
   });
   if (user.value) {
     user.value.firstName = updated.firstName;
     user.value.lastName = updated.lastName;
   }
-  persistProfile();
   saved.value = true;
   window.setTimeout(() => {
     saved.value = false;
@@ -85,12 +86,11 @@ async function saveContactDetails() {
 }
 
 onMounted(async () => {
-  loadProfile();
-  await resolve();
+  await resolve({ force: true });
   try { pauseState.value = await $fetch('/api/account/pause'); } catch { /* Account remains usable if pause status is unavailable. */ }
   try { Object.assign(contact, await $fetch('/api/profile/contact')); } catch { /* Contact details remain optional. */ }
-  if (user.value?.firstName) profile.value.firstName = user.value.firstName;
-  if (user.value?.lastName) profile.value.lastName = user.value.lastName;
+  profile.firstName = user.value?.firstName || "";
+  profile.lastName = user.value?.lastName || "";
 });
 </script>
 
@@ -116,16 +116,31 @@ onMounted(async () => {
 
         <div class="rounded-lg bg-[#2A1520] p-6 text-white shadow-[0_14px_32px_rgba(42,21,32,0.16)]">
           <HeartHandshake class="size-6 text-[#F7B7C4]" aria-hidden="true" />
-          <h2 class="mt-4 text-lg font-semibold">Plan preview</h2>
-          <p class="mt-2 text-sm leading-6 text-white/72">
-            Free prototype access. Premium matching and planning controls are mocked on the upgrade page.
-          </p>
+          <div class="mt-4 flex flex-wrap items-center gap-2"><h2 class="text-lg font-semibold">Plan preview</h2><span class="rounded-full px-2.5 py-1 text-xs font-bold" :class="isPaidPlan ? 'bg-[#EAF2DE] text-[#4D2F39]' : 'bg-white/15 text-white'">{{ isPaidPlan ? 'Paid' : 'Free' }}</span></div>
+          <p class="mt-2 text-sm leading-6 text-white/72">You are currently on the <strong class="text-white">{{ planLabel }}</strong>.</p>
           <div class="mt-5 flex flex-col gap-2 min-[400px]:flex-row min-[400px]:flex-wrap">
-            <NuxtLink to="/upgrade" class="inline-flex justify-center rounded-lg bg-white px-4 py-2 text-sm font-semibold text-[#8F1839] transition hover:bg-[#F3E8DA]">View paid plans</NuxtLink>
-            <NuxtLink to="/preferences" class="inline-flex justify-center rounded-lg bg-[#FCE3E8] px-4 py-2 text-sm font-semibold text-[#8F1839] transition hover:bg-[#F7D4DC]">Match preferences</NuxtLink>
-            <NuxtLink to="/photos" class="inline-flex justify-center rounded-lg bg-[#F3E8DA] px-4 py-2 text-sm font-semibold text-[#8F1839] transition hover:bg-[#FCE3E8]">Profile photos</NuxtLink>
+            <NuxtLink to="/upgrade" class="inline-flex justify-center rounded-lg bg-white px-4 py-2 text-sm font-semibold text-[#8F1839] transition hover:bg-[#F3E8DA]">{{ isPaidPlan ? 'Manage plan' : 'View paid plans' }}</NuxtLink>
           </div>
         </div>
+
+        <section class="rounded-lg bg-[#EAF2DE] p-6 shadow-[0_10px_24px_rgba(180,35,74,0.08)]">
+          <div class="flex items-start gap-3">
+            <PauseCircle class="mt-1 size-5 text-[#6E8B52]" aria-hidden="true" />
+            <div class="min-w-0 flex-1">
+              <h2 class="text-lg font-semibold">Pause discovery</h2>
+              <p class="mt-2 text-sm leading-6 text-[#4D2F39]">Hide your profile from new people while keeping existing matches, plans, and confirmed dates available.</p>
+              <div v-if="pauseState.paused" class="mt-4 rounded-lg bg-white/75 p-4">
+                <p class="text-sm font-semibold">Your profile is paused<span v-if="pauseState.pausedUntil"> until {{ new Date(pauseState.pausedUntil).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) }}</span><span v-else> indefinitely</span>.</p>
+                <button type="button" class="mt-3 rounded-lg bg-[#B4234A] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50" :disabled="savingPause" @click="updatePause('resume')">{{ savingPause ? 'Resuming…' : 'Resume discovery now' }}</button>
+              </div>
+              <div v-else class="mt-4 flex flex-col gap-3">
+                <label class="text-sm font-semibold">Pause for<select v-model="pauseChoice" class="field"><option value="7_days">7 days</option><option value="30_days">30 days</option><option value="indefinite">Until I resume</option></select></label>
+                <button type="button" class="rounded-lg bg-[#4D2F39] px-4 py-3 text-sm font-semibold text-white disabled:opacity-50" :disabled="savingPause" @click="updatePause()">{{ savingPause ? 'Pausing…' : 'Pause my profile' }}</button>
+              </div>
+              <p v-if="pauseError" class="mt-3 text-sm font-semibold text-[#8F1839]" role="alert">{{ pauseError }}</p>
+            </div>
+          </div>
+        </section>
       </aside>
 
       <div class="space-y-5">
@@ -160,9 +175,6 @@ onMounted(async () => {
               <button type="submit" class="rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#8F1839]">
                 Save profile
               </button>
-              <NuxtLink to="/preferences/schedule" class="rounded-lg bg-[#F3E8DA] px-5 py-3 text-sm font-semibold text-[#8F1839]">Edit schedule and safety</NuxtLink>
-              <NuxtLink to="/preferences/activities" class="rounded-lg bg-[#F3E8DA] px-5 py-3 text-sm font-semibold text-[#8F1839]">Edit activities</NuxtLink>
-              <NuxtLink to="/account/blocked" class="rounded-lg bg-[#F3E8DA] px-5 py-3 text-sm font-semibold text-[#8F1839]">Manage blocked users</NuxtLink>
               <span v-if="saved" class="text-sm font-medium text-[#6E8B52]">Profile saved.</span>
             </div>
           </form>
@@ -170,11 +182,11 @@ onMounted(async () => {
 
         <section class="rounded-lg bg-white p-6 shadow-[0_12px_28px_rgba(180,35,74,0.08)]">
           <h2 class="text-xl font-semibold">Contact details for matches</h2>
-          <p class="mt-2 text-sm leading-6 text-[#6E4D58]">Optional. These details are never shown in discovery and are only available to active matches when sharing is switched on.</p>
+          <p class="mt-2 text-sm leading-6 text-[#6E4D58]">These details are never shown in discovery and are only available to active matches when sharing is switched on.</p>
           <form class="mt-5 grid gap-4 sm:grid-cols-2" @submit.prevent="saveContactDetails">
-            <label class="text-sm font-medium">Phone number<input v-model="contact.phoneNumber" class="field" type="tel" autocomplete="tel" placeholder="+44 7700 900000"></label>
-            <label class="text-sm font-medium">Contact email<input v-model="contact.contactEmail" class="field" type="email" autocomplete="email" placeholder="you@example.com"></label>
-            <label class="text-sm font-medium sm:col-span-2">Social or contact handle<input v-model="contact.socialHandle" class="field" type="text" autocomplete="off" placeholder="@yourhandle or preferred contact app"></label>
+            <label class="text-sm font-medium">Phone number <span class="font-normal text-[#6E4D58]">(optional)</span><input v-model="contact.phoneNumber" class="field" type="tel" autocomplete="tel" placeholder="+44 7700 900000"></label>
+            <label class="text-sm font-medium">Contact email <span class="font-normal text-[#6E4D58]">(optional)</span><input v-model="contact.contactEmail" class="field" type="email" autocomplete="email" placeholder="you@example.com"></label>
+            <label class="text-sm font-medium sm:col-span-2">Social or contact handle <span class="font-normal text-[#6E4D58]">(optional)</span><input v-model="contact.socialHandle" class="field" type="text" autocomplete="off" placeholder="@yourhandle or preferred contact app"></label>
             <label class="flex items-start gap-3 rounded-lg bg-[#F3E8DA] p-4 text-sm sm:col-span-2"><input v-model="contact.shareWithMatches" class="mt-1 size-4 accent-[#B4234A]" type="checkbox"><span><strong class="block">Share with active matches</strong><span class="mt-1 block leading-5 text-[#6E4D58]">Access ends if either person unmatches, rejects, or blocks the other.</span></span></label>
             <div class="flex items-center gap-3 sm:col-span-2"><button type="submit" class="rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white disabled:opacity-50" :disabled="savingContact">{{ savingContact ? 'Saving…' : 'Save contact details' }}</button><span v-if="contactSaved" class="text-sm font-semibold text-[#6E8B52]" role="status">Contact details saved.</span></div>
             <p v-if="contactError" class="text-sm font-semibold text-[#8F1839] sm:col-span-2" role="alert">{{ contactError }}</p>
@@ -188,25 +200,6 @@ onMounted(async () => {
             <p class="mt-1 text-sm text-[#6E4D58]">{{ item.value }}</p>
           </article>
         </section> -->
-
-        <section class="rounded-lg bg-[#EAF2DE] p-6 shadow-[0_10px_24px_rgba(180,35,74,0.08)]">
-          <div class="flex items-start gap-3">
-            <PauseCircle class="mt-1 size-5 text-[#6E8B52]" aria-hidden="true" />
-            <div class="min-w-0 flex-1">
-              <h2 class="text-lg font-semibold">Pause discovery</h2>
-              <p class="mt-2 text-sm leading-6 text-[#4D2F39]">Hide your profile from new people while keeping existing matches, plans, and confirmed dates available.</p>
-              <div v-if="pauseState.paused" class="mt-4 rounded-lg bg-white/75 p-4">
-                <p class="text-sm font-semibold">Your profile is paused<span v-if="pauseState.pausedUntil"> until {{ new Date(pauseState.pausedUntil).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) }}</span><span v-else> indefinitely</span>.</p>
-                <button type="button" class="mt-3 rounded-lg bg-[#B4234A] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50" :disabled="savingPause" @click="updatePause('resume')">{{ savingPause ? 'Resuming…' : 'Resume discovery now' }}</button>
-              </div>
-              <div v-else class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end">
-                <label class="flex-1 text-sm font-semibold">Pause for<select v-model="pauseChoice" class="field"><option value="7_days">7 days</option><option value="30_days">30 days</option><option value="indefinite">Until I resume</option></select></label>
-                <button type="button" class="rounded-lg bg-[#4D2F39] px-4 py-3 text-sm font-semibold text-white disabled:opacity-50" :disabled="savingPause" @click="updatePause()">{{ savingPause ? 'Pausing…' : 'Pause my profile' }}</button>
-              </div>
-              <p v-if="pauseError" class="mt-3 text-sm font-semibold text-[#8F1839]" role="alert">{{ pauseError }}</p>
-            </div>
-          </div>
-        </section>
 
         <section class="rounded-lg bg-[#FCE3E8] p-6 shadow-[0_10px_24px_rgba(180,35,74,0.08)]">
           <div class="flex items-start gap-3">

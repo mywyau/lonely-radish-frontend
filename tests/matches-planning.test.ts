@@ -28,8 +28,11 @@ describe('matches and date planning dashboard', () => {
   it('shows at most five matches and confirms removal before notifying the other person', () => {
     expect(read('server/api/matches/index.get.ts')).toContain('limit 5')
     expect(read('pages/matches/index.vue')).toContain('You have {{ additionalMatches }} more')
-    expect(read('pages/matches/index.vue')).toContain('<strong>{{ totalMatches }}</strong><span>Total matches</span>')
-    expect(read('pages/matches/index.vue')).toContain('<strong>{{ interestReceivedCount }}</strong><span>People interested in you</span>')
+    expect(read('pages/matches/index.vue')).toContain('v-if="showSummaryCounts" class="mt-3 grid')
+    expect(read('pages/matches/index.vue')).toContain('<strong>{{ totalMatches }}</strong>')
+    expect(read('pages/matches/index.vue')).toContain('<strong>{{ interestReceivedCount }}</strong>')
+    expect(read('pages/matches/index.vue')).toContain("showSummaryCounts ? 'Hide counts' : 'Show counts'")
+    expect(read('pages/matches/index.vue')).toContain('EyeOff v-if="showSummaryCounts"')
     expect(read('server/api/matches/index.get.ts')).toContain('count(distinct di.sender_id)::int as count')
     expect(read('pages/matches/index.vue')).toContain('You can have up to 5 active matches')
     expect(read('pages/matches/index.vue')).toContain('class="summary-icon"')

@@ -32,7 +32,7 @@ useHead(() => ({ title: `${activityName.value} Matches · Lonely Radish` }))
 onMounted(async () => {
   await loadInterest()
   try { databasePeople.value = (await $fetch<{ people: any[] }>(`/api/activities/${slug.value}/people`)).people }
-  catch (error: any) { candidatesError.value = error?.data?.statusMessage || 'Potential dates could not be loaded.' }
+  catch (error: any) { candidatesError.value = error?.data?.statusMessage || 'People could not be loaded.' }
   finally { candidatesLoaded.value = !candidatesError.value }
 })
 </script>
@@ -42,14 +42,13 @@ onMounted(async () => {
     <section class="mx-auto max-w-5xl">
       <div class="rounded-lg bg-[#2A1520] p-6 text-white shadow-[0_14px_32px_rgba(42,21,32,0.16)] sm:p-8">
         <Sparkles class="size-6 text-[#F7B7C4]" aria-hidden="true" />
-        <p class="mt-5 text-xs font-extrabold uppercase tracking-widest text-[#F7B7C4]">Potential dates</p>
         <h1 class="mt-2 text-3xl font-semibold sm:text-4xl">Meet people interested in {{ activityName.toLowerCase() }}.</h1>
         <p class="mt-3 max-w-2xl text-sm leading-6 text-white/75">People in this broader category may enjoy different specific activities. Open a profile to see what each person selected.</p>
       </div>
 
       <div v-if="visiblePeople.length" class="mt-8">
         <div class="flex flex-wrap items-center justify-between gap-3">
-          <p class="inline-flex items-center gap-2 text-sm font-semibold text-[#6E4D58]"><UsersRound class="size-4" />{{ visiblePeople.length }} potential dates</p>
+          <p class="inline-flex items-center gap-2 text-sm font-semibold text-[#6E4D58]"><UsersRound class="size-4" />{{ visiblePeople.length }} {{ visiblePeople.length === 1 ? 'person' : 'people' }}</p>
           <NuxtLink to="/preferences" class="text-sm font-semibold text-[#8F1839] hover:underline">Review match preferences</NuxtLink>
         </div>
         <DailyInterestCounter class="mt-4" :count="todaysInterests.length" :limit="dailyInterestLimit" />

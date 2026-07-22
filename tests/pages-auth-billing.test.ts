@@ -56,11 +56,16 @@ describe("auth and billing page contracts", () => {
     expect(account).toContain('middleware: "logged-in"');
     expect(account).toContain("Signed in as {{ user?.email }}");
     expect(account).toContain("Save profile");
-    expect(account).toContain("useMockProfile()");
-    expect(account).toContain("persistProfile()");
-    expect(account).toContain("profile.value.firstName");
-    expect(account).toContain('to="/preferences"');
-    expect(account).toContain('to="/photos"');
+    expect(account).toContain("const planLabel = computed")
+    expect(account).toContain("{{ isPaidPlan ? 'Paid' : 'Free' }}")
+    expect(account.indexOf('Plan preview')).toBeLessThan(account.indexOf('Pause discovery'))
+    expect(account).not.toContain("useMockProfile()");
+    expect(account).not.toContain("persistProfile()");
+    expect(account).toContain("profile.firstName");
+    expect(nav).not.toContain("useMockProfile()");
+    expect(nav).toContain('name.charAt(0).toLocaleUpperCase()');
+    expect(account).not.toContain('>Match preferences</NuxtLink>');
+    expect(account).not.toContain('>Profile photos</NuxtLink>');
     expect(preferences).toContain("title: 'Match Preferences · Lonely Radish'");
     expect(preferences).toContain("Save preferences");
     expect(preferences).toContain("Preferences saved.");
@@ -96,8 +101,8 @@ describe("auth and billing page contracts", () => {
     expect(photos).toContain("uploadToSignedUrl");
     expect(photos).toContain("Photo order saved.");
     expect(nav).toContain("Match preferences");
-    expect(nav).toContain("accountProfile.value.firstName");
-    expect(nav).toContain("loadProfile()");
+    expect(nav).toContain('name.charAt(0).toLocaleUpperCase()');
+    expect(nav).toContain("resolve({ force: true })");
     expect(nav).toContain("Profile photos");
     expect(account).toContain("/api/account/v2/profile");
     expect(account).not.toContain("getAccessToken");

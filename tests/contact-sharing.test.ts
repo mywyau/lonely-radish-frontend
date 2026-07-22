@@ -22,7 +22,12 @@ describe('match-only contact details', () => {
     const page = read('pages/account/v2/index.vue')
     expect(page).toContain('Contact details for matches')
     expect(page).toContain('Share with active matches')
-    expect(page).toContain('to="/preferences/activities"')
+    expect(page).toContain('Social or contact handle <span class="font-normal text-[#6E4D58]">(optional)</span>')
+    expect(page).toContain('Phone number <span class="font-normal text-[#6E4D58]">(optional)</span>')
+    expect(page).toContain('Contact email <span class="font-normal text-[#6E4D58]">(optional)</span>')
+    expect(page).not.toContain('Edit activities')
+    expect(page).not.toContain('Edit schedule and safety')
+    expect(page).not.toContain('Manage blocked users')
     expect(page).not.toContain('Preferred activity')
   })
 

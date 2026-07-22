@@ -25,6 +25,7 @@ const errorMessage = ref('')
 const draggingPhotoId = ref<string | null>(null)
 const config = useRuntimeConfig()
 const route = useRoute()
+const isOnboarding = computed(() => route.query.onboarding === '1')
 
 const photoSlots = computed(() => Math.max(0, 6 - photos.value.length))
 
@@ -247,9 +248,10 @@ onMounted(async () => {
           >
             {{ orderChanged ? 'Save photo order' : 'Photo order saved' }}
           </button>
-          <NuxtLink :to="route.query.onboarding === '1' ? '/onboarding' : '/account/v2'" class="rounded-lg bg-[#F3E8DA] px-5 py-3 text-sm font-semibold text-[#8F1839] transition hover:bg-[#FCE3E8]">
-            {{ route.query.onboarding === '1' ? 'Return to onboarding' : 'Back to account' }}
+          <NuxtLink :to="isOnboarding ? '/onboarding' : '/account/v2'" class="inline-flex items-center justify-center gap-2 rounded-lg bg-[#F3E8DA] px-5 py-3 text-sm font-semibold text-[#8F1839] transition hover:bg-[#FCE3E8]" :class="isOnboarding && 'onboarding-return'">
+            <ChevronLeft v-if="isOnboarding" class="size-4" aria-hidden="true" />{{ isOnboarding ? 'Return to onboarding' : 'Back to account' }}
           </NuxtLink>
+          <NuxtLink v-if="isOnboarding && !photos.length" to="/onboarding?skipPhotos=1" class="px-4 py-3 text-center text-sm font-semibold text-[#6E4D58] underline underline-offset-4">Skip for now</NuxtLink>
           <span v-if="saved" class="text-sm font-semibold text-[#6E8B52]">Photo order saved.</span>
         </div>
         <p v-if="errorMessage" class="rounded-lg bg-[#FCE3E8] p-4 text-sm font-semibold text-[#8F1839]" role="alert">{{ errorMessage }}</p>
@@ -261,4 +263,10 @@ onMounted(async () => {
 <style scoped>
 .order-button { display: inline-flex; align-items: center; gap: .2rem; border-radius: .5rem; background: #F3E8DA; padding: .5rem .65rem; color: #8F1839; font-size: .75rem; font-weight: 650; }
 .order-button:disabled { cursor: not-allowed; opacity: .35; }
+.onboarding-return { border: 1px solid rgba(180,35,74,.35); animation: onboardingReturnPulse 1.8s ease-in-out infinite; }
+@keyframes onboardingReturnPulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(180,35,74,.24); }
+  50% { transform: scale(1.035); box-shadow: 0 0 0 .45rem rgba(180,35,74,0); }
+}
+@media (prefers-reduced-motion: reduce) { .onboarding-return { animation: none; } }
 </style>

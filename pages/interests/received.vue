@@ -30,7 +30,7 @@ async function acceptInterest() {
 
 <template>
   <main class="min-h-screen bg-[#FBF7F1] px-5 py-10 text-[#2A1520] sm:px-8"><section class="mx-auto max-w-3xl">
-    <p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">Your activity</p><h1 class="mt-2 text-4xl font-semibold">People interested in you</h1><p class="mt-3 max-w-2xl leading-6 text-[#6E4D58]">Review who chose you. You decide whether to create a match and begin planning.</p>
+    <p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">Your activity</p><h1 class="mt-2 text-4xl font-semibold">People interested in you</h1><p class="mt-3 max-w-2xl leading-6 text-[#6E4D58]">Review who would like to meet you. You decide whether to create a match and begin planning.</p>
     <p v-if="successMessage" class="mt-5 rounded-lg bg-[#EAF2DE] p-4 text-sm font-semibold text-[#4D2F39]" role="status">{{ successMessage }} <NuxtLink to="/matches" class="text-[#8F1839] underline">View matches</NuxtLink></p>
     <p v-if="errorMessage" class="mt-5 rounded-lg bg-[#FCE3E8] p-4 text-sm font-semibold text-[#8F1839]" role="alert">{{ errorMessage }}</p>
     <div v-if="loading" class="mt-7 rounded-lg bg-white p-8 text-center text-sm text-[#6E4D58]">Loading received interests…</div>

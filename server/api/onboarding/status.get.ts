@@ -19,6 +19,6 @@ export default defineEventHandler(async (event) => {
   const activityCount = Number(state.activityCount || 0)
   const preferencesComplete = state.preferencesComplete === true
   const photoCount = Number(state.photoCount || 0)
-  const nextStep = !profileComplete ? 1 : activityCount < 1 ? 2 : !preferencesComplete ? 3 : photoCount < 1 ? 4 : 5
+  const nextStep = !profileComplete ? 1 : activityCount < 1 ? 2 : !preferencesComplete ? 3 : 4
   return { complete: Boolean(state.completedAt), completedAt: state.completedAt, nextStep, profileComplete, activityCount, photoCount, preferencesComplete }
 })

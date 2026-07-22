@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Bell, CalendarCheck, CalendarDays, ChevronRight, Clock3, HeartHandshake, MapPin, Sparkles, UsersRound, X } from '@lucide/vue'
+import { Bell, CalendarCheck, CalendarDays, ChevronRight, Clock3, Eye, EyeOff, HeartHandshake, MapPin, Sparkles, UsersRound, X } from '@lucide/vue'
 
 definePageMeta({ title: 'Matches & Plans · Lonely Radish', middleware: 'logged-in' })
 
@@ -21,6 +21,7 @@ const pendingReject = ref<MatchCard | null>(null)
 const rejecting = ref(false)
 const rejectError = ref('')
 const previewRejected = ref(false)
+const showSummaryCounts = ref(true)
 const previewMatch: MatchCard = {
   id: 'preview-post-date', name: 'Nina', slug: 'nina', place: 'Hackney',
   photoUrl: '/images/nina-profile-triptych.png', stage: 'confirmed',
@@ -62,6 +63,11 @@ function planUrl(match: MatchCard) {
   return `/plans/${match.slug}${query}`
 }
 
+function toggleSummaryCounts() {
+  showSummaryCounts.value = !showSummaryCounts.value
+  window.localStorage.setItem('lonely-radish-show-match-counts', String(showSummaryCounts.value))
+}
+
 async function loadMatches() {
   if (import.meta.dev) previewRejected.value = Boolean(window.localStorage.getItem('lonely-radish-preview-rejected-match'))
   const result = await $fetch<{ matches: MatchCard[]; totalMatches: number; interestReceivedCount: number }>('/api/matches')
@@ -96,6 +102,7 @@ async function rejectMatch() {
 }
 
 onMounted(async () => {
+  showSummaryCounts.value = window.localStorage.getItem('lonely-radish-show-match-counts') !== 'false'
   try {
     await Promise.all([loadMatches(), loadNotifications()])
   }
@@ -112,14 +119,15 @@ onMounted(async () => {
       <p class="mt-4 max-w-2xl leading-7 text-[#6E4D58]">Every match has a clear next step: choose what to do, agree a time and public venue, then meet.</p>
       <NuxtLink to="/matches/past" class="mt-4 inline-flex text-sm font-semibold text-[#8F1839] hover:underline">View past connections →</NuxtLink>
 
-      <div class="mt-7 grid grid-cols-2 gap-2 sm:grid-cols-5 sm:gap-4">
+      <div class="mt-6 flex justify-end"><button type="button" class="inline-flex items-center gap-1.5 text-sm font-semibold text-[#8F1839] hover:underline" :aria-pressed="!showSummaryCounts" @click="toggleSummaryCounts"><EyeOff v-if="showSummaryCounts" class="size-4" aria-hidden="true" /><Eye v-else class="size-4" aria-hidden="true" />{{ showSummaryCounts ? 'Hide counts' : 'Show counts' }}</button></div>
+      <div v-if="showSummaryCounts" class="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-5 sm:gap-4">
         <NuxtLink to="/interests/received" class="summary-card summary-interested col-span-2 sm:col-span-1"><HeartHandshake class="summary-icon" /><strong>{{ interestReceivedCount }}</strong><span>People interested in you</span></NuxtLink>
         <div class="summary-card summary-total"><UsersRound class="summary-icon" /><strong>{{ totalMatches }}</strong><span>Total matches</span></div>
         <div class="summary-card summary-new"><Sparkles class="summary-icon" /><strong>{{ counts.fresh }}</strong><span>New</span></div>
         <div class="summary-card summary-planning"><Clock3 class="summary-icon" /><strong>{{ counts.planning }}</strong><span>Planning</span></div>
         <div class="summary-card summary-confirmed"><CalendarCheck class="summary-icon" /><strong>{{ counts.confirmed }}</strong><span>Confirmed</span></div>
       </div>
-      <p class="mt-3 text-center text-xs text-[#6E4D58]">You can have up to 5 active matches across matching, planning, and confirmed dates.</p>
+      <p v-if="showSummaryCounts" class="mt-3 text-center text-xs text-[#6E4D58]">You can have up to 5 active matches across matching, planning, and confirmed dates.</p>
 
       <div v-if="notifications.length" class="mt-6 grid gap-2">
         <div v-for="notification in notifications" :key="notification.id" class="flex items-start gap-3 rounded-lg bg-white p-4 text-sm shadow-[0_8px_20px_rgba(180,35,74,0.07)]">

@@ -5,9 +5,11 @@ import { login, logout, signup } from '@/composables/useAuth'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
 const { user, isLoggedIn, resolve } = useMeStateV2()
-const { profile: accountProfile, loadProfile } = useMockProfile()
 
-const accountLabel = computed(() => user.value?.firstName || accountProfile.value.firstName.trim() || 'Account')
+const accountLabel = computed(() => {
+  const name = user.value?.firstName?.trim()
+  return name ? `${name.charAt(0).toLocaleUpperCase()}${name.slice(1)}` : 'Account'
+})
 const route = useRoute()
 
 const menuOpen = ref(false)
@@ -71,8 +73,7 @@ async function loadNavigationCounts() {
 }
 
 onMounted(async () => {
-  loadProfile()
-  await resolve()
+  await resolve({ force: true })
   await loadNavigationCounts()
   document.addEventListener('click', onDocumentClick)
   document.addEventListener('keydown', onDocumentKeydown)
