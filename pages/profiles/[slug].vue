@@ -47,12 +47,15 @@ const profileLoadError = ref('')
 const apologyMessage = ref('')
 const apologySending = ref(false)
 const apologyError = ref('')
+const activitiesFlipped = ref(false)
 const profile = computed(() => databaseProfile.value || profiles[route.params.slug as keyof typeof profiles])
 const profileSlug = computed(() => String(route.params.slug))
 const galleryPhotos = computed(() => profile.value?.photos.flatMap((photo: string | { src: string; alt?: string }, triptychIndex: number) => {
   if (typeof photo !== 'string') return [{ ...photo, panel: null }]
-  return ['first', 'second', 'third'].map((panel, panelIndex) => ({ src: photo, panel,
-    alt: `${profile.value.name} profile photo ${triptychIndex * 3 + panelIndex + 1}` }))
+  return ['first', 'second', 'third'].map((panel, panelIndex) => ({
+    src: photo, panel,
+    alt: `${profile.value.name} profile photo ${triptychIndex * 3 + panelIndex + 1}`
+  }))
 }).slice(0, 6) ?? [])
 const gallerySlots = computed(() => [
   ...galleryPhotos.value.map(photo => ({ ...photo, empty: false })),
@@ -60,6 +63,7 @@ const gallerySlots = computed(() => [
     src: '', panel: null, alt: '', empty: true, slot: galleryPhotos.value.length + index + 1,
   })),
 ])
+const profileInterests = computed(() => profile.value?.interests?.length ? profile.value.interests : profile.value?.interestCategories || [])
 
 async function sendApology() {
   if (!profile.value?.matchId || !apologyMessage.value.trim()) return
@@ -109,50 +113,254 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
     <section v-else-if="profile" class="mx-auto max-w-5xl">
       <div class="grid gap-5 lg:grid-cols-[1.05fr_0.95fr] lg:items-start">
         <section aria-label="Profile photos" class="grid grid-cols-2 gap-2 overflow-hidden rounded-lg sm:grid-cols-3">
-          <div v-for="(photo, index) in gallerySlots" :key="photo.empty ? `empty-${photo.slot}` : `${photo.src}-${photo.panel}`" class="profile-photo aspect-square" :class="[index === 0 && 'col-span-2 row-span-2', photo.empty && 'profile-photo-empty']">
-            <img v-if="!photo.empty" :src="photo.src" :alt="photo.alt || `${profile.name} profile photo`" :class="photo.panel ? ['triptych', `triptych-${photo.panel}`] : 'h-full w-full object-cover'">
-            <div v-else class="flex h-full w-full items-center justify-center" :aria-label="`Empty photo slot ${photo.slot}`"><span class="rounded-full bg-white/70 px-2.5 py-1 text-xs font-semibold text-[#8A6A74]">Photo {{ photo.slot }}</span></div>
+          <div v-for="(photo, index) in gallerySlots"
+            :key="photo.empty ? `empty-${photo.slot}` : `${photo.src}-${photo.panel}`"
+            class="profile-photo aspect-square"
+            :class="[index === 0 && 'col-span-2 row-span-2', photo.empty && 'profile-photo-empty']">
+            <img v-if="!photo.empty" :src="photo.src" :alt="photo.alt || `${profile.name} profile photo`"
+              :class="photo.panel ? ['triptych', `triptych-${photo.panel}`] : 'h-full w-full object-cover'">
+            <div v-else class="flex h-full w-full items-center justify-center"
+              :aria-label="`Empty photo slot ${photo.slot}`"><span
+                class="rounded-full bg-white/70 px-2.5 py-1 text-xs font-semibold text-[#8A6A74]">Photo {{ photo.slot
+                }}</span></div>
           </div>
         </section>
 
         <aside class="rounded-lg bg-white p-5 shadow-[0_12px_28px_rgba(180,35,74,0.08)] sm:p-6 lg:sticky lg:top-24">
-          <p v-if="profile.isDemo" class="mb-3 inline-flex rounded-full bg-[#FFF1C7] px-3 py-1 text-xs font-bold text-[#694C00]">Demo profile</p>
-          <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1"><h1 class="text-3xl font-semibold">{{ profile.name }}, {{ profile.age }}</h1><span class="text-sm text-[#6E4D58]">{{ profile.pronouns }}</span></div>
-          <p v-if="profile.place || profile.distance" class="mt-2 inline-flex items-center gap-1 text-sm text-[#6E4D58]"><MapPin class="size-4" /><span>{{ [profile.place, profile.distance].filter(Boolean).join(' · ') }}</span></p>
-          <div v-if="profile.matchReason" class="mt-5 rounded-lg bg-[#EAF2DE] p-4"><p class="inline-flex items-center gap-2 text-sm font-semibold"><Sparkles class="size-4 text-[#6E8B52]" />Strong activity overlap</p><p class="mt-1 text-xs leading-5 text-[#4D2F39]">{{ profile.matchReason }}</p></div>
+          <p v-if="profile.isDemo"
+            class="mb-3 inline-flex rounded-full bg-[#FFF1C7] px-3 py-1 text-xs font-bold text-[#694C00]">Demo profile
+          </p>
+          <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+            <h1 class="text-3xl font-semibold">{{ profile.name }}, {{ profile.age }}</h1><span
+              class="text-sm text-[#6E4D58]">{{ profile.pronouns }}</span>
+          </div>
+          <p v-if="profile.place || profile.distance"
+            class="mt-2 inline-flex items-center gap-1 text-sm text-[#6E4D58]">
+            <MapPin class="size-4" /><span>{{ [profile.place, profile.distance].filter(Boolean).join(' · ') }}</span>
+          </p>
+          <div v-if="profile.matchReason" class="mt-5 rounded-lg bg-[#EAF2DE] p-4">
+            <p class="inline-flex items-center gap-2 text-sm font-semibold">
+              <Sparkles class="size-4 text-[#6E8B52]" />Strong activity overlap
+            </p>
+            <p class="mt-1 text-xs leading-5 text-[#4D2F39]">{{ profile.matchReason }}</p>
+          </div>
           <DailyInterestCounter class="mt-5" :count="todaysInterests.length" :limit="dailyInterestLimit" />
-          <button type="button" :disabled="sending || profile.isMatched || profile.relationshipStatus === 'unmatched' || profile.interestSent || atMatchLimit || hasUsedDailyInterest" class="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#8F1839] disabled:cursor-not-allowed disabled:bg-[#D7A7B3]" @click="showInterest(profileSlug, profile.name)"><HeartHandshake class="size-4" />{{ sending ? 'Sending…' : profile.isMatched ? `Already matched with ${profile.name}` : profile.relationshipStatus === 'unmatched' ? `Unmatched from ${profile.name}` : profile.interestSent ? 'Interest already sent' : atMatchLimit ? '5-match limit reached' : isTodaysChoice(profileSlug) ? `Interest sent to ${profile.name}` : 'Show interest' }}</button>
-          <p v-if="profile.isMatched" class="mt-3 rounded-lg bg-[#EAF2DE] p-3 text-xs leading-5 text-[#4D2F39]" role="status">You and {{ profile.name }} have already matched. You can continue from Matches & plans.</p>
-          <div v-else-if="profile.relationshipStatus === 'unmatched'" class="mt-3 rounded-lg bg-[#F3E8DA] p-3 text-xs leading-5 text-[#4D2F39]" role="status"><p>You and {{ profile.name }} are no longer matched.</p><form v-if="profile.endedByMe && !profile.apologySent" class="mt-3" @submit.prevent="sendApology"><label class="font-semibold">Send one private apology note<textarea v-model="apologyMessage" maxlength="500" rows="3" class="mt-1 w-full rounded-lg border border-[#D8C8B6] bg-white p-3 font-normal" placeholder="Keep it brief, respectful, and without pressure." /></label><button type="submit" :disabled="apologySending || !apologyMessage.trim()" class="mt-2 rounded-lg bg-[#8F1839] px-3 py-2 font-semibold text-white disabled:opacity-50">{{ apologySending ? 'Sending…' : 'Send apology' }}</button><p v-if="apologyError" class="mt-2 font-semibold text-[#8F1839]" role="alert">{{ apologyError }}</p></form><p v-else-if="profile.apologySent" class="mt-2 font-semibold text-[#6E8B52]">Your apology note has been sent.</p></div>
-          <p v-else-if="profile.interestSent" class="mt-3 rounded-lg bg-[#F3E8DA] p-3 text-xs leading-5 text-[#4D2F39]" role="status">You have already shown interest in {{ profile.name }}. You cannot send it again.</p>
-          <p v-else-if="atMatchLimit" class="mt-3 rounded-lg bg-[#FFF1C7] p-3 text-xs leading-5 text-[#694C00]" role="status">You already have five active matches. Complete or remove one before matching with someone new.</p>
-          <p v-else-if="hasUsedDailyInterest" class="mt-3 rounded-lg bg-[#FCE3E8] p-3 text-xs leading-5 text-[#6E4D58]" role="status"><template v-if="isTodaysChoice(profileSlug)">You sent interest to {{ profile.name }} today.</template><template v-else>You have sent your 5 interests for today.</template> You can send more tomorrow.</p>
-          <p v-else class="mt-3 text-xs leading-5 text-[#6E4D58]">Choose thoughtfully — you can show interest in up to 5 people each day.</p>
-          <p v-if="successMessage" class="mt-3 rounded-lg bg-[#EAF2DE] p-3 text-xs font-semibold text-[#4D2F39]" role="status">{{ successMessage }} <NuxtLink to="/interests/sent" class="text-[#8F1839] underline">View sent interests</NuxtLink></p>
+          <button type="button"
+            :disabled="sending || profile.isMatched || profile.relationshipStatus === 'unmatched' || profile.interestSent || atMatchLimit || hasUsedDailyInterest"
+            class="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#8F1839] disabled:cursor-not-allowed disabled:bg-[#D7A7B3]"
+            @click="showInterest(profileSlug, profile.name)">
+            <HeartHandshake class="size-4" />{{ sending ? 'Sending…' : profile.isMatched ? `Already matched with
+            ${profile.name}` : profile.relationshipStatus === 'unmatched' ? `Unmatched from ${profile.name}` :
+              profile.interestSent ? 'Interest already sent' : atMatchLimit ? '5-match limit reached' :
+                isTodaysChoice(profileSlug) ? `Interest sent to ${profile.name}` : 'Show interest' }}
+          </button>
+          <p v-if="profile.isMatched" class="mt-3 rounded-lg bg-[#EAF2DE] p-3 text-xs leading-5 text-[#4D2F39]"
+            role="status">You and {{ profile.name }} have already matched. You can continue from Matches & plans.</p>
+          <div v-else-if="profile.relationshipStatus === 'unmatched'"
+            class="mt-3 rounded-lg bg-[#F3E8DA] p-3 text-xs leading-5 text-[#4D2F39]" role="status">
+            <p>You and {{ profile.name }} are no longer matched.</p>
+            <form v-if="profile.endedByMe && !profile.apologySent" class="mt-3" @submit.prevent="sendApology"><label
+                class="font-semibold">Send one private apology note<textarea v-model="apologyMessage" maxlength="500"
+                  rows="3" class="mt-1 w-full rounded-lg border border-[#D8C8B6] bg-white p-3 font-normal"
+                  placeholder="Keep it brief, respectful, and without pressure." /></label><button type="submit"
+                :disabled="apologySending || !apologyMessage.trim()"
+                class="mt-2 rounded-lg bg-[#8F1839] px-3 py-2 font-semibold text-white disabled:opacity-50">{{
+                  apologySending ? 'Sending…' : 'Send apology' }}</button>
+              <p v-if="apologyError" class="mt-2 font-semibold text-[#8F1839]" role="alert">{{ apologyError }}</p>
+            </form>
+            <p v-else-if="profile.apologySent" class="mt-2 font-semibold text-[#6E8B52]">Your apology note has been
+              sent.</p>
+          </div>
+          <p v-else-if="profile.interestSent" class="mt-3 rounded-lg bg-[#F3E8DA] p-3 text-xs leading-5 text-[#4D2F39]"
+            role="status">You have already shown interest in {{ profile.name }}. You cannot send it again.</p>
+          <p v-else-if="atMatchLimit" class="mt-3 rounded-lg bg-[#FFF1C7] p-3 text-xs leading-5 text-[#694C00]"
+            role="status">You already have five active matches. Complete or remove one before matching with someone new.
+          </p>
+          <p v-else-if="hasUsedDailyInterest" class="mt-3 rounded-lg bg-[#FCE3E8] p-3 text-xs leading-5 text-[#6E4D58]"
+            role="status"><template v-if="isTodaysChoice(profileSlug)">You sent interest to {{ profile.name }}
+              today.</template><template v-else>You have sent your 5 interests for today.</template> You can send more
+            tomorrow.</p>
+          <p v-else class="mt-3 text-xs leading-5 text-[#6E4D58]">Choose thoughtfully — you can show interest in up to 5
+            people
+            each day.</p>
+          <p v-if="successMessage" class="mt-3 rounded-lg bg-[#EAF2DE] p-3 text-xs font-semibold text-[#4D2F39]"
+            role="status">{{
+              successMessage }} <NuxtLink to="/interests/sent" class="text-[#8F1839] underline">View sent interests
+            </NuxtLink>
+          </p>
           <p v-if="errorMessage" class="mt-3 text-xs font-semibold text-[#8F1839]" role="alert">{{ errorMessage }}</p>
-          <p class="mt-3 flex items-start gap-2 text-xs leading-5 text-[#6E4D58]"><ShieldCheck class="mt-0.5 size-3.5 shrink-0" />Only share contact details when you feel comfortable. Meet in a public place first.</p>
+          <p class="mt-3 flex items-start gap-2 text-xs leading-5 text-[#6E4D58]">
+            <ShieldCheck class="mt-0.5 size-3.5 shrink-0" />Only share contact details when you feel comfortable. Meet
+            in a public
+            place first.
+          </p>
           <ProfileSafetyActions :profile-slug="profileSlug" :profile-name="profile.name" />
         </aside>
       </div>
 
       <div class="mt-5 grid gap-5 lg:grid-cols-2">
-        <section class="rounded-lg bg-white p-5 shadow-[0_10px_24px_rgba(180,35,74,0.08)] sm:p-6"><div class="flex items-center gap-2"><UserRound class="size-5 text-[#B4234A]" /><h2 class="text-xl font-semibold">About me</h2></div><p class="mt-4 leading-7 text-[#4D2F39]">{{ profile.bio }}</p></section>
-        <section v-if="profile.availability?.length && (profile.isMatched || profile.availabilityVisibleBeforeMatch)" class="rounded-lg bg-white p-5 shadow-[0_10px_24px_rgba(180,35,74,0.08)] sm:p-6"><div class="flex items-center gap-2"><CalendarDays class="size-5 text-[#B4234A]" /><h2 class="text-xl font-semibold">Usually free</h2></div><div class="mt-4 flex flex-wrap gap-2"><span v-for="time in profile.availability" :key="time" class="rounded-full bg-[#F3E8DA] px-3 py-2 text-sm font-semibold text-[#4D2F39]">{{ time }}</span></div></section>
-        <section v-if="profile.contactDetails" class="rounded-lg bg-white p-5 shadow-[0_10px_24px_rgba(180,35,74,0.08)] sm:p-6"><h2 class="text-xl font-semibold">Contact details</h2><p class="mt-2 text-xs leading-5 text-[#6E4D58]">Shared with you because you are an active match.</p><div class="mt-4 space-y-3 text-sm"><a v-if="profile.contactDetails.phoneNumber" :href="`tel:${profile.contactDetails.phoneNumber}`" class="flex items-center gap-2 font-semibold text-[#8F1839]"><Phone class="size-4" />{{ profile.contactDetails.phoneNumber }}</a><a v-if="profile.contactDetails.contactEmail" :href="`mailto:${profile.contactDetails.contactEmail}`" class="flex items-center gap-2 break-all font-semibold text-[#8F1839]"><Mail class="size-4 shrink-0" />{{ profile.contactDetails.contactEmail }}</a><p v-if="profile.contactDetails.socialHandle" class="font-semibold text-[#4D2F39]">{{ profile.contactDetails.socialHandle }}</p></div></section>
-        <section class="rounded-lg bg-[#FCE3E8] p-5 sm:p-6"><h2 class="text-xl font-semibold">Activities I’d enjoy together</h2><div class="mt-4 flex flex-wrap gap-2"><span v-for="activity in profile.activities" :key="activity" class="rounded-full bg-white/80 px-3 py-2 text-sm font-semibold text-[#8F1839]">{{ activity }}</span></div></section>
-        <section v-if="profile.interests?.length" class="rounded-lg bg-[#EAF2DE] p-5 sm:p-6"><h2 class="text-xl font-semibold">A few more interests</h2><div class="mt-4 flex flex-wrap gap-2"><span v-for="interest in profile.interests" :key="interest" class="rounded-full bg-white/80 px-3 py-2 text-sm font-semibold text-[#4D2F39]">{{ interest }}</span></div></section>
+        <section class="rounded-lg bg-white p-5 shadow-[0_10px_24px_rgba(180,35,74,0.08)] sm:p-6">
+          <div class="flex items-center gap-2">
+            <UserRound class="size-5 text-[#B4234A]" />
+            <h2 class="text-xl font-semibold">About me</h2>
+          </div>
+          <p class="mt-4 leading-7 text-[#4D2F39]">{{ profile.bio }}</p>
+        </section>
+        <section v-if="profile.availability?.length && (profile.isMatched || profile.availabilityVisibleBeforeMatch)"
+          class="rounded-lg bg-white p-5 shadow-[0_10px_24px_rgba(180,35,74,0.08)] sm:p-6">
+          <div class="flex items-center gap-2">
+            <CalendarDays class="size-5 text-[#B4234A]" />
+            <h2 class="text-xl font-semibold">Usually free</h2>
+          </div>
+          <div class="mt-4 flex flex-wrap gap-2"><span v-for="time in profile.availability" :key="time"
+              class="rounded-full bg-[#F3E8DA] px-3 py-2 text-sm font-semibold text-[#4D2F39]">{{ time }}</span></div>
+        </section>
+        <section v-if="profile.contactDetails"
+          class="rounded-lg bg-white p-5 shadow-[0_10px_24px_rgba(180,35,74,0.08)] sm:p-6">
+          <h2 class="text-xl font-semibold">Contact details</h2>
+          <p class="mt-2 text-xs leading-5 text-[#6E4D58]">Shared with you because you are an active match.</p>
+          <div class="mt-4 space-y-3 text-sm"><a v-if="profile.contactDetails.phoneNumber"
+              :href="`tel:${profile.contactDetails.phoneNumber}`"
+              class="flex items-center gap-2 font-semibold text-[#8F1839]">
+              <Phone class="size-4" />{{ profile.contactDetails.phoneNumber }}
+            </a><a v-if="profile.contactDetails.contactEmail" :href="`mailto:${profile.contactDetails.contactEmail}`"
+              class="flex items-center gap-2 break-all font-semibold text-[#8F1839]">
+              <Mail class="size-4 shrink-0" />{{ profile.contactDetails.contactEmail }}
+            </a>
+            <p v-if="profile.contactDetails.socialHandle" class="font-semibold text-[#4D2F39]">{{
+              profile.contactDetails.socialHandle }}</p>
+          </div>
+        </section>
+        <button type="button" class="profile-flip-card text-left" :class="activitiesFlipped && 'is-flipped'"
+          :aria-pressed="activitiesFlipped" :aria-label="activitiesFlipped ? 'Show activities' : 'Show interests'"
+          @click="activitiesFlipped = !activitiesFlipped"><span class="profile-flip-inner"><span
+              class="profile-flip-face profile-flip-front"><span class="flex items-center justify-between gap-3"><span
+                  class="text-xl font-semibold">Activities I’d enjoy together</span>
+                  <!-- <span class="profile-flip-hint">Tap to see interests ↻</span> -->
+                </span><span class="mt-4 flex flex-wrap gap-2"><span
+                  v-for="activity in profile.activities" :key="activity"
+                  class="rounded-full bg-white/80 px-3 py-2 text-sm font-semibold text-[#8F1839]">{{ activity
+                  }}</span></span></span><span class="profile-flip-face profile-flip-back"><span
+                class="flex items-center justify-between gap-3"><span class="text-xl font-semibold">A few more
+                  interests</span>
+                <!-- <span class="profile-flip-hint">Tap to see activities ↻</span> -->
+              </span><span v-if="profileInterests.length" class="mt-4 flex flex-wrap gap-2"><span
+                  v-for="interest in profileInterests" :key="interest"
+                  class="rounded-full bg-white/80 px-3 py-2 text-sm font-semibold text-[#4D2F39]">{{ interest
+                  }}</span></span><span v-else class="mt-3 block text-sm text-[#4D2F39]">No additional interests shared
+                yet.</span></span></span></button>
       </div>
     </section>
 
-    <section v-else class="mx-auto max-w-xl rounded-lg bg-white p-8 text-center"><UserRound class="mx-auto size-8 text-[#B4234A]" /><h1 class="mt-4 text-2xl font-semibold">{{ profileLoadError ? 'Profile unavailable' : 'Profile not found' }}</h1><p class="mt-2 text-sm text-[#6E4D58]">{{ profileLoadError || 'This profile may no longer be available.' }}</p><NuxtLink to="/matches" class="mt-5 inline-flex rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white">Browse matches</NuxtLink></section>
+    <section v-else class="mx-auto max-w-xl rounded-lg bg-white p-8 text-center">
+      <UserRound class="mx-auto size-8 text-[#B4234A]" />
+      <h1 class="mt-4 text-2xl font-semibold">{{ profileLoadError ? 'Profile unavailable' : 'Profile not found' }}</h1>
+      <p class="mt-2 text-sm text-[#6E4D58]">{{ profileLoadError || 'This profile may no longer be available.' }}</p>
+      <NuxtLink to="/matches"
+        class="mt-5 inline-flex rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white">
+        Browse matches</NuxtLink>
+    </section>
   </main>
 </template>
 
 <style scoped>
-.profile-photo { position: relative; overflow: hidden; background: #F3E8DA; }
-.profile-photo-empty { border: 2px dashed #CDB9A8; background: rgba(243, 232, 218, .5); }
-.triptych { height: 100%; width: 300%; max-width: none; object-fit: cover; }
-.triptych-first { transform: translateX(0); }
-.triptych-second { transform: translateX(-33.333%); }
-.triptych-third { transform: translateX(-66.666%); }
+.profile-photo {
+  position: relative;
+  overflow: hidden;
+  background: #F3E8DA;
+}
+
+.profile-photo-empty {
+  border: 2px dashed #CDB9A8;
+  background: rgba(243, 232, 218, .5);
+}
+
+.triptych {
+  height: 100%;
+  width: 300%;
+  max-width: none;
+  object-fit: cover;
+}
+
+.triptych-first {
+  transform: translateX(0);
+}
+
+.triptych-second {
+  transform: translateX(-33.333%);
+}
+
+.triptych-third {
+  transform: translateX(-66.666%);
+}
+
+.profile-flip-card {
+  min-height: 13rem;
+  border-radius: .5rem;
+  outline: none;
+  perspective: 1000px;
+  transition: filter .2s ease, transform .2s ease;
+}
+
+.profile-flip-card:hover,
+.profile-flip-card:focus-visible {
+  filter: brightness(1.035) drop-shadow(0 12px 18px rgba(180, 35, 74, .16));
+  transform: translateY(-2px);
+}
+
+.profile-flip-card:focus-visible {
+  box-shadow: 0 0 0 3px rgba(180, 35, 74, .3);
+}
+
+.profile-flip-inner {
+  position: relative;
+  display: block;
+  min-height: 13rem;
+  transform-style: preserve-3d;
+  transition: transform .55s cubic-bezier(.2, .7, .2, 1);
+}
+
+.profile-flip-card.is-flipped .profile-flip-inner {
+  transform: rotateY(180deg);
+}
+
+.profile-flip-face {
+  position: absolute;
+  inset: 0;
+  display: block;
+  overflow: auto;
+  border-radius: .5rem;
+  padding: 1.25rem;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.profile-flip-front {
+  background: #FCE3E8;
+}
+
+.profile-flip-back {
+  background: #EAF2DE;
+  transform: rotateY(180deg);
+}
+
+.profile-flip-hint {
+  flex-shrink: 0;
+  color: #8F1839;
+  font-size: .7rem;
+  font-weight: 700;
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .profile-flip-card,
+  .profile-flip-inner {
+    transition: none;
+  }
+
+  .profile-flip-card:hover,
+  .profile-flip-card:focus-visible {
+    transform: none;
+  }
+}
 </style>

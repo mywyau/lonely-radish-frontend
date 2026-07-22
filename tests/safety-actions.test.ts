@@ -25,7 +25,9 @@ describe('blocking and reporting', () => {
 
   it('offers safety actions from a profile and excludes blocked relationships', () => {
     expect(read('pages/profiles/[slug].vue')).toContain('ProfileSafetyActions')
-    expect(read('components/ProfileSafetyActions.vue')).toContain('Block or report')
+    expect(read('components/ProfileSafetyActions.vue')).toContain('Report profile')
+    expect(read('components/ProfileSafetyActions.vue')).toContain('Block user')
+    expect(read('components/ProfileSafetyActions.vue')).toContain('border-t border-[#E8D8C4]')
     expect(read('server/api/profiles/[slug].get.ts')).toContain('not exists(select 1 from blocks')
     expect(read('server/api/activities/[slug]/people.get.ts')).toContain('not exists(select 1 from blocks')
     expect(read('server/api/interests/index.post.ts')).toContain('not exists(select 1 from blocks')

@@ -55,6 +55,9 @@ export function useDailyInterest() {
 
   async function showInterest(profileSlug: string, profileName: string) {
     if (!import.meta.client || hasUsedDailyInterest.value || atMatchLimit.value) return false
+    const remainingAfterSend = Math.max(0, dailyInterestLimit - todaysInterests.value.length - 1)
+    const confirmed = window.confirm(`Show interest in ${profileName}? This will use 1 of your 5 daily interests. You will have ${remainingAfterSend} ${remainingAfterSend === 1 ? 'interest' : 'interests'} remaining today.`)
+    if (!confirmed) return false
     errorMessage.value = null
     successMessage.value = null
     sending.value = true

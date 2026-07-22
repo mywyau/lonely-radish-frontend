@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useMeStateV2 } from '@/composables/useMeStateV2'
-import { Bell, HeartHandshake, History, House, Menu, Send, ShieldCheck, Sparkles, X } from '@lucide/vue'
+import { Bell, Eye, HeartHandshake, History, House, Menu, Send, ShieldCheck, Sparkles, X } from '@lucide/vue'
 import { login, logout, signup } from '@/composables/useAuth'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
@@ -119,6 +119,12 @@ onBeforeUnmount(() => {
             class="w-full flex items-center rounded-lg px-3 py-2 text-sm text-[#2A1520] hover:bg-[#F3E8DA] transition"
             @click="closeMenu">
             {{ accountLabel }}
+          </NuxtLink>
+
+          <NuxtLink v-if="isLoggedIn" to="/profile/preview"
+            class="w-full flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-[#2A1520] hover:bg-[#F3E8DA] transition"
+            @click="closeMenu">
+            <Eye class="size-4" aria-hidden="true" />Profile preview
           </NuxtLink>
 
           <NuxtLink v-if="isLoggedIn" to="/preferences"

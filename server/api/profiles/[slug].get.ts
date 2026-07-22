@@ -26,7 +26,8 @@ export default defineEventHandler(async (event) => {
   if (!profile) throw createError({ statusCode: 404, statusMessage: 'Profile not found' })
   const [photos, activities, availability, contactDetails] = await Promise.all([
     db.query(`select public_url as src,storage_key as "storageKey",alt_text as alt,position from profile_photos where user_id=$1 order by position`, [profile.userId]),
-    db.query(`select coalesce(a.name,pa.custom_label) as name from profile_activities pa left join activities a on a.id=pa.activity_id where pa.user_id=$1 order by pa.position`, [profile.userId]),
+    db.query(`select coalesce(a.name,pa.custom_label) as name,coalesce(a.category,pa.custom_category) as category
+      from profile_activities pa left join activities a on a.id=pa.activity_id where pa.user_id=$1 order by pa.position`, [profile.userId]),
     profile.isMatched || profile.availabilityVisibleBeforeMatch
       ? db.query(`select label from availability where user_id=$1 order by position`, [profile.userId])
       : Promise.resolve({ rows: [] }),
@@ -37,7 +38,9 @@ export default defineEventHandler(async (event) => {
   ])
   return { ...profile, photos: await Promise.all(photos.rows.map(async photo => ({ ...photo,
     src: photo.storageKey ? await signedPhotoUrl(photo.storageKey) : photo.src, storageKey: undefined,
-  }))), activities: activities.rows.map(row => row.name), availability: availability.rows.map(row => row.label),
+  }))), activities: activities.rows.map(row => row.name),
+    interestCategories: [...new Set(activities.rows.map(row => ({ 'Food and drink': 'Casual', Gaming: 'Games', Learning: 'Learn & create' }[row.category as string] || row.category)).filter(Boolean))],
+    availability: availability.rows.map(row => row.label),
     availabilityVisibleBeforeMatch: profile.availabilityVisibleBeforeMatch,
     contactDetails: contactDetails.rows[0] ?? null }
 })
