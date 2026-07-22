@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ArrowLeft, ArrowRight, Check, Gamepad2, HeartHandshake, ImagePlus, Sparkles, Trophy, UserRound } from '@lucide/vue'
+import { ArrowLeft, ArrowRight, Check, Gamepad2, HeartHandshake, ImagePlus, Sparkles, Trophy, UserRound, UsersRound } from '@lucide/vue'
 
 definePageMeta({ title: 'Set up your profile · Lonely Radish', middleware: 'logged-in' })
 
@@ -11,7 +11,7 @@ const saving = ref(false)
 const errorMessage = ref('')
 const step = ref(1)
 const photoCount = ref(0)
-const profile = reactive({ firstName: '', lastName: '', displayName: '', genderIdentity: '', slug: '', dateOfBirth: '', pronouns: '', bio: '' })
+const profile = reactive({ firstName: '', lastName: '', displayName: '', genderIdentity: '', raceEthnicity: '', slug: '', dateOfBirth: '', pronouns: '', bio: '' })
 const birthDate = reactive({ day: '', month: '', year: '' })
 const profileNameStatus = ref<'idle' | 'checking' | 'available' | 'taken'>('idle')
 let profileNameCheck = 0
@@ -40,7 +40,8 @@ const availabilityDays = reactive([
 ])
 const selectedAvailabilityCount = computed(() => availabilityDays.filter(day => day.enabled).length)
 const invalidAvailabilityDay = computed(() => availabilityDays.find(day => day.enabled && day.startTime >= day.endTime))
-const genderOptions = ['Women', 'Men', 'Non-binary people']
+const genderOptions = ['Women', 'Men', 'Non-binary']
+const raceEthnicityOptions = ['Asian', 'Black / African / Caribbean', 'Hispanic / Latino', 'Middle Eastern', 'North African', 'Native / Indigenous', 'Pacific Islander', 'White', 'Multiracial / multi-ethnic']
 const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 const birthYears = Array.from({ length: 83 }, (_, index) => new Date().getFullYear() - 18 - index)
 const birthDays = computed(() => {
@@ -71,6 +72,23 @@ function toggle(list: string[], value: string, limit = 10) {
   const index = list.indexOf(value)
   if (index >= 0) list.splice(index, 1)
   else if (list.length < limit) list.push(value)
+}
+function toggleRaceEthnicity(value: string) {
+  preferences.noRaceEthnicityPreference = false
+  toggle(preferences.raceEthnicities, value, raceEthnicityOptions.length)
+  if (!preferences.raceEthnicities.length) preferences.noRaceEthnicityPreference = true
+}
+function selectNoRacePreference() {
+  preferences.noRaceEthnicityPreference = true
+  preferences.raceEthnicities.splice(0)
+}
+function selectEveryone() {
+  preferences.openToEveryone = true
+  preferences.genders.splice(0)
+}
+function toggleGenderPreference(value: string) {
+  preferences.openToEveryone = false
+  toggle(preferences.genders, value)
 }
 
 function activityIsSelected(name: string) {
@@ -112,7 +130,7 @@ async function load() {
   profile.lastName = user.value?.lastName || ''
   if (profileData.profile) Object.assign(profile, {
     displayName: profileData.profile.displayName || '', slug: profileData.profile.slug || '',
-    genderIdentity: profileData.profile.genderIdentity || '', dateOfBirth: profileData.profile.dateOfBirth?.slice(0, 10) || '', pronouns: profileData.profile.pronouns || '', bio: profileData.profile.bio || '',
+    genderIdentity: profileData.profile.genderIdentity || '', raceEthnicity: profileData.profile.raceEthnicity || '', dateOfBirth: profileData.profile.dateOfBirth?.slice(0, 10) || '', pronouns: profileData.profile.pronouns || '', bio: profileData.profile.bio || '',
   })
   if (profile.dateOfBirth) {
     const [year, month, day] = profile.dateOfBirth.split('-')
@@ -120,7 +138,6 @@ async function load() {
   }
   selectedActivities.value = activityData.selected
   Object.assign(preferences, general, dating)
-  preferences.openToEveryone = false
   preferences.publicOnly = schedule.publicOnly ?? preferences.publicOnly
   for (const window of schedule.windows || []) {
     const day = availabilityDays.find(item => item.weekday === window.weekday)
@@ -140,10 +157,23 @@ async function saveBasics() {
     const account = await $fetch<any>('/api/account/v2/profile', { method: 'POST', body: { firstName: profile.firstName, lastName: profile.lastName } })
     if (user.value) { user.value.firstName = account.firstName; user.value.lastName = account.lastName }
     profile.slug ||= createProfileSlug()
-    await $fetch('/api/profile/me', { method: 'PUT', body: { displayName: profile.displayName, genderIdentity: profile.genderIdentity, slug: profile.slug,
+    await $fetch('/api/profile/me', { method: 'PUT', body: { displayName: profile.displayName, genderIdentity: profile.genderIdentity, raceEthnicity: profile.raceEthnicity || null, slug: profile.slug,
       dateOfBirth: profile.dateOfBirth, pronouns: profile.pronouns, bio: profile.bio, availability: [] } })
     step.value = 2
   } catch (error: any) { errorMessage.value = error?.data?.statusMessage || 'We could not save your profile.' }
+  finally { saving.value = false }
+}
+
+async function saveRacialIdentity() {
+  errorMessage.value = ''
+  if (!profile.raceEthnicity) { errorMessage.value = 'Choose the option that best describes how you identify.'; return }
+  saving.value = true
+  try {
+    await $fetch('/api/profile/me', { method: 'PUT', body: { displayName: profile.displayName, genderIdentity: profile.genderIdentity,
+      raceEthnicity: profile.raceEthnicity, slug: profile.slug, dateOfBirth: profile.dateOfBirth,
+      pronouns: profile.pronouns, bio: profile.bio, availability: [] } })
+    step.value = 3
+  } catch (error: any) { errorMessage.value = error?.data?.statusMessage || 'We could not save how you identify.' }
   finally { saving.value = false }
 }
 
@@ -151,18 +181,13 @@ async function saveActivities() {
   errorMessage.value = ''
   if (!selectedActivities.value.length) { errorMessage.value = 'Choose at least one activity.'; return }
   saving.value = true
-  try { await $fetch('/api/preferences/activities', { method: 'PUT', body: { activities: selectedActivities.value } }); step.value = 3 }
+  try { await $fetch('/api/preferences/activities', { method: 'PUT', body: { activities: selectedActivities.value } }); step.value = 4 }
   catch (error: any) { errorMessage.value = error?.data?.statusMessage || 'We could not save your activities.' }
   finally { saving.value = false }
 }
 
 async function savePreferences() {
   errorMessage.value = ''; saving.value = true
-  if (!preferences.genders.length) {
-    errorMessage.value = 'Choose at least one type of person you are open to meeting.'
-    saving.value = false
-    return
-  }
   if (invalidAvailabilityDay.value) {
     errorMessage.value = `${invalidAvailabilityDay.value.name} end time must be after its start time.`
     saving.value = false
@@ -172,15 +197,25 @@ async function savePreferences() {
     await Promise.all([
       $fetch('/api/preferences/general', { method: 'PUT', body: { distance: preferences.distance, minimumAge: preferences.minimumAge,
         maximumAge: preferences.maximumAge, timing: preferences.timing, publicOnly: preferences.publicOnly } }),
-      $fetch('/api/preferences/dating', { method: 'PUT', body: { genders: preferences.genders,
-        openToEveryone: false, raceEthnicities: preferences.raceEthnicities,
-        noRaceEthnicityPreference: preferences.noRaceEthnicityPreference } }),
       $fetch('/api/preferences/schedule', { method: 'PUT', body: { publicOnly: preferences.publicOnly,
         availabilityVisibleBeforeMatch: false, windows: availabilityDays.filter(day => day.enabled)
           .map(({ weekday, startTime, endTime }) => ({ weekday, startTime, endTime })) } }),
     ])
-    step.value = 4
+    step.value = 5
   } catch (error: any) { errorMessage.value = error?.data?.statusMessage || 'We could not save your preferences.' }
+  finally { saving.value = false }
+}
+
+async function saveDatingPreferences() {
+  errorMessage.value = ''
+  if (!preferences.openToEveryone && !preferences.genders.length) { errorMessage.value = 'Choose at least one type of person you are open to meeting.'; return }
+  saving.value = true
+  try {
+    await $fetch('/api/preferences/dating', { method: 'PUT', body: { genders: preferences.genders,
+      openToEveryone: preferences.openToEveryone, raceEthnicities: preferences.raceEthnicities,
+      noRaceEthnicityPreference: preferences.noRaceEthnicityPreference } })
+    step.value = 6
+  } catch (error: any) { errorMessage.value = error?.data?.statusMessage || 'We could not save who you are open to meeting.' }
   finally { saving.value = false }
 }
 
@@ -203,9 +238,9 @@ onMounted(() => { load().catch(() => { errorMessage.value = 'We could not load o
     <section class="mx-auto max-w-3xl">
       <div class="mb-7 flex items-center justify-between gap-4">
         <div><p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">Profile setup</p><h1 class="mt-2 text-3xl font-semibold sm:text-4xl">Let’s make introductions easier.</h1></div>
-        <span class="shrink-0 rounded-full bg-[#FCE3E8] px-3 py-2 text-sm font-semibold text-[#8F1839]">{{ step }} of 4</span>
+        <span class="shrink-0 rounded-full bg-[#FCE3E8] px-3 py-2 text-sm font-semibold text-[#8F1839]">{{ step }} of 6</span>
       </div>
-      <div class="mb-6 grid grid-cols-4 gap-2" aria-label="Onboarding progress"><span v-for="number in 4" :key="number" class="h-2 rounded-full" :class="number <= step ? 'bg-[#B4234A]' : 'bg-[#E8D8C4]'" /></div>
+      <div class="mb-6 grid grid-cols-6 gap-2" aria-label="Onboarding progress"><span v-for="number in 6" :key="number" class="h-2 rounded-full" :class="number <= step ? 'bg-[#B4234A]' : 'bg-[#E8D8C4]'" /></div>
       <p class="mb-6 rounded-lg bg-[#F3E8DA] px-4 py-3 text-sm text-[#4D2F39]">Nothing is set in stone. You can update your profile, activities, preferences and photos later from your account.</p>
 
       <div v-if="loading" class="rounded-lg bg-white p-8 text-center text-[#6E4D58]">Loading your profile…</div>
@@ -225,7 +260,13 @@ onMounted(() => { load().catch(() => { errorMessage.value = 'We could not load o
         <div class="actions"><button :disabled="saving" class="primary" type="submit">{{ saving ? 'Saving…' : 'Continue' }}<ArrowRight class="size-4" /></button></div>
       </form>
 
-      <form v-else-if="step === 2" class="onboarding-card" @submit.prevent="saveActivities">
+      <form v-else-if="step === 2" class="onboarding-card" @submit.prevent="saveRacialIdentity">
+        <div class="step-title"><UserRound class="size-5 text-[#B4234A]" /><div><h2>How do you racially or ethnically identify?</h2><p>Choose the single option that best fits. You can change this later from your profile.</p></div></div>
+        <fieldset class="meeting-preferences"><legend>Your identity</legend><div class="mt-3 grid gap-2 sm:grid-cols-2"><button v-for="option in raceEthnicityOptions" :key="option" type="button" class="meeting-choice" :class="profile.raceEthnicity === option && 'selected'" :aria-pressed="profile.raceEthnicity === option" @click="profile.raceEthnicity = option"><span class="choice-indicator" aria-hidden="true">{{ profile.raceEthnicity === option ? '✓' : '' }}</span><span>{{ option }}</span></button><button type="button" class="meeting-choice" :class="profile.raceEthnicity === 'Prefer not to say' && 'selected'" :aria-pressed="profile.raceEthnicity === 'Prefer not to say'" @click="profile.raceEthnicity = 'Prefer not to say'"><span class="choice-indicator" aria-hidden="true">{{ profile.raceEthnicity === 'Prefer not to say' ? '✓' : '' }}</span><span>Prefer not to say</span></button></div></fieldset>
+        <div class="actions"><button class="secondary" type="button" @click="step = 1"><ArrowLeft class="size-4" />Back</button><button :disabled="saving || !profile.raceEthnicity" class="primary" type="submit">{{ saving ? 'Saving…' : 'Continue' }}<ArrowRight class="size-4" /></button></div>
+      </form>
+
+      <form v-else-if="step === 3" class="onboarding-card" @submit.prevent="saveActivities">
         <div class="step-title"><Sparkles class="size-5 text-[#B4234A]" /><div><h2>What would you enjoy doing?</h2><p>Choose up to 10 interests. Each choice helps people find you through the broader categories in Discover.</p></div></div>
         <div class="mt-6 space-y-4">
           <section v-for="group in activityGroups" :key="group.name" class="activity-group">
@@ -237,19 +278,25 @@ onMounted(() => { load().catch(() => { errorMessage.value = 'We could not load o
           </section>
         </div>
         <section v-if="selectedActivities.length" class="mt-5 rounded-lg bg-[#FCE3E8] p-4"><h3 class="font-semibold">Your interests ({{ selectedActivities.length }}/10)</h3><p v-if="activityLimitReached" class="mt-1 text-sm font-semibold text-[#8F1839]">You have selected the maximum of 10 interests.</p><div class="mt-3 flex flex-wrap gap-2"><button v-for="activity in selectedActivities" :key="activity.name" type="button" class="rounded-full bg-white px-3 py-2 text-sm font-semibold text-[#8F1839]" @click="toggleActivity(activity.name, activity.category, activity.custom)">{{ activity.name }} ×</button></div></section>
-        <div class="actions"><button class="secondary" type="button" @click="step = 1"><ArrowLeft class="size-4" />Back</button><button :disabled="saving || !selectedActivities.length" class="primary" type="submit">{{ saving ? 'Saving…' : 'Continue' }}<ArrowRight class="size-4" /></button></div>
+        <div class="actions"><button class="secondary" type="button" @click="step = 2"><ArrowLeft class="size-4" />Back</button><button :disabled="saving || !selectedActivities.length" class="primary" type="submit">{{ saving ? 'Saving…' : 'Continue' }}<ArrowRight class="size-4" /></button></div>
       </form>
 
-      <form v-else-if="step === 3" class="onboarding-card" @submit.prevent="savePreferences">
+      <form v-else-if="step === 4" class="onboarding-card" @submit.prevent="savePreferences">
         <div class="step-title"><HeartHandshake class="size-5 text-[#B4234A]" /><div><h2>Your match preferences</h2><p>Set a useful starting point. Every setting remains editable later.</p></div></div>
         <div class="mt-6 grid gap-5 sm:grid-cols-2">
           <label>Maximum distance <span class="value">{{ preferences.distance }} km</span><input v-model.number="preferences.distance" type="range" min="1" max="100"></label>
           <div class="grid grid-cols-2 gap-3"><label>Minimum age <input v-model.number="preferences.minimumAge" type="number" min="18" max="100"></label><label>Maximum age <input v-model.number="preferences.maximumAge" type="number" min="18" max="100"></label></div>
         </div>
         <fieldset><legend>Weekly availability</legend><p class="mt-1 text-sm font-normal leading-6 text-[#6E4D58]">Select the days you are generally free, then set the earliest and latest time that usually works. Matches can use this later when suggesting a date.</p><div class="mt-4 grid gap-3"><article v-for="day in availabilityDays" :key="day.weekday" class="availability-day" :class="day.enabled && 'enabled'"><div class="flex items-center justify-between gap-4"><label class="flex items-center gap-3"><input v-model="day.enabled" type="checkbox" class="size-4 accent-[#B4234A]">{{ day.name }}</label><span class="text-xs font-semibold text-[#6E4D58]">{{ day.enabled ? 'Available' : 'Not available' }}</span></div><div v-if="day.enabled" class="mt-4 grid grid-cols-2 gap-3"><label>From<input v-model="day.startTime" required type="time"></label><label>Until<input v-model="day.endTime" required type="time"></label></div></article></div><p class="mt-3 text-sm font-semibold text-[#6E4D58]">{{ selectedAvailabilityCount ? `${selectedAvailabilityCount} ${selectedAvailabilityCount === 1 ? 'day' : 'days'} selected` : 'No regular availability selected yet' }}</p></fieldset>
-        <fieldset class="meeting-preferences"><legend>Who are you open to meeting?</legend><p class="mt-1 text-sm font-normal leading-6 text-[#6E4D58]">Choose one or more. You can update this privately in Match preferences later.</p><div class="mt-4 grid gap-2 sm:grid-cols-3"><button v-for="option in genderOptions" :key="option" type="button" class="meeting-choice" :class="preferences.genders.includes(option) && 'selected'" :aria-pressed="preferences.genders.includes(option)" @click="toggle(preferences.genders, option)"><span class="choice-indicator" aria-hidden="true">{{ preferences.genders.includes(option) ? '✓' : '' }}</span><span>{{ option }}</span></button></div><p class="mt-3 text-xs font-semibold text-[#6E4D58]">{{ preferences.genders.length ? `${preferences.genders.length} selected` : 'Select at least one option' }}</p></fieldset>
         <label class="check mt-5"><input v-model="preferences.publicOnly" type="checkbox"> Only suggest public places for first meetings</label>
-        <div class="actions"><button class="secondary" type="button" @click="step = 2"><ArrowLeft class="size-4" />Back</button><button :disabled="saving || !preferences.genders.length || preferences.minimumAge > preferences.maximumAge || Boolean(invalidAvailabilityDay)" class="primary" type="submit">{{ saving ? 'Saving…' : 'Continue' }}<ArrowRight class="size-4" /></button></div>
+        <div class="actions"><button class="secondary" type="button" @click="step = 3"><ArrowLeft class="size-4" />Back</button><button :disabled="saving || preferences.minimumAge > preferences.maximumAge || Boolean(invalidAvailabilityDay)" class="primary" type="submit">{{ saving ? 'Saving…' : 'Continue' }}<ArrowRight class="size-4" /></button></div>
+      </form>
+
+      <form v-else-if="step === 5" class="onboarding-card" @submit.prevent="saveDatingPreferences">
+        <div class="step-title"><UsersRound class="size-5 text-[#B4234A]" /><div><h2>Who are you open to meeting?</h2><p>These private preferences shape who appears in your match pool and can be changed later.</p></div></div>
+        <fieldset class="meeting-preferences"><legend>Gender preferences</legend><p class="mt-1 text-sm font-normal leading-6 text-[#6E4D58]">Choose everyone, or select one or more types of people you are open to dating.</p><div class="mt-4 grid gap-2 sm:grid-cols-2"><button type="button" class="meeting-choice sm:col-span-2" :class="preferences.openToEveryone && 'selected'" :aria-pressed="preferences.openToEveryone" @click="selectEveryone"><span class="choice-indicator" aria-hidden="true">{{ preferences.openToEveryone ? '✓' : '' }}</span><span>Everyone</span></button><button v-for="option in genderOptions" :key="option" type="button" class="meeting-choice" :class="preferences.genders.includes(option) && 'selected'" :aria-pressed="preferences.genders.includes(option)" @click="toggleGenderPreference(option)"><span class="choice-indicator" aria-hidden="true">{{ preferences.genders.includes(option) ? '✓' : '' }}</span><span>{{ option }}</span></button></div><p class="mt-3 text-xs font-semibold text-[#6E4D58]">{{ preferences.openToEveryone ? 'Everyone selected' : preferences.genders.length ? `${preferences.genders.length} selected` : 'Select at least one option' }}</p></fieldset>
+        <fieldset class="meeting-preferences"><legend>Racial and ethnic preferences</legend><p class="mt-1 text-sm font-normal leading-6 text-[#6E4D58]">Optional. Choose communities you are interested in dating, or keep your match pool open.</p><div class="mt-4 grid gap-2 sm:grid-cols-2"><button type="button" class="meeting-choice sm:col-span-2" :class="preferences.noRaceEthnicityPreference && 'selected'" :aria-pressed="preferences.noRaceEthnicityPreference" @click="selectNoRacePreference"><span class="choice-indicator" aria-hidden="true">{{ preferences.noRaceEthnicityPreference ? '✓' : '' }}</span><span>No racial or ethnic preference</span></button><button v-for="option in raceEthnicityOptions" :key="option" type="button" class="meeting-choice" :class="preferences.raceEthnicities.includes(option) && 'selected'" :aria-pressed="preferences.raceEthnicities.includes(option)" @click="toggleRaceEthnicity(option)"><span class="choice-indicator" aria-hidden="true">{{ preferences.raceEthnicities.includes(option) ? '✓' : '' }}</span><span>{{ option }}</span></button></div><p class="mt-3 text-xs leading-5 text-[#6E4D58]">Identity is personal and nuanced. These broad options are matching controls only.</p></fieldset>
+        <div class="actions"><button class="secondary" type="button" @click="step = 4"><ArrowLeft class="size-4" />Back</button><button :disabled="saving || (!preferences.openToEveryone && !preferences.genders.length)" class="primary" type="submit">{{ saving ? 'Saving…' : 'Continue' }}<ArrowRight class="size-4" /></button></div>
       </form>
 
       <section v-else class="onboarding-card">
@@ -258,7 +305,7 @@ onMounted(() => { load().catch(() => { errorMessage.value = 'We could not load o
           <p v-if="photoCount">You have {{ photoCount }} {{ photoCount === 1 ? 'photo' : 'photos' }} ready.</p>
           <p v-else>You can upload a JPEG, PNG, or WebP image up to 5 MB, or continue without one for now.</p>
         </div>
-        <div class="actions"><button class="secondary" type="button" @click="step = 3"><ArrowLeft class="size-4" />Back</button><NuxtLink to="/photos?onboarding=1" class="secondary"><ImagePlus class="size-4" />{{ photoCount ? 'Manage photos' : 'Upload a photo' }}</NuxtLink><button :disabled="saving" class="primary" type="button" @click="finish"><Check class="size-4" />{{ saving ? 'Finishing…' : photoCount ? 'Finish setup' : 'Skip photos and finish' }}</button></div>
+        <div class="actions"><button class="secondary" type="button" @click="step = 5"><ArrowLeft class="size-4" />Back</button><NuxtLink to="/photos?onboarding=1" class="secondary"><ImagePlus class="size-4" />{{ photoCount ? 'Manage photos' : 'Upload a photo' }}</NuxtLink><button :disabled="saving" class="primary" type="button" @click="finish"><Check class="size-4" />{{ saving ? 'Finishing…' : photoCount ? 'Finish setup' : 'Skip photos and finish' }}</button></div>
       </section>
       <p v-if="errorMessage" class="mt-4 rounded-lg bg-[#FCE3E8] p-4 text-sm font-semibold text-[#8F1839]" role="alert">{{ errorMessage }}</p>
     </section>

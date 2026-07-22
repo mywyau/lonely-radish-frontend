@@ -11,10 +11,11 @@ export default defineEventHandler(async (event) => {
   const raceEthnicities = stringArray(body.raceEthnicities, 'Ethnicity preferences', 20)
   const noRaceEthnicityPreference = boolean(body.noRaceEthnicityPreference, 'No ethnicity preference')
   const { rows } = await db.query(`insert into match_preferences
-    (user_id, interested_genders, open_to_everyone, preferred_ethnicities, no_ethnicity_preference)
-    values ($1,$2,$3,$4,$5) on conflict (user_id) do update set
+    (user_id, interested_genders, open_to_everyone, preferred_ethnicities, no_ethnicity_preference, dating_preferences_set)
+    values ($1,$2,$3,$4,$5,true) on conflict (user_id) do update set
       interested_genders=excluded.interested_genders, open_to_everyone=excluded.open_to_everyone,
-      preferred_ethnicities=excluded.preferred_ethnicities, no_ethnicity_preference=excluded.no_ethnicity_preference
+      preferred_ethnicities=excluded.preferred_ethnicities, no_ethnicity_preference=excluded.no_ethnicity_preference,
+      dating_preferences_set=true
     returning interested_genders as genders, open_to_everyone as "openToEveryone",
       preferred_ethnicities as "raceEthnicities", no_ethnicity_preference as "noRaceEthnicityPreference"`,
     [sub, genders, openToEveryone, raceEthnicities, noRaceEthnicityPreference])

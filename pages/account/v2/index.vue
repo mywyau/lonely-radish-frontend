@@ -7,7 +7,8 @@ definePageMeta({
 });
 
 const { user, entitlement, resolve } = useMeStateV2();
-const profile = reactive({ firstName: "", lastName: "" });
+const profile = reactive({ firstName: "", lastName: "", raceEthnicity: "" });
+const raceEthnicityOptions = ['Asian', 'Black / African / Caribbean', 'Hispanic / Latino', 'Middle Eastern', 'North African', 'Native / Indigenous', 'Pacific Islander', 'White', 'Multiracial / multi-ethnic', 'Prefer not to say'];
 
 const saved = ref(false);
 const showDeletePanel = ref(false);
@@ -37,9 +38,12 @@ const datePreferences = [
 ];
 
 async function saveProfile() {
-  const updated = await $fetch<{ firstName: string | null; lastName: string | null }>("/api/account/v2/profile", {
-    method: "POST", body: { firstName: profile.firstName, lastName: profile.lastName },
-  });
+  const [updated] = await Promise.all([
+    $fetch<{ firstName: string | null; lastName: string | null }>("/api/account/v2/profile", {
+      method: "POST", body: { firstName: profile.firstName, lastName: profile.lastName },
+    }),
+    $fetch('/api/profile/identity', { method: 'PUT', body: { raceEthnicity: profile.raceEthnicity } }),
+  ]);
   if (user.value) {
     user.value.firstName = updated.firstName;
     user.value.lastName = updated.lastName;
@@ -89,6 +93,7 @@ onMounted(async () => {
   await resolve({ force: true });
   try { pauseState.value = await $fetch('/api/account/pause'); } catch { /* Account remains usable if pause status is unavailable. */ }
   try { Object.assign(contact, await $fetch('/api/profile/contact')); } catch { /* Contact details remain optional. */ }
+  try { const result = await $fetch<any>('/api/profile/me'); profile.raceEthnicity = result.profile?.raceEthnicity || ''; } catch { /* Identity remains editable when profile data is available. */ }
   profile.firstName = user.value?.firstName || "";
   profile.lastName = user.value?.lastName || "";
 });
@@ -164,6 +169,14 @@ onMounted(async () => {
             <label class="block text-sm font-medium">
               Last name
               <input v-model="profile.lastName" class="field" type="text" autocomplete="family-name" placeholder="Your last name">
+            </label>
+
+            <label class="block text-sm font-medium sm:col-span-2">
+              Racial or ethnic identity
+              <select v-model="profile.raceEthnicity" class="field" required>
+                <option value="" disabled>Select an option</option>
+                <option v-for="option in raceEthnicityOptions" :key="option" :value="option">{{ option }}</option>
+              </select>
             </label>
 
             <!-- <label class="block text-sm font-medium">

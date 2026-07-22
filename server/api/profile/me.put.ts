@@ -9,6 +9,9 @@ export default defineEventHandler(async (event) => {
   const displayName = text(body.displayName, 'Display name', 80, true)
   const genderIdentity = text(body.genderIdentity, 'Gender identity', 20, true)
   if (!['man', 'woman', 'neither'].includes(genderIdentity as string)) throw createError({ statusCode: 400, statusMessage: 'Select a valid gender identity' })
+  const raceEthnicity = text(body.raceEthnicity, 'Racial or ethnic identity', 100)
+  const raceEthnicityOptions = ['Asian', 'Black / African / Caribbean', 'Hispanic / Latino', 'Middle Eastern', 'North African', 'Native / Indigenous', 'Pacific Islander', 'White', 'Multiracial / multi-ethnic', 'Prefer not to say']
+  if (raceEthnicity && !raceEthnicityOptions.includes(raceEthnicity)) throw createError({ statusCode: 400, statusMessage: 'Select a valid racial or ethnic identity' })
   const slug = text(body.slug, 'Profile slug', 80, true)?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
   if (!slug) throw createError({ statusCode: 400, statusMessage: 'Profile slug must contain letters or numbers' })
   const pronouns = text(body.pronouns, 'Pronouns', 40)
@@ -29,12 +32,12 @@ export default defineEventHandler(async (event) => {
     await client.query('begin')
     const existingName = await client.query('select 1 from profiles where lower(trim(display_name))=lower(trim($1)) and user_id<>$2 limit 1', [displayName, sub])
     if (existingName.rowCount) throw createError({ statusCode: 409, statusMessage: 'That profile name is already in use' })
-    const { rows } = await client.query(`insert into profiles(user_id,slug,display_name,gender_identity,date_of_birth,pronouns,bio,neighbourhood)
-      values($1,$2,$3,$4,$5::date,$6,$7,$8) on conflict(user_id) do update set slug=excluded.slug,
-      display_name=excluded.display_name,gender_identity=excluded.gender_identity,date_of_birth=excluded.date_of_birth,pronouns=excluded.pronouns,
+    const { rows } = await client.query(`insert into profiles(user_id,slug,display_name,gender_identity,race_ethnicity,date_of_birth,pronouns,bio,neighbourhood)
+      values($1,$2,$3,$4,$5,$6::date,$7,$8,$9) on conflict(user_id) do update set slug=excluded.slug,
+      display_name=excluded.display_name,gender_identity=excluded.gender_identity,race_ethnicity=excluded.race_ethnicity,date_of_birth=excluded.date_of_birth,pronouns=excluded.pronouns,
       bio=excluded.bio,neighbourhood=excluded.neighbourhood returning slug,display_name as "displayName",
-      gender_identity as "genderIdentity",date_of_birth as "dateOfBirth",pronouns,bio,neighbourhood,visibility`,
-      [sub, slug, displayName, genderIdentity, dateOfBirth, pronouns, bio, neighbourhood])
+      gender_identity as "genderIdentity",race_ethnicity as "raceEthnicity",date_of_birth as "dateOfBirth",pronouns,bio,neighbourhood,visibility`,
+      [sub, slug, displayName, genderIdentity, raceEthnicity, dateOfBirth, pronouns, bio, neighbourhood])
     await client.query('delete from availability where user_id=$1', [sub])
     for (const [index, label] of availability.entries()) await client.query('insert into availability(user_id,label,position) values($1,$2,$3)', [sub,label,index+1])
     await client.query('commit')
