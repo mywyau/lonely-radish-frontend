@@ -48,7 +48,16 @@ const apologyMessage = ref('')
 const apologySending = ref(false)
 const apologyError = ref('')
 const activitiesFlipped = ref(false)
-const profile = computed(() => databaseProfile.value || profiles[route.params.slug as keyof typeof profiles])
+const profile = computed(() => {
+  const resolvedProfile = databaseProfile.value || profiles[route.params.slug as keyof typeof profiles]
+  if (!resolvedProfile || route.query.connection !== 'past') return resolvedProfile
+  return {
+    ...resolvedProfile,
+    isMatched: false,
+    relationshipStatus: 'unmatched',
+    contactDetails: null,
+  }
+})
 const profileSlug = computed(() => String(route.params.slug))
 const galleryPhotos = computed(() => profile.value?.photos.flatMap((photo: string | { src: string; alt?: string }, triptychIndex: number) => {
   if (typeof photo !== 'string') return [{ ...photo, panel: null }]
@@ -149,8 +158,7 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
             :disabled="sending || profile.isMatched || profile.relationshipStatus === 'unmatched' || profile.interestSent || atMatchLimit || hasUsedDailyInterest"
             class="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#8F1839] disabled:cursor-not-allowed disabled:bg-[#D7A7B3]"
             @click="showInterest(profileSlug, profile.name)">
-            <HeartHandshake class="size-4" />{{ sending ? 'Sending…' : profile.isMatched ? `Already matched with
-            ${profile.name}` : profile.relationshipStatus === 'unmatched' ? `Unmatched from ${profile.name}` :
+            <HeartHandshake class="size-4" />{{ sending ? 'Sending…' : profile.isMatched ? `Already matched with ${profile.name}` : profile.relationshipStatus === 'unmatched' ? `Unmatched from ${profile.name}` :
               profile.interestSent ? 'Interest already sent' : atMatchLimit ? '5-match limit reached' :
                 isTodaysChoice(profileSlug) ? `Interest sent to ${profile.name}` : 'Show interest' }}
           </button>
@@ -215,7 +223,7 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
           <div class="mt-4 flex flex-wrap gap-2"><span v-for="time in profile.availability" :key="time"
               class="rounded-full bg-[#F3E8DA] px-3 py-2 text-sm font-semibold text-[#4D2F39]">{{ time }}</span></div>
         </section>
-        <section v-if="profile.contactDetails"
+        <section v-if="profile.contactDetails && profile.isMatched && profile.relationshipStatus !== 'unmatched'"
           class="rounded-lg bg-white p-5 shadow-[0_10px_24px_rgba(180,35,74,0.08)] sm:p-6">
           <h2 class="text-xl font-semibold">Contact details</h2>
           <p class="mt-2 text-xs leading-5 text-[#6E4D58]">Shared with you because you are an active match.</p>
@@ -231,7 +239,7 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
               profile.contactDetails.socialHandle }}</p>
           </div>
         </section>
-        <button type="button" class="profile-flip-card text-left" :class="activitiesFlipped && 'is-flipped'"
+        <button v-if="profile.relationshipStatus !== 'unmatched'" type="button" class="profile-flip-card text-left" :class="activitiesFlipped && 'is-flipped'"
           :aria-pressed="activitiesFlipped" :aria-label="activitiesFlipped ? 'Show activities' : 'Show interests'"
           @click="activitiesFlipped = !activitiesFlipped"><span class="profile-flip-inner"><span
               class="profile-flip-face profile-flip-front"><span class="flex items-center justify-between gap-3"><span
@@ -249,6 +257,13 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
                   class="rounded-full bg-white/80 px-3 py-2 text-sm font-semibold text-[#4D2F39]">{{ interest
                   }}</span></span><span v-else class="mt-3 block text-sm text-[#4D2F39]">No additional interests shared
                 yet.</span></span></span></button>
+        <section v-else class="rounded-lg bg-[#F3E8DA] p-5 sm:p-6">
+          <h2 class="text-xl font-semibold">Past connection</h2>
+          <p class="mt-3 text-sm leading-6 text-[#4D2F39]">
+            You and {{ profile.name }} are no longer matched. Their activities, interests, availability and contact
+            details are no longer available from this connection.
+          </p>
+        </section>
       </div>
     </section>
 

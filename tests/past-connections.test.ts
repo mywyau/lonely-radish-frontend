@@ -23,6 +23,8 @@ describe('past connections', () => {
     expect(page).toContain("`/api/matches/${connection.id}/apology`")
     expect(api).toContain('match_apology_notes')
     expect(page).toContain('lonely-radish-preview-rejected-match')
+    expect(page).toContain("query: { connection: 'past' }")
+    expect(page).toContain('View unmatched profile')
     expect(read('pages/matches/index.vue')).toContain("localStorage.setItem('lonely-radish-preview-rejected-match'")
   })
 })

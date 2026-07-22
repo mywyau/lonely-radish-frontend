@@ -56,7 +56,7 @@ onMounted(async () => {
             <div class="min-w-0 flex-1"><h2 class="text-lg font-semibold">{{ connection.name }}</h2><p class="mt-1 flex items-center gap-1.5 text-sm text-[#6E4D58]"><XCircle class="size-4" />{{ outcome(connection) }}</p><p v-if="connection.activity" class="mt-1 text-xs text-[#6E4D58]">Last plan: {{ connection.activity }}</p><p v-if="connection.endedAt" class="mt-1 text-xs text-[#6E4D58]">{{ new Date(connection.endedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) }}</p></div>
           </div>
           <div class="mt-4 flex flex-wrap gap-2">
-            <NuxtLink v-if="connection.canViewProfile" :to="`/profiles/${connection.slug}`" class="rounded-lg bg-[#F3E8DA] px-4 py-2.5 text-sm font-semibold text-[#8F1839]">View profile</NuxtLink>
+            <NuxtLink v-if="connection.canViewProfile" :to="{ path: `/profiles/${connection.slug}`, query: { connection: 'past' } }" class="rounded-lg bg-[#F3E8DA] px-4 py-2.5 text-sm font-semibold text-[#8F1839]">View unmatched profile</NuxtLink>
             <NuxtLink v-if="connection.canReconsider && connection.proposalId" :to="`/dates/${connection.proposalId}/follow-up`" class="rounded-lg bg-[#B4234A] px-4 py-2.5 text-sm font-semibold text-white">Review your answer</NuxtLink>
             <button v-if="connection.endedByMe && !connection.apologySent" type="button" class="rounded-lg bg-[#FCE3E8] px-4 py-2.5 text-sm font-semibold text-[#8F1839]" @click="apologyFor = connection.id; apologyMessage = ''">Send an apology</button>
             <span v-else-if="connection.apologySent" class="rounded-lg bg-[#EAF2DE] px-4 py-2.5 text-sm font-semibold text-[#4D2F39]">Apology sent</span>
