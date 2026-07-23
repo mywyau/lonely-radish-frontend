@@ -25,6 +25,7 @@ describe('past connections', () => {
     expect(page).toContain('lonely-radish-preview-rejected-match')
     expect(page).toContain("query: { connection: 'past' }")
     expect(page).toContain('View unmatched profile')
+    expect(page).toContain('Load more past connections')
     expect(read('pages/matches/index.vue')).toContain("localStorage.setItem('lonely-radish-preview-rejected-match'")
   })
 })

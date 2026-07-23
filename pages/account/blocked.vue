@@ -9,12 +9,23 @@ const loading = ref(true)
 const errorMessage = ref('')
 const pendingUnblock = ref<BlockedUser | null>(null)
 const unblocking = ref(false)
+const nextCursor = ref<string | null>(null)
+const hasMore = ref(false)
+const loadingMore = ref(false)
 
-async function loadBlockedUsers() {
-  loading.value = true; errorMessage.value = ''
-  try { blockedUsers.value = (await $fetch<{ blockedUsers: BlockedUser[] }>('/api/blocks')).blockedUsers }
+async function loadBlockedUsers(loadMore = false) {
+  if (loadMore) loadingMore.value = true
+  else loading.value = true
+  errorMessage.value = ''
+  try {
+    const result = await $fetch<{ blockedUsers: BlockedUser[]; nextCursor: string | null; hasMore: boolean }>('/api/blocks', {
+      query: loadMore && nextCursor.value ? { cursor: nextCursor.value } : undefined,
+    })
+    blockedUsers.value = loadMore ? [...blockedUsers.value, ...result.blockedUsers] : result.blockedUsers
+    nextCursor.value = result.nextCursor; hasMore.value = result.hasMore
+  }
   catch (error: any) { errorMessage.value = error?.data?.statusMessage || 'Blocked users could not be loaded.' }
-  finally { loading.value = false }
+  finally { loading.value = false; loadingMore.value = false }
 }
 async function unblock() {
   if (!pendingUnblock.value) return
@@ -41,7 +52,7 @@ onMounted(loadBlockedUsers)
       </div>
 
       <div v-if="loading" class="mt-6 rounded-lg bg-white p-8 text-center text-sm text-[#6E4D58]" aria-live="polite">Loading blocked users…</div>
-      <p v-else-if="errorMessage" class="mt-6 rounded-lg bg-[#FCE3E8] p-4 text-sm font-semibold text-[#8F1839]" role="alert">{{ errorMessage }}</p>
+      <p v-else-if="errorMessage && !blockedUsers.length" class="mt-6 rounded-lg bg-[#FCE3E8] p-4 text-sm font-semibold text-[#8F1839]" role="alert">{{ errorMessage }}</p>
       <div v-else-if="blockedUsers.length" class="mt-6 grid gap-3">
         <article v-for="person in blockedUsers" :key="person.slug" class="flex items-center gap-4 rounded-lg bg-white p-5 shadow-[0_8px_20px_rgba(180,35,74,.07)]">
           <img v-if="person.photoUrl" :src="person.photoUrl" alt="" class="size-14 shrink-0 rounded-full object-cover">
@@ -49,6 +60,8 @@ onMounted(loadBlockedUsers)
           <div class="min-w-0 flex-1"><h2 class="truncate text-lg font-semibold">{{ person.name }}</h2><p class="mt-1 text-xs text-[#6E4D58]">Blocked {{ new Date(person.blockedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) }}</p></div>
           <button type="button" class="rounded-lg border border-[#B4234A]/30 px-4 py-2.5 text-sm font-semibold text-[#8F1839] hover:bg-[#FCE3E8]" @click="pendingUnblock = person">Unblock</button>
         </article>
+        <button v-if="hasMore" type="button" :disabled="loadingMore" class="mx-auto mt-3 rounded-lg bg-[#4D2F39] px-5 py-3 text-sm font-semibold text-white disabled:opacity-50" @click="loadBlockedUsers(true)">{{ loadingMore ? 'Loading…' : 'Load more blocked users' }}</button>
+        <p v-if="errorMessage" class="text-center text-sm font-semibold text-[#8F1839]" role="alert">{{ errorMessage }}</p>
       </div>
       <div v-else class="mt-6 rounded-lg bg-white p-8 text-center"><UserRound class="mx-auto size-8 text-[#B4234A]" /><h2 class="mt-3 text-xl font-semibold">You haven’t blocked anyone.</h2><p class="mt-2 text-sm text-[#6E4D58]">Anyone you block in future will appear here.</p></div>
     </section>

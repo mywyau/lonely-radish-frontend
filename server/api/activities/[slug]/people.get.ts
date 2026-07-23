@@ -1,9 +1,10 @@
-import { createError, getRouterParam, setHeader } from 'h3'
+import { createError, getQuery, getRouterParam, setHeader } from 'h3'
 import { db } from '~/server/repositories/db'
 import { requireUser } from '~/server/utils/requireUser'
 import { signedPhotoUrl } from '~/server/utils/supabaseStorage'
 import { discoveryCategory } from '~/utils/activityDiscovery'
 import { discoveryDistanceSelect, viewerDiscoveryJoins, viewerDiscoveryWhere } from '~/server/utils/discoveryFilters'
+import { decodeCursor, pageRows } from '~/server/utils/cursorPagination'
 
 export default defineEventHandler(async (event) => {
   setHeader(event, 'Cache-Control', 'private, no-store')
@@ -11,8 +12,10 @@ export default defineEventHandler(async (event) => {
   const slug = getRouterParam(event, 'slug') || ''
   const category = discoveryCategory(slug)
   if (!category) throw createError({ statusCode: 404, statusMessage: 'Category not found' })
+  const cursor = decodeCursor(getQuery(event).cursor)
+  const pageSize = 20
 
-  const { rows } = await db.query(`select p.slug,p.display_name as name,
+  const { rows } = await db.query(`select p.slug,p.display_name as name,p.updated_at::text as "sortAt",
     extract(year from age(current_date,p.date_of_birth))::int as age,p.neighbourhood as place,p.bio as detail,
     photo.storage_key as "photoStorageKey",photo.public_url as "legacyPhotoUrl",shared."activityTags",
     ${discoveryDistanceSelect}
@@ -32,14 +35,16 @@ export default defineEventHandler(async (event) => {
       and not exists(select 1 from matches m where m.status='active' and
         ((m.user_one_id=$2 and m.user_two_id=p.user_id) or (m.user_two_id=$2 and m.user_one_id=p.user_id)))
       ${viewerDiscoveryWhere}
-    order by p.updated_at desc limit 30`, [category.databaseCategories,sub])
+      and ($3::timestamptz is null or (p.updated_at,p.slug)<($3::timestamptz,$4::text))
+    order by p.updated_at desc,p.slug desc limit $5`, [category.databaseCategories,sub,cursor?.sortAt || null,cursor?.tieBreaker || null,pageSize+1])
 
-  const people = await Promise.all(rows.map(async person => ({
+  const page = pageRows(rows, pageSize, row => ({ sortAt: row.sortAt, tieBreaker: row.slug }))
+  const people = await Promise.all(page.items.map(async person => ({
     slug: person.slug, name: person.name, age: person.age,
     place: person.distanceKm != null ? `${person.distanceKm} km away` : person.place || 'Nearby',
     detail: person.detail || `Interested in ${category.name.toLowerCase()} activities.`,
     activityTags: person.activityTags || [], reason: 'Selected interests', interestSent: person.interestSent === true, photoUrl: person.photoStorageKey
       ? await signedPhotoUrl(person.photoStorageKey) : person.legacyPhotoUrl || null,
   })))
-  return { activityName: category.name, categoryName: category.name, people }
+  return { activityName: category.name, categoryName: category.name, people, nextCursor: page.nextCursor, hasMore: page.hasMore }
 })

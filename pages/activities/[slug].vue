@@ -19,6 +19,24 @@ const fallbackPeople = [
 const databasePeople = ref<any[]>([])
 const candidatesLoaded = ref(false)
 const candidatesError = ref('')
+const nextCursor = ref<string | null>(null)
+const hasMore = ref(false)
+const loadingMore = ref(false)
+
+async function loadCandidates(loadMore = false) {
+  if (loadMore) loadingMore.value = true
+  candidatesError.value = ''
+  try {
+    const result = await $fetch<{ people: any[]; nextCursor: string | null; hasMore: boolean }>(`/api/activities/${slug.value}/people`, {
+      query: loadMore && nextCursor.value ? { cursor: nextCursor.value } : undefined,
+    })
+    databasePeople.value = loadMore ? [...databasePeople.value, ...result.people] : result.people
+    nextCursor.value = result.nextCursor
+    hasMore.value = result.hasMore
+    candidatesLoaded.value = true
+  } catch (error: any) { candidatesError.value = error?.data?.statusMessage || 'People could not be loaded.' }
+  finally { loadingMore.value = false }
+}
 
 const visiblePeople = computed(() => {
   if (!activityExists.value) return []
@@ -31,9 +49,7 @@ const visiblePeople = computed(() => {
 useHead(() => ({ title: `${activityName.value} Matches · Lonely Radish` }))
 onMounted(async () => {
   await loadInterest()
-  try { databasePeople.value = (await $fetch<{ people: any[] }>(`/api/activities/${slug.value}/people`)).people }
-  catch (error: any) { candidatesError.value = error?.data?.statusMessage || 'People could not be loaded.' }
-  finally { candidatesLoaded.value = !candidatesError.value }
+  await loadCandidates()
 })
 </script>
 
@@ -81,6 +97,8 @@ onMounted(async () => {
             <p v-else-if="hasUsedDailyInterest" class="mt-3 text-xs leading-5 text-[#6E4D58]" role="status"><template v-if="isTodaysChoice(person.slug)">You sent interest to {{ person.name }} today.</template><template v-else>You have sent your 5 interests for today.</template> You can send more tomorrow.</p>
           </article>
         </div>
+        <div v-if="hasMore" class="mt-6 text-center"><button type="button" :disabled="loadingMore" class="rounded-lg bg-[#4D2F39] px-5 py-3 text-sm font-semibold text-white disabled:opacity-50" @click="loadCandidates(true)">{{ loadingMore ? 'Loading…' : 'Load more people' }}</button></div>
+        <p v-if="candidatesError && databasePeople.length" class="mt-4 text-center text-sm font-semibold text-[#8F1839]" role="alert">{{ candidatesError }}</p>
       </div>
 
       <div v-else class="mt-8 rounded-lg bg-white p-8 text-center shadow-[0_10px_24px_rgba(180,35,74,0.08)]">

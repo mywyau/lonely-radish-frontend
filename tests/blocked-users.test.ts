@@ -22,5 +22,6 @@ describe('blocked users management', () => {
     expect(page).toContain("'/api/blocks'")
     expect(page).toContain('Previous interests, matches, and plans will not be restored.')
     expect(page).toContain('Yes, unblock')
+    expect(page).toContain('Load more blocked users')
   })
 })

@@ -21,5 +21,6 @@ describe('real activity candidates', () => {
     expect(page).toContain("person.interestSent ? 'Interest already sent'")
     expect(page).toContain('broader category')
     expect(page).toContain('person.activityTags')
+    expect(page).toContain('Load more people')
   })
 })

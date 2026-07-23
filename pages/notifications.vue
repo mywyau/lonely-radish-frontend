@@ -8,6 +8,9 @@ const notices = ref<Notice[]>([])
 const unreadCount = ref(0)
 const loading = ref(true)
 const errorMessage = ref('')
+const nextCursor = ref<string | null>(null)
+const hasMore = ref(false)
+const loadingMore = ref(false)
 
 const copy: Record<string, (notice: Notice) => string> = {
   new_match: n => `You and ${n.actorName || 'someone new'} matched.`,
@@ -26,12 +29,17 @@ function destination(notice: Notice) {
   return notice.proposalId && ['follow_up_ready','date_follow_up_closed','date_follow_up_changed'].includes(notice.kind)
     ? `/dates/${notice.proposalId}/follow-up` : '/matches'
 }
-async function load() {
+async function load(loadMore = false) {
+  if (loadMore) loadingMore.value = true
+  errorMessage.value = ''
   try {
-    const result = await $fetch<{ notifications: Notice[]; unreadCount: number }>('/api/notifications?includeRead=true')
-    notices.value = result.notifications; unreadCount.value = result.unreadCount
+    const result = await $fetch<{ notifications: Notice[]; unreadCount: number; nextCursor: string | null; hasMore: boolean }>('/api/notifications', {
+      query: { includeRead: true, ...(loadMore && nextCursor.value ? { cursor: nextCursor.value } : {}) },
+    })
+    notices.value = loadMore ? [...notices.value, ...result.notifications] : result.notifications
+    unreadCount.value = result.unreadCount; nextCursor.value = result.nextCursor; hasMore.value = result.hasMore
   } catch (error: any) { errorMessage.value = error?.data?.statusMessage || 'Notifications could not be loaded.' }
-  finally { loading.value = false }
+  finally { loading.value = false; loadingMore.value = false }
 }
 async function markRead(notice: Notice) {
   if (!notice.readAt) await $fetch(`/api/notifications/${notice.id}/read`, { method: 'POST' })
@@ -60,11 +68,13 @@ onMounted(load)
         <button v-if="unreadCount" type="button" class="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-[#8F1839]" @click="readAll"><CheckCheck class="size-4" />Mark all read</button>
       </div>
       <div v-if="loading" class="mt-8 rounded-lg bg-white p-8 text-center text-[#6E4D58]">Loading notifications…</div>
-      <p v-else-if="errorMessage" class="mt-8 rounded-lg bg-[#FCE3E8] p-4 text-sm font-semibold text-[#8F1839]">{{ errorMessage }}</p>
+      <p v-else-if="errorMessage && !notices.length" class="mt-8 rounded-lg bg-[#FCE3E8] p-4 text-sm font-semibold text-[#8F1839]">{{ errorMessage }}</p>
       <div v-else-if="notices.length" class="mt-8 grid gap-3">
         <article v-for="notice in notices" :key="notice.id" class="rounded-lg border p-5" :class="notice.readAt ? 'border-transparent bg-white/60' : 'border-[#E6A8B8] bg-white shadow-[0_8px_20px_rgba(180,35,74,.08)]'">
             <div class="flex items-start gap-3"><component :is="notice.kind === 'new_match' ? HeartHandshake : notice.kind === 'date_confirmed' ? CalendarCheck : Bell" class="mt-0.5 size-5 shrink-0 text-[#B4234A]" /><div class="min-w-0 flex-1"><p class="font-semibold">{{ copy[notice.kind]?.(notice) || 'You have a new update.' }}</p><p class="mt-1 text-xs text-[#6E4D58]">{{ new Date(notice.createdAt).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' }) }}</p><div class="mt-3 flex flex-wrap gap-3"><NuxtLink :to="destination(notice)" class="text-sm font-semibold text-[#8F1839]" @click="markRead(notice)">View update</NuxtLink><button v-if="!notice.readAt" type="button" class="text-sm text-[#6E4D58]" @click="markRead(notice)">Mark read</button><button type="button" class="inline-flex items-center gap-1 text-sm text-[#8F1839]" @click="deleteNotice(notice)"><Trash2 class="size-3.5" />Delete</button></div></div></div>
         </article>
+        <button v-if="hasMore" type="button" :disabled="loadingMore" class="mx-auto mt-3 rounded-lg bg-[#4D2F39] px-5 py-3 text-sm font-semibold text-white disabled:opacity-50" @click="load(true)">{{ loadingMore ? 'Loading…' : 'Load more notifications' }}</button>
+        <p v-if="errorMessage" class="text-center text-sm font-semibold text-[#8F1839]" role="alert">{{ errorMessage }}</p>
       </div>
       <div v-else class="mt-8 rounded-lg bg-white p-8 text-center"><Inbox class="mx-auto size-8 text-[#B4234A]" /><h2 class="mt-3 text-xl font-semibold">You’re all caught up.</h2><p class="mt-2 text-sm text-[#6E4D58]">New match and date updates will appear here.</p></div>
     </section>
