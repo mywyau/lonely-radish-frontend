@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Bell, CalendarCheck, CheckCheck, HeartHandshake, Inbox, Trash2 } from '@lucide/vue'
+import { Bell, CalendarCheck, CheckCheck, ChevronDown, HeartHandshake, Inbox, Trash2 } from '@lucide/vue'
 
 definePageMeta({ title: 'Notifications · Lonely Radish', middleware: 'logged-in' })
 
@@ -11,8 +11,13 @@ const errorMessage = ref('')
 const nextCursor = ref<string | null>(null)
 const hasMore = ref(false)
 const loadingMore = ref(false)
+const emailPreferences = reactive({ interests: true, matches: true, datePlans: true, followUps: true })
+const emailPreferencesCollapsed = ref(true)
+const savingEmailPreferences = ref(false)
+const emailPreferencesSaved = ref(false)
 
 const copy: Record<string, (notice: Notice) => string> = {
+  interest_received: n => `${n.actorName || 'Someone new'} showed interest in meeting you.`,
   new_match: n => `You and ${n.actorName || 'someone new'} matched.`,
   proposal_received: n => `${n.actorName || 'Your match'} suggested a date plan.`,
   proposal_updated: n => `${n.actorName || 'Your match'} updated your date plan.`,
@@ -26,6 +31,7 @@ const copy: Record<string, (notice: Notice) => string> = {
 }
 function destination(notice: Notice) {
   if (notice.kind === 'match_apology') return '/matches/past'
+  if (notice.kind === 'interest_received') return '/interests/received'
   return notice.proposalId && ['follow_up_ready','date_follow_up_closed','date_follow_up_changed'].includes(notice.kind)
     ? `/dates/${notice.proposalId}/follow-up` : '/matches'
 }
@@ -57,7 +63,18 @@ async function deleteNotice(notice: Notice) {
     if (!notice.readAt) unreadCount.value = Math.max(0, unreadCount.value - 1)
   } catch (error: any) { errorMessage.value = error?.data?.statusMessage || 'The notification could not be deleted.' }
 }
-onMounted(load)
+async function saveEmailPreferences() {
+  savingEmailPreferences.value = true
+  emailPreferencesSaved.value = false
+  try {
+    Object.assign(emailPreferences, await $fetch('/api/email/preferences', { method: 'PUT', body: emailPreferences }))
+    emailPreferencesSaved.value = true
+  } finally { savingEmailPreferences.value = false }
+}
+onMounted(async () => {
+  await load()
+  try { Object.assign(emailPreferences, await $fetch('/api/email/preferences')) } catch { /* In-app notifications remain available. */ }
+})
 </script>
 
 <template>
@@ -67,6 +84,19 @@ onMounted(load)
         <div><p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">Updates</p><h1 class="mt-2 text-4xl font-semibold">Notifications</h1><p class="mt-3 text-[#6E4D58]">Matches, date plans, and post-date check-ins in one place.</p></div>
         <button v-if="unreadCount" type="button" class="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-[#8F1839]" @click="readAll"><CheckCheck class="size-4" />Mark all read</button>
       </div>
+      <section class="mt-8 rounded-lg bg-white p-5 shadow-[0_8px_20px_rgba(180,35,74,.06)]">
+        <button type="button" class="flex w-full items-start justify-between gap-4 text-left" :aria-expanded="!emailPreferencesCollapsed" aria-controls="email-notification-settings" @click="emailPreferencesCollapsed = !emailPreferencesCollapsed">
+          <span><span class="block text-lg font-semibold">Email notifications</span><span class="mt-1 block text-sm text-[#6E4D58]">Choose which important updates can also reach your inbox.</span></span>
+          <ChevronDown class="mt-1 size-5 shrink-0 text-[#8F1839] transition-transform" :class="!emailPreferencesCollapsed && 'rotate-180'" aria-hidden="true" />
+        </button>
+        <form id="email-notification-settings" v-show="!emailPreferencesCollapsed" class="mt-4 grid gap-3 sm:grid-cols-2" @submit.prevent="saveEmailPreferences">
+          <label class="flex items-center gap-3 rounded-lg bg-[#FBF7F1] p-3 text-sm font-semibold"><input v-model="emailPreferences.interests" class="size-4 accent-[#B4234A]" type="checkbox">New interests</label>
+          <label class="flex items-center gap-3 rounded-lg bg-[#FBF7F1] p-3 text-sm font-semibold"><input v-model="emailPreferences.matches" class="size-4 accent-[#B4234A]" type="checkbox">Matches and connections</label>
+          <label class="flex items-center gap-3 rounded-lg bg-[#FBF7F1] p-3 text-sm font-semibold"><input v-model="emailPreferences.datePlans" class="size-4 accent-[#B4234A]" type="checkbox">Date plan updates</label>
+          <label class="flex items-center gap-3 rounded-lg bg-[#FBF7F1] p-3 text-sm font-semibold"><input v-model="emailPreferences.followUps" class="size-4 accent-[#B4234A]" type="checkbox">Post-date check-ins</label>
+          <div class="flex items-center gap-3 sm:col-span-2"><button type="submit" :disabled="savingEmailPreferences" class="rounded-lg bg-[#4D2F39] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{{ savingEmailPreferences ? 'Saving…' : 'Save email preferences' }}</button><span v-if="emailPreferencesSaved" class="text-sm font-semibold text-[#52713A]" role="status">Saved</span></div>
+        </form>
+      </section>
       <div v-if="loading" class="mt-8 rounded-lg bg-white p-8 text-center text-[#6E4D58]">Loading notifications…</div>
       <p v-else-if="errorMessage && !notices.length" class="mt-8 rounded-lg bg-[#FCE3E8] p-4 text-sm font-semibold text-[#8F1839]">{{ errorMessage }}</p>
       <div v-else-if="notices.length" class="mt-8 grid gap-3">

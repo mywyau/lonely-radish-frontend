@@ -87,7 +87,7 @@ create unique index if not exists profile_activities_custom_unique on profile_ac
 
 create table if not exists match_preferences (
   user_id text primary key references users(id) on delete cascade,
-  max_distance_km smallint not null default 10 check (max_distance_km between 1 and 500),
+  max_distance_km smallint not null default 10 check (max_distance_km between 1 and 100),
   minimum_age smallint not null default 18 check (minimum_age between 18 and 100),
   maximum_age smallint not null default 80 check (maximum_age between 18 and 100),
   timing text[] not null default '{}',
