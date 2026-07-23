@@ -115,30 +115,48 @@ function renderEmail(input: {
 }
 
 export async function processPendingNotificationEmails(limit = 20) {
-  const { rows } = await db.query(`select ed.id,ed.notification_id as "notificationId",ed.kind,u.email,
-    p.display_name as "recipientName",actor.display_name as "actorName",pref.unsubscribe_token as "unsubscribeToken",
-    pref.interests,pref.matches,pref.date_plans as "datePlans",pref.follow_ups as "followUps"
-    from email_deliveries ed join users u on u.id=ed.recipient_id
-    join email_notification_preferences pref on pref.user_id=ed.recipient_id
-    left join notifications n on n.id=ed.notification_id
-    left join profiles p on p.user_id=ed.recipient_id left join profiles actor on actor.user_id=n.actor_id
-    where ed.status in ('pending','failed') and ed.next_attempt_at<=now() and ed.attempts<5
-    order by ed.id for update of ed skip locked limit $1`, [limit])
+  const batchSize = Math.max(1, Math.min(100, Math.trunc(limit)))
+  const client = await db.connect()
+  let rows: any[] = []
+  try {
+    await client.query('begin')
+    const claimed = await client.query(`select ed.id,ed.notification_id as "notificationId",ed.kind,u.email,
+      p.display_name as "recipientName",actor.display_name as "actorName",pref.unsubscribe_token as "unsubscribeToken",
+      pref.interests,pref.matches,pref.date_plans as "datePlans",pref.follow_ups as "followUps"
+      from email_deliveries ed join users u on u.id=ed.recipient_id
+      join email_notification_preferences pref on pref.user_id=ed.recipient_id
+      left join notifications n on n.id=ed.notification_id
+      left join profiles p on p.user_id=ed.recipient_id left join profiles actor on actor.user_id=n.actor_id
+      where ((ed.status in ('pending','failed') and ed.next_attempt_at<=now())
+        or (ed.status='processing' and ed.locked_at<now()-interval '10 minutes'))
+        and ed.attempts<5 order by ed.id for update of ed skip locked limit $1`, [batchSize])
+    rows = claimed.rows
+    if (rows.length) await client.query(`update email_deliveries set status='processing',attempts=attempts+1,locked_at=now()
+      where id=any($1::bigint[])`, [rows.map(row => row.id)])
+    await client.query('commit')
+  } catch (error) {
+    await client.query('rollback')
+    throw error
+  } finally {
+    client.release()
+  }
 
   const apiKey = process.env.RESEND_API_KEY
   const from = process.env.EMAIL_FROM
   if (!apiKey || !from) throw new Error('RESEND_API_KEY and EMAIL_FROM are required')
   const baseUrl = (process.env.APP_BASE_URL || process.env.SITE_URL || 'http://localhost:3000').replace(/\/+$/, '')
   let sent = 0
+  let failed = 0
+  let skipped = 0
   for (const row of rows) {
     const setting = preferenceColumn[row.kind]
     const enabled = setting === 'interests' ? row.interests : setting === 'matches' ? row.matches
       : setting === 'date_plans' ? row.datePlans : row.followUps
     if (!enabled) {
-      await db.query(`update email_deliveries set status='skipped',last_error='Disabled by recipient' where id=$1`, [row.id])
+      await db.query(`update email_deliveries set status='skipped',locked_at=null,last_error='Disabled by recipient' where id=$1`, [row.id])
+      skipped++
       continue
     }
-    await db.query(`update email_deliveries set status='processing',attempts=attempts+1 where id=$1`, [row.id])
     try {
       const content = message(row.kind, row.actorName)
       const unsubscribeUrl = `${baseUrl}/api/email/unsubscribe?token=${row.unsubscribeToken}`
@@ -158,13 +176,14 @@ export async function processPendingNotificationEmails(limit = 20) {
       })
       const result = await response.json() as { id?: string; message?: string }
       if (!response.ok) throw new Error(result.message || `Resend returned ${response.status}`)
-      await db.query(`update email_deliveries set status='sent',provider_id=$2,sent_at=now(),last_error=null where id=$1`, [row.id,result.id])
+      await db.query(`update email_deliveries set status='sent',provider_id=$2,sent_at=now(),locked_at=null,last_error=null where id=$1`, [row.id,result.id])
       sent++
     } catch (error) {
       const detail = error instanceof Error ? error.message.slice(0, 500) : 'Unknown delivery error'
-      await db.query(`update email_deliveries set status='failed',last_error=$2,
+      await db.query(`update email_deliveries set status='failed',locked_at=null,last_error=$2,
         next_attempt_at=now()+(interval '5 minutes'*greatest(1,attempts)) where id=$1`, [row.id,detail])
+      failed++
     }
   }
-  return { processed: rows.length, sent }
+  return { processed: rows.length, sent, failed, skipped }
 }

@@ -23,7 +23,20 @@ describe('email notifications', () => {
     expect(sender).toContain('Take things at your pace.')
     expect(sender).toContain('role="presentation"')
     expect(sender).toContain('emailDestination')
+    expect(sender).toContain('for update of ed skip locked')
+    expect(sender).toContain("locked_at<now()-interval '10 minutes'")
+    expect(sender).toContain('failed, skipped')
     expect(sender).toContain("status='failed'")
+  })
+
+  it('requires a valid QStash signature outside local development', () => {
+    const worker = read('server/api/email/process.post.ts')
+    expect(worker).toContain("import.meta.dev")
+    expect(worker).toContain("'upstash-signature'")
+    expect(worker).toContain('QSTASH_CURRENT_SIGNING_KEY')
+    expect(worker).toContain('QSTASH_NEXT_SIGNING_KEY')
+    expect(worker).toContain('receiver.verify')
+    expect(worker).toContain('Invalid QStash signature')
   })
 
   it('offers user-controlled email categories', () => {
