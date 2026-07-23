@@ -15,6 +15,7 @@ const emailPreferences = reactive({ interests: true, matches: true, datePlans: t
 const emailPreferencesCollapsed = ref(true)
 const savingEmailPreferences = ref(false)
 const emailPreferencesSaved = ref(false)
+const deletingAll = ref(false)
 
 const copy: Record<string, (notice: Notice) => string> = {
   interest_received: n => `${n.actorName || 'Someone new'} showed interest in meeting you.`,
@@ -28,6 +29,11 @@ const copy: Record<string, (notice: Notice) => string> = {
   match_apology: n => `${n.actorName || 'A past connection'} sent you an apology note: “${n.message || ''}”`,
   date_follow_up_closed: () => 'Your post-date answers were different and the connection closed.',
   date_follow_up_changed: n => `${n.actorName || 'Your date'} changed their answer and would like to meet again.`,
+  date_reminder_24h: () => 'Your confirmed date is about 24 hours away. Are you still going?',
+  date_reminder_2h: () => 'Your confirmed date starts in about 2 hours.',
+  date_attendance_confirmed: n => `${n.actorName || 'Your date'} confirmed they are still going.`,
+  date_reschedule_requested: n => `${n.actorName || 'Your date'} needs to reschedule.`,
+  date_cancelled: n => `${n.actorName || 'Your date'} cancelled the date. Your match remains open.`,
 }
 function destination(notice: Notice) {
   if (notice.kind === 'match_apology') return '/matches/past'
@@ -63,6 +69,20 @@ async function deleteNotice(notice: Notice) {
     if (!notice.readAt) unreadCount.value = Math.max(0, unreadCount.value - 1)
   } catch (error: any) { errorMessage.value = error?.data?.statusMessage || 'The notification could not be deleted.' }
 }
+async function deleteAllNotices() {
+  if (!window.confirm('Delete all notifications permanently? This cannot be undone.')) return
+  deletingAll.value = true
+  errorMessage.value = ''
+  try {
+    await $fetch('/api/notifications/all', { method: 'DELETE' })
+    notices.value = []
+    unreadCount.value = 0
+    nextCursor.value = null
+    hasMore.value = false
+  } catch (error: any) {
+    errorMessage.value = error?.data?.statusMessage || 'Your notifications could not be deleted.'
+  } finally { deletingAll.value = false }
+}
 async function saveEmailPreferences() {
   savingEmailPreferences.value = true
   emailPreferencesSaved.value = false
@@ -82,7 +102,7 @@ onMounted(async () => {
     <section class="mx-auto max-w-3xl">
       <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div><p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">Updates</p><h1 class="mt-2 text-4xl font-semibold">Notifications</h1><p class="mt-3 text-[#6E4D58]">Matches, date plans, and post-date check-ins in one place.</p></div>
-        <button v-if="unreadCount" type="button" class="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-[#8F1839]" @click="readAll"><CheckCheck class="size-4" />Mark all read</button>
+        <div v-if="notices.length" class="flex flex-wrap gap-2"><button v-if="unreadCount" type="button" class="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-[#8F1839]" @click="readAll"><CheckCheck class="size-4" />Mark all read</button><button type="button" class="inline-flex items-center justify-center gap-2 rounded-lg border border-[#B4234A]/30 bg-white px-4 py-2.5 text-sm font-semibold text-[#8F1839] disabled:opacity-50" :disabled="deletingAll" @click="deleteAllNotices"><Trash2 class="size-4" />{{ deletingAll ? 'Deleting…' : 'Delete all' }}</button></div>
       </div>
       <section class="mt-8 rounded-lg bg-white p-5 shadow-[0_8px_20px_rgba(180,35,74,.06)]">
         <button type="button" class="flex w-full items-start justify-between gap-4 text-left" :aria-expanded="!emailPreferencesCollapsed" aria-controls="email-notification-settings" @click="emailPreferencesCollapsed = !emailPreferencesCollapsed">

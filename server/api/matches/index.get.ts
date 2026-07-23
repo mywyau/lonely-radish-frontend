@@ -13,6 +13,7 @@ export default defineEventHandler(async (event) => {
     proposal.id as "proposalId",proposal.status as "proposalStatus",proposal.activity_label as activity,
     proposal.venue,proposal.inviter_id as "inviterId",proposal.invitee_id as "inviteeId",
     proposal.confirmed_at as "confirmedAt",selected.proposed_at as "confirmedTime",
+    my_attendance.response as "myAttendance",their_attendance.response as "theirAttendance",
     my_followup.meet_again as "myMeetAgain",my_followup.responded_at as "myFollowUpAt",
     their_followup.meet_again as "theirMeetAgain",their_followup.responded_at as "theirFollowUpAt",
     coalesce((select json_agg(json_build_object('id',pt.id,'proposedAt',pt.proposed_at) order by pt.position)
@@ -23,6 +24,8 @@ export default defineEventHandler(async (event) => {
     left join lateral (select dp.* from date_proposals dp where dp.match_id=m.id
       and (dp.status<>'draft' or dp.inviter_id=$1) order by dp.created_at desc limit 1) proposal on true
     left join proposal_times selected on selected.id=proposal.selected_time_id
+    left join date_attendance_responses my_attendance on my_attendance.proposal_id=proposal.id and my_attendance.user_id=$1
+    left join date_attendance_responses their_attendance on their_attendance.proposal_id=proposal.id and their_attendance.user_id<>$1
     left join date_follow_ups my_followup on my_followup.proposal_id=proposal.id and my_followup.user_id=$1
     left join date_follow_ups their_followup on their_followup.proposal_id=proposal.id and their_followup.user_id<>$1
     where m.status='active' and (m.user_one_id=$1 or m.user_two_id=$1)
@@ -44,8 +47,11 @@ export default defineEventHandler(async (event) => {
     const dateHasPassed = Boolean(row.confirmedTime && new Date(row.confirmedTime) <= new Date())
     const bothFollowedUp = Boolean(row.myFollowUpAt && row.theirFollowUpAt)
     const followUpResult = !bothFollowedUp ? null : row.myMeetAgain === true && row.theirMeetAgain === true ? 'mutual' : 'closed'
-    return { ...row, photoStorageKey: undefined, legacyPhotoUrl: undefined, theirMeetAgain: undefined, photoUrl, stage,
+    const hasActiveProposal = ['draft','pending','accepted'].includes(proposalStatus || '')
+    return { ...row, activity: hasActiveProposal ? row.activity : null, venue: hasActiveProposal ? row.venue : null,
+      photoStorageKey: undefined, legacyPhotoUrl: undefined, theirMeetAgain: undefined, photoUrl, stage,
       dateHasPassed, bothFollowedUp, followUpResult, hasFollowedUp: Boolean(row.myFollowUpAt),
+      attendanceConfirmed: row.myAttendance === 'confirmed', otherAttendanceConfirmed: row.theirAttendance === 'confirmed',
       isInviter: row.inviterId === sub, needsResponse: proposalStatus === 'pending' && row.inviteeId === sub }
   }))
   return { matches, totalMatches: rows[0]?.totalMatches || 0, interestReceivedCount: receivedInterest.rows[0]?.count || 0 }

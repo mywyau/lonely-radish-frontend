@@ -21,6 +21,7 @@ describe('matches and date planning dashboard', () => {
     expect(read('server/api/proposals/[id].put.ts')).toContain("senderEditingDraft ? 'draft' : 'pending'")
     expect(read('pages/plans/[slug].vue')).toContain('Save as draft')
     expect(read('pages/plans/[slug].vue')).toContain('Confirm and send')
+    expect(read('pages/plans/[slug].vue')).toContain("await navigateTo('/matches')")
     expect(read('pages/plans/[slug].vue')).toContain("respond('accepted', times[0]?.id)")
     expect(read('pages/plans/[slug].vue')).toContain('Accept proposal')
     expect(read('pages/plans/[slug].vue')).not.toContain('Accept one of their times')

@@ -12,6 +12,11 @@ const subjects: Record<string, string> = {
   date_follow_up_closed: 'Your post-date check-in is complete',
   date_follow_up_changed: 'A past connection changed their answer',
   match_apology: 'You received a note from a past connection',
+  date_reminder_24h: 'Your date is tomorrow',
+  date_reminder_2h: 'Your date starts in about 2 hours',
+  date_attendance_confirmed: 'Your date confirmed they are still going',
+  date_reschedule_requested: 'Your date needs to reschedule',
+  date_cancelled: 'Your date was cancelled',
 }
 
 const preferenceColumn: Record<string, string> = {
@@ -23,6 +28,11 @@ const preferenceColumn: Record<string, string> = {
   proposal_updated: 'date_plans',
   date_confirmed: 'date_plans',
   proposal_declined: 'date_plans',
+  date_reminder_24h: 'date_plans',
+  date_reminder_2h: 'date_plans',
+  date_attendance_confirmed: 'date_plans',
+  date_reschedule_requested: 'date_plans',
+  date_cancelled: 'date_plans',
   follow_up_ready: 'follow_ups',
   date_follow_up_closed: 'follow_ups',
   date_follow_up_changed: 'follow_ups',
@@ -46,6 +56,11 @@ function message(kind: string, actorName?: string | null) {
     date_follow_up_closed: 'Your post-date answers were different, so the connection has closed.',
     date_follow_up_changed: `${actor} changed their answer and would like to meet again.`,
     match_apology: `${actor} sent you a note through Past connections.`,
+    date_reminder_24h: 'Your confirmed date is about 24 hours away. Open the app to confirm you are still going.',
+    date_reminder_2h: 'Your confirmed date starts in about 2 hours. Check the plan before you leave.',
+    date_attendance_confirmed: `${actor} confirmed they are still going to your date.`,
+    date_reschedule_requested: `${actor} needs to reschedule. Review the date plan to agree new details.`,
+    date_cancelled: `${actor} cancelled your date. Your match remains open if you want to make another plan later.`,
   }
   return copy[kind] || 'You have a new update on Lonely Radish.'
 }
@@ -60,7 +75,7 @@ function emailDestination(kind: string, baseUrl: string) {
 function actionLabel(kind: string) {
   if (kind === 'interest_received') return 'View their profile'
   if (kind === 'new_match') return 'View your match'
-  if (kind.startsWith('proposal_') || kind === 'date_confirmed') return 'Review the date plan'
+  if (kind.startsWith('proposal_') || kind.startsWith('date_')) return 'Review the date plan'
   if (kind.includes('follow_up')) return 'View your check-in'
   if (kind === 'match_apology') return 'View past connection'
   return 'View update'

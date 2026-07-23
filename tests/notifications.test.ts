@@ -33,4 +33,14 @@ describe('notification centre', () => {
     expect(remove).toContain('recipient_id=$2')
     expect(remove).toContain('Notification not found')
   })
+
+  it('deletes all notifications owned by the user after confirmation', () => {
+    const page = read('pages/notifications.vue')
+    const removeAll = read('server/api/notifications/all.delete.ts')
+    expect(page).toContain('Delete all notifications permanently? This cannot be undone.')
+    expect(page).toContain("'/api/notifications/all'")
+    expect(page).toContain("'Delete all'")
+    expect(removeAll).toContain('delete from notifications where recipient_id=$1')
+    expect(removeAll).toContain('requireUser')
+  })
 })
