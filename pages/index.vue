@@ -29,11 +29,39 @@ const sessionCookie = useCookie<string>('online_session_id', {
 
 const { isLoggedIn, user, resolve: resolveMeState } = useMeStateV2()
 let currentUsersInterval: ReturnType<typeof setInterval> | undefined
+const localHour = ref<number | null>(null)
+const welcomeMessageIndex = ref(0)
+const nighttimeGreetingIndex = ref(0)
+
+const welcomeMessages = [
+  'A shared interest could be the start of something lovely.',
+  'There are new people and possibilities waiting to be discovered.',
+  'Your next great plan could be one introduction away.',
+  'Take a look around — someone nearby may enjoy the same things you do.',
+  'A simple hello and a shared plan can go a long way.',
+  'New activity matches are ready whenever you are.',
+]
+
+const timeOfDayGreeting = computed(() => {
+  const hour = localHour.value
+  if (hour === null) return 'Welcome back'
+  if (hour >= 5 && hour < 12) return 'Good morning'
+  if (hour >= 12 && hour < 17) return 'Good afternoon'
+  if (hour >= 17 && hour < 22) return 'Good evening'
+  return null
+})
 
 const greeting = computed(() => {
   const firstName = user.value?.firstName?.trim()
-  return firstName ? `Welcome back, ${firstName}` : 'Welcome to Lonely Radish'
+  if (timeOfDayGreeting.value === null) {
+    return nighttimeGreetingIndex.value === 0
+      ? `Nice to see you tonight${firstName ? `, ${firstName}` : ''}`
+      : 'Welcome back, night owl'
+  }
+  return firstName ? `${timeOfDayGreeting.value}, ${firstName}` : `${timeOfDayGreeting.value} from Lonely Radish`
 })
+
+const welcomeMessage = computed(() => welcomeMessages[welcomeMessageIndex.value])
 
 const featuredMatches = [
   {
@@ -118,6 +146,9 @@ function startOnboarding() {
 }
 
 onMounted(() => {
+  localHour.value = new Date().getHours()
+  welcomeMessageIndex.value = Math.floor(Math.random() * welcomeMessages.length)
+  nighttimeGreetingIndex.value = Math.floor(Math.random() * 2)
   void resolveMeState()
   void refreshCurrentUsers()
 
@@ -142,7 +173,7 @@ onBeforeUnmount(() => {
             {{ greeting }}
           </p>
           <p class="mt-2 text-base leading-6 text-white">
-            New activity matches are ready to browse.
+            {{ welcomeMessage }}
           </p>
         </div>
 

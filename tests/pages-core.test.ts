@@ -23,7 +23,13 @@ describe('core page contracts', () => {
     expect(source).toContain('Start matching')
     expect(source).toContain("navigateTo('/activities')")
     expect(source).toContain('to="/matches"')
-    expect(source).toContain('New activity matches are ready to browse.')
+    expect(source).toContain("'Good morning'")
+    expect(source).toContain("'Good afternoon'")
+    expect(source).toContain("'Good evening'")
+    expect(source).toContain('Nice to see you tonight')
+    expect(source).toContain('Welcome back, night owl')
+    expect(source).toContain('welcomeMessages')
+    expect(source).toContain('A shared interest could be the start of something lovely.')
     expect(source).toContain('Skip the endless swiping. Say yes to a plan.')
     expect(source).toContain("name: 'Theo'")
     expect(source).toContain("photo: '/images/theo-profile-triptych.png'")
@@ -31,7 +37,7 @@ describe('core page contracts', () => {
     expect(source).toContain('text-[#2A1520] sm:text-6xl')
     expect(source).toContain('user.value?.firstName')
     expect(source).toContain('user.value?.firstName')
-    expect(source).toContain("'Welcome to Lonely Radish'")
+    expect(source).toContain('from Lonely Radish')
   })
 
   it('mock activity and match pages are routed separately from the preview page', () => {
