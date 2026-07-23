@@ -50,7 +50,7 @@ describe('core page contracts', () => {
     expect(activities).toContain('Browse people')
     expect(activityMatches).toContain("visiblePeople.length === 1 ? 'person' : 'people'")
     expect(activityMatches).toContain('broader category')
-    expect(activityMatches).toContain('No one is browsing in this category yet')
+    expect(activityMatches).toContain('No profiles match these filters yet')
     expect(activityMatches).toContain('`/profiles/${person.slug}`')
     expect(activityMatches).toContain('`/api/activities/${slug.value}/people`')
     expect(profile).toContain("`${profile.value.name}'s Profile · Lonely Radish`")
