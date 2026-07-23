@@ -7,8 +7,16 @@ export default defineEventHandler(async (event) => {
   const { sub } = await requireUser(event)
   const body = objectBody(await readBody(event))
   const genders = stringArray(body.genders, 'Gender preferences', 10)
+    .map(gender => gender === 'Non-binary people' ? 'Non-binary' : gender)
+  if (genders.some(gender => !['Women', 'Men', 'Non-binary'].includes(gender))) {
+    throw createError({ statusCode: 400, statusMessage: 'Select valid gender preferences' })
+  }
   const openToEveryone = boolean(body.openToEveryone, 'Open to everyone')
   const raceEthnicities = stringArray(body.raceEthnicities, 'Ethnicity preferences', 20)
+  const allowedRaceEthnicities = ['Asian', 'Black / African / Caribbean', 'Hispanic / Latino', 'Middle Eastern', 'North African', 'Native / Indigenous', 'Pacific Islander', 'White', 'Multiracial / multi-ethnic']
+  if (raceEthnicities.some(identity => !allowedRaceEthnicities.includes(identity))) {
+    throw createError({ statusCode: 400, statusMessage: 'Select valid racial or ethnic preferences' })
+  }
   const noRaceEthnicityPreference = boolean(body.noRaceEthnicityPreference, 'No ethnicity preference')
   const { rows } = await db.query(`insert into match_preferences
     (user_id, interested_genders, open_to_everyone, preferred_ethnicities, no_ethnicity_preference, dating_preferences_set)

@@ -12,6 +12,28 @@ const preferences = reactive({
   smallerMatchPool: true,
 })
 const saved = ref(false)
+const location = reactive({ postcode: '', postcodeArea: '', label: '', hasLocation: false })
+const locationSaving = ref(false)
+const locationMessage = ref('')
+const locationError = ref('')
+
+async function saveLocation() {
+  locationSaving.value = true; locationMessage.value = ''; locationError.value = ''
+  try {
+    const result = await $fetch<{ postcodeArea: string; label: string; hasLocation: boolean }>('/api/profile/location', {
+      method: 'PUT', body: { postcode: location.postcode },
+    })
+    Object.assign(location, result, { postcode: '' })
+    locationMessage.value = 'Approximate location saved.'
+  } catch (error: any) { locationError.value = error?.data?.statusMessage || 'We could not save that location.' }
+  finally { locationSaving.value = false }
+}
+
+async function removeLocation() {
+  await $fetch('/api/profile/location', { method: 'DELETE' })
+  Object.assign(location, { postcode: '', postcodeArea: '', label: '', hasLocation: false })
+  locationMessage.value = 'Location removed.'
+}
 
 async function savePreferences() {
   await $fetch('/api/preferences/general', { method: 'PUT', body: preferences })
@@ -20,7 +42,11 @@ async function savePreferences() {
 }
 
 onMounted(async () => {
-  Object.assign(preferences, await $fetch('/api/preferences/general'))
+  const [general, savedLocation] = await Promise.all([
+    $fetch('/api/preferences/general'), $fetch('/api/profile/location'),
+  ])
+  Object.assign(preferences, general)
+  Object.assign(location, savedLocation)
 })
 </script>
 
@@ -54,8 +80,20 @@ onMounted(async () => {
       </div>
 
       <form class="mt-8 space-y-5" @submit.prevent="savePreferences">
-        <section class="rounded-lg bg-white p-6 shadow-[0_12px_28px_rgba(180,35,74,0.08)]">
+        <section id="location-and-age" class="scroll-mt-24 rounded-lg bg-white p-6 shadow-[0_12px_28px_rgba(180,35,74,0.08)]">
           <div class="flex items-start gap-3"><MapPin class="mt-1 size-5 text-[#B4234A]" /><div><h2 class="text-xl font-semibold">Location and age</h2><p class="mt-1 text-sm text-[#6E4D58]">Keep possible matches practical for you.</p></div></div>
+          <div class="mt-6 rounded-lg bg-[#FBF7F1] p-4">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
+              <label class="min-w-0 flex-1 text-sm font-medium">UK postcode
+                <input v-model="location.postcode" class="field" maxlength="16" autocomplete="postal-code" placeholder="For example, SW1A 1AA">
+              </label>
+              <button type="button" :disabled="locationSaving || !location.postcode.trim()" class="rounded-lg bg-[#4D2F39] px-4 py-3 text-sm font-semibold text-white disabled:opacity-50" @click="saveLocation">{{ locationSaving ? 'Checking…' : location.hasLocation ? 'Update location' : 'Save location' }}</button>
+            </div>
+            <p class="mt-2 text-xs leading-5 text-[#6E4D58]">We store an approximate map point and postcode area—not your full postcode—and never show your coordinates.</p>
+            <div v-if="location.hasLocation" class="mt-3 flex flex-wrap items-center gap-3 text-sm"><span class="font-semibold text-[#52713A]">Using {{ location.label }} · {{ location.postcodeArea }}</span><button type="button" class="font-semibold text-[#8F1839] underline" @click="removeLocation">Remove</button></div>
+            <p v-if="locationMessage" class="mt-2 text-sm font-semibold text-[#52713A]" role="status">{{ locationMessage }}</p>
+            <p v-if="locationError" class="mt-2 text-sm font-semibold text-[#8F1839]" role="alert">{{ locationError }}</p>
+          </div>
           <div class="mt-6 grid gap-6 sm:grid-cols-[0.65fr_1.35fr]">
             <label class="text-sm font-medium">
               Maximum distance

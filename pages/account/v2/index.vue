@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { CalendarDays, HeartHandshake, MapPin, PauseCircle, ShieldCheck, Sparkles, Trash2, UserRound } from "@lucide/vue";
+import { ArrowRight, CalendarDays, CheckCircle2, ChevronDown, Circle, HeartHandshake, MapPin, PauseCircle, ShieldCheck, Sparkles, Trash2, UserRound } from "@lucide/vue";
 
 definePageMeta({
   title: "Account · Lonely Radish",
@@ -25,6 +25,20 @@ const contact = reactive({ phoneNumber: '', contactEmail: '', socialHandle: '', 
 const savingContact = ref(false);
 const contactSaved = ref(false);
 const contactError = ref('');
+type ReadinessChecks = { profileBasics: boolean; photos: boolean; activities: boolean; location: boolean; generalPreferences: boolean; datingPreferences: boolean };
+const readiness = ref<{ checks: ReadinessChecks; completed: number; total: number; percentage: number } | null>(null);
+const readinessCollapsed = ref(false);
+const readinessItems = computed(() => {
+  const checks = readiness.value?.checks;
+  return [
+    { key: 'profileBasics', label: 'Profile basics', detail: 'Name, bio and identity', to: '/account/v2' },
+    { key: 'photos', label: 'Profile photo', detail: 'Add at least one photo', to: '/photos' },
+    { key: 'activities', label: 'Activity interests', detail: 'Choose what you would enjoy', to: '/preferences/activities' },
+    { key: 'location', label: 'Approximate location', detail: 'Set a postcode for distance matching', to: '/preferences#location-and-age' },
+    { key: 'generalPreferences', label: 'Age and distance', detail: 'Set a practical matching range', to: '/preferences#location-and-age' },
+    { key: 'datingPreferences', label: 'Dating preferences', detail: 'Choose who appears for you', to: '/preferences/dating' },
+  ].map(item => ({ ...item, complete: checks?.[item.key as keyof ReadinessChecks] === true }));
+});
 
 const fullName = computed(() => `${profile.firstName} ${profile.lastName}`.trim());
 const planLabel = computed(() => entitlement.value?.plan === 'yearly' ? 'Yearly plan' : entitlement.value?.plan === 'monthly' ? 'Monthly plan' : 'Free plan');
@@ -94,6 +108,10 @@ onMounted(async () => {
   try { pauseState.value = await $fetch('/api/account/pause'); } catch { /* Account remains usable if pause status is unavailable. */ }
   try { Object.assign(contact, await $fetch('/api/profile/contact')); } catch { /* Contact details remain optional. */ }
   try { const result = await $fetch<any>('/api/profile/me'); profile.raceEthnicity = result.profile?.raceEthnicity || ''; } catch { /* Identity remains editable when profile data is available. */ }
+  try {
+    readiness.value = await $fetch('/api/profile/readiness');
+    readinessCollapsed.value = readiness.value.percentage === 100;
+  } catch { /* Readiness is helpful but does not block account access. */ }
   profile.firstName = user.value?.firstName || "";
   profile.lastName = user.value?.lastName || "";
 });
@@ -144,6 +162,25 @@ onMounted(async () => {
               </div>
               <p v-if="pauseError" class="mt-3 text-sm font-semibold text-[#8F1839]" role="alert">{{ pauseError }}</p>
             </div>
+          </div>
+        </section>
+
+        <section v-if="readiness" class="rounded-lg bg-white p-6 shadow-[0_12px_28px_rgba(180,35,74,0.08)]">
+          <button type="button" class="flex w-full items-start justify-between gap-4 text-left" :aria-expanded="!readinessCollapsed" aria-controls="discovery-readiness-details" @click="readinessCollapsed = !readinessCollapsed">
+            <div><p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">Discovery readiness</p><h2 class="mt-2 text-xl font-semibold">{{ readiness.percentage === 100 ? 'Ready to be discovered' : 'Complete your profile' }}</h2></div>
+            <span class="flex shrink-0 items-center gap-2"><span class="rounded-full bg-[#FCE3E8] px-3 py-2 text-sm font-bold text-[#8F1839]">{{ readiness.percentage }}%</span><ChevronDown class="mt-2 size-5 text-[#8F1839] transition-transform" :class="!readinessCollapsed && 'rotate-180'" aria-hidden="true" /></span>
+          </button>
+          <div class="mt-4 h-2 overflow-hidden rounded-full bg-[#F3E8DA]" aria-hidden="true"><div class="h-full rounded-full bg-[#B4234A] transition-[width] duration-300" :style="{ width: `${readiness.percentage}%` }" /></div>
+          <div id="discovery-readiness-details" v-show="!readinessCollapsed">
+            <p class="mt-3 text-xs leading-5 text-[#6E4D58]">{{ readiness.completed }} of {{ readiness.total }} discovery essentials complete.</p>
+            <ul class="mt-4 divide-y divide-[#E8D8C4]">
+              <li v-for="item in readinessItems" :key="item.key" class="flex items-center gap-3 py-3">
+                <CheckCircle2 v-if="item.complete" class="size-5 shrink-0 text-[#6E8B52]" aria-hidden="true" />
+                <Circle v-else class="size-5 shrink-0 text-[#D7A7B3]" aria-hidden="true" />
+                <div class="min-w-0 flex-1"><p class="text-sm font-semibold">{{ item.label }}</p><p class="text-xs text-[#6E4D58]">{{ item.complete ? 'Complete' : item.detail }}</p></div>
+                <NuxtLink v-if="!item.complete" :to="item.to" :aria-label="`Complete ${item.label}`" class="inline-flex items-center gap-1 text-xs font-bold text-[#8F1839]">Add <ArrowRight class="size-3.5" /></NuxtLink>
+              </li>
+            </ul>
           </div>
         </section>
       </aside>

@@ -3,7 +3,7 @@ import { Heart, Info, UsersRound } from '@lucide/vue'
 
 definePageMeta({ title: 'Dating Preferences · Lonely Radish', middleware: 'logged-in' })
 
-const genderOptions = ['Women', 'Men', 'Non-binary people']
+const genderOptions = ['Women', 'Men', 'Non-binary']
 const raceEthnicityOptions = ['Asian', 'Black / African / Caribbean', 'Hispanic / Latino', 'Middle Eastern', 'North African', 'Native / Indigenous', 'Pacific Islander', 'White', 'Multiracial / multi-ethnic']
 const preferences = reactive({ genders: [] as string[], raceEthnicities: [] as string[], openToEveryone: true, noRaceEthnicityPreference: true })
 const saved = ref(false)

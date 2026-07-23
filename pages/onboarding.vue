@@ -14,6 +14,7 @@ const photoCount = ref(0)
 const profile = reactive({ firstName: '', lastName: '', displayName: '', genderIdentity: '', raceEthnicity: '', slug: '', dateOfBirth: '', pronouns: '', bio: '' })
 const birthDate = reactive({ day: '', month: '', year: '' })
 const profileNameStatus = ref<'idle' | 'checking' | 'available' | 'taken'>('idle')
+const onboardingLocation = reactive({ postcode: '', postcodeArea: '', label: '', hasLocation: false })
 let profileNameCheck = 0
 const activityGroups = [
   { name: 'Culture', options: ['Gallery walks', 'Museums', 'Theatre', 'Indie films', 'Live music', 'Comedy nights'] },
@@ -118,10 +119,10 @@ function createProfileSlug() {
 
 async function load() {
   await resolve()
-  const [status, profileData, activityData, general, dating, schedule] = await Promise.all([
+  const [status, profileData, activityData, general, dating, schedule, savedLocation] = await Promise.all([
     $fetch<any>('/api/onboarding/status'), $fetch<any>('/api/profile/me'),
     $fetch<any>('/api/preferences/activities'), $fetch<any>('/api/preferences/general'), $fetch<any>('/api/preferences/dating'),
-    $fetch<any>('/api/preferences/schedule'),
+    $fetch<any>('/api/preferences/schedule'), $fetch<any>('/api/profile/location'),
   ])
   if (status.complete) return router.replace('/')
   step.value = status.nextStep
@@ -138,6 +139,7 @@ async function load() {
   }
   selectedActivities.value = activityData.selected
   Object.assign(preferences, general, dating)
+  Object.assign(onboardingLocation, savedLocation)
   preferences.publicOnly = schedule.publicOnly ?? preferences.publicOnly
   for (const window of schedule.windows || []) {
     const day = availabilityDays.find(item => item.weekday === window.weekday)
@@ -194,6 +196,11 @@ async function savePreferences() {
     return
   }
   try {
+    if (onboardingLocation.postcode.trim()) {
+      Object.assign(onboardingLocation, await $fetch('/api/profile/location', {
+        method: 'PUT', body: { postcode: onboardingLocation.postcode },
+      }), { postcode: '' })
+    }
     await Promise.all([
       $fetch('/api/preferences/general', { method: 'PUT', body: { distance: preferences.distance, minimumAge: preferences.minimumAge,
         maximumAge: preferences.maximumAge, timing: preferences.timing, publicOnly: preferences.publicOnly } }),
@@ -287,6 +294,11 @@ onMounted(() => { load().catch(() => { errorMessage.value = 'We could not load o
           <label>Maximum distance <span class="value">{{ preferences.distance }} km</span><input v-model.number="preferences.distance" type="range" min="1" max="100"></label>
           <div class="grid grid-cols-2 gap-3"><label>Minimum age <input v-model.number="preferences.minimumAge" type="number" min="18" max="100"></label><label>Maximum age <input v-model.number="preferences.maximumAge" type="number" min="18" max="100"></label></div>
         </div>
+        <section class="mt-5 rounded-lg bg-[#FBF7F1] p-4">
+          <label>UK postcode <input v-model="onboardingLocation.postcode" maxlength="16" autocomplete="postal-code" :placeholder="onboardingLocation.hasLocation ? 'Enter a new postcode to update it' : 'For example, SW1A 1AA'"></label>
+          <p class="mt-2 text-xs font-normal leading-5 text-[#6E4D58]">Used to filter by your distance preference. We retain only an approximate point and postcode area, never your full postcode.</p>
+          <p v-if="onboardingLocation.hasLocation" class="mt-2 text-sm font-semibold text-[#52713A]">Location set: {{ onboardingLocation.label }} · {{ onboardingLocation.postcodeArea }}</p>
+        </section>
         <fieldset><legend>Weekly availability</legend><p class="mt-1 text-sm font-normal leading-6 text-[#6E4D58]">Select the days you are generally free, then set the earliest and latest time that usually works. Matches can use this later when suggesting a date.</p><div class="mt-4 grid gap-3"><article v-for="day in availabilityDays" :key="day.weekday" class="availability-day" :class="day.enabled && 'enabled'"><div class="flex items-center justify-between gap-4"><label class="flex items-center gap-3"><input v-model="day.enabled" type="checkbox" class="size-4 accent-[#B4234A]">{{ day.name }}</label><span class="text-xs font-semibold text-[#6E4D58]">{{ day.enabled ? 'Available' : 'Not available' }}</span></div><div v-if="day.enabled" class="mt-4 grid grid-cols-2 gap-3"><label>From<input v-model="day.startTime" required type="time"></label><label>Until<input v-model="day.endTime" required type="time"></label></div></article></div><p class="mt-3 text-sm font-semibold text-[#6E4D58]">{{ selectedAvailabilityCount ? `${selectedAvailabilityCount} ${selectedAvailabilityCount === 1 ? 'day' : 'days'} selected` : 'No regular availability selected yet' }}</p></fieldset>
         <label class="check mt-5"><input v-model="preferences.publicOnly" type="checkbox"> Only suggest public places for first meetings</label>
         <div class="actions"><button class="secondary" type="button" @click="step = 3"><ArrowLeft class="size-4" />Back</button><button :disabled="saving || preferences.minimumAge > preferences.maximumAge || Boolean(invalidAvailabilityDay)" class="primary" type="submit">{{ saving ? 'Saving…' : 'Continue' }}<ArrowRight class="size-4" /></button></div>
