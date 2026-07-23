@@ -16,6 +16,7 @@ const emailPreferencesCollapsed = ref(true)
 const savingEmailPreferences = ref(false)
 const emailPreferencesSaved = ref(false)
 const deletingAll = ref(false)
+const showDeleteAllConfirmation = ref(false)
 
 const copy: Record<string, (notice: Notice) => string> = {
   interest_received: n => `${n.actorName || 'Someone new'} showed interest in meeting you.`,
@@ -70,7 +71,6 @@ async function deleteNotice(notice: Notice) {
   } catch (error: any) { errorMessage.value = error?.data?.statusMessage || 'The notification could not be deleted.' }
 }
 async function deleteAllNotices() {
-  if (!window.confirm('Delete all notifications permanently? This cannot be undone.')) return
   deletingAll.value = true
   errorMessage.value = ''
   try {
@@ -79,6 +79,7 @@ async function deleteAllNotices() {
     unreadCount.value = 0
     nextCursor.value = null
     hasMore.value = false
+    showDeleteAllConfirmation.value = false
   } catch (error: any) {
     errorMessage.value = error?.data?.statusMessage || 'Your notifications could not be deleted.'
   } finally { deletingAll.value = false }
@@ -102,7 +103,7 @@ onMounted(async () => {
     <section class="mx-auto max-w-3xl">
       <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div><p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">Updates</p><h1 class="mt-2 text-4xl font-semibold">Notifications</h1><p class="mt-3 text-[#6E4D58]">Matches, date plans, and post-date check-ins in one place.</p></div>
-        <div v-if="notices.length" class="flex flex-wrap gap-2"><button v-if="unreadCount" type="button" class="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-[#8F1839]" @click="readAll"><CheckCheck class="size-4" />Mark all read</button><button type="button" class="inline-flex items-center justify-center gap-2 rounded-lg border border-[#B4234A]/30 bg-white px-4 py-2.5 text-sm font-semibold text-[#8F1839] disabled:opacity-50" :disabled="deletingAll" @click="deleteAllNotices"><Trash2 class="size-4" />{{ deletingAll ? 'Deleting…' : 'Delete all' }}</button></div>
+        <div v-if="notices.length" class="flex flex-wrap gap-2"><button v-if="unreadCount" type="button" class="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-[#8F1839]" @click="readAll"><CheckCheck class="size-4" />Mark all read</button><button type="button" class="inline-flex items-center justify-center gap-2 rounded-lg border border-[#B4234A]/30 bg-white px-4 py-2.5 text-sm font-semibold text-[#8F1839]" @click="showDeleteAllConfirmation = true"><Trash2 class="size-4" />Delete all</button></div>
       </div>
       <section class="mt-8 rounded-lg bg-white p-5 shadow-[0_8px_20px_rgba(180,35,74,.06)]">
         <button type="button" class="flex w-full items-start justify-between gap-4 text-left" :aria-expanded="!emailPreferencesCollapsed" aria-controls="email-notification-settings" @click="emailPreferencesCollapsed = !emailPreferencesCollapsed">
@@ -128,5 +129,21 @@ onMounted(async () => {
       </div>
       <div v-else class="mt-8 rounded-lg bg-white p-8 text-center"><Inbox class="mx-auto size-8 text-[#B4234A]" /><h2 class="mt-3 text-xl font-semibold">You’re all caught up.</h2><p class="mt-2 text-sm text-[#6E4D58]">New match and date updates will appear here.</p></div>
     </section>
+
+    <Teleport to="body">
+      <div v-if="showDeleteAllConfirmation" class="fixed inset-0 z-50 flex items-center justify-center bg-[#2A1520]/70 p-5" @click.self="!deletingAll && (showDeleteAllConfirmation = false)">
+        <section role="alertdialog" aria-modal="true" aria-labelledby="delete-all-notifications-title" aria-describedby="delete-all-notifications-description" class="w-full max-w-md rounded-lg bg-white p-6 shadow-2xl">
+          <Trash2 class="size-7 text-[#8F1839]" aria-hidden="true" />
+          <h2 id="delete-all-notifications-title" class="mt-4 text-2xl font-semibold">Delete all notifications?</h2>
+          <p id="delete-all-notifications-description" class="mt-3 text-sm leading-6 text-[#6E4D58]">Every notification in your history will be permanently deleted. This cannot be undone.</p>
+          <p class="mt-4 rounded-lg bg-[#FCE3E8] p-3 text-sm font-semibold text-[#8F1839]">{{ notices.length }} loaded {{ notices.length === 1 ? 'notification' : 'notifications' }} will disappear, along with any older notifications.</p>
+          <p v-if="errorMessage" class="mt-3 text-sm font-semibold text-[#8F1839]" role="alert">{{ errorMessage }}</p>
+          <div class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+            <button type="button" class="rounded-lg bg-[#F3E8DA] px-5 py-3 text-sm font-semibold text-[#4D2F39]" :disabled="deletingAll" @click="showDeleteAllConfirmation = false">Keep notifications</button>
+            <button type="button" class="rounded-lg bg-[#8F1839] px-5 py-3 text-sm font-semibold text-white disabled:opacity-50" :disabled="deletingAll" @click="deleteAllNotices">{{ deletingAll ? 'Deleting…' : 'Yes, delete all' }}</button>
+          </div>
+        </section>
+      </div>
+    </Teleport>
   </main>
 </template>
