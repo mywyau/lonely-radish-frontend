@@ -31,6 +31,8 @@ describe('matches and date planning dashboard', () => {
     expect(read('server/api/proposals/index.post.ts')).toContain("'Proposed time', 1")
     expect(read('pages/plans/[slug].vue')).toContain('Send suggested changes')
     expect(read('pages/plans/[slug].vue')).toContain('type="datetime-local"')
+    expect(read('pages/plans/[slug].vue')).toContain(':min="earliestCustomTime"')
+    expect(read('pages/plans/[slug].vue')).toContain('Selected: {{ chosenCustomTimeLabel }}')
     expect(read('pages/plans/[slug].vue')).toContain('4. Enter a public venue')
     expect(read('server/api/proposals/[id].put.ts')).toContain("current.status === 'pending'")
     expect(read('server/api/proposals/index.post.ts')).toContain("'draft'")

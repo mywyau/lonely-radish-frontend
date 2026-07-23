@@ -32,6 +32,9 @@ const suggestedVenue = ref('')
 const suggestedVenueDetails = ref('')
 const suggestedTime = ref('')
 const customTime = ref('')
+const earliestCustomTime = ref('')
+const customTimeError = ref('')
+const chosenCustomTimeLabel = ref('')
 const suggestingChanges = ref(false)
 const smallChangeOpen = ref(false)
 const confirmed = ref(false)
@@ -54,15 +57,21 @@ const times = ref<Array<{ label: string; value: string; id?: string }>>([futureT
 const canEditProposal = computed(() => !canRespond.value || reproposing.value)
 function toggleTime(time: string) { selectedTimes.value = selectedTimes.value.includes(time) ? [] : [time] }
 function chooseCustomTime() {
-  const date = new Date(customTime.value)
+  customTimeError.value = ''
+  chosenCustomTimeLabel.value = ''
+  const [datePart, timePart] = customTime.value.split('T')
+  const [year, month, day] = (datePart || '').split('-').map(Number)
+  const [hour, minute] = (timePart || '').split(':').map(Number)
+  const date = new Date(year, month - 1, day, hour, minute, 0, 0)
   if (Number.isNaN(date.getTime()) || date <= new Date()) {
-    sendError.value = 'Choose a future date and time.'
+    customTimeError.value = 'Choose a complete date and time in the future.'
     return
   }
   const value = date.toISOString()
   const label = date.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' })
   times.value = [{ value, label }]
   selectedTimes.value = [value]
+  chosenCustomTimeLabel.value = label
   sendError.value = ''
 }
 function beginReproposal() {
@@ -177,6 +186,9 @@ async function suggestChanges() {
   finally { suggestingChanges.value = false }
 }
 onMounted(async () => {
+  const minimum = new Date(Date.now() + 15 * 60 * 1000)
+  const pad = (value: number) => String(value).padStart(2, '0')
+  earliestCustomTime.value = `${minimum.getFullYear()}-${pad(minimum.getMonth() + 1)}-${pad(minimum.getDate())}T${pad(minimum.getHours())}:${pad(minimum.getMinutes())}`
   try {
     const savedMessages = JSON.parse(localStorage.getItem(quickMessageStorageKey) || 'null')
     if (Array.isArray(savedMessages) && savedMessages.every(message => typeof message === 'string')) quickMessages.value = savedMessages.slice(0, 8)
@@ -237,7 +249,7 @@ useHead(() => ({ title: `Plan a Date with ${personName.value} · Lonely Radish` 
         </section>
         <section v-if="canEditProposal" class="plan-card"><div class="flex items-center gap-2"><Sparkles class="size-5 text-[#B4234A]" /><h2 class="text-xl font-semibold">1. Choose from {{ personName }}’s interests</h2></div><p class="mt-2 text-sm text-[#6E4D58]">Pick something they have already said they would enjoy.</p><div class="mt-4 grid gap-2 sm:grid-cols-2"><button v-for="option in activities" :key="option" type="button" class="choice" :class="activity === option && 'choice-selected'" @click="activity = option">{{ option }}</button></div></section>
         <section v-if="canEditProposal" class="plan-card"><div class="flex items-center gap-2"><MessageCircle class="size-5 text-[#B4234A]" /><h2 class="text-xl font-semibold">2. Add a short invite note</h2></div><p class="mt-2 text-sm text-[#6E4D58]">A little context is enough — there will be time to talk when you meet.</p><textarea v-model="inviteMessage" :maxlength="inviteMessageLimit" rows="4" class="mt-4 w-full resize-none rounded-lg border border-[#E8D8C4] bg-[#FBF7F1] px-4 py-3 text-sm outline-none transition focus:border-[#B4234A] focus:ring-2 focus:ring-[#F7B7C4]" :placeholder="`For example: I’d love to try this with you — the weekend afternoon could work well for me.`"></textarea><p class="mt-2 text-right text-xs text-[#6E4D58]">{{ inviteMessage.length }}/{{ inviteMessageLimit }}</p></section>
-        <section v-if="canEditProposal" class="plan-card"><div class="flex items-center gap-2"><CalendarDays class="size-5 text-[#B4234A]" /><h2 class="text-xl font-semibold">3. Choose a date and time</h2></div><p class="mt-2 text-sm text-[#6E4D58]">Choose the final time you would like to propose.</p><div class="mt-4 grid gap-2 sm:grid-cols-3"><button v-for="time in times" :key="time.value" type="button" class="choice" :class="selectedTimes.includes(time.value) && 'choice-selected'" @click="toggleTime(time.value)">{{ time.label }}</button></div><div class="mt-4 border-t border-[#E8D8C4] pt-4"><label class="text-sm font-semibold">Choose another date and time<input v-model="customTime" type="datetime-local" class="field"></label><button type="button" class="mt-3 rounded-lg bg-[#4D2F39] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-40" :disabled="!customTime" @click="chooseCustomTime">Use this time</button></div></section>
+        <section v-if="canEditProposal" class="plan-card"><div class="flex items-center gap-2"><CalendarDays class="size-5 text-[#B4234A]" /><h2 class="text-xl font-semibold">3. Choose a date and time</h2></div><p class="mt-2 text-sm text-[#6E4D58]">Choose the final time you would like to propose.</p><div class="mt-4 grid gap-2 sm:grid-cols-3"><button v-for="time in times" :key="time.value" type="button" class="choice" :class="selectedTimes.includes(time.value) && 'choice-selected'" @click="toggleTime(time.value)">{{ time.label }}</button></div><div class="mt-4 border-t border-[#E8D8C4] pt-4"><label class="text-sm font-semibold">Choose another date and time<input v-model="customTime" type="datetime-local" :min="earliestCustomTime" class="field" @input="customTimeError = ''; chosenCustomTimeLabel = ''"></label><p class="mt-2 text-xs text-[#6E4D58]">Select both a date and a time, then apply it to the proposal.</p><p v-if="customTimeError" class="mt-2 text-sm font-semibold text-[#8F1839]" role="alert">{{ customTimeError }}</p><p v-if="chosenCustomTimeLabel" class="mt-2 text-sm font-semibold text-[#52713A]" role="status">Selected: {{ chosenCustomTimeLabel }}</p><button type="button" class="mt-3 rounded-lg bg-[#4D2F39] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-40" :disabled="!customTime" @click="chooseCustomTime">Use this time</button></div></section>
         <section v-if="canEditProposal" class="plan-card"><div class="flex items-center gap-2"><MapPin class="size-5 text-[#B4234A]" /><h2 class="text-xl font-semibold">4. Enter a public venue</h2></div><label class="mt-4 block text-sm font-semibold">Venue name and area<input v-model="venue" type="text" maxlength="200" class="field" placeholder="For example, Barbican Centre, EC2Y" autocomplete="off"></label><label class="mt-4 block text-sm font-semibold">Address or meeting details <span class="font-normal text-[#6E4D58]">(optional)</span><textarea v-model="venueDetails" maxlength="300" rows="3" class="field resize-none" placeholder="For example, Silk Street entrance, beside the box office"></textarea></label><p class="mt-4 flex gap-2 text-xs leading-5 text-[#6E4D58]"><ShieldCheck class="mt-0.5 size-3.5 shrink-0" />Choose a recognisable public place. You can add an address, entrance or meeting point without sharing a private location.</p></section>
 
         <template v-if="canEditProposal">
