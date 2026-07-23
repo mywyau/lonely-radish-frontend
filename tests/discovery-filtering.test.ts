@@ -34,8 +34,16 @@ describe('scalable discovery filtering', () => {
   })
 
   it('offers location controls in onboarding and match preferences', () => {
-    expect(read('pages/onboarding.vue')).toContain("'/api/profile/location'")
-    expect(read('pages/preferences/index.vue')).toContain('UK postcode')
+    const onboarding = read('pages/onboarding.vue')
+    const preferences = read('pages/preferences/index.vue')
+    const endpoint = read('server/api/preferences/general.put.ts')
+    const distanceMigration = read('docs/migrations/20260804_increase_maximum_match_distance.sql')
+    expect(onboarding).toContain("'/api/profile/location'")
+    expect(onboarding).toContain('type="range" min="1" max="500"')
+    expect(preferences).toContain('UK postcode')
+    expect(preferences).toContain('type="number" min="1" max="500"')
+    expect(endpoint).toContain("'Maximum distance', 1, 500")
+    expect(distanceMigration).toContain('between 1 and 500')
     expect(read('.env.example')).toContain('OPENCAGE_API_KEY=')
   })
 })

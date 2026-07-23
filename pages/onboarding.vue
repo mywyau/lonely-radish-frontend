@@ -291,7 +291,7 @@ onMounted(() => { load().catch(() => { errorMessage.value = 'We could not load o
       <form v-else-if="step === 4" class="onboarding-card" @submit.prevent="savePreferences">
         <div class="step-title"><HeartHandshake class="size-5 text-[#B4234A]" /><div><h2>Your match preferences</h2><p>Set a useful starting point. Every setting remains editable later.</p></div></div>
         <div class="mt-6 grid gap-5 sm:grid-cols-2">
-          <label>Maximum distance <span class="value">{{ preferences.distance }} km</span><input v-model.number="preferences.distance" type="range" min="1" max="100"></label>
+          <label>Maximum distance <span class="value">{{ preferences.distance }} km</span><input v-model.number="preferences.distance" type="range" min="1" max="500"></label>
           <div class="grid grid-cols-2 gap-3"><label>Minimum age <input v-model.number="preferences.minimumAge" type="number" min="18" max="100"></label><label>Maximum age <input v-model.number="preferences.maximumAge" type="number" min="18" max="100"></label></div>
         </div>
         <section class="mt-5 rounded-lg bg-[#FBF7F1] p-4">

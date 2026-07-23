@@ -98,7 +98,7 @@ onMounted(async () => {
             <label class="text-sm font-medium">
               Maximum distance
               <span class="field-with-suffix">
-                <input v-model.number="preferences.distance" class="field field-with-suffix__input" type="number" min="1" max="100" aria-describedby="distance-unit">
+                <input v-model.number="preferences.distance" class="field field-with-suffix__input" type="number" min="1" max="500" aria-describedby="distance-unit">
                 <span id="distance-unit" class="field-with-suffix__label">km</span>
               </span>
             </label>

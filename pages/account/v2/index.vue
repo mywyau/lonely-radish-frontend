@@ -26,13 +26,13 @@ const savingContact = ref(false);
 const contactSaved = ref(false);
 const contactError = ref('');
 type ReadinessChecks = { profileBasics: boolean; photos: boolean; activities: boolean; location: boolean; generalPreferences: boolean; datingPreferences: boolean };
-const readiness = ref<{ checks: ReadinessChecks; completed: number; total: number; percentage: number } | null>(null);
+const readiness = ref<{ checks: ReadinessChecks; completed: number; total: number; percentage: number; photoCount: number; photosRequired: number } | null>(null);
 const readinessCollapsed = ref(false);
 const readinessItems = computed(() => {
   const checks = readiness.value?.checks;
   return [
     { key: 'profileBasics', label: 'Profile basics', detail: 'Name, bio and identity', to: '/account/v2' },
-    { key: 'photos', label: 'Profile photo', detail: 'Add at least one photo', to: '/photos' },
+    { key: 'photos', label: 'Profile photos', detail: `${readiness.value?.photoCount ?? 0} of ${readiness.value?.photosRequired ?? 6} photos added`, to: '/photos' },
     { key: 'activities', label: 'Activity interests', detail: 'Choose what you would enjoy', to: '/preferences/activities' },
     { key: 'location', label: 'Approximate location', detail: 'Set a postcode for distance matching', to: '/preferences#location-and-age' },
     { key: 'generalPreferences', label: 'Age and distance', detail: 'Set a practical matching range', to: '/preferences#location-and-age' },

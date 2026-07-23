@@ -6,7 +6,7 @@ import { boolean, integer, objectBody, stringArray, badRequest } from '~/server/
 export default defineEventHandler(async (event) => {
   const { sub } = await requireUser(event)
   const body = objectBody(await readBody(event))
-  const distance = integer(body.distance, 'Maximum distance', 1, 100)
+  const distance = integer(body.distance, 'Maximum distance', 1, 500)
   const minimumAge = integer(body.minimumAge, 'Minimum age', 18, 100)
   const maximumAge = integer(body.maximumAge, 'Maximum age', 18, 100)
   if (minimumAge > maximumAge) badRequest('Minimum age cannot exceed maximum age')
