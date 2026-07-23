@@ -9,11 +9,14 @@ import { hasPaidAccess } from '~/utils/paidAccess';
 const { authReady, entitlement } = useMeStateV2();
 
 const monthlyPrice = 7.99
+const quarterlyPrice = 19.99
 const yearlyPrice = 55.99
+const quarterlySavings = (monthlyPrice * 3 - quarterlyPrice).toFixed(2)
+const quarterlyMonthlyEquivalent = (quarterlyPrice / 3).toFixed(2)
 const yearlySavings = (monthlyPrice * 12 - yearlyPrice).toFixed(2)
 const yearlyMonthlyEquivalent = (yearlyPrice / 12).toFixed(2)
 
-function upgrade(billing: 'monthly' | 'yearly') {
+function upgrade(billing: 'monthly' | 'quarterly' | 'yearly') {
   useUpgrade(billing)
 }
 
@@ -58,6 +61,14 @@ const isSubscribed = computed(() =>
                 : 'hover:bg-[#F7D4DC] active:scale-[0.98]'" :disabled="isSubscribed" @click="upgrade('monthly')">
               <span class="block">Monthly plan · £{{ monthlyPrice }}</span>
               <span class="mt-0.5 block text-xs text-[#6E4D58]">Flexible month-to-month billing</span>
+            </button>
+
+            <button class="block w-full rounded-lg bg-[#F3E8DA] px-3 py-3 font-medium transition shadow-sm"
+              :class="isSubscribed
+                ? 'opacity-60 cursor-not-allowed'
+                : 'hover:bg-[#E8D8C4] active:scale-[0.98]'" :disabled="isSubscribed" @click="upgrade('quarterly')">
+              <span class="block">Three-month plan · £{{ quarterlyPrice }}</span>
+              <span class="mt-0.5 block text-xs text-[#6E4D58]">≈ £{{ quarterlyMonthlyEquivalent }}/mo · Save £{{ quarterlySavings }}</span>
             </button>
 
             <button class="block w-full rounded-lg bg-[#B4234A] px-3 py-3 font-medium text-white transition shadow-[0_12px_26px_rgba(180,35,74,0.18)]" :class="isSubscribed

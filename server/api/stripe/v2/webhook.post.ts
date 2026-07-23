@@ -2,6 +2,7 @@ import { createError, getHeader, readRawBody } from "h3";
 import { enqueueStripeEventJob } from "~/server/services/billing/stripeEnqueueHelper";
 import { stripe } from "~/server/services/billing/stripeClient";
 import { insertStripeEvent } from "~/server/services/billing/stripeEventRepository";
+import { processStripeEvent } from "~/server/services/billing/processStripeEvent";
 import { redactIdentifier } from "~/server/utils/logging/redact";
 import type Stripe from "stripe";
 
@@ -65,11 +66,15 @@ export default defineEventHandler(async (event) => {
       };
     }
 
-    await enqueueStripeEventJob(event, {
-      eventId: stripeEvent.id,
-      stripeSubscriptionId: result.stripeSubscriptionId,
-      stripeCustomerId: result.stripeCustomerId,
-    });
+    if (import.meta.dev) {
+      await processStripeEvent(stripeEvent.id);
+    } else {
+      await enqueueStripeEventJob(event, {
+        eventId: stripeEvent.id,
+        stripeSubscriptionId: result.stripeSubscriptionId,
+        stripeCustomerId: result.stripeCustomerId,
+      });
+    }
 
     console.log("[STRIPE_V2] Event stored and queued", {
       requestId,

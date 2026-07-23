@@ -13,7 +13,7 @@ type BillingSubscriptionRow = {
 function toEntitlementPlan(
   subscriptionStatus: string,
   plan: string,
-): "free" | "monthly" | "yearly" {
+): "free" | "monthly" | "quarterly" | "yearly" {
   const hasPaidAccess =
     subscriptionStatus === "active" || subscriptionStatus === "trialing";
 
@@ -21,7 +21,7 @@ function toEntitlementPlan(
     return "free";
   }
 
-  if (plan === "monthly" || plan === "yearly") {
+  if (plan === "monthly" || plan === "quarterly" || plan === "yearly") {
     return plan;
   }
 

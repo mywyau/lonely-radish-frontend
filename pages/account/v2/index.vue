@@ -41,8 +41,10 @@ const readinessItems = computed(() => {
 });
 
 const fullName = computed(() => `${profile.firstName} ${profile.lastName}`.trim());
-const planLabel = computed(() => entitlement.value?.plan === 'yearly' ? 'Yearly plan' : entitlement.value?.plan === 'monthly' ? 'Monthly plan' : 'Free plan');
-const isPaidPlan = computed(() => entitlement.value?.plan === 'monthly' || entitlement.value?.plan === 'yearly');
+const planLabel = computed(() => entitlement.value?.plan === 'yearly' ? 'Yearly plan' : entitlement.value?.plan === 'quarterly' ? 'Three-month plan' : entitlement.value?.plan === 'monthly' ? 'Monthly plan' : 'Free plan');
+const isPaidPlan = computed(() => ['monthly','quarterly','yearly'].includes(entitlement.value?.plan || ''));
+const openingBillingPortal = ref(false);
+const billingError = ref('');
 
 const datePreferences = [
   { icon: Sparkles, label: "Activity mood", value: "Gallery walk, market, or low-key gig" },
@@ -103,6 +105,18 @@ async function saveContactDetails() {
   finally { savingContact.value = false; }
 }
 
+async function managePlan() {
+  openingBillingPortal.value = true;
+  billingError.value = '';
+  try {
+    const result = await $fetch<{ url: string }>('/api/stripe/portal', { method: 'POST' });
+    await navigateTo(result.url, { external: true });
+  } catch (error: any) {
+    billingError.value = error?.data?.statusMessage || 'Subscription management could not be opened.';
+    openingBillingPortal.value = false;
+  }
+}
+
 onMounted(async () => {
   await resolve({ force: true });
   try { pauseState.value = await $fetch('/api/account/pause'); } catch { /* Account remains usable if pause status is unavailable. */ }
@@ -142,8 +156,10 @@ onMounted(async () => {
           <div class="mt-4 flex flex-wrap items-center gap-2"><h2 class="text-lg font-semibold">Plan preview</h2><span class="rounded-full px-2.5 py-1 text-xs font-bold" :class="isPaidPlan ? 'bg-[#EAF2DE] text-[#4D2F39]' : 'bg-white/15 text-white'">{{ isPaidPlan ? 'Paid' : 'Free' }}</span></div>
           <p class="mt-2 text-sm leading-6 text-white/72">You are currently on the <strong class="text-white">{{ planLabel }}</strong>.</p>
           <div class="mt-5 flex flex-col gap-2 min-[400px]:flex-row min-[400px]:flex-wrap">
-            <NuxtLink to="/upgrade" class="inline-flex justify-center rounded-lg bg-white px-4 py-2 text-sm font-semibold text-[#8F1839] transition hover:bg-[#F3E8DA]">{{ isPaidPlan ? 'Manage plan' : 'View paid plans' }}</NuxtLink>
+            <button v-if="isPaidPlan" type="button" class="inline-flex justify-center rounded-lg bg-white px-4 py-2 text-sm font-semibold text-[#8F1839] transition hover:bg-[#F3E8DA] disabled:opacity-60" :disabled="openingBillingPortal" @click="managePlan">{{ openingBillingPortal ? 'Opening Stripe…' : 'Manage plan' }}</button>
+            <NuxtLink v-else to="/upgrade" class="inline-flex justify-center rounded-lg bg-white px-4 py-2 text-sm font-semibold text-[#8F1839] transition hover:bg-[#F3E8DA]">View paid plans</NuxtLink>
           </div>
+          <p v-if="billingError" class="mt-3 text-sm font-semibold text-[#F7B7C4]" role="alert">{{ billingError }}</p>
         </div>
 
         <section class="rounded-lg bg-[#EAF2DE] p-6 shadow-[0_10px_24px_rgba(180,35,74,0.08)]">

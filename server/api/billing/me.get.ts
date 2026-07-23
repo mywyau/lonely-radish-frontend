@@ -22,7 +22,7 @@ type LatestStripeEventRow = {
 
 function hasPaidAccess(plan: string | null, subscriptionStatus: string | null): boolean {
   if (!plan) return false;
-  if (plan !== "monthly" && plan !== "yearly") return false;
+  if (plan !== "monthly" && plan !== "quarterly" && plan !== "yearly") return false;
 
   return subscriptionStatus === "active" || subscriptionStatus === "trialing";
 }

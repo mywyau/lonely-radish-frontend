@@ -6,7 +6,7 @@ export type SubscriptionStatus =
   | "incomplete";
 
 export interface Entitlement {
-  plan: "free" | "monthly" | "yearly";
+  plan: "free" | "monthly" | "quarterly" | "yearly";
   subscription_status: SubscriptionStatus;
   current_period_start?: string;
   current_period_end?: string;

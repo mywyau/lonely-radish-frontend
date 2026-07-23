@@ -32,7 +32,7 @@ definePageMeta({
       <FooterPageSectionHeading :icon="CreditCard">Digital subscriptions</FooterPageSectionHeading>
 
       <p class="text-gray-700">
-        Lonely Radish provides access to digital dating-app features through monthly or yearly
+        Lonely Radish provides access to digital dating-app features through monthly, three-month, or yearly
         subscriptions.
       </p>
 

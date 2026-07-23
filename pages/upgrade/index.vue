@@ -18,9 +18,14 @@ const isSubscribed = computed(() =>
 )
 
 const monthlyPrice = 7.99
+const quarterlyPrice = 19.99
 const yearlyPrice = 55.99
+const quarterlySavings = (monthlyPrice * 3 - quarterlyPrice).toFixed(2)
+const quarterlyMonthlyEquivalent = (quarterlyPrice / 3).toFixed(2)
 const yearlySavings = (monthlyPrice * 12 - yearlyPrice).toFixed(2)
 const yearlyMonthlyEquivalent = (yearlyPrice / 12).toFixed(2)
+const upgradingPlan = ref<'monthly' | 'quarterly' | 'yearly' | null>(null)
+const upgradeError = ref('')
 
 const benefits = [
   { icon: markRaw(HeartHandshake), text: 'More thoughtful matches around shared activities' },
@@ -33,13 +38,19 @@ const benefits = [
 ]
 
 // Already paid → manage subscription instead
-function upgrade(plan: 'monthly' | 'yearly') {
+async function upgrade(plan: 'monthly' | 'quarterly' | 'yearly') {
   if (isSubscribed.value) {
-    navigateTo('/account')
+    navigateTo('/account/v2')
     return
   }
-
-  useUpgrade(plan)
+  upgradingPlan.value = plan
+  upgradeError.value = ''
+  try {
+    await useUpgrade(plan)
+  } catch (error: any) {
+    upgradeError.value = error?.data?.statusMessage || 'Secure checkout could not be started. Please try again.'
+    upgradingPlan.value = null
+  }
 }
 
 </script>
@@ -80,27 +91,36 @@ function upgrade(plan: 'monthly' | 'yearly') {
         </div>
 
         <!-- Plans -->
-        <div class="mx-auto max-w-md space-y-3 pt-4">
-          <p class="text-sm text-[#6E4D58]">
+        <div class="mx-auto grid w-full max-w-3xl gap-3 pt-4 sm:grid-cols-3">
+          <p class="text-sm text-[#6E4D58] sm:col-span-3">
             Choose a plan
           </p>
 
           <button class="block w-full rounded-lg bg-[#FCE3E8] px-3 py-3 font-medium text-[#2A1520] transition shadow-sm"
             :class="isSubscribed
               ? 'opacity-60 cursor-not-allowed'
-              : 'hover:bg-[#F7D4DC] active:scale-[0.98]'" :disabled="isSubscribed" @click="upgrade('monthly')">
-            <span class="block">Monthly plan · £{{ monthlyPrice }}</span>
+              : 'hover:bg-[#F7D4DC] active:scale-[0.98]'" :disabled="isSubscribed || Boolean(upgradingPlan)" @click="upgrade('monthly')">
+            <span class="block">{{ upgradingPlan === 'monthly' ? 'Opening secure checkout…' : `Monthly plan · £${monthlyPrice}` }}</span>
             <span class="mt-0.5 block text-xs text-[#6E4D58]">Flexible month-to-month billing</span>
+          </button>
+
+          <button class="block w-full rounded-lg bg-[#F3E8DA] px-3 py-3 font-medium text-[#2A1520] transition shadow-sm"
+            :class="isSubscribed
+              ? 'opacity-60 cursor-not-allowed'
+              : 'hover:bg-[#E8D8C4] active:scale-[0.98]'" :disabled="isSubscribed || Boolean(upgradingPlan)" @click="upgrade('quarterly')">
+            <span class="block">{{ upgradingPlan === 'quarterly' ? 'Opening secure checkout…' : `Three-month plan · £${quarterlyPrice}` }}</span>
+            <span class="mt-0.5 block text-xs text-[#6E4D58]">≈ £{{ quarterlyMonthlyEquivalent }}/mo · Save £{{ quarterlySavings }}</span>
           </button>
 
           <button class="block w-full rounded-lg bg-[#B4234A] px-3 py-3 font-medium text-white transition shadow-[0_12px_26px_rgba(180,35,74,0.18)]" :class="isSubscribed
             ? 'opacity-60 cursor-not-allowed'
-            : 'hover:bg-[#8F1839] active:scale-[0.98]'" :disabled="isSubscribed" @click="upgrade('yearly')">
-            <span class="block">Yearly plan · £{{ yearlyPrice }}</span>
+            : 'hover:bg-[#8F1839] active:scale-[0.98]'" :disabled="isSubscribed || Boolean(upgradingPlan)" @click="upgrade('yearly')">
+            <span class="block">{{ upgradingPlan === 'yearly' ? 'Opening secure checkout…' : `Yearly plan · £${yearlyPrice}` }}</span>
             <span class="mt-0.5 block text-xs text-white/80">≈ £{{ yearlyMonthlyEquivalent }}/mo · Save £{{ yearlySavings }}</span>
           </button>
 
         </div>
+        <p v-if="upgradeError" class="mx-auto max-w-md rounded-lg bg-[#FCE3E8] p-3 text-sm font-semibold text-[#8F1839]" role="alert">{{ upgradeError }}</p>
 
         <!-- Subscribed -->
         <p v-if="isSubscribed" class="text-sm text-[#6E4D58]">

@@ -3,7 +3,7 @@
 import type Stripe from "stripe";
 import { db } from "~/server/repositories/db";
 
-export type BillingPlan = "monthly" | "yearly";
+export type BillingPlan = "monthly" | "quarterly" | "yearly";
 export type SubscriptionStatus =
   | "active"
   | "trialing"
@@ -15,7 +15,7 @@ export type SubscriptionStatus =
   | "paused";
 
 function toBillingPlan(value: string | undefined): BillingPlan {
-  if (value === "monthly" || value === "yearly") {
+  if (value === "monthly" || value === "quarterly" || value === "yearly") {
     return value;
   }
 

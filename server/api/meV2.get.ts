@@ -6,7 +6,7 @@ import { enforceRateLimit } from "../utils/rate-limiting/rateLimit";
 type SubscriptionStatus = "active" | "trialing" | "past_due" | "canceled";
 
 interface Entitlement {
-  plan: "free" | "monthly" | "yearly";
+  plan: "free" | "monthly" | "quarterly" | "yearly";
   subscription_status: SubscriptionStatus;
   cancel_at_period_end: boolean;
   current_period_end?: string;

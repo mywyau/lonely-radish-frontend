@@ -6,7 +6,7 @@ import { getOrCreateStripeCustomer } from "~/server/services/billing/getOrCreate
 import { stripe } from "~/server/services/billing/stripeClient";
 import { requireUser } from "~/server/utils/requireUser";
 
-type Billing = "monthly" | "yearly";
+type Billing = "monthly" | "quarterly" | "yearly";
 
 type CheckoutBody = {
   billing?: Billing;
@@ -26,9 +26,10 @@ function getAppUrl(): string {
 }
 
 function getPriceIdForBilling(billing: Billing): string {
-  const priceId =
-    billing === "monthly"
-      ? process.env.STRIPE_PRICE_ID_MONTHLY
+  const priceId = billing === "monthly"
+    ? process.env.STRIPE_PRICE_ID_MONTHLY
+    : billing === "quarterly"
+      ? process.env.STRIPE_PRICE_ID_QUARTERLY
       : process.env.STRIPE_PRICE_ID_YEARLY;
 
   if (!priceId) {
@@ -42,7 +43,7 @@ function getPriceIdForBilling(billing: Billing): string {
 }
 
 function assertBilling(value: unknown): Billing {
-  if (value === "monthly" || value === "yearly") {
+  if (value === "monthly" || value === "quarterly" || value === "yearly") {
     return value;
   }
 
@@ -59,17 +60,23 @@ export default defineEventHandler(async (event) => {
   const body = (await readBody(event)) as CheckoutBody | undefined;
   const billing = assertBilling(body?.billing);
 
-  const { rows } = await db.query<{ email: string | null }>(
+  const { rows } = await db.query<{ email: string | null; subscriptionStatus: string | null }>(
     `
-      select email
-      from users
-      where id = $1
+      select u.email,e.subscription_status as "subscriptionStatus"
+      from users u left join entitlements e on e.user_id=u.id
+      where u.id = $1
       limit 1
     `,
     [userId],
   );
 
   const userEmail = rows[0]?.email?.trim();
+  if (['active','trialing','past_due','incomplete'].includes(rows[0]?.subscriptionStatus || '')) {
+    throw createError({
+      statusCode: 409,
+      statusMessage: "You already have a subscription. Manage it from your account.",
+    });
+  }
 
   if (!userEmail) {
     throw createError({

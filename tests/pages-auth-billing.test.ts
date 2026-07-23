@@ -21,27 +21,36 @@ describe("auth and billing page contracts", () => {
     expect(comingSoon).toContain("Browse matches built around something you both want to do.");
   });
 
-  it("keeps billing and upgrade flows local to the prototype", () => {
+  it("uses Stripe Checkout and confirms subscription activation", () => {
     const success = readPage("billing/success.vue");
     const cancel = readPage("billing/cancel.vue");
     const upgrade = readPage("upgrade/index.vue");
 
-    expect(success).toContain("Payment successful");
-    expect(success).toContain("No real payment or auth check was performed.");
+    expect(success).toContain("Payment received");
+    expect(success).toContain("'/api/billing/me'");
+    expect(success).toContain("hasPaidAccess");
 
     expect(cancel).toContain("Payment cancelled");
     expect(cancel).toContain("upgrade('monthly')");
     expect(cancel).toContain('const monthlyPrice = 7.99');
+    expect(cancel).toContain('const quarterlyPrice = 19.99');
     expect(cancel).toContain('const yearlyPrice = 55.99');
 
     expect(upgrade).toContain("Upgrade your plan");
+    expect(upgrade).toContain("upgrade('quarterly')");
+    expect(upgrade).toContain('Three-month plan');
     expect(upgrade).not.toContain("/please-sign-in");
 
     const upgradeComposable = readFileSync(
       resolve(process.cwd(), "composables/useUpgrade.ts"),
       "utf8",
     );
-    expect(upgradeComposable).toContain('path: "/billing/success"');
+    expect(upgradeComposable).toContain('"/api/stripe/checkout"');
+    expect(upgradeComposable).toContain('external: true');
+    expect(readFileSync(resolve(process.cwd(), "server/api/stripe/checkout.post.ts"), "utf8")).toContain('mode: "subscription"');
+    expect(readFileSync(resolve(process.cwd(), "server/api/stripe/checkout.post.ts"), "utf8")).toContain('STRIPE_PRICE_ID_QUARTERLY');
+    expect(readFileSync(resolve(process.cwd(), "docs/migrations/20260810_add_quarterly_subscription.sql"), "utf8")).toContain("'quarterly'");
+    expect(readFileSync(resolve(process.cwd(), "server/api/stripe/v2/webhook.post.ts"), "utf8")).toContain('processStripeEvent');
   });
 
   it("protects the account page and saves authenticated profile names", () => {
@@ -58,6 +67,7 @@ describe("auth and billing page contracts", () => {
     expect(account).toContain("Save profile");
     expect(account).toContain("const planLabel = computed")
     expect(account).toContain("{{ isPaidPlan ? 'Paid' : 'Free' }}")
+    expect(account).toContain("'/api/stripe/portal'")
     expect(account.indexOf('Plan preview')).toBeLessThan(account.indexOf('Pause discovery'))
     expect(account).not.toContain("useMockProfile()");
     expect(account).not.toContain("persistProfile()");

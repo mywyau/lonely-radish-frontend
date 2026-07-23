@@ -16,7 +16,7 @@ export default defineEventHandler(async (event) => {
         SELECT COUNT(DISTINCT user_id)::int
         FROM entitlements
         WHERE subscription_status = 'active'
-          AND plan IN ('monthly', 'yearly')
+          AND plan IN ('monthly', 'quarterly', 'yearly')
       ) AS paid_users
     `,
   );
