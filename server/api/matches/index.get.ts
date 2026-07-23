@@ -20,7 +20,8 @@ export default defineEventHandler(async (event) => {
     from matches m
     join profiles p on p.user_id=case when m.user_one_id=$1 then m.user_two_id else m.user_one_id end
     left join lateral (select storage_key,public_url from profile_photos where user_id=p.user_id order by position limit 1) photo on true
-    left join lateral (select dp.* from date_proposals dp where dp.match_id=m.id order by dp.created_at desc limit 1) proposal on true
+    left join lateral (select dp.* from date_proposals dp where dp.match_id=m.id
+      and (dp.status<>'draft' or dp.inviter_id=$1) order by dp.created_at desc limit 1) proposal on true
     left join proposal_times selected on selected.id=proposal.selected_time_id
     left join date_follow_ups my_followup on my_followup.proposal_id=proposal.id and my_followup.user_id=$1
     left join date_follow_ups their_followup on their_followup.proposal_id=proposal.id and their_followup.user_id<>$1
@@ -38,7 +39,7 @@ export default defineEventHandler(async (event) => {
   const matches = await Promise.all(rows.map(async row => {
     const proposalStatus = row.proposalStatus as string | null
     const stage = proposalStatus === 'accepted' ? 'confirmed'
-      : proposalStatus === 'pending' ? 'planning' : 'fresh'
+      : ['draft','pending'].includes(proposalStatus || '') ? 'planning' : 'fresh'
     const photoUrl = row.photoStorageKey ? await signedPhotoUrl(row.photoStorageKey) : row.legacyPhotoUrl || null
     const dateHasPassed = Boolean(row.confirmedTime && new Date(row.confirmedTime) <= new Date())
     const bothFollowedUp = Boolean(row.myFollowUpAt && row.theirFollowUpAt)

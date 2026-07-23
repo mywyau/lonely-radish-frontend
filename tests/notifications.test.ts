@@ -20,7 +20,7 @@ describe('notification centre', () => {
 
   it('creates notifications throughout the match lifecycle', () => {
     expect(read('server/api/interests/index.post.ts')).toContain("'new_match'")
-    expect(read('server/api/proposals/index.post.ts')).toContain("'proposal_received'")
+    expect(read('server/api/proposals/[id]/send.post.ts')).toContain("'proposal_received'")
     expect(read('server/api/proposals/[id].put.ts')).toContain("'proposal_updated'")
     expect(read('server/api/proposals/[id]/respond.post.ts')).toContain("'date_confirmed'")
     expect(read('server/api/dates/[id]/follow-up.post.ts')).toContain("'follow_up_ready'")

@@ -48,11 +48,14 @@ function actionLabel(match: MatchCard) {
   if (match.stage === 'fresh') return 'Start planning'
   if (match.stage === 'confirmed' && match.dateHasPassed) return match.hasFollowedUp ? 'View date follow-up' : 'Would you meet again?'
   if (match.stage === 'confirmed') return 'Edit date details'
-  return match.needsResponse ? 'Review proposal' : 'Continue planning'
+  return match.needsResponse ? 'Review proposal' : 'Edit proposal'
 }
 function statusLabel(match: MatchCard) {
   if (match.stage === 'fresh') return 'Ready to plan'
-  if (match.stage === 'planning') return match.needsResponse ? 'Your response needed' : 'Waiting for a response'
+  if (match.stage === 'planning') {
+    if (match.proposalStatus === 'draft') return 'Draft — only you can see this'
+    return match.needsResponse ? 'Your response needed' : 'Waiting for a response'
+  }
   return match.confirmedTime ? new Date(match.confirmedTime).toLocaleDateString('en-GB', {
     weekday: 'short', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit',
   }) : 'Date confirmed'
