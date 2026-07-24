@@ -2,7 +2,7 @@ export function normalizeLoginRedirectPath(targetUrl?: string | null) {
   if (!process.client || !targetUrl) return "/";
 
   if (targetUrl.startsWith("/") && !targetUrl.startsWith("//")) {
-    return targetUrl;
+    return isSignInPath(targetUrl) ? "/" : targetUrl;
   }
 
   try {
@@ -12,10 +12,15 @@ export function normalizeLoginRedirectPath(targetUrl?: string | null) {
       return "/";
     }
 
-    return `${url.pathname}${url.search}${url.hash}`;
+    const path = `${url.pathname}${url.search}${url.hash}`;
+    return isSignInPath(path) ? "/" : path;
   } catch {
     return "/";
   }
+}
+
+function isSignInPath(path: string) {
+  return path.split(/[?#]/, 1)[0]?.replace(/\/+$/, '') === '/please-sign-in';
 }
 
 export async function useAuth() {

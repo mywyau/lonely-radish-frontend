@@ -32,4 +32,10 @@ describe("useAuth helpers", () => {
     expect(normalizeLoginRedirectPath()).toBe("/");
     expect(normalizeLoginRedirectPath("http://[not-valid")).toBe("/");
   });
+
+  it("does not return to the sign-in page after authentication", () => {
+    expect(normalizeLoginRedirectPath("/please-sign-in")).toBe("/");
+    expect(normalizeLoginRedirectPath("/please-sign-in?redirect=%2Fmatches")).toBe("/");
+    expect(normalizeLoginRedirectPath("https://lonelyradish.test/please-sign-in")).toBe("/");
+  });
 });

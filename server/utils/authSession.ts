@@ -46,5 +46,6 @@ export function useAuthFlowSession(event: H3Event) {
 
 export function safeReturnTo(value: unknown) {
   if (typeof value !== 'string' || !value.startsWith('/') || value.startsWith('//')) return '/'
+  if (value.split(/[?#]/, 1)[0]?.replace(/\/+$/, '') === '/please-sign-in') return '/'
   return value
 }
