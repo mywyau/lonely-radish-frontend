@@ -59,26 +59,6 @@ onMounted(async () => {
         <p class="mt-3 leading-6 text-[#6E4D58]">Manage each part separately, so it is easy to revisit what matters to you.</p>
       </div>
 
-      <div class="mt-8 grid gap-4 sm:grid-cols-2">
-        <NuxtLink to="/preferences/activities" class="group rounded-lg bg-[#FCE3E8] p-6 shadow-[0_10px_24px_rgba(180,35,74,0.08)] transition hover:-translate-y-0.5">
-          <div class="flex items-center justify-between"><Sparkles class="size-6 text-[#B4234A]" /><ChevronRight class="size-5 transition group-hover:translate-x-1" /></div>
-          <h2 class="mt-5 text-xl font-semibold">Activity interests</h2>
-          <p class="mt-2 text-sm leading-6 text-[#6E4D58]">Choose the plans, sports, games, and experiences you would enjoy sharing.</p>
-        </NuxtLink>
-
-        <NuxtLink to="/preferences/dating" class="group rounded-lg bg-[#EAF2DE] p-6 shadow-[0_10px_24px_rgba(110,139,82,0.1)] transition hover:-translate-y-0.5">
-          <div class="flex items-center justify-between"><Heart class="size-6 text-[#B4234A]" /><ChevronRight class="size-5 transition group-hover:translate-x-1" /></div>
-          <h2 class="mt-5 text-xl font-semibold">Dating preferences</h2>
-          <p class="mt-2 text-sm leading-6 text-[#6E4D58]">Set sexual, racial, and ethnic preferences, or keep your matching pool open.</p>
-        </NuxtLink>
-
-        <NuxtLink to="/preferences/schedule" class="group rounded-lg bg-[#F3E8DA] p-6 shadow-[0_10px_24px_rgba(180,35,74,0.08)] transition hover:-translate-y-0.5 sm:col-span-2">
-          <div class="flex items-center justify-between"><CalendarClock class="size-6 text-[#B4234A]" /><ChevronRight class="size-5 transition group-hover:translate-x-1" /></div>
-          <h2 class="mt-5 text-xl font-semibold">Timing and safety</h2>
-          <p class="mt-2 text-sm leading-6 text-[#6E4D58]">Set the days and time ranges when you are usually free, and keep first meetings in public places.</p>
-        </NuxtLink>
-      </div>
-
       <form class="mt-8 space-y-5" @submit.prevent="savePreferences">
         <section id="location-and-age" class="scroll-mt-24 rounded-lg bg-white p-6 shadow-[0_12px_28px_rgba(180,35,74,0.08)]">
           <div class="flex items-start gap-3"><MapPin class="mt-1 size-5 text-[#B4234A]" /><div><h2 class="text-xl font-semibold">Location and age</h2><p class="mt-1 text-sm text-[#6E4D58]">Keep possible matches practical for you.</p></div></div>
@@ -120,6 +100,26 @@ onMounted(async () => {
 
         <div class="flex flex-col items-start gap-3 sm:flex-row sm:items-center"><button type="submit" :disabled="preferences.minimumAge > preferences.maximumAge" class="w-full rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto">Save preferences</button><span v-if="saved" class="text-sm font-semibold text-[#6E8B52]">Preferences saved.</span></div>
       </form>
+
+      <div class="mt-8 grid gap-4 sm:grid-cols-2">
+        <NuxtLink to="/preferences/activities" class="group rounded-lg bg-[#FCE3E8] p-6 shadow-[0_10px_24px_rgba(180,35,74,0.08)] transition hover:-translate-y-0.5">
+          <div class="flex items-center justify-between"><Sparkles class="size-6 text-[#B4234A]" /><ChevronRight class="size-5 transition group-hover:translate-x-1" /></div>
+          <h2 class="mt-5 text-xl font-semibold">Activity interests</h2>
+          <p class="mt-2 text-sm leading-6 text-[#6E4D58]">Choose the plans, sports, games, and experiences you would enjoy sharing.</p>
+        </NuxtLink>
+
+        <NuxtLink to="/preferences/dating" class="group rounded-lg bg-[#EAF2DE] p-6 shadow-[0_10px_24px_rgba(110,139,82,0.1)] transition hover:-translate-y-0.5">
+          <div class="flex items-center justify-between"><Heart class="size-6 text-[#B4234A]" /><ChevronRight class="size-5 transition group-hover:translate-x-1" /></div>
+          <h2 class="mt-5 text-xl font-semibold">Dating preferences</h2>
+          <p class="mt-2 text-sm leading-6 text-[#6E4D58]">Set sexual, racial, and ethnic preferences, or keep your matching pool open.</p>
+        </NuxtLink>
+
+        <NuxtLink to="/preferences/schedule" class="group rounded-lg bg-[#F3E8DA] p-6 shadow-[0_10px_24px_rgba(180,35,74,0.08)] transition hover:-translate-y-0.5 sm:col-span-2">
+          <div class="flex items-center justify-between"><CalendarClock class="size-6 text-[#B4234A]" /><ChevronRight class="size-5 transition group-hover:translate-x-1" /></div>
+          <h2 class="mt-5 text-xl font-semibold">Timing and safety</h2>
+          <p class="mt-2 text-sm leading-6 text-[#6E4D58]">Set the days and time ranges when you are usually free, and keep first meetings in public places.</p>
+        </NuxtLink>
+      </div>
     </section>
   </main>
 </template>

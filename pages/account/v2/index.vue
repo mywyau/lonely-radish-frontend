@@ -29,6 +29,7 @@ const socialHandleLimit = 100;
 const savingContact = ref(false);
 const contactSaved = ref(false);
 const contactError = ref('');
+const reliability = ref<{ confirmedNoShows: number; restrictedUntil: string | null; attendedDates: number; pendingReports: number } | null>(null);
 type ReadinessChecks = { profileBasics: boolean; photos: boolean; activities: boolean; location: boolean; generalPreferences: boolean; datingPreferences: boolean };
 const readiness = ref<{ checks: ReadinessChecks; completed: number; total: number; percentage: number; photoCount: number; photosRequired: number } | null>(null);
 const readinessCollapsed = ref(false);
@@ -124,6 +125,7 @@ async function managePlan() {
 onMounted(async () => {
   await resolve({ force: true });
   try { pauseState.value = await $fetch('/api/account/pause'); } catch { /* Account remains usable if pause status is unavailable. */ }
+  try { reliability.value = await $fetch('/api/account/reliability'); } catch { /* Reliability status is informational. */ }
   try { Object.assign(contact, await $fetch('/api/profile/contact')); } catch { /* Contact details remain optional. */ }
   try { const result = await $fetch<any>('/api/profile/me'); profile.raceEthnicity = result.profile?.raceEthnicity || ''; } catch { /* Identity remains editable when profile data is available. */ }
   try {
@@ -183,6 +185,14 @@ onMounted(async () => {
               <p v-if="pauseError" class="mt-3 text-sm font-semibold text-[#8F1839]" role="alert">{{ pauseError }}</p>
             </div>
           </div>
+        </section>
+
+        <section v-if="reliability" class="rounded-lg bg-white p-6 shadow-[0_12px_28px_rgba(180,35,74,0.08)]">
+          <div class="flex items-start gap-3"><ShieldCheck class="mt-1 size-5 text-[#6E8B52]" aria-hidden="true" /><div class="min-w-0 flex-1"><div class="flex flex-wrap items-center gap-2"><h2 class="text-lg font-semibold">Date reliability</h2><span class="rounded-full bg-[#EAF2DE] px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-[#52713A]">Private</span></div><p class="mt-2 text-sm leading-6 text-[#4D2F39]">This history is private. We reward clear cancellations and only restrict discovery after repeated confirmed, undisputed no-shows.</p>
+            <div class="mt-4 grid grid-cols-2 gap-3"><div class="rounded-lg bg-[#EAF2DE] p-3"><strong class="text-xl">{{ reliability.attendedDates }}</strong><span class="mt-1 block text-xs text-[#4D2F39]">Dates confirmed as attended</span></div><div class="rounded-lg bg-[#FBF7F1] p-3"><strong class="text-xl">{{ reliability.confirmedNoShows }}</strong><span class="mt-1 block text-xs text-[#4D2F39]">Confirmed no-shows</span></div></div>
+            <p v-if="reliability.pendingReports" class="mt-3 rounded-lg bg-[#FFF1C7] p-3 text-xs font-semibold text-[#694C00]">You have an attendance report awaiting your response.</p>
+            <p v-if="reliability.restrictedUntil && new Date(reliability.restrictedUntil) > new Date()" class="mt-3 rounded-lg bg-[#FCE3E8] p-3 text-xs font-semibold text-[#8F1839]">New discovery is paused until {{ new Date(reliability.restrictedUntil).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' }) }}. Existing matches and plans remain available.</p>
+          </div></div>
         </section>
 
         <section v-if="readiness" class="rounded-lg bg-white p-6 shadow-[0_12px_28px_rgba(180,35,74,0.08)]">

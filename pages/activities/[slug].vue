@@ -119,7 +119,7 @@ onMounted(async () => {
 
       <div v-else class="mt-8 rounded-lg bg-white p-8 text-center shadow-[0_10px_24px_rgba(180,35,74,0.08)]">
         <UsersRound class="mx-auto size-8 text-[#B4234A]" />
-        <h2 class="mt-4 text-xl font-semibold">No profiles match these filters yet</h2>
+        <h2 class="mt-4 text-xl font-semibold">No profiles match your filters yet</h2>
         <p class="mt-2 text-sm leading-6 text-[#6E4D58]">Try adjusting your distance, age or dating preferences, or check this category again later.</p>
         <NuxtLink to="/preferences" class="mt-5 inline-flex rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white">Adjust match preferences</NuxtLink>
       </div>

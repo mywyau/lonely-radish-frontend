@@ -56,9 +56,12 @@ onMounted(async () => {
       <p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">Match preferences</p>
       <h1 class="mt-2 text-4xl font-semibold">What would you like to do together?</h1>
       <p class="mt-3 max-w-2xl leading-6 text-[#6E4D58]">Choose up to {{ selectionLimit }} interests in total. You can add up to 3 of your own activities inside each category.</p>
-      <p v-if="selectionLimit === 5" class="mt-2 text-sm text-[#6E4D58]"><NuxtLink to="/upgrade" class="font-semibold text-[#8F1839] hover:underline">Paid plans</NuxtLink> allow up to 10 activity interests.</p>
 
-      <form class="mt-8 space-y-5" @submit.prevent="save">
+      <form class="mt-5 space-y-5" @submit.prevent="save">
+        <section v-if="selected.length" class="rounded-lg bg-[#FCE3E8] p-5"><h2 class="font-semibold">Your interests ({{ selected.length }}/{{ selectionLimit }})</h2><p v-if="limitReached" class="mt-1 text-sm font-semibold text-[#8F1839]">You have selected the maximum of {{ selectionLimit }} interests.</p><div class="mt-3 flex flex-wrap gap-2"><button v-for="activity in selected" :key="activity.name" type="button" class="rounded-full bg-white px-3 py-2 text-sm font-semibold text-[#8F1839]" :aria-label="`Remove ${activity.name}`" @click="toggle(activity.name, activity.category, activity.custom)">{{ activity.name }} ×</button></div></section>
+
+        <p v-if="selectionLimit === 5" class="text-sm text-[#6E4D58]"><NuxtLink to="/upgrade" class="font-semibold text-[#8F1839] hover:underline">Paid plans</NuxtLink> allow up to 10 activity interests.</p>
+
         <section v-for="group in groups" :key="group.name" class="rounded-lg bg-white p-6 shadow-[0_10px_24px_rgba(180,35,74,0.08)]">
           <div class="flex items-center gap-2"><component :is="groupIcons[group.name] || Sparkles" class="size-5 text-[#B4234A]" /><h2 class="text-lg font-semibold">{{ group.name }}</h2></div>
           <div class="mt-4 flex flex-wrap gap-2"><button v-for="activity in group.options" :key="activity" type="button" :aria-pressed="isSelected(activity)" :disabled="limitReached && !isSelected(activity)" class="rounded-full px-3 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-40" :class="isSelected(activity) ? 'bg-[#B4234A] text-white' : 'bg-[#FBF7F1] text-[#4D2F39] hover:bg-[#FCE3E8]'" @click="toggle(activity, group.name)">{{ activity }}</button></div>
@@ -68,7 +71,6 @@ onMounted(async () => {
           <p v-if="customCount(group.name) >= 3" class="mt-2 text-xs font-semibold text-[#8F1839]">You have added 3 custom activities in this category.</p>
         </section>
 
-        <section v-if="selected.length" class="rounded-lg bg-[#FCE3E8] p-5"><h2 class="font-semibold">Your interests ({{ selected.length }}/{{ selectionLimit }})</h2><p v-if="limitReached" class="mt-1 text-sm font-semibold text-[#8F1839]">You have selected the maximum of {{ selectionLimit }} interests.</p><div class="mt-3 flex flex-wrap gap-2"><button v-for="activity in selected" :key="activity.name" type="button" class="rounded-full bg-white px-3 py-2 text-sm font-semibold text-[#8F1839]" :aria-label="`Remove ${activity.name}`" @click="toggle(activity.name, activity.category, activity.custom)">{{ activity.name }} ×</button></div></section>
         <div class="flex flex-wrap items-center gap-3"><button type="submit" class="rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white">Save activity interests</button><NuxtLink to="/preferences" class="px-3 py-2 text-sm font-semibold text-[#8F1839]">Back to match preferences</NuxtLink><span v-if="saved" class="text-sm font-semibold text-[#6E8B52]">Activity interests saved.</span></div>
       </form>
     </section>

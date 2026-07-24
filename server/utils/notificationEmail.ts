@@ -17,6 +17,11 @@ const subjects: Record<string, string> = {
   date_attendance_confirmed: 'Your date confirmed they are still going',
   date_reschedule_requested: 'Your date needs to reschedule',
   date_cancelled: 'Your date was cancelled',
+  date_outcome_needed: 'How did your date go?',
+  no_show_reported: 'Please respond to a date attendance report',
+  no_show_disputed: 'Your attendance report was disputed',
+  no_show_warning: 'A reminder about attending confirmed dates',
+  discovery_restricted: 'Your discovery access is temporarily paused',
 }
 
 const preferenceColumn: Record<string, string> = {
@@ -33,6 +38,11 @@ const preferenceColumn: Record<string, string> = {
   date_attendance_confirmed: 'date_plans',
   date_reschedule_requested: 'date_plans',
   date_cancelled: 'date_plans',
+  date_outcome_needed: 'follow_ups',
+  no_show_reported: 'follow_ups',
+  no_show_disputed: 'follow_ups',
+  no_show_warning: 'follow_ups',
+  discovery_restricted: 'follow_ups',
   follow_up_ready: 'follow_ups',
   date_follow_up_closed: 'follow_ups',
   date_follow_up_changed: 'follow_ups',
@@ -61,6 +71,11 @@ function message(kind: string, actorName?: string | null) {
     date_attendance_confirmed: `${actor} confirmed they are still going to your date.`,
     date_reschedule_requested: `${actor} needs to reschedule. Review the date plan to agree new details.`,
     date_cancelled: `${actor} cancelled your date. Your match remains open if you want to make another plan later.`,
+    date_outcome_needed: 'Complete your private attendance check after your date.',
+    no_show_reported: 'A date was reported as a no-show. Please respond within 48 hours. Disputed reports do not trigger automatic restrictions.',
+    no_show_disputed: 'Your no-show report was disputed and will not trigger an automatic restriction.',
+    no_show_warning: 'A no-show was confirmed. Please cancel or reschedule as early as possible when plans change.',
+    discovery_restricted: 'New discovery has been temporarily paused after repeated confirmed no-shows. Existing matches and plans remain available.',
   }
   return copy[kind] || 'You have a new update on Lonely Radish.'
 }

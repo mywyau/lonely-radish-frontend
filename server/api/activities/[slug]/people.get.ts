@@ -31,6 +31,7 @@ export default defineEventHandler(async (event) => {
     where p.user_id<>$2
       and p.visibility='active' and (u.account_status='active' or
         (u.account_status='paused' and u.paused_until is not null and u.paused_until<=now()))
+      and (u.discovery_restricted_until is null or u.discovery_restricted_until<=now())
       and not exists(select 1 from blocks b where
         (b.blocker_id=$2 and b.blocked_id=p.user_id) or (b.blocker_id=p.user_id and b.blocked_id=$2))
       and not exists(select 1 from matches m where m.status='active' and

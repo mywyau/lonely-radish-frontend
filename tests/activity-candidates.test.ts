@@ -26,7 +26,7 @@ describe('real activity candidates', () => {
     expect(page).toContain('Applied discovery filters')
     expect(page).toContain('Ages {{ appliedFilters.minimumAge }}–{{ appliedFilters.maximumAge }}')
     expect(page).toContain('Within {{ appliedFilters.distance }} km')
-    expect(page).toContain('No profiles match these filters yet')
+    expect(page).toContain('No profiles match your filters yet')
     expect(page).toContain('Adjust match preferences')
   })
 

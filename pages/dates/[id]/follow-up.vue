@@ -13,6 +13,12 @@ const message = ref('')
 const apologyMessage = ref('')
 const reconsidering = ref(false)
 const noteLimit = 240
+const outcome = ref<any>(null)
+const dateOutcome = ref<'happened' | 'cancelled' | 'no_show' | null>(null)
+const outcomeNote = ref('')
+const outcomeSaving = ref(false)
+const outcomeError = ref('')
+const reportResponseNote = ref('')
 const isPreview = computed(() => import.meta.dev && route.params.id === 'preview-nina')
 
 function previewDate() {
@@ -27,15 +33,47 @@ function previewDate() {
 async function load() {
   if (isPreview.value) {
     date.value = previewDate()
+    outcome.value = { eligible: true, myOutcome: null, caseAgainstMe: null,
+      reliability: { attendedDates: 2, confirmedNoShows: 0, restrictedUntil: null } }
     meetAgain.value = null
     message.value = ''
     loading.value = false
     return
   }
-  date.value = await $fetch(`/api/dates/${String(route.params.id)}/follow-up`)
+  const [followUp, dateOutcomeResult] = await Promise.all([
+    $fetch(`/api/dates/${String(route.params.id)}/follow-up`),
+    $fetch(`/api/dates/${String(route.params.id)}/outcome`),
+  ])
+  date.value = followUp
+  outcome.value = dateOutcomeResult
   meetAgain.value = date.value.myChoice
   message.value = date.value.myMessage || ''
   loading.value = false
+}
+async function submitDateOutcome() {
+  if (!dateOutcome.value) return
+  outcomeSaving.value = true; outcomeError.value = ''
+  try {
+    if (isPreview.value) outcome.value = { ...outcome.value, myOutcome: dateOutcome.value, myNote: outcomeNote.value }
+    else {
+      await $fetch(`/api/dates/${String(route.params.id)}/outcome`, { method: 'POST',
+        body: { outcome: dateOutcome.value, note: outcomeNote.value || null } })
+      outcome.value = await $fetch(`/api/dates/${String(route.params.id)}/outcome`)
+    }
+  } catch (error: any) { outcomeError.value = error?.data?.statusMessage || 'Your date check-in could not be saved.' }
+  finally { outcomeSaving.value = false }
+}
+async function respondToNoShowReport(response: 'acknowledge' | 'dispute') {
+  outcomeSaving.value = true; outcomeError.value = ''
+  try {
+    if (isPreview.value) outcome.value.caseAgainstMe.status = response === 'dispute' ? 'disputed' : 'confirmed'
+    else {
+      await $fetch(`/api/dates/${String(route.params.id)}/outcome-response`, { method: 'POST',
+        body: { response, note: reportResponseNote.value || null } })
+      outcome.value = await $fetch(`/api/dates/${String(route.params.id)}/outcome`)
+    }
+  } catch (error: any) { outcomeError.value = error?.data?.statusMessage || 'Your response could not be saved.' }
+  finally { outcomeSaving.value = false }
 }
 async function submit() {
   if (meetAgain.value === null) return
@@ -86,6 +124,30 @@ onMounted(() => { load().catch((error: any) => { errorMessage.value = error?.dat
           <div class="flex items-center gap-2"><CalendarCheck class="size-5 text-[#B4234A]" /><h2 class="text-lg font-semibold">{{ date.activity }}</h2></div>
           <p class="mt-3 flex items-center gap-2 text-sm text-[#6E4D58]"><MapPin class="size-4" />{{ date.venue }}</p>
           <p class="mt-2 text-sm text-[#6E4D58]">{{ new Date(date.dateTime).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', hour: 'numeric', minute: '2-digit' }) }}</p>
+        </section>
+
+        <section v-if="outcome?.eligible" class="mt-5 rounded-lg bg-white p-5 shadow-[0_12px_28px_rgba(180,35,74,0.08)] sm:p-6">
+          <p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">Private attendance check</p>
+          <template v-if="outcome.caseAgainstMe?.status === 'pending'">
+            <h2 class="mt-2 text-xl font-semibold">Your date reported that you did not attend.</h2>
+            <p class="mt-2 text-sm leading-6 text-[#6E4D58]">You have until {{ new Date(outcome.caseAgainstMe.responseDeadline).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' }) }} to respond. Disputed reports are held for review and do not automatically affect discovery.</p>
+            <textarea v-model="reportResponseNote" :maxlength="noteLimit" rows="3" class="mt-4 w-full resize-none rounded-lg border border-[#E8D8C4] bg-[#FBF7F1] p-3 text-sm" placeholder="Optional context for your response"></textarea>
+            <p class="mt-1 text-right text-xs text-[#6E4D58]">{{ reportResponseNote.length }}/{{ noteLimit }}</p>
+            <div class="mt-3 flex flex-col gap-2 sm:flex-row"><button type="button" class="rounded-lg bg-[#4D2F39] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50" :disabled="outcomeSaving" @click="respondToNoShowReport('acknowledge')">Acknowledge no-show</button><button type="button" class="rounded-lg border border-[#B4234A]/40 px-4 py-2.5 text-sm font-semibold text-[#8F1839] disabled:opacity-50" :disabled="outcomeSaving" @click="respondToNoShowReport('dispute')">Dispute report</button></div>
+          </template>
+          <template v-else-if="outcome.myOutcome">
+            <h2 class="mt-2 text-xl font-semibold">Attendance check-in saved.</h2>
+            <p class="mt-2 text-sm text-[#6E4D58]">{{ outcome.myOutcome === 'happened' ? 'You confirmed the date happened.' : outcome.myOutcome === 'cancelled' ? 'You told us the date was cancelled.' : 'Your no-show report is pending for 48 hours.' }}</p>
+          </template>
+          <form v-else @submit.prevent="submitDateOutcome">
+            <h2 class="mt-2 text-xl font-semibold">Did this date happen?</h2>
+            <p class="mt-2 text-sm leading-6 text-[#6E4D58]">This helps us encourage reliable planning. Reports are private and never appear as public profile labels.</p>
+            <div class="mt-4 grid gap-2 sm:grid-cols-3"><button type="button" class="choice" :class="dateOutcome === 'happened' && 'choice-selected'" @click="dateOutcome = 'happened'">Yes, it happened</button><button type="button" class="choice" :class="dateOutcome === 'cancelled' && 'choice-selected'" @click="dateOutcome = 'cancelled'">It was cancelled</button><button type="button" class="choice" :class="dateOutcome === 'no_show' && 'choice-selected'" @click="dateOutcome = 'no_show'">They did not attend</button></div>
+            <label v-if="dateOutcome === 'no_show'" class="mt-4 block text-sm font-semibold">Optional context<textarea v-model="outcomeNote" :maxlength="noteLimit" rows="3" class="mt-2 w-full resize-none rounded-lg border border-[#E8D8C4] bg-[#FBF7F1] p-3 font-normal" placeholder="Keep this factual and brief."></textarea><span class="mt-1 block text-right text-xs font-normal text-[#6E4D58]">{{ outcomeNote.length }}/{{ noteLimit }}</span></label>
+            <button type="submit" class="mt-4 rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white disabled:opacity-50" :disabled="!dateOutcome || outcomeSaving">{{ outcomeSaving ? 'Saving…' : 'Save attendance check-in' }}</button>
+          </form>
+          <p v-if="outcome?.reliability?.attendedDates > 0" class="mt-4 border-t border-[#E8D8C4] pt-4 text-xs text-[#52713A]">Your private history includes {{ outcome.reliability.attendedDates }} {{ outcome.reliability.attendedDates === 1 ? 'date' : 'dates' }} confirmed as having happened.</p>
+          <p v-if="outcomeError" class="mt-3 text-sm font-semibold text-[#8F1839]" role="alert">{{ outcomeError }}</p>
         </section>
 
         <section v-if="date.bothResponded" class="mt-5 grid gap-3 rounded-lg bg-white p-5 shadow-[0_12px_28px_rgba(180,35,74,0.08)] sm:grid-cols-2">

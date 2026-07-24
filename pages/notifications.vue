@@ -33,13 +33,18 @@ const copy: Record<string, (notice: Notice) => string> = {
   date_reminder_24h: () => 'Your confirmed date is about 24 hours away. Are you still going?',
   date_reminder_2h: () => 'Your confirmed date starts in about 2 hours.',
   date_attendance_confirmed: n => `${n.actorName || 'Your date'} confirmed they are still going.`,
+  date_outcome_needed: () => 'Complete your private attendance check after your date.',
+  no_show_reported: () => 'A date was reported as a no-show. Please respond within 48 hours.',
+  no_show_disputed: () => 'Your no-show report was disputed and will not trigger an automatic restriction.',
+  no_show_warning: () => 'A no-show was confirmed. Please cancel or reschedule plans you cannot attend.',
+  discovery_restricted: () => 'New discovery has been temporarily paused after repeated confirmed no-shows.',
   date_reschedule_requested: n => `${n.actorName || 'Your date'} needs to reschedule.`,
   date_cancelled: n => `${n.actorName || 'Your date'} cancelled the date. Your match remains open.`,
 }
 function destination(notice: Notice) {
   if (notice.kind === 'match_apology') return '/matches/past'
   if (notice.kind === 'interest_received') return '/interests/received'
-  return notice.proposalId && ['follow_up_ready','date_follow_up_closed','date_follow_up_changed'].includes(notice.kind)
+  return notice.proposalId && ['follow_up_ready','date_follow_up_closed','date_follow_up_changed','date_outcome_needed','no_show_reported','no_show_disputed','no_show_warning','discovery_restricted'].includes(notice.kind)
     ? `/dates/${notice.proposalId}/follow-up` : '/matches'
 }
 async function load(loadMore = false) {

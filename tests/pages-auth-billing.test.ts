@@ -38,9 +38,9 @@ describe("auth and billing page contracts", () => {
 
     expect(upgrade).toContain("Upgrade your plan");
     expect(upgrade).toContain('Free and paid plan limits');
-    expect(upgrade).toContain('Up to 5 activity interests');
+    expect(upgrade).toContain('Up to 5 active activity interests');
     expect(upgrade).toContain('Up to 3 active matches');
-    expect(upgrade).toContain('Up to 10 activity interests');
+    expect(upgrade).toContain('Up to 10 active activity interests');
     expect(upgrade).toContain('Up to 5 active matches');
     expect(upgrade).toContain("upgrade('quarterly')");
     expect(upgrade).toContain('Three-month plan');
@@ -104,6 +104,7 @@ describe("auth and billing page contracts", () => {
     expect(preferences).toContain('to="/preferences/activities"');
     expect(preferences).toContain('to="/preferences/dating"');
     expect(preferences).toContain('to="/preferences/schedule"');
+    expect(preferences.indexOf('id="location-and-age"')).toBeLessThan(preferences.indexOf('to="/preferences/activities"'));
     expect(activityPreferences).toContain("title: 'Activity Interests · Lonely Radish'");
     expect(activityPreferences).toContain("Add your own {{ group.name.toLowerCase() }} activity");
     expect(activityPreferences).toContain("const selectionLimit = ref(5)");
@@ -111,6 +112,8 @@ describe("auth and billing page contracts", () => {
     expect(activityPreferences).toContain("add up to 3 of your own activities inside each category");
     expect(activityPreferences).toContain("!limitReached.value");
     expect(activityPreferences).toContain("Save activity interests");
+    expect(activityPreferences.indexOf('Your interests ({{ selected.length }}/{{ selectionLimit }})')).toBeLessThan(activityPreferences.indexOf('allow up to 10 activity interests'));
+    expect(activityPreferences.indexOf('allow up to 10 activity interests')).toBeLessThan(activityPreferences.indexOf('v-for="group in groups"'));
     expect(activityPreferences).toContain("name: 'Sports'");
     expect(activityPreferences).toContain('customCount(group.name)')
     expect(activityPreferences).toContain('activities: selected.value')

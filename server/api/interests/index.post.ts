@@ -10,13 +10,17 @@ export default defineEventHandler(async (event) => {
   try {
     await client.query('begin')
     await client.query('select pg_advisory_xact_lock(hashtext($1))', [sub])
-    const sender = await client.query(`select account_status,paused_until from users where id=$1 for update`, [sub])
+    const sender = await client.query(`select account_status,paused_until,discovery_restricted_until from users where id=$1 for update`, [sub])
     if (sender.rows[0]?.account_status === 'paused' && (!sender.rows[0].paused_until || new Date(sender.rows[0].paused_until) > new Date())) {
       throw createError({ statusCode: 409, statusMessage: 'Resume your profile before sending new interest' })
+    }
+    if (sender.rows[0]?.discovery_restricted_until && new Date(sender.rows[0].discovery_restricted_until) > new Date()) {
+      throw createError({ statusCode: 409, statusMessage: 'New discovery is temporarily paused on this account' })
     }
     const target = await client.query(`select p.user_id,p.display_name from profiles p join users u on u.id=p.user_id
       where p.slug=$1 and p.user_id<>$2 and p.visibility='active' and (u.account_status='active' or
         (u.account_status='paused' and u.paused_until is not null and u.paused_until<=now()))
+      and (u.discovery_restricted_until is null or u.discovery_restricted_until<=now())
       and not exists(select 1 from blocks b where
         (b.blocker_id=$2 and b.blocked_id=p.user_id) or (b.blocker_id=p.user_id and b.blocked_id=$2)) for update`, [slug,sub])
     if (!target.rows[0]) throw createError({ statusCode: 404, statusMessage: 'Profile not found' })
