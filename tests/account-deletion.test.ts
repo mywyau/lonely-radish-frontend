@@ -25,5 +25,15 @@ describe('account deletion', () => {
     const local = read('server/utils/deleteUserData.ts')
     expect(local).toContain('PROFILE_PHOTO_BUCKET')
     expect(local).toContain('DELETE FROM users WHERE id = $1')
+    expect(local).toContain('DELETE FROM businesses')
+    expect(worker).toContain('business_subscriptions')
+  })
+
+  it('offers deletion from the isolated business account area', () => {
+    const page = read('pages/business/account.vue')
+    expect(page).toContain("method: 'DELETE'")
+    expect(page).toContain("'/api/account/v2'")
+    expect(page).toContain('Any active subscription will be cancelled')
+    expect(read('components/BusinessNavBar.vue')).toContain("to:'/business/account'")
   })
 })

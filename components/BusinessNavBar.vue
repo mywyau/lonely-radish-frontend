@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { BadgePercent, Building2, CreditCard, LayoutDashboard, LogOut } from '@lucide/vue'
+import { BadgePercent, Building2, CreditCard, LayoutDashboard, LogOut, UserRoundCog } from '@lucide/vue'
 import { logout } from '~/composables/useAuth'
 
 const route = useRoute()
@@ -7,6 +7,7 @@ const links = [
   { to:'/business',label:'Dashboard',icon:LayoutDashboard },
   { to:'/business/offers',label:'Offers',icon:BadgePercent },
   { to:'/business/pricing',label:'Plans',icon:CreditCard },
+  { to:'/business/account',label:'Account',icon:UserRoundCog },
 ]
 </script>
 

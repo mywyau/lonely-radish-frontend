@@ -24,6 +24,12 @@ type UserRow = {
   stripe_customer_id: string | null;
 };
 
+type OwnedBusinessRow = {
+  id: string;
+  stripe_customer_id: string | null;
+  has_other_members: boolean;
+};
+
 function requiredEnv(name: string): string {
   const value = process.env[name];
 
@@ -192,12 +198,40 @@ export default defineEventHandler(async (event) => {
 
     const user = userRes.rows[0];
 
+    const ownedBusinesses = await client.query<OwnedBusinessRow>(
+      `
+      SELECT b.id,
+             bs.stripe_customer_id,
+             EXISTS (
+               SELECT 1 FROM business_members other
+               WHERE other.business_id = b.id AND other.user_id <> $1
+             ) AS has_other_members
+      FROM business_members owner
+      JOIN businesses b ON b.id = owner.business_id
+      LEFT JOIN business_subscriptions bs
+        ON bs.business_id = b.id
+       AND bs.subscription_status NOT IN ('canceled', 'incomplete_expired')
+      WHERE owner.user_id = $1
+        AND owner.role = 'owner'
+      `,
+      [body.userId],
+    );
+
+    if (ownedBusinesses.rows.some(business => business.has_other_members)) {
+      throw new Error("Transfer ownership or remove the other business members before deleting this account");
+    }
+
     await client.query("COMMIT");
 
     // 1. Cancel Stripe first
-    if (user.stripe_customer_id) {
+    const stripeCustomerIds = [...new Set([
+      user.stripe_customer_id,
+      ...ownedBusinesses.rows.map(business => business.stripe_customer_id),
+    ].filter((value): value is string => Boolean(value)))];
+
+    for (const stripeCustomerId of stripeCustomerIds) {
       const subs = await stripe.subscriptions.list({
-        customer: user.stripe_customer_id,
+        customer: stripeCustomerId,
         status: "all",
         limit: 100,
       });
@@ -220,7 +254,7 @@ export default defineEventHandler(async (event) => {
     await deleteAuth0User(body.userId);
 
     // 3. Delete local app data last
-    await deleteUserData(body.userId);
+    await deleteUserData(body.userId, ownedBusinesses.rows.map(business => business.id));
 
     // 4. Mark job completed
     await db.query(

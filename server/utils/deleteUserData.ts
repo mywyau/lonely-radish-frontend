@@ -1,7 +1,7 @@
 import { db } from "~/server/repositories/db";
 import { PROFILE_PHOTO_BUCKET, storageAdmin } from "~/server/utils/supabaseStorage";
 
-export async function deleteUserData(userId: string) {
+export async function deleteUserData(userId: string, ownedBusinessIds: string[] = []) {
   const photos = await db.query<{ storage_key: string }>(
     `select storage_key from profile_photos where user_id=$1 and storage_key is not null`, [userId],
   );
@@ -14,6 +14,18 @@ export async function deleteUserData(userId: string) {
 
   try {
     await client.query("BEGIN");
+
+    if (ownedBusinessIds.length) {
+      await client.query(
+        `DELETE FROM businesses
+         WHERE id = ANY($1::uuid[])
+           AND NOT EXISTS (
+             SELECT 1 FROM business_members
+             WHERE business_id = businesses.id AND user_id <> $2
+           )`,
+        [ownedBusinessIds, userId],
+      );
+    }
 
     await client.query(`DELETE FROM users WHERE id = $1`, [userId]);
 
