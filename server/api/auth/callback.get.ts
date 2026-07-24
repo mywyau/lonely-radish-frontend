@@ -13,7 +13,10 @@ function required(name: 'AUTH0_DOMAIN' | 'AUTH0_CLIENT_ID' | 'AUTH0_CLIENT_SECRE
 export default defineEventHandler(async (event) => {
   const query = getQuery(event)
   const flow = await useAuthFlowSession(event)
-  if (query.error) return sendRedirect(event, `/please-sign-in?error=${encodeURIComponent(String(query.error_description || query.error))}`, 302)
+  if (query.error) {
+    const errorPage = flow.data.intent === 'business' ? '/business/sign-in' : '/please-sign-in'
+    return sendRedirect(event, `${errorPage}?error=${encodeURIComponent(String(query.error_description || query.error))}`, 302)
+  }
   if (typeof query.code !== 'string' || typeof query.state !== 'string' || query.state !== flow.data.state) {
     throw createError({ statusCode: 400, statusMessage: 'Invalid authentication callback state' })
   }
@@ -38,13 +41,23 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 401, statusMessage: 'Invalid Auth0 identity token' })
   }
 
+  const existing = await db.query(`select u.account_type,u.onboarding_completed_at,
+    exists(select 1 from profiles p where p.user_id=u.id) as "hasProfile" from users u where u.id=$1`, [payload.sub])
   await ensureUser(payload.sub, payload.email)
+  if (flow.data.intent === 'business' && (!existing.rows[0] ||
+    (existing.rows[0].account_type === 'personal' && !existing.rows[0].onboarding_completed_at && !existing.rows[0].hasProfile))) {
+    await db.query(`update users set account_type='business' where id=$1`, [payload.sub])
+  }
   const session = await useAuthSession(event)
   await session.update({ user: { sub: payload.sub, email: payload.email,
-    emailVerified: payload.email_verified === true, name: typeof payload.name === 'string' ? payload.name : undefined } })
+    emailVerified: payload.email_verified === true, name: typeof payload.name === 'string' ? payload.name : undefined,
+    mode: flow.data.intent === 'business' ? 'business' : 'personal' } })
   const returnTo = flow.data.returnTo || '/'
-  const onboarding = await db.query('select onboarding_completed_at from users where id=$1', [payload.sub])
+  const onboarding = await db.query('select onboarding_completed_at,account_type from users where id=$1', [payload.sub])
   await flow.clear()
+  if (onboarding.rows[0]?.account_type === 'business') {
+    return sendRedirect(event, returnTo.startsWith('/business') ? returnTo : '/business', 302)
+  }
   if (!onboarding.rows[0]?.onboarding_completed_at) {
     return sendRedirect(event, `/onboarding?redirect=${encodeURIComponent(returnTo)}`, 302)
   }

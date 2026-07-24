@@ -16,7 +16,9 @@ export default defineEventHandler(async (event) => {
   const state = randomBytes(32).toString('base64url')
   const nonce = randomBytes(32).toString('base64url')
   const flow = await useAuthFlowSession(event)
-  await flow.update({ state, nonce, returnTo: safeReturnTo(query.returnTo) })
+  const intent = query.intent === 'business' ? 'business' : 'personal'
+  const returnTo = intent === 'business' ? safeReturnTo(query.returnTo || '/business') : safeReturnTo(query.returnTo)
+  await flow.update({ state, nonce, returnTo, intent })
 
   const authorizeUrl = new URL(`https://${domain}/authorize`)
   authorizeUrl.search = new URLSearchParams({

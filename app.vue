@@ -2,6 +2,8 @@
 import { Analytics } from '@vercel/analytics/vue'
 
 const route = useRoute()
+const businessShell = computed(() => route.path.startsWith('/business'))
+const businessSignIn = computed(() => route.path === '/business/sign-in')
 
 const showBackLink = computed(() => route.path !== '/')
 
@@ -29,7 +31,8 @@ useSeoMeta({
 
 <template>
   <div class="min-h-screen flex flex-col overflow-x-hidden bg-[#FBF7F1]">
-    <BlankNavBar />
+    <BusinessNavBar v-if="businessShell && !businessSignIn" />
+    <BlankNavBar v-else-if="!businessShell" />
 
     <!-- <BackLink
       v-if="showBackLink"
@@ -44,6 +47,7 @@ useSeoMeta({
       <NuxtPage />
     </main>
 
-    <AppFooter />
+    <footer v-if="businessShell && !businessSignIn" class="border-t border-[#E8D8C4] bg-white px-5 py-6 text-center text-xs text-[#6E4D58]">Lonely Radish Business · Venue and offer tools</footer>
+    <AppFooter v-else-if="!businessShell" />
   </div>
 </template>

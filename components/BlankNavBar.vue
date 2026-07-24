@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useMeStateV2 } from '@/composables/useMeStateV2'
-import { Bell, Eye, HeartHandshake, History, House, Menu, Send, ShieldCheck, Sparkles, X } from '@lucide/vue'
+import { Bell, Building2, Eye, HeartHandshake, History, House, Menu, Send, ShieldCheck, Sparkles, X } from '@lucide/vue'
 import { login, logout, signup } from '@/composables/useAuth'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
@@ -156,6 +156,11 @@ onBeforeUnmount(() => {
           <template v-else>
             <button type="button" class="w-full rounded-lg px-3 py-2 text-left text-sm font-semibold text-black hover:bg-[#F3E8DA]" @click="login(route.fullPath)">Log in</button>
             <button type="button" class="mt-1 w-full rounded-lg bg-[#B4234A] px-3 py-2 text-left text-sm font-semibold text-white" @click="signup(route.fullPath)">Create account</button>
+            <NuxtLink to="/business/sign-in"
+              class="mt-2 flex w-full items-center gap-2 rounded-lg border border-[#E8D8C4] px-3 py-2 text-sm font-semibold text-[#4D2F39] hover:bg-[#F3E8DA]"
+              @click="closeMenu">
+              <Building2 class="size-4" aria-hidden="true" />Business login
+            </NuxtLink>
           </template>
         </div>
       </div>

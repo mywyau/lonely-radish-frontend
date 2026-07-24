@@ -4,6 +4,7 @@ import { getBillingSubscriptionByStripeSubscriptionId } from "~/server/services/
 import { stripe } from "~/server/services/billing/stripeClient";
 import { syncEntitlementFromBillingSubscription } from "~/server/services/billing/syncEntitlementFromBillingSubscription";
 import { upsertBillingSubscription } from "~/server/services/billing/upsertBillingSubscription";
+import { upsertBusinessSubscription } from "./upsertBusinessSubscription";
 
 type ProcessStripeEventResult =
   | { ok: true; alreadyProcessed: true }
@@ -179,6 +180,10 @@ function extractSubscriptionIdFromInvoice(invoice: Stripe.Invoice): string | nul
 async function reconcileSubscriptionById(stripeSubscriptionId: string) {
   const subscription = await stripe.subscriptions.retrieve(stripeSubscriptionId);
 
+  if (subscription.metadata?.subscriptionKind === 'business') {
+    await upsertBusinessSubscription(subscription)
+    return
+  }
   await upsertBillingSubscription(subscription);
 
   const billingSubscription =

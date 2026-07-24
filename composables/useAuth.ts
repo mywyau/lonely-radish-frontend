@@ -45,6 +45,16 @@ export async function signup(targetUrl?: string | null) {
   window.location.assign(`/api/auth/login?mode=signup&returnTo=${returnTo}`);
 }
 
+export async function businessLogin() {
+  if (!import.meta.client) return;
+  window.location.assign('/api/auth/login?intent=business&mode=switch&returnTo=%2Fbusiness');
+}
+
+export async function businessSignup() {
+  if (!import.meta.client) return;
+  window.location.assign('/api/auth/login?intent=business&mode=signup&returnTo=%2Fbusiness');
+}
+
 export async function logout() {
   if (!import.meta.client) return;
   window.location.assign("/api/auth/logout");

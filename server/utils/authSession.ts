@@ -6,10 +6,11 @@ export type AuthSessionUser = {
   email: string
   emailVerified?: boolean
   name?: string
+  mode?: 'personal' | 'business'
 }
 
 type AuthSessionData = { user?: AuthSessionUser }
-type AuthFlowData = { state?: string; nonce?: string; returnTo?: string }
+type AuthFlowData = { state?: string; nonce?: string; returnTo?: string; intent?: 'personal' | 'business' }
 
 function sessionPassword() {
   const password = process.env.AUTH_SESSION_SECRET || process.env.AUTH0_CLIENT_SECRET
