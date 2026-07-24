@@ -28,8 +28,6 @@ const upgradingPlan = ref<'monthly' | 'quarterly' | 'yearly' | null>(null)
 const upgradeError = ref('')
 
 const benefits = [
-  { icon: markRaw(Tags), text: 'Choose up to 10 activity interests instead of 5' },
-  { icon: markRaw(HeartHandshake), text: 'Keep up to 5 active matches instead of 3' },
   { icon: markRaw(HeartHandshake), text: 'More thoughtful matches around shared activities' },
   { icon: markRaw(CalendarDays), text: 'Priority availability matching around real plan windows' },
   { icon: markRaw(Sparkles), text: 'Activity planning tools and public-place shortlists' },
@@ -91,6 +89,26 @@ async function upgrade(plan: 'monthly' | 'quarterly' | 'yearly') {
             </li>
           </ul>
         </div>
+
+        <section class="mx-auto grid w-full max-w-3xl gap-3 text-left sm:grid-cols-2" aria-labelledby="plan-limits-title">
+          <h2 id="plan-limits-title" class="sr-only">Free and paid plan limits</h2>
+          <div class="rounded-lg border border-[#E8D8C4] bg-white p-5">
+            <p class="text-xs font-extrabold uppercase tracking-widest text-[#6E4D58]">Free plan</p>
+            <h3 class="mt-2 text-lg font-semibold">Keep the core experience free</h3>
+            <ul class="mt-4 space-y-2 text-sm text-[#4D2F39]">
+              <li class="flex items-center gap-2"><Tags class="size-4 text-[#B4234A]" />Up to 5 activity interests</li>
+              <li class="flex items-center gap-2"><HeartHandshake class="size-4 text-[#B4234A]" />Up to 3 active matches</li>
+            </ul>
+          </div>
+          <div class="rounded-lg border border-[#E6A8B8] bg-[#FCE3E8] p-5 shadow-[0_10px_24px_rgba(180,35,74,0.08)]">
+            <p class="text-xs font-extrabold uppercase tracking-widest text-[#8F1839]">All paid plans</p>
+            <h3 class="mt-2 text-lg font-semibold">More room to discover and plan</h3>
+            <ul class="mt-4 space-y-2 text-sm text-[#4D2F39]">
+              <li class="flex items-center gap-2"><Tags class="size-4 text-[#B4234A]" />Up to 10 activity interests</li>
+              <li class="flex items-center gap-2"><HeartHandshake class="size-4 text-[#B4234A]" />Up to 5 active matches</li>
+            </ul>
+          </div>
+        </section>
 
         <!-- Plans -->
         <div class="mx-auto grid w-full max-w-3xl gap-3 pt-4 sm:grid-cols-3">

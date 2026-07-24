@@ -37,6 +37,11 @@ describe("auth and billing page contracts", () => {
     expect(cancel).toContain('const yearlyPrice = 55.99');
 
     expect(upgrade).toContain("Upgrade your plan");
+    expect(upgrade).toContain('Free and paid plan limits');
+    expect(upgrade).toContain('Up to 5 activity interests');
+    expect(upgrade).toContain('Up to 3 active matches');
+    expect(upgrade).toContain('Up to 10 activity interests');
+    expect(upgrade).toContain('Up to 5 active matches');
     expect(upgrade).toContain("upgrade('quarterly')");
     expect(upgrade).toContain('Three-month plan');
     expect(upgrade).not.toContain("/please-sign-in");
