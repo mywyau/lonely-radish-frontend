@@ -55,7 +55,7 @@ onMounted(() => loadConnections())
     <section class="mx-auto max-w-3xl">
       <p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">History</p>
       <h1 class="mt-2 text-4xl font-semibold">Past connections</h1>
-      <p class="mt-3 max-w-2xl leading-7 text-[#6E4D58]">Matches that have ended are kept here for clarity. They do not count towards your five active matches.</p>
+      <p class="mt-3 max-w-2xl leading-7 text-[#6E4D58]">Matches that have ended are kept here for clarity. They do not count towards your active-match limit.</p>
       <div v-if="loading" class="mt-8 rounded-lg bg-white p-8 text-center text-[#6E4D58]">Loading past connections…</div>
       <p v-else-if="errorMessage && !connections.length" class="mt-8 rounded-lg bg-[#FCE3E8] p-4 text-sm font-semibold text-[#8F1839]">{{ errorMessage }}</p>
       <div v-else-if="connections.length" class="mt-8 grid gap-3">

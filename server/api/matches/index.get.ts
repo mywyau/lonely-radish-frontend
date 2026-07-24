@@ -2,11 +2,12 @@ import { setHeader } from 'h3'
 import { db } from '~/server/repositories/db'
 import { requireUser } from '~/server/utils/requireUser'
 import { signedPhotoUrl } from '~/server/utils/supabaseStorage'
+import { getActiveMatchLimit } from '~/server/utils/planLimits'
 
 export default defineEventHandler(async (event) => {
   setHeader(event, 'Cache-Control', 'private, no-store')
   const { sub } = await requireUser(event)
-  const [{ rows }, receivedInterest] = await Promise.all([
+  const [{ rows }, receivedInterest, activeMatchLimit] = await Promise.all([
     db.query(`select m.id,p.slug,p.display_name as name,p.neighbourhood as place,
     count(*) over()::int as "totalMatches",
     photo.storage_key as "photoStorageKey",photo.public_url as "legacyPhotoUrl",m.matched_at as "matchedAt",
@@ -37,6 +38,7 @@ export default defineEventHandler(async (event) => {
       join profiles p on p.user_id=di.sender_id and p.visibility='active'
       where di.recipient_id=$1 and not exists(select 1 from blocks b where
         (b.blocker_id=$1 and b.blocked_id=di.sender_id) or (b.blocker_id=di.sender_id and b.blocked_id=$1))`, [sub]),
+    getActiveMatchLimit(sub),
   ])
 
   const matches = await Promise.all(rows.map(async row => {
@@ -54,5 +56,5 @@ export default defineEventHandler(async (event) => {
       attendanceConfirmed: row.myAttendance === 'confirmed', otherAttendanceConfirmed: row.theirAttendance === 'confirmed',
       isInviter: row.inviterId === sub, needsResponse: proposalStatus === 'pending' && row.inviteeId === sub }
   }))
-  return { matches, totalMatches: rows[0]?.totalMatches || 0, interestReceivedCount: receivedInterest.rows[0]?.count || 0 }
+  return { matches, totalMatches: rows[0]?.totalMatches || 0, interestReceivedCount: receivedInterest.rows[0]?.count || 0, activeMatchLimit }
 })

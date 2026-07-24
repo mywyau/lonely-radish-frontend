@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { BookOpen, Gamepad2, Leaf, Palette, Sparkles, Trophy, Utensils } from '@lucide/vue'
+import { BookOpen, Compass, Gamepad2, HandHeart, HeartPulse, Leaf, MoonStar, Palette, Sparkles, Trophy, Utensils } from '@lucide/vue'
 
 definePageMeta({
   title: 'Date Ideas · Lonely Radish',
@@ -12,6 +12,10 @@ const categories = [
   { slug: 'outdoors', name: 'Outdoors', detail: 'Walks, parks, cycling, gardens, photography, hikes, and time outside.', icon: Leaf, tone: 'bg-[#EAF2DE]' },
   { slug: 'games', name: 'Games', detail: 'Board games, co-op games, puzzles, party games, strategy, and cosy play.', icon: Gamepad2, tone: 'bg-[#F7D4DC]' },
   { slug: 'learn-create', name: 'Learn & create', detail: 'Workshops, crafts, talks, books, language exchange, trivia, and making things.', icon: BookOpen, tone: 'bg-[#F3E8DA]' },
+  { slug: 'wellness', name: 'Wellness', detail: 'Yoga, saunas, meditation, spa days, wellness classes, relaxed movement, and self-care activities.', icon: HeartPulse, tone: 'bg-[#E8F1ED]' },
+  { slug: 'nightlife', name: 'Nightlife', detail: 'Bars, cocktails, live DJs, dancing, late-night food, pub quizzes, and evening events.', icon: MoonStar, tone: 'bg-[#E8E4F4]' },
+  { slug: 'explore', name: 'Explore', detail: 'Day trips, sightseeing, hidden spots, neighbourhood wandering, road trips, and trying somewhere new.', icon: Compass, tone: 'bg-[#FFF1C7]' },
+  { slug: 'community', name: 'Community', detail: 'Volunteering, community events, charity activities, environmental projects, meetups, and local causes.', icon: HandHeart, tone: 'bg-[#EAF2DE]' },
 ]
 </script>
 

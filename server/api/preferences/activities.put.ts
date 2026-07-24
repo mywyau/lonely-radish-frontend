@@ -2,13 +2,18 @@ import { createError, readBody } from 'h3'
 import { db } from '~/server/repositories/db'
 import { requireUser } from '~/server/utils/requireUser'
 import { badRequest, objectBody, text } from '~/server/utils/productValidation'
+import { getUserEntitlement } from '~/server/utils/getEntitlement'
+import { hasPaidAccess } from '~/utils/paidAccess'
 
-const categories = new Set(['Culture','Food and drink','Outdoors','Sports','Gaming','Learning'])
+const categories = new Set(['Culture','Food and drink','Outdoors','Sports','Gaming','Learning','Wellness','Nightlife','Explore','Community'])
 
 export default defineEventHandler(async (event) => {
   const { sub } = await requireUser(event)
   const body = objectBody(await readBody(event))
-  if (!Array.isArray(body.activities) || body.activities.length > 10) badRequest('Activities must contain at most 10 choices')
+  const selectionLimit = hasPaidAccess(await getUserEntitlement(sub)) ? 10 : 5
+  if (!Array.isArray(body.activities) || body.activities.length > selectionLimit) {
+    badRequest(`Your plan allows up to ${selectionLimit} activity interests`)
+  }
   const requested = body.activities.map((value) => {
     if (typeof value === 'string') return { name: text(value, 'Activity', 100, true)!, category: null }
     const activity = objectBody(value)
@@ -37,7 +42,7 @@ export default defineEventHandler(async (event) => {
         [sub,activity.activityId,activity.custom ? activity.name : null,activity.custom ? activity.category : null,index + 1])
     }
     await client.query('commit')
-    return { activities: normalized.map(item => ({ name: item.name, category: item.category, custom: item.custom })) }
+    return { activities: normalized.map(item => ({ name: item.name, category: item.category, custom: item.custom })), selectionLimit }
   } catch (error) {
     await client.query('rollback')
     if ((error as { code?: string }).code === '23505') throw createError({ statusCode: 409, statusMessage: 'Duplicate activity' })

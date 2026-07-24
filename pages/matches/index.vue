@@ -16,6 +16,7 @@ const loading = ref(true)
 const errorMessage = ref('')
 const matches = ref<MatchCard[]>([])
 const totalMatches = ref(0)
+const activeMatchLimit = ref(3)
 const interestReceivedCount = ref(0)
 const notifications = ref<MatchNotification[]>([])
 const pendingReject = ref<MatchCard | null>(null)
@@ -110,12 +111,13 @@ function toggleSummaryCounts() {
 
 async function loadMatches() {
   if (import.meta.dev) previewRejected.value = Boolean(window.localStorage.getItem('lonely-radish-preview-rejected-match'))
-  const result = await $fetch<{ matches: MatchCard[]; totalMatches: number; interestReceivedCount: number }>('/api/matches')
+  const result = await $fetch<{ matches: MatchCard[]; totalMatches: number; interestReceivedCount: number; activeMatchLimit: number }>('/api/matches')
   matches.value = result.matches
   totalMatches.value = result.totalMatches
   interestReceivedCount.value = result.interestReceivedCount
+  activeMatchLimit.value = result.activeMatchLimit
   if (import.meta.dev && !previewRejected.value) {
-    matches.value = [previewMatch, ...matches.value.filter(match => match.id !== previewMatch.id)].slice(0, 5)
+    matches.value = [previewMatch, ...matches.value.filter(match => match.id !== previewMatch.id)].slice(0, activeMatchLimit.value)
     totalMatches.value += 1
   }
 }
@@ -167,7 +169,7 @@ onMounted(async () => {
         <div class="summary-card summary-planning"><Clock3 class="summary-icon" /><strong>{{ counts.planning }}</strong><span>Planning</span></div>
         <div class="summary-card summary-confirmed"><CalendarCheck class="summary-icon" /><strong>{{ counts.confirmed }}</strong><span>Confirmed</span></div>
       </div>
-      <p v-if="showSummaryCounts" class="mt-3 text-center text-xs text-[#6E4D58]">You can have up to 5 active matches across matching, planning, and confirmed dates.</p>
+      <p v-if="showSummaryCounts" class="mt-3 text-center text-xs text-[#6E4D58]">Your plan allows up to {{ activeMatchLimit }} active matches across matching, planning, and confirmed dates.<span v-if="activeMatchLimit === 3"> <NuxtLink to="/upgrade" class="font-semibold text-[#8F1839] hover:underline">Paid plans allow 5.</NuxtLink></span></p>
 
       <div v-if="notifications.length" class="mt-6 grid gap-2">
         <div v-for="notification in notifications" :key="notification.id" class="flex items-start gap-3 rounded-lg bg-white p-4 text-sm shadow-[0_8px_20px_rgba(180,35,74,0.07)]">

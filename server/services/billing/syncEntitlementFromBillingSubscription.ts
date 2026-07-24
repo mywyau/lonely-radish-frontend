@@ -15,7 +15,7 @@ function toEntitlementPlan(
   plan: string,
 ): "free" | "monthly" | "quarterly" | "yearly" {
   const hasPaidAccess =
-    subscriptionStatus === "active" || subscriptionStatus === "trialing";
+    subscriptionStatus === "active" || subscriptionStatus === "trialing" || subscriptionStatus === "past_due";
 
   if (!hasPaidAccess) {
     return "free";
@@ -58,4 +58,11 @@ export async function syncEntitlementFromBillingSubscription(
       billingSubscription.user_id,
     ],
   );
+
+  if (entitlementPlan === "free") {
+    await db.query(
+      `delete from profile_activities where user_id=$1 and position>5`,
+      [billingSubscription.user_id],
+    );
+  }
 }

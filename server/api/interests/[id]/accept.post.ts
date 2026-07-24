@@ -29,7 +29,7 @@ export default defineEventHandler(async (event) => {
     return { matched: true, matchId: match.rows[0].id, slug: incoming.rows[0].slug, name: incoming.rows[0].display_name }
   } catch (error) {
     await client.query('rollback')
-    if ((error as { code?: string }).code === '23514') throw createError({ statusCode: 409, statusMessage: 'One of you already has five active matches' })
+    if ((error as { code?: string }).code === '23514') throw createError({ statusCode: 409, statusMessage: 'One of you has reached their active match limit' })
     throw error
   } finally { client.release() }
 })

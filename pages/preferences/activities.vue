@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Gamepad2, Sparkles, Trophy } from '@lucide/vue'
+import { Compass, Gamepad2, HandHeart, HeartPulse, MoonStar, Sparkles, Trophy } from '@lucide/vue'
 
 definePageMeta({ title: 'Activity Interests · Lonely Radish', middleware: 'logged-in' })
 
@@ -10,13 +10,18 @@ const groups = [
   { name: 'Sports', options: ['Park tennis', 'Climbing', 'Running clubs', 'Table tennis', 'Casual football', 'Swimming'] },
   { name: 'Gaming', options: ['Co-op games', 'Puzzle rooms', 'Party games', 'Strategy games', 'Cosy games', 'Board games'] },
   { name: 'Learning', options: ['Workshops', 'Talks', 'Language exchange', 'Bookshops', 'Craft classes', 'Trivia nights'] },
+  { name: 'Wellness', options: ['Yoga', 'Saunas', 'Meditation', 'Spa days', 'Wellness classes', 'Relaxed movement', 'Self-care activities'] },
+  { name: 'Nightlife', options: ['Bars', 'Cocktails', 'Live DJs', 'Dancing', 'Late-night food', 'Pub quizzes', 'Evening events'] },
+  { name: 'Explore', options: ['Day trips', 'Sightseeing', 'Hidden spots', 'Neighbourhood wandering', 'Road trips', 'Trying somewhere new'] },
+  { name: 'Community', options: ['Volunteering', 'Community events', 'Charity activities', 'Environmental projects', 'Meetups', 'Local causes'] },
 ]
+const groupIcons: Record<string, any> = { Sports: Trophy, Gaming: Gamepad2, Wellness: HeartPulse, Nightlife: MoonStar, Explore: Compass, Community: HandHeart }
 type SelectedActivity = { name: string; category: string; custom: boolean }
 const selected = ref<SelectedActivity[]>([])
 const customInputs = reactive<Record<string, string>>(Object.fromEntries(groups.map(group => [group.name, ''])))
 const saved = ref(false)
-const selectionLimit = 10
-const limitReached = computed(() => selected.value.length >= selectionLimit)
+const selectionLimit = ref(5)
+const limitReached = computed(() => selected.value.length >= selectionLimit.value)
 
 function isSelected(name: string) {
   return selected.value.some(activity => activity.name === name)
@@ -38,8 +43,9 @@ function addCustom(category: string) {
 }
 async function save() { await $fetch('/api/preferences/activities', { method: 'PUT', body: { activities: selected.value } }); saved.value = true; window.setTimeout(() => { saved.value = false }, 2200) }
 onMounted(async () => {
-  const response = await $fetch<{ selected: SelectedActivity[] }>('/api/preferences/activities')
+  const response = await $fetch<{ selected: SelectedActivity[]; selectionLimit: number }>('/api/preferences/activities')
   selected.value = response.selected
+  selectionLimit.value = response.selectionLimit
 })
 </script>
 
@@ -49,10 +55,11 @@ onMounted(async () => {
       <p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">Match preferences</p>
       <h1 class="mt-2 text-4xl font-semibold">What would you like to do together?</h1>
       <p class="mt-3 max-w-2xl leading-6 text-[#6E4D58]">Choose up to {{ selectionLimit }} interests in total. You can add up to 3 of your own activities inside each category.</p>
+      <p v-if="selectionLimit === 5" class="mt-2 text-sm text-[#6E4D58]"><NuxtLink to="/upgrade" class="font-semibold text-[#8F1839] hover:underline">Paid plans</NuxtLink> allow up to 10 activity interests.</p>
 
       <form class="mt-8 space-y-5" @submit.prevent="save">
         <section v-for="group in groups" :key="group.name" class="rounded-lg bg-white p-6 shadow-[0_10px_24px_rgba(180,35,74,0.08)]">
-          <div class="flex items-center gap-2"><component :is="group.name === 'Sports' ? Trophy : group.name === 'Gaming' ? Gamepad2 : Sparkles" class="size-5 text-[#B4234A]" /><h2 class="text-lg font-semibold">{{ group.name }}</h2></div>
+          <div class="flex items-center gap-2"><component :is="groupIcons[group.name] || Sparkles" class="size-5 text-[#B4234A]" /><h2 class="text-lg font-semibold">{{ group.name }}</h2></div>
           <div class="mt-4 flex flex-wrap gap-2"><button v-for="activity in group.options" :key="activity" type="button" :aria-pressed="isSelected(activity)" :disabled="limitReached && !isSelected(activity)" class="rounded-full px-3 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-40" :class="isSelected(activity) ? 'bg-[#B4234A] text-white' : 'bg-[#FBF7F1] text-[#4D2F39] hover:bg-[#FCE3E8]'" @click="toggle(activity, group.name)">{{ activity }}</button></div>
           <div v-if="selected.some(activity => activity.custom && activity.category === group.name)" class="mt-4 flex flex-wrap gap-2"><button v-for="activity in selected.filter(activity => activity.custom && activity.category === group.name)" :key="activity.name" type="button" class="rounded-full bg-[#EAF2DE] px-3 py-2 text-sm font-semibold text-[#4D2F39]" :aria-label="`Remove custom activity ${activity.name}`" @click="toggle(activity.name, group.name, true)">{{ activity.name }} ×</button></div>
           <label class="mt-5 block text-sm font-semibold">Add your own {{ group.name.toLowerCase() }} activity <span class="font-normal text-[#6E4D58]">({{ customCount(group.name) }}/3)</span></label>

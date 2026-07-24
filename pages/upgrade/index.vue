@@ -28,6 +28,8 @@ const upgradingPlan = ref<'monthly' | 'quarterly' | 'yearly' | null>(null)
 const upgradeError = ref('')
 
 const benefits = [
+  { icon: markRaw(Tags), text: 'Choose up to 10 activity interests instead of 5' },
+  { icon: markRaw(HeartHandshake), text: 'Keep up to 5 active matches instead of 3' },
   { icon: markRaw(HeartHandshake), text: 'More thoughtful matches around shared activities' },
   { icon: markRaw(CalendarDays), text: 'Priority availability matching around real plan windows' },
   { icon: markRaw(Sparkles), text: 'Activity planning tools and public-place shortlists' },

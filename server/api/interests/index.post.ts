@@ -49,7 +49,7 @@ export default defineEventHandler(async (event) => {
     return { interest: { profileSlug: slug, profileName: target.rows[0].display_name, date: inserted.rows[0].date }, matched }
   } catch (error) {
     await client.query('rollback')
-    if ((error as { code?: string }).code === '23514') throw createError({ statusCode: 409, statusMessage: 'One of you already has five active matches' })
+    if ((error as { code?: string }).code === '23514') throw createError({ statusCode: 409, statusMessage: 'One of you has reached their active match limit' })
     if ((error as { code?: string; constraint?: string }).code === '23505') {
       const constraint = (error as { constraint?: string }).constraint
       throw createError({ statusCode: 409, statusMessage: constraint === 'daily_interests_sender_recipient_unique'

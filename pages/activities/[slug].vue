@@ -5,7 +5,7 @@ import { discoveryCategory } from '~/utils/activityDiscovery'
 definePageMeta({ middleware: 'logged-in' })
 
 const route = useRoute()
-const { todaysInterests, dailyInterestLimit, hasUsedDailyInterest, atMatchLimit, errorMessage, successMessage, sending, loadInterest, showInterest, isTodaysChoice } = useDailyInterest()
+const { todaysInterests, dailyInterestLimit, activeMatchLimit, hasUsedDailyInterest, atMatchLimit, errorMessage, successMessage, sending, loadInterest, showInterest, isTodaysChoice } = useDailyInterest()
 
 const slug = computed(() => String(route.params.slug || ''))
 const activityName = computed(() => discoveryCategory(slug.value)?.name || 'This category')
@@ -106,10 +106,10 @@ onMounted(async () => {
             </div>
             <div class="mt-5 flex flex-wrap gap-2">
               <NuxtLink :to="`/profiles/${person.slug}`" class="inline-flex items-center rounded-lg bg-white/75 px-4 py-2.5 text-sm font-semibold text-[#8F1839] transition hover:bg-white">View profile</NuxtLink>
-              <button type="button" :disabled="sending || person.interestSent || atMatchLimit || hasUsedDailyInterest" class="inline-flex items-center gap-2 rounded-lg bg-[#B4234A] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#8F1839] disabled:cursor-not-allowed disabled:bg-[#D7A7B3]" @click="showInterest(person.slug, person.name)"><HeartHandshake class="size-4" />{{ sending ? 'Sending…' : person.interestSent ? 'Interest already sent' : atMatchLimit ? '5-match limit reached' : isTodaysChoice(person.slug) ? 'Interest sent' : 'Show interest' }}</button>
+              <button type="button" :disabled="sending || person.interestSent || atMatchLimit || hasUsedDailyInterest" class="inline-flex items-center gap-2 rounded-lg bg-[#B4234A] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#8F1839] disabled:cursor-not-allowed disabled:bg-[#D7A7B3]" @click="showInterest(person.slug, person.name)"><HeartHandshake class="size-4" />{{ sending ? 'Sending…' : person.interestSent ? 'Interest already sent' : atMatchLimit ? `${activeMatchLimit}-match limit reached` : isTodaysChoice(person.slug) ? 'Interest sent' : 'Show interest' }}</button>
             </div>
             <p v-if="person.interestSent" class="mt-3 text-xs leading-5 text-[#4D2F39]" role="status">You have already shown interest in {{ person.name }}. You can review it under Sent interests.</p>
-            <p v-else-if="atMatchLimit" class="mt-3 text-xs leading-5 text-[#694C00]" role="status">You already have five active matches. Complete or remove one before matching with someone new.</p>
+            <p v-else-if="atMatchLimit" class="mt-3 text-xs leading-5 text-[#694C00]" role="status">You already have {{ activeMatchLimit }} active matches. Complete or remove one before matching with someone new.</p>
             <p v-else-if="hasUsedDailyInterest" class="mt-3 text-xs leading-5 text-[#6E4D58]" role="status"><template v-if="isTodaysChoice(person.slug)">You sent interest to {{ person.name }} today.</template><template v-else>You have sent your 5 interests for today.</template> You can send more tomorrow.</p>
           </article>
         </div>

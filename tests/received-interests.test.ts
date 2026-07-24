@@ -15,6 +15,7 @@ describe('received interests', () => {
     expect(api).toContain('di.recipient_id=$2')
     expect(api).toContain('insert into matches')
     expect(api).toContain("'new_match'")
-    expect(api).toContain('five active matches')
+    expect(api).toContain('active match limit')
+    expect(read('pages/interests/received.vue')).toContain('activeMatchLimit')
   })
 })

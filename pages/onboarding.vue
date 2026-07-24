@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ArrowLeft, ArrowRight, Brain, Check, Gamepad2, HeartHandshake, ImagePlus, Sparkles, Trophy, UserRound, UsersRound } from '@lucide/vue'
+import { ArrowLeft, ArrowRight, Brain, Check, Compass, Gamepad2, HandHeart, HeartHandshake, HeartPulse, ImagePlus, MoonStar, Sparkles, Trophy, UserRound, UsersRound } from '@lucide/vue'
 
 definePageMeta({ title: 'Set up your profile · Lonely Radish', middleware: 'logged-in' })
 
@@ -23,11 +23,17 @@ const activityGroups = [
   { name: 'Sports', options: ['Park tennis', 'Climbing', 'Running clubs', 'Table tennis', 'Casual football', 'Swimming'] },
   { name: 'Gaming', options: ['Co-op games', 'Puzzle rooms', 'Party games', 'Strategy games', 'Cosy games', 'Board games'] },
   { name: 'Learning', options: ['Workshops', 'Talks', 'Language exchange', 'Bookshops', 'Craft classes', 'Trivia nights'] },
+  { name: 'Wellness', options: ['Yoga', 'Saunas', 'Meditation', 'Spa days', 'Wellness classes', 'Relaxed movement', 'Self-care activities'] },
+  { name: 'Nightlife', options: ['Bars', 'Cocktails', 'Live DJs', 'Dancing', 'Late-night food', 'Pub quizzes', 'Evening events'] },
+  { name: 'Explore', options: ['Day trips', 'Sightseeing', 'Hidden spots', 'Neighbourhood wandering', 'Road trips', 'Trying somewhere new'] },
+  { name: 'Community', options: ['Volunteering', 'Community events', 'Charity activities', 'Environmental projects', 'Meetups', 'Local causes'] },
 ]
+const activityGroupIcons: Record<string, any> = { Sports: Trophy, Gaming: Gamepad2, Learning: Brain, Wellness: HeartPulse, Nightlife: MoonStar, Explore: Compass, Community: HandHeart }
 type SelectedActivity = { name: string; category: string; custom: boolean }
 const selectedActivities = ref<SelectedActivity[]>([])
 const customActivityInputs = reactive<Record<string, string>>(Object.fromEntries(activityGroups.map(group => [group.name, ''])))
-const activityLimitReached = computed(() => selectedActivities.value.length >= 10)
+const activitySelectionLimit = ref(5)
+const activityLimitReached = computed(() => selectedActivities.value.length >= activitySelectionLimit.value)
 const preferences = reactive({ distance: 10, minimumAge: 24, maximumAge: 40, timing: [] as string[], publicOnly: true,
   genders: [] as string[], openToEveryone: false, raceEthnicities: [] as string[], noRaceEthnicityPreference: true })
 const availabilityDays = reactive([
@@ -138,6 +144,7 @@ async function load() {
     Object.assign(birthDate, { year, month, day })
   }
   selectedActivities.value = activityData.selected
+  activitySelectionLimit.value = activityData.selectionLimit || 5
   Object.assign(preferences, general, dating)
   Object.assign(onboardingLocation, savedLocation)
   preferences.publicOnly = schedule.publicOnly ?? preferences.publicOnly
@@ -274,17 +281,17 @@ onMounted(() => { load().catch(() => { errorMessage.value = 'We could not load o
       </form>
 
       <form v-else-if="step === 3" class="onboarding-card" @submit.prevent="saveActivities">
-        <div class="step-title"><Sparkles class="size-5 text-[#B4234A]" /><div><h2>What would you enjoy doing?</h2><p>Choose up to 10 interests. Each choice helps people find you through the broader categories in Discover.</p></div></div>
+        <div class="step-title"><Sparkles class="size-5 text-[#B4234A]" /><div><h2>What would you enjoy doing?</h2><p>Choose up to {{ activitySelectionLimit }} interests. Each choice helps people find you through the broader categories in Discover.</p></div></div>
         <div class="mt-6 space-y-4">
           <section v-for="group in activityGroups" :key="group.name" class="activity-group">
-            <div class="flex items-center gap-2"><component :is="group.name === 'Sports' ? Trophy : group.name === 'Gaming' ? Gamepad2 : group.name === 'Learning' ? Brain : Sparkles" class="size-5 text-[#B4234A]" /><h3 class="font-semibold">{{ group.name }}</h3></div>
+            <div class="flex items-center gap-2"><component :is="activityGroupIcons[group.name] || Sparkles" class="size-5 text-[#B4234A]" /><h3 class="font-semibold">{{ group.name }}</h3></div>
             <div class="mt-3 flex flex-wrap gap-2"><button v-for="activity in group.options" :key="activity" type="button" class="choice" :class="activityIsSelected(activity) && 'selected'" :aria-pressed="activityIsSelected(activity)" :disabled="activityLimitReached && !activityIsSelected(activity)" @click="toggleActivity(activity, group.name)">{{ activity }}</button></div>
             <div v-if="selectedActivities.some(activity => activity.custom && activity.category === group.name)" class="mt-3 flex flex-wrap gap-2"><button v-for="activity in selectedActivities.filter(activity => activity.custom && activity.category === group.name)" :key="activity.name" type="button" class="custom-choice" :aria-label="`Remove custom activity ${activity.name}`" @click="toggleActivity(activity.name, group.name, true)">{{ activity.name }} ×</button></div>
             <label class="mt-4 block">Add your own {{ group.name.toLowerCase() }} activity <span class="font-normal text-[#6E4D58]">({{ customActivityCount(group.name) }}/3)</span></label>
             <div class="mt-2 flex flex-col gap-2 sm:flex-row"><input v-model="customActivityInputs[group.name]" :disabled="activityLimitReached || customActivityCount(group.name) >= 3" class="min-w-0 flex-1" :placeholder="`Add something to ${group.name}`" @keydown.enter.prevent="addCustomActivity(group.name)"><button type="button" class="add-activity" :disabled="activityLimitReached || customActivityCount(group.name) >= 3 || !customActivityInputs[group.name].trim()" @click="addCustomActivity(group.name)">Add</button></div>
           </section>
         </div>
-        <section v-if="selectedActivities.length" class="mt-5 rounded-lg bg-[#FCE3E8] p-4"><h3 class="font-semibold">Your interests ({{ selectedActivities.length }}/10)</h3><p v-if="activityLimitReached" class="mt-1 text-sm font-semibold text-[#8F1839]">You have selected the maximum of 10 interests.</p><div class="mt-3 flex flex-wrap gap-2"><button v-for="activity in selectedActivities" :key="activity.name" type="button" class="rounded-full bg-white px-3 py-2 text-sm font-semibold text-[#8F1839]" @click="toggleActivity(activity.name, activity.category, activity.custom)">{{ activity.name }} ×</button></div></section>
+        <section v-if="selectedActivities.length" class="mt-5 rounded-lg bg-[#FCE3E8] p-4"><h3 class="font-semibold">Your interests ({{ selectedActivities.length }}/{{ activitySelectionLimit }})</h3><p v-if="activityLimitReached" class="mt-1 text-sm font-semibold text-[#8F1839]">You have selected the maximum of {{ activitySelectionLimit }} interests.</p><div class="mt-3 flex flex-wrap gap-2"><button v-for="activity in selectedActivities" :key="activity.name" type="button" class="rounded-full bg-white px-3 py-2 text-sm font-semibold text-[#8F1839]" @click="toggleActivity(activity.name, activity.category, activity.custom)">{{ activity.name }} ×</button></div></section>
         <div class="actions"><button class="secondary" type="button" @click="step = 2"><ArrowLeft class="size-4" />Back</button><button :disabled="saving || !selectedActivities.length" class="primary" type="submit">{{ saving ? 'Saving…' : 'Continue' }}<ArrowRight class="size-4" /></button></div>
       </form>
 

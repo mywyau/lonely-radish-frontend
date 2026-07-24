@@ -25,11 +25,12 @@ export function useDailyInterest() {
   const successMessage = useState<string | null>('daily-interest-success', () => null)
   const sending = useState<boolean>('daily-interest-sending', () => false)
   const activeMatchCount = useState<number>('active-match-count', () => 0)
+  const activeMatchLimit = useState<number>('active-match-limit', () => 3)
 
   const todaysInterests = computed(() => interests.value.filter(interest => interest.date === localDateKey()))
   const todaysInterest = computed(() => todaysInterests.value[0] ?? null)
   const hasUsedDailyInterest = computed(() => todaysInterests.value.length >= dailyInterestLimit)
-  const atMatchLimit = computed(() => activeMatchCount.value >= 5)
+  const atMatchLimit = computed(() => activeMatchCount.value >= activeMatchLimit.value)
 
   async function loadInterest() {
     if (!import.meta.client) return
@@ -37,9 +38,10 @@ export function useDailyInterest() {
     successMessage.value = null
 
     try {
-      const response = await $fetch<{ interests: DailyInterest[]; activeMatchCount: number }>('/api/interests/today')
+      const response = await $fetch<{ interests: DailyInterest[]; activeMatchCount: number; activeMatchLimit: number }>('/api/interests/today')
       interests.value = response.interests.map(normaliseInterest)
       activeMatchCount.value = response.activeMatchCount
+      activeMatchLimit.value = response.activeMatchLimit
       return
     } catch {
       // Keep the local fallback for the three fictional prototype profiles.
@@ -82,6 +84,8 @@ export function useDailyInterest() {
           ? 'You have already sent interest to this person.'
           : status === 409 && failure.data?.statusMessage?.includes('already matched')
           ? 'You have already matched with this person.'
+          : status === 409 && failure.data?.statusMessage?.includes('active match limit')
+          ? `One of you has reached their active match limit. Your plan allows ${activeMatchLimit.value}.`
           : status === 409 ? 'You have reached today’s limit of 5 interests.' : 'We could not save your interest. Please try again.'
         return false
       }
@@ -97,5 +101,5 @@ export function useDailyInterest() {
     return todaysInterests.value.some(interest => interest.profileSlug === profileSlug)
   }
 
-  return { todaysInterest, todaysInterests, hasUsedDailyInterest, dailyInterestLimit, activeMatchCount, atMatchLimit, errorMessage, successMessage, sending, loadInterest, showInterest, isTodaysChoice }
+  return { todaysInterest, todaysInterests, hasUsedDailyInterest, dailyInterestLimit, activeMatchCount, activeMatchLimit, atMatchLimit, errorMessage, successMessage, sending, loadInterest, showInterest, isTodaysChoice }
 }

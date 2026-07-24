@@ -4,7 +4,7 @@ import { CalendarDays, HeartHandshake, Mail, MapPin, Phone, ShieldCheck, Sparkle
 definePageMeta({ middleware: 'logged-in' })
 
 const route = useRoute()
-const { todaysInterests, dailyInterestLimit, hasUsedDailyInterest, atMatchLimit, errorMessage, successMessage, sending, loadInterest, showInterest, isTodaysChoice } = useDailyInterest()
+const { todaysInterests, dailyInterestLimit, activeMatchLimit, hasUsedDailyInterest, atMatchLimit, errorMessage, successMessage, sending, loadInterest, showInterest, isTodaysChoice } = useDailyInterest()
 
 const profiles: Record<string, any> = {
   maya: {
@@ -159,7 +159,7 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
             class="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#8F1839] disabled:cursor-not-allowed disabled:bg-[#D7A7B3]"
             @click="showInterest(profileSlug, profile.name)">
             <HeartHandshake class="size-4" />{{ sending ? 'Sending…' : profile.isMatched ? `Already matched with ${profile.name}` : profile.relationshipStatus === 'unmatched' ? `Unmatched from ${profile.name}` :
-              profile.interestSent ? 'Interest already sent' : atMatchLimit ? '5-match limit reached' :
+              profile.interestSent ? 'Interest already sent' : atMatchLimit ? `${activeMatchLimit}-match limit reached` :
                 isTodaysChoice(profileSlug) ? `Interest sent to ${profile.name}` : 'Show interest' }}
           </button>
           <p v-if="profile.isMatched" class="mt-3 rounded-lg bg-[#EAF2DE] p-3 text-xs leading-5 text-[#4D2F39]"
@@ -182,7 +182,7 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
           <p v-else-if="profile.interestSent" class="mt-3 rounded-lg bg-[#F3E8DA] p-3 text-xs leading-5 text-[#4D2F39]"
             role="status">You have already shown interest in {{ profile.name }}. You cannot send it again.</p>
           <p v-else-if="atMatchLimit" class="mt-3 rounded-lg bg-[#FFF1C7] p-3 text-xs leading-5 text-[#694C00]"
-            role="status">You already have five active matches. Complete or remove one before matching with someone new.
+            role="status">You already have {{ activeMatchLimit }} active matches. Complete or remove one before matching with someone new.
           </p>
           <p v-else-if="hasUsedDailyInterest" class="mt-3 rounded-lg bg-[#FCE3E8] p-3 text-xs leading-5 text-[#6E4D58]"
             role="status"><template v-if="isTodaysChoice(profileSlug)">You sent interest to {{ profile.name }}

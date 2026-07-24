@@ -180,7 +180,7 @@ onBeforeUnmount(() => {
         <div class="max-w-3xl">
           <p class="mb-4 inline-flex items-center gap-2 rounded-full border border-[#E8D8C4] bg-white px-3 py-1 text-sm font-medium text-[#8F1839] shadow-sm">
             <Sparkles class="size-4" aria-hidden="true" />
-            Casual activity dates nearby
+            Meet interesting new souls near you!
           </p>
 
           <h1 class="max-w-3xl text-4xl font-semibold leading-[1.05] tracking-tight text-[#2A1520] sm:text-6xl">
@@ -188,7 +188,7 @@ onBeforeUnmount(() => {
           </h1>
 
           <p class="mt-5 max-w-2xl text-base leading-7 text-[#6E4D58] sm:text-lg">
-            Find someone nearby who wants to do the same kind of thing. Pick an activity, choose a public place, and meet naturally.
+            Find someone nearby who wants to do the same kind of thing. Pick an activity, choose a public place, and meet and form new relationships naturally.
           </p>
 
           <div class="mt-7 flex flex-col gap-3 sm:flex-row">

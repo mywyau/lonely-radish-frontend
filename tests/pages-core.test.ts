@@ -89,7 +89,7 @@ describe('core page contracts', () => {
     expect(matches).toContain('`/profiles/${match.slug}`')
     expect(matches).toContain('View {{ match.name }}’s profile')
     expect(plan).toContain('Plan a date with {{ personName }}')
-    expect(plan).toContain('Suggest up to three times')
+    expect(plan).toContain('Choose a date and time')
     expect(plan).toContain('Enter a public venue')
     expect(plan).toContain('Keep logistics simple')
     expect(plan).toContain('Add preset')

@@ -10,6 +10,10 @@ export const discoveryCategories: Record<string, DiscoveryCategory> = {
   outdoors: { name: 'Outdoors', databaseCategories: ['Outdoors'] },
   games: { name: 'Games', databaseCategories: ['Gaming'] },
   'learn-create': { name: 'Learn & create', databaseCategories: ['Learning'] },
+  wellness: { name: 'Wellness', databaseCategories: ['Wellness'] },
+  nightlife: { name: 'Nightlife', databaseCategories: ['Nightlife'] },
+  explore: { name: 'Explore', databaseCategories: ['Explore'] },
+  community: { name: 'Community', databaseCategories: ['Community'] },
 }
 
 const legacyCategorySlugs: Record<string, string> = {

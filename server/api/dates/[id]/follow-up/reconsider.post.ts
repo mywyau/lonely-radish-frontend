@@ -31,7 +31,7 @@ export default defineEventHandler(async (event) => {
     return { reconsidered: true }
   } catch (error) {
     await client.query('rollback')
-    if ((error as { code?: string }).code === '23514') throw createError({ statusCode: 409, statusMessage: 'You or your date already has five active matches' })
+    if ((error as { code?: string }).code === '23514') throw createError({ statusCode: 409, statusMessage: 'You or your date has reached their active match limit' })
     throw error
   } finally { client.release() }
 })

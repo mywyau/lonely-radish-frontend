@@ -29,4 +29,16 @@ describe('real activity candidates', () => {
     expect(page).toContain('No profiles match these filters yet')
     expect(page).toContain('Adjust match preferences')
   })
+
+  it('supports wellness, nightlife, exploration and community discovery', () => {
+    const discovery = read('utils/activityDiscovery.ts')
+    const activities = read('pages/activities/index.vue')
+    const preferences = read('pages/preferences/activities.vue')
+    for (const category of ['Wellness','Nightlife','Explore','Community']) {
+      expect(discovery).toContain(`name: '${category}'`)
+      expect(activities).toContain(`name: '${category}'`)
+      expect(preferences).toContain(`name: '${category}'`)
+    }
+    expect(read('docs/migrations/20260811_add_activity_discovery_categories.sql')).toContain("('Wellness','Yoga')")
+  })
 })
