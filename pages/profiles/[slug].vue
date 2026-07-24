@@ -170,7 +170,7 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
             <form v-if="profile.endedByMe && !profile.apologySent" class="mt-3" @submit.prevent="sendApology"><label
                 class="font-semibold">Send one private apology note<textarea v-model="apologyMessage" maxlength="500"
                   rows="3" class="mt-1 w-full rounded-lg border border-[#D8C8B6] bg-white p-3 font-normal"
-                  placeholder="Keep it brief, respectful, and without pressure." /></label><button type="submit"
+                  placeholder="Keep it brief, respectful, and without pressure." /><span class="mt-1 block text-right font-normal text-[#6E4D58]">{{ apologyMessage.length }}/500</span></label><button type="submit"
                 :disabled="apologySending || !apologyMessage.trim()"
                 class="mt-2 rounded-lg bg-[#8F1839] px-3 py-2 font-semibold text-white disabled:opacity-50">{{
                   apologySending ? 'Sending…' : 'Send apology' }}</button>

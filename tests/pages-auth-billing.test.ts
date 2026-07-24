@@ -44,6 +44,15 @@ describe("auth and billing page contracts", () => {
     expect(upgrade).toContain('Up to 5 active matches');
     expect(upgrade).toContain("upgrade('quarterly')");
     expect(upgrade).toContain('Three-month plan');
+    expect(upgrade).toContain('Your current plan:')
+    expect(upgrade).toContain('Current plan')
+    expect(upgrade).toContain("currentPlan === 'free'")
+    expect(upgrade).toContain("isCurrentPlan('monthly')")
+    expect(upgrade).toContain('onMounted(() => resolve())')
+    expect(upgrade).toContain('const showPaidPlans = ref(false)')
+    expect(upgrade).toContain(':aria-expanded="showPaidPlans"')
+    expect(upgrade).toContain('id="paid-plan-options"')
+    expect(upgrade).toContain('v-show="showPaidPlans"')
     expect(upgrade).not.toContain("/please-sign-in");
 
     const upgradeComposable = readFileSync(

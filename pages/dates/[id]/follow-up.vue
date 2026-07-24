@@ -12,6 +12,7 @@ const meetAgain = ref<boolean | null>(null)
 const message = ref('')
 const apologyMessage = ref('')
 const reconsidering = ref(false)
+const noteLimit = 240
 const isPreview = computed(() => import.meta.dev && route.params.id === 'preview-nina')
 
 function previewDate() {
@@ -101,7 +102,7 @@ onMounted(() => { load().catch((error: any) => { errorMessage.value = error?.dat
           <form v-if="date.canReconsider" class="mt-5 border-t border-[#D8C8B6] pt-5" @submit.prevent="reconsider">
             <h3 class="text-lg font-semibold">Changed your mind?</h3>
             <p class="mt-2 text-sm leading-6 text-[#4D2F39]">Because {{ date.personName }} said yes, you can change your answer once. Add a sincere note so they understand why.</p>
-            <label class="mt-4 block text-sm font-semibold">Apology note<textarea v-model="apologyMessage" maxlength="240" required rows="4" class="mt-2 w-full resize-none rounded-lg border border-[#D8C8B6] bg-white p-3" placeholder="I’m sorry I answered too quickly. I’d like to meet again if you’re still open to it…" /></label>
+            <label class="mt-4 block text-sm font-semibold">Apology note<textarea v-model="apologyMessage" :maxlength="noteLimit" required rows="4" class="mt-2 w-full resize-none rounded-lg border border-[#D8C8B6] bg-white p-3" placeholder="I’m sorry I answered too quickly. I’d like to meet again if you’re still open to it…" /><span class="mt-1 block text-right text-xs font-normal text-[#6E4D58]">{{ apologyMessage.length }}/{{ noteLimit }}</span></label>
             <button type="submit" :disabled="!apologyMessage.trim() || reconsidering" class="mt-4 rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white disabled:opacity-50">{{ reconsidering ? 'Sending…' : 'Change to yes and send note' }}</button>
           </form>
         </section>
@@ -110,7 +111,7 @@ onMounted(() => { load().catch((error: any) => { errorMessage.value = error?.dat
 
         <form v-else-if="date.dateHasPassed" class="mt-5 rounded-lg bg-white p-6 shadow-[0_12px_28px_rgba(180,35,74,0.08)]" @submit.prevent="submit">
           <fieldset><legend class="text-lg font-semibold">How would you like to continue?</legend><div class="mt-4 grid gap-3 sm:grid-cols-2"><button type="button" class="choice" :class="meetAgain === true && 'choice-selected'" @click="meetAgain = true">Yes, I’d meet again</button><button type="button" class="choice" :class="meetAgain === false && 'choice-selected'" @click="meetAgain = false">No, but I wish them well</button></div></fieldset>
-          <label v-if="meetAgain !== null" class="mt-5 block text-sm font-semibold">Optional note<textarea v-model="message" maxlength="240" rows="4" class="mt-2 w-full resize-none rounded-lg border border-[#E8D8C4] bg-[#FBF7F1] p-3" :placeholder="meetAgain ? 'I had a lovely time and would enjoy doing this again…' : 'Thank you for meeting me. I wish you all the best…'" /></label>
+          <label v-if="meetAgain !== null" class="mt-5 block text-sm font-semibold">Optional note<textarea v-model="message" :maxlength="noteLimit" rows="4" class="mt-2 w-full resize-none rounded-lg border border-[#E8D8C4] bg-[#FBF7F1] p-3" :placeholder="meetAgain ? 'I had a lovely time and would enjoy doing this again…' : 'Thank you for meeting me. I wish you all the best…'" /><span class="mt-1 block text-right text-xs font-normal text-[#6E4D58]">{{ message.length }}/{{ noteLimit }}</span></label>
           <p class="mt-5 flex items-start gap-2 text-xs leading-5 text-[#6E4D58]"><ShieldCheck class="mt-0.5 size-4 shrink-0" />Your note can accompany either answer. To keep the check-in independent, it is shown after both people respond.</p>
           <button type="submit" :disabled="meetAgain === null || saving" class="mt-5 rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white disabled:opacity-50">{{ saving ? 'Saving…' : 'Submit private answer' }}</button>
         </form>

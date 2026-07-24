@@ -157,8 +157,8 @@ onMounted(async () => {
   <main class="min-h-screen bg-[#FBF7F1] px-5 py-10 text-[#2A1520] sm:px-8">
     <section class="mx-auto max-w-5xl">
       <p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">Matches & plans</p>
-      <h1 class="mt-2 text-4xl font-semibold sm:text-5xl">Turn mutual interest into a real date.</h1>
-      <p class="mt-4 max-w-2xl leading-7 text-[#6E4D58]">Every match has a clear next step: choose what to do, agree a time and public venue, then meet.</p>
+      <h1 class="mt-2 text-4xl font-semibold sm:text-5xl">Make plans and take the next step.</h1>
+      <p class="mt-4 max-w-2xl leading-7 text-[#6E4D58]">See matches: choose what to do, agree a time and public venue, then meet.</p>
       <NuxtLink to="/matches/past" class="mt-4 inline-flex text-sm font-semibold text-[#8F1839] hover:underline">View past connections →</NuxtLink>
 
       <div class="mt-6 flex justify-end"><button type="button" class="inline-flex items-center gap-1.5 text-sm font-semibold text-[#8F1839] hover:underline" :aria-pressed="!showSummaryCounts" @click="toggleSummaryCounts"><EyeOff v-if="showSummaryCounts" class="size-4" aria-hidden="true" /><Eye v-else class="size-4" aria-hidden="true" />{{ showSummaryCounts ? 'Hide counts' : 'Show counts' }}</button></div>

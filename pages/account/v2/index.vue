@@ -22,6 +22,10 @@ const pauseChoice = ref('7_days');
 const savingPause = ref(false);
 const pauseError = ref('');
 const contact = reactive({ phoneNumber: '', contactEmail: '', socialHandle: '', shareWithMatches: false });
+const accountNameLimit = 80;
+const phoneNumberLimit = 30;
+const contactEmailLimit = 254;
+const socialHandleLimit = 100;
 const savingContact = ref(false);
 const contactSaved = ref(false);
 const contactError = ref('');
@@ -216,12 +220,12 @@ onMounted(async () => {
           <form class="mt-6 grid gap-4 sm:grid-cols-2" @submit.prevent="saveProfile">
             <label class="block text-sm font-medium">
               First name
-              <input v-model="profile.firstName" class="field" type="text" autocomplete="given-name" placeholder="Your first name">
+              <input v-model="profile.firstName" class="field" type="text" :maxlength="accountNameLimit" autocomplete="given-name" placeholder="Your first name">
             </label>
 
             <label class="block text-sm font-medium">
               Last name
-              <input v-model="profile.lastName" class="field" type="text" autocomplete="family-name" placeholder="Your last name">
+              <input v-model="profile.lastName" class="field" type="text" :maxlength="accountNameLimit" autocomplete="family-name" placeholder="Your last name">
             </label>
 
             <label class="block text-sm font-medium sm:col-span-2">
@@ -250,9 +254,9 @@ onMounted(async () => {
           <h2 class="text-xl font-semibold">Contact details for matches</h2>
           <p class="mt-2 text-sm leading-6 text-[#6E4D58]">These details are never shown in discovery and are only available to active matches when sharing is switched on.</p>
           <form class="mt-5 grid gap-4 sm:grid-cols-2" @submit.prevent="saveContactDetails">
-            <label class="text-sm font-medium">Phone number <span class="font-normal text-[#6E4D58]">(optional)</span><input v-model="contact.phoneNumber" class="field" type="tel" autocomplete="tel" placeholder="+44 7700 900000"></label>
-            <label class="text-sm font-medium">Contact email <span class="font-normal text-[#6E4D58]">(optional)</span><input v-model="contact.contactEmail" class="field" type="email" autocomplete="email" placeholder="you@example.com"></label>
-            <label class="text-sm font-medium sm:col-span-2">Social or contact handle <span class="font-normal text-[#6E4D58]">(optional)</span><input v-model="contact.socialHandle" class="field" type="text" autocomplete="off" placeholder="@yourhandle or preferred contact app"></label>
+            <label class="text-sm font-medium">Phone number <span class="font-normal text-[#6E4D58]">(optional)</span><input v-model="contact.phoneNumber" class="field" type="tel" :maxlength="phoneNumberLimit" autocomplete="tel" placeholder="+44 7700 900000"></label>
+            <label class="text-sm font-medium">Contact email <span class="font-normal text-[#6E4D58]">(optional)</span><input v-model="contact.contactEmail" class="field" type="email" :maxlength="contactEmailLimit" autocomplete="email" placeholder="you@example.com"></label>
+            <label class="text-sm font-medium sm:col-span-2">Social or contact handle <span class="font-normal text-[#6E4D58]">(optional)</span><input v-model="contact.socialHandle" class="field" type="text" :maxlength="socialHandleLimit" autocomplete="off" placeholder="@yourhandle or preferred contact app"><span class="mt-1 block text-right text-xs font-normal text-[#6E4D58]">{{ contact.socialHandle.length }}/{{ socialHandleLimit }}</span></label>
             <label class="flex items-start gap-3 rounded-lg bg-[#F3E8DA] p-4 text-sm sm:col-span-2"><input v-model="contact.shareWithMatches" class="mt-1 size-4 accent-[#B4234A]" type="checkbox"><span><strong class="block">Share with active matches</strong><span class="mt-1 block leading-5 text-[#6E4D58]">Access ends if either person unmatches, rejects, or blocks the other.</span></span></label>
             <div class="flex items-center gap-3 sm:col-span-2"><button type="submit" class="rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white disabled:opacity-50" :disabled="savingContact">{{ savingContact ? 'Saving…' : 'Save contact details' }}</button><span v-if="contactSaved" class="text-sm font-semibold text-[#6E8B52]" role="status">Contact details saved.</span></div>
             <p v-if="contactError" class="text-sm font-semibold text-[#8F1839] sm:col-span-2" role="alert">{{ contactError }}</p>

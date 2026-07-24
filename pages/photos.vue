@@ -155,7 +155,7 @@ onMounted(async () => {
       </aside>
 
       <div class="space-y-5">
-        <section class="rounded-lg bg-white p-6 shadow-[0_12px_28px_rgba(180,35,74,0.08)]">
+        <section class="rounded-lg">
           <div class="flex items-start gap-3">
             <Eye class="mt-1 size-5 text-[#B4234A]" aria-hidden="true" />
             <div><h2 class="text-xl font-semibold">Profile preview</h2><p class="mt-1 text-sm text-[#6E4D58]">This preview updates as you rearrange your photos. The largest image is your primary photo.</p></div>

@@ -21,6 +21,7 @@ const selected = ref<SelectedActivity[]>([])
 const customInputs = reactive<Record<string, string>>(Object.fromEntries(groups.map(group => [group.name, ''])))
 const saved = ref(false)
 const selectionLimit = ref(5)
+const customActivityLimit = 100
 const limitReached = computed(() => selected.value.length >= selectionLimit.value)
 
 function isSelected(name: string) {
@@ -63,7 +64,7 @@ onMounted(async () => {
           <div class="mt-4 flex flex-wrap gap-2"><button v-for="activity in group.options" :key="activity" type="button" :aria-pressed="isSelected(activity)" :disabled="limitReached && !isSelected(activity)" class="rounded-full px-3 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-40" :class="isSelected(activity) ? 'bg-[#B4234A] text-white' : 'bg-[#FBF7F1] text-[#4D2F39] hover:bg-[#FCE3E8]'" @click="toggle(activity, group.name)">{{ activity }}</button></div>
           <div v-if="selected.some(activity => activity.custom && activity.category === group.name)" class="mt-4 flex flex-wrap gap-2"><button v-for="activity in selected.filter(activity => activity.custom && activity.category === group.name)" :key="activity.name" type="button" class="rounded-full bg-[#EAF2DE] px-3 py-2 text-sm font-semibold text-[#4D2F39]" :aria-label="`Remove custom activity ${activity.name}`" @click="toggle(activity.name, group.name, true)">{{ activity.name }} ×</button></div>
           <label class="mt-5 block text-sm font-semibold">Add your own {{ group.name.toLowerCase() }} activity <span class="font-normal text-[#6E4D58]">({{ customCount(group.name) }}/3)</span></label>
-          <div class="mt-2 flex flex-col gap-2 sm:flex-row"><input v-model="customInputs[group.name]" :disabled="limitReached || customCount(group.name) >= 3" class="min-w-0 flex-1 rounded-lg border border-[#E8D8C4] bg-[#FBF7F1] px-4 py-3 disabled:cursor-not-allowed disabled:opacity-60" :placeholder="`Add something to ${group.name}`" @keydown.enter.prevent="addCustom(group.name)"><button type="button" :disabled="limitReached || customCount(group.name) >= 3 || !customInputs[group.name].trim()" class="min-h-11 rounded-lg bg-[#4D2F39] px-4 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50" @click="addCustom(group.name)">Add</button></div>
+          <div class="mt-2 flex flex-col gap-2 sm:flex-row"><input v-model="customInputs[group.name]" :maxlength="customActivityLimit" :disabled="limitReached || customCount(group.name) >= 3" class="min-w-0 flex-1 rounded-lg border border-[#E8D8C4] bg-[#FBF7F1] px-4 py-3 disabled:cursor-not-allowed disabled:opacity-60" :placeholder="`Add something to ${group.name}`" @keydown.enter.prevent="addCustom(group.name)"><button type="button" :disabled="limitReached || customCount(group.name) >= 3 || !customInputs[group.name].trim()" class="min-h-11 rounded-lg bg-[#4D2F39] px-4 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50" @click="addCustom(group.name)">Add</button></div>
           <p v-if="customCount(group.name) >= 3" class="mt-2 text-xs font-semibold text-[#8F1839]">You have added 3 custom activities in this category.</p>
         </section>
 

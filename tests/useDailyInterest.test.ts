@@ -9,7 +9,7 @@ describe('daily interest allowance', () => {
     expect(source).toContain("const storageKey = 'lonely-radish-daily-interest'")
     expect(source).toContain('const dailyInterestLimit = 5')
     expect(source).toContain('todaysInterests.value.length >= dailyInterestLimit')
-    expect(source).toContain('activeMatchCount.value >= 5')
+    expect(source).toContain('activeMatchCount.value >= activeMatchLimit.value')
     expect(source).toContain('date: localDateKey()')
     expect(source).toContain('window.localStorage.setItem')
     expect(source).toContain('response.interests.map(normaliseInterest)')
