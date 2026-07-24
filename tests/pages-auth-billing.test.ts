@@ -79,10 +79,12 @@ describe("auth and billing page contracts", () => {
     expect(account).toContain('middleware: "logged-in"');
     expect(account).toContain("Signed in as {{ user?.email }}");
     expect(account).toContain("Save profile");
-    expect(account).toContain("const planLabel = computed")
-    expect(account).toContain("{{ isPaidPlan ? 'Paid' : 'Free' }}")
-    expect(account).toContain("'/api/stripe/portal'")
-    expect(account.indexOf('Plan preview')).toBeLessThan(account.indexOf('Pause discovery'))
+    const controls = readPage("account/controls.vue");
+    expect(controls).toContain("const planLabel = computed")
+    expect(controls).toContain("{{ isPaidPlan ? 'Paid' : 'Free' }}")
+    expect(controls).toContain("'/api/stripe/portal'")
+    expect(controls.indexOf('Plan preview')).toBeLessThan(controls.indexOf('Pause discovery'))
+    expect(account).toContain('to="/account/controls"')
     expect(account).not.toContain("useMockProfile()");
     expect(account).not.toContain("persistProfile()");
     expect(account).toContain("profile.firstName");

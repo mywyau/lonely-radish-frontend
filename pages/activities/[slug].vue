@@ -12,9 +12,9 @@ const activityName = computed(() => discoveryCategory(slug.value)?.name || 'This
 const activityExists = computed(() => Boolean(discoveryCategory(slug.value)))
 
 const fallbackPeople = [
-  { slug: 'maya', name: 'Maya', age: 31, place: 'Shoreditch', distance: '2 km away', detail: 'Design books, Sunday markets, and finding small exhibitions.', activityTags: ['Markets', 'Gallery walks'], reason: 'Selected interests', tone: 'bg-[#FCE3E8]' },
-  { slug: 'nina', name: 'Nina', age: 29, place: 'Hackney', distance: '3 km away', detail: 'City walks, independent venues, and relaxed food spots.', activityTags: ['Casual food spots', 'Markets'], reason: 'Selected interests', tone: 'bg-[#EAF2DE]' },
-  { slug: 'alex', name: 'Alex', age: 34, place: 'Bethnal Green', distance: '4 km away', detail: 'Trying something new, good conversation, and low-key first plans.', activityTags: ['Board games', 'Climbing'], reason: 'Selected interests', tone: 'bg-[#F3E8DA]' },
+  { slug: 'maya', name: 'Maya', age: 31, place: 'London', detail: 'Design books, Sunday markets, and finding small exhibitions.', activityTags: ['Markets', 'Gallery walks'], reason: 'Selected interests', tone: 'bg-[#FCE3E8]' },
+  { slug: 'nina', name: 'Nina', age: 29, place: 'London', detail: 'City walks, independent venues, and relaxed food spots.', activityTags: ['Casual food spots', 'Markets'], reason: 'Selected interests', tone: 'bg-[#EAF2DE]' },
+  { slug: 'alex', name: 'Alex', age: 34, place: 'London', detail: 'Trying something new, good conversation, and low-key first plans.', activityTags: ['Board games', 'Climbing'], reason: 'Selected interests', tone: 'bg-[#F3E8DA]' },
 ]
 const databasePeople = ref<any[]>([])
 const candidatesLoaded = ref(false)
@@ -95,7 +95,7 @@ onMounted(async () => {
                 <div v-else class="flex size-12 shrink-0 items-center justify-center rounded-full bg-white/75 text-lg font-semibold text-[#B4234A] sm:size-14 sm:text-xl">{{ person.name.charAt(0) }}</div>
                 <div>
                   <h2 class="text-xl font-semibold">{{ person.name }}, {{ person.age }}</h2>
-                  <p class="mt-1 inline-flex items-center gap-1 text-sm text-[#6E4D58]"><MapPin class="size-3.5" />{{ [person.place, person.distance].filter(Boolean).join(' · ') }}</p>
+                  <p class="mt-1 inline-flex items-center gap-1 text-sm text-[#6E4D58]"><MapPin class="size-3.5" />{{ person.place }}</p>
                   <p class="mt-3 text-sm leading-6 text-[#4D2F39]">{{ person.detail }}</p>
                   <div v-if="person.activityTags?.length" class="mt-3 flex flex-wrap gap-1.5" :aria-label="`${person.name}'s selected interests in ${activityName}`"><span v-for="tag in person.activityTags" :key="tag" class="rounded-full bg-white/75 px-2.5 py-1 text-xs font-semibold text-[#8F1839]">{{ tag }}</span></div>
                 </div>

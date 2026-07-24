@@ -16,7 +16,7 @@ const displayNameLimit = 80
 const pronounsLimit = 40
 const bioLimit = 1000
 const customActivityLimit = 100
-const profile = reactive({ firstName: '', lastName: '', displayName: '', genderIdentity: '', raceEthnicity: '', slug: '', dateOfBirth: '', pronouns: '', bio: '' })
+const profile = reactive({ firstName: '', lastName: '', displayName: '', genderIdentity: '', raceEthnicity: '', slug: '', dateOfBirth: '', pronouns: '', bio: '', heightCm: null as number | null, drinking: '', smoking: '', dailyRhythm: '' })
 const birthDate = reactive({ day: '', month: '', year: '' })
 const profileNameStatus = ref<'idle' | 'checking' | 'available' | 'taken'>('idle')
 const onboardingLocation = reactive({ postcode: '', postcodeArea: '', label: '', hasLocation: false })
@@ -143,6 +143,7 @@ async function load() {
   if (profileData.profile) Object.assign(profile, {
     displayName: profileData.profile.displayName || '', slug: profileData.profile.slug || '',
     genderIdentity: profileData.profile.genderIdentity || '', raceEthnicity: profileData.profile.raceEthnicity || '', dateOfBirth: profileData.profile.dateOfBirth?.slice(0, 10) || '', pronouns: profileData.profile.pronouns || '', bio: profileData.profile.bio || '',
+    heightCm: profileData.profile.heightCm || null, drinking: profileData.profile.drinking || '', smoking: profileData.profile.smoking || '', dailyRhythm: profileData.profile.dailyRhythm || '',
   })
   if (profile.dateOfBirth) {
     const [year, month, day] = profile.dateOfBirth.split('-')
@@ -172,7 +173,7 @@ async function saveBasics() {
     if (user.value) { user.value.firstName = account.firstName; user.value.lastName = account.lastName }
     profile.slug ||= createProfileSlug()
     await $fetch('/api/profile/me', { method: 'PUT', body: { displayName: profile.displayName, genderIdentity: profile.genderIdentity, raceEthnicity: profile.raceEthnicity || null, slug: profile.slug,
-      dateOfBirth: profile.dateOfBirth, pronouns: profile.pronouns, bio: profile.bio, availability: [] } })
+      dateOfBirth: profile.dateOfBirth, pronouns: profile.pronouns, bio: profile.bio, heightCm: profile.heightCm, drinking: profile.drinking, smoking: profile.smoking, dailyRhythm: profile.dailyRhythm, availability: [] } })
     step.value = 2
   } catch (error: any) { errorMessage.value = error?.data?.statusMessage || 'We could not save your profile.' }
   finally { saving.value = false }
@@ -185,7 +186,7 @@ async function saveRacialIdentity() {
   try {
     await $fetch('/api/profile/me', { method: 'PUT', body: { displayName: profile.displayName, genderIdentity: profile.genderIdentity,
       raceEthnicity: profile.raceEthnicity, slug: profile.slug, dateOfBirth: profile.dateOfBirth,
-      pronouns: profile.pronouns, bio: profile.bio, availability: [] } })
+      pronouns: profile.pronouns, bio: profile.bio, heightCm: profile.heightCm, drinking: profile.drinking, smoking: profile.smoking, dailyRhythm: profile.dailyRhythm, availability: [] } })
     step.value = 3
   } catch (error: any) { errorMessage.value = error?.data?.statusMessage || 'We could not save how you identify.' }
   finally { saving.value = false }
@@ -274,6 +275,10 @@ onMounted(() => { load().catch(() => { errorMessage.value = 'We could not load o
           <label>Pronouns <input v-model="profile.pronouns" :maxlength="pronounsLimit" autocomplete="off" placeholder="Optional"></label>
           <fieldset class="dob-field sm:col-span-2"><legend>Date of birth</legend><p class="field-hint">You must be 18 or over. This is never shown publicly.</p><div class="dob-grid"><label><span>Day</span><select v-model="birthDate.day" required @change="updateDateOfBirth"><option value="" disabled>Day</option><option v-for="day in birthDays" :key="day" :value="String(day)">{{ day }}</option></select></label><label><span>Month</span><select v-model="birthDate.month" required @change="updateDateOfBirth"><option value="" disabled>Month</option><option v-for="(month, index) in months" :key="month" :value="String(index + 1)">{{ month }}</option></select></label><label><span>Year</span><select v-model="birthDate.year" required @change="updateDateOfBirth"><option value="" disabled>Year</option><option v-for="year in birthYears" :key="year" :value="String(year)">{{ year }}</option></select></label></div></fieldset>
           <label class="sm:col-span-2">Short bio <textarea v-model="profile.bio" required :maxlength="bioLimit" rows="5" placeholder="A little about you and the kind of person you would enjoy meeting…" /><span class="field-hint text-right">{{ profile.bio.length }}/{{ bioLimit }}</span></label>
+          <label>Height <span class="font-normal text-[#6E4D58]">(optional)</span><input v-model.number="profile.heightCm" type="number" min="120" max="230" placeholder="Height in cm"></label>
+          <label>Daily rhythm <span class="font-normal text-[#6E4D58]">(optional)</span><select v-model="profile.dailyRhythm"><option value="">Not set</option><option value="early_bird">Early bird</option><option value="night_owl">Night owl</option><option value="flexible">A bit of both</option></select></label>
+          <label>Drinking <span class="font-normal text-[#6E4D58]">(optional)</span><select v-model="profile.drinking"><option value="">Not set</option><option value="never">Never</option><option value="socially">Socially</option><option value="regularly">Regularly</option><option value="prefer_not_to_say">Prefer not to say</option></select></label>
+          <label>Smoking <span class="font-normal text-[#6E4D58]">(optional)</span><select v-model="profile.smoking"><option value="">Not set</option><option value="never">Never</option><option value="socially">Socially</option><option value="regularly">Regularly</option><option value="prefer_not_to_say">Prefer not to say</option></select></label>
         </div>
         <p class="mt-3 text-xs text-[#6E4D58]">Your surname and date of birth are not displayed on your public profile.</p>
         <div class="actions"><button :disabled="saving" class="primary" type="submit">{{ saving ? 'Saving…' : 'Continue' }}<ArrowRight class="size-4" /></button></div>

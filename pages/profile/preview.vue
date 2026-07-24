@@ -4,7 +4,7 @@ import { CalendarDays, Eye, HeartHandshake, ImagePlus, MapPin, ShieldCheck, User
 definePageMeta({ title: 'Profile Preview · Lonely Radish', middleware: 'logged-in' })
 
 type PreviewData = {
-  profile: { displayName: string; dateOfBirth?: string; pronouns?: string; bio?: string; neighbourhood?: string; visibility?: string } | null
+  profile: { displayName: string; dateOfBirth?: string; pronouns?: string; bio?: string; neighbourhood?: string; visibility?: string; heightCm?: number; drinking?: string; smoking?: string; dailyRhythm?: string } | null
   photos: Array<{ id: string; url: string; altText?: string; position: number }>
   activities: string[]
   interestCategories: string[]
@@ -15,6 +15,16 @@ const loading = ref(true)
 const errorMessage = ref('')
 const data = ref<PreviewData | null>(null)
 const activitiesFlipped = ref(false)
+const lifestyleLabels = computed(() => {
+  const profile = data.value?.profile
+  if (!profile) return []
+  const labels: string[] = []
+  if (profile.heightCm) labels.push(`${profile.heightCm} cm`)
+  if (profile.drinking && profile.drinking !== 'prefer_not_to_say') labels.push(`Drinks ${profile.drinking}`)
+  if (profile.smoking && profile.smoking !== 'prefer_not_to_say') labels.push(profile.smoking === 'never' ? 'Non-smoker' : `Smokes ${profile.smoking}`)
+  if (profile.dailyRhythm) labels.push({ early_bird: 'Early bird', night_owl: 'Night owl', flexible: 'A bit of both' }[profile.dailyRhythm] || profile.dailyRhythm)
+  return labels
+})
 const age = computed(() => {
   const value = data.value?.profile?.dateOfBirth
   if (!value) return null
@@ -103,6 +113,7 @@ onMounted(async () => {
             </div>
             <p class="mt-4 leading-7 text-[#4D2F39]">{{ data.profile.bio || 'Add a short bio to introduce yourself.' }}
             </p>
+            <div v-if="lifestyleLabels.length" class="mt-5 flex flex-wrap gap-2"><span v-for="label in lifestyleLabels" :key="label" class="rounded-full bg-[#F3E8DA] px-3 py-2 text-sm font-semibold text-[#4D2F39]">{{ label }}</span></div>
           </section>
           <section v-if="data.availability?.length"
             class="rounded-lg bg-white p-5 shadow-[0_10px_24px_rgba(180,35,74,.08)] sm:p-6">

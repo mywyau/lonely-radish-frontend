@@ -1,27 +1,27 @@
 <script setup lang="ts">
-import { ArrowRight, CalendarDays, CheckCircle2, ChevronDown, Circle, HeartHandshake, MapPin, PauseCircle, ShieldCheck, Sparkles, Trash2, UserRound } from "@lucide/vue";
+import { ArrowRight, CalendarDays, CheckCircle2, ChevronDown, Circle, MapPin, ShieldCheck, SlidersHorizontal, Sparkles, Trash2, UserRound } from "@lucide/vue";
 
 definePageMeta({
   title: "Account · Lonely Radish",
   middleware: "logged-in",
 });
 
-const { user, entitlement, resolve } = useMeStateV2();
-const profile = reactive({ firstName: "", lastName: "", raceEthnicity: "" });
+const { user, resolve } = useMeStateV2();
+const profile = reactive({ firstName: "", lastName: "", displayName: "", raceEthnicity: "" });
 const raceEthnicityOptions = ['Asian', 'Black / African / Caribbean', 'Hispanic / Latino', 'Middle Eastern', 'North African', 'Native / Indigenous', 'Pacific Islander', 'White', 'Multiracial / multi-ethnic', 'Prefer not to say'];
 
 const saved = ref(false);
+const profileSaveError = ref('');
 const showDeletePanel = ref(false);
 const showFinalDeleteConfirmation = ref(false);
 const deleteConfirmInput = ref("");
 const deletingAccount = ref(false);
 const deleteError = ref("");
 const deletionQueued = ref(false);
-const pauseState = ref<{ paused: boolean; pausedUntil: string | null }>({ paused: false, pausedUntil: null });
-const pauseChoice = ref('7_days');
-const savingPause = ref(false);
-const pauseError = ref('');
 const contact = reactive({ phoneNumber: '', contactEmail: '', socialHandle: '', shareWithMatches: false });
+const lifestyle = reactive<{ heightCm: number | null; drinking: string; smoking: string; dailyRhythm: string }>({ heightCm: null, drinking: '', smoking: '', dailyRhythm: '' });
+const lifestyleSaved = ref(false);
+const lifestyleError = ref('');
 const accountNameLimit = 80;
 const phoneNumberLimit = 30;
 const contactEmailLimit = 254;
@@ -29,7 +29,6 @@ const socialHandleLimit = 100;
 const savingContact = ref(false);
 const contactSaved = ref(false);
 const contactError = ref('');
-const reliability = ref<{ confirmedNoShows: number; restrictedUntil: string | null; attendedDates: number; pendingReports: number } | null>(null);
 type ReadinessChecks = { profileBasics: boolean; photos: boolean; activities: boolean; location: boolean; generalPreferences: boolean; datingPreferences: boolean };
 const readiness = ref<{ checks: ReadinessChecks; completed: number; total: number; percentage: number; photoCount: number; photosRequired: number } | null>(null);
 const readinessCollapsed = ref(false);
@@ -46,10 +45,6 @@ const readinessItems = computed(() => {
 });
 
 const fullName = computed(() => `${profile.firstName} ${profile.lastName}`.trim());
-const planLabel = computed(() => entitlement.value?.plan === 'yearly' ? 'Yearly plan' : entitlement.value?.plan === 'quarterly' ? 'Three-month plan' : entitlement.value?.plan === 'monthly' ? 'Monthly plan' : 'Free plan');
-const isPaidPlan = computed(() => ['monthly','quarterly','yearly'].includes(entitlement.value?.plan || ''));
-const openingBillingPortal = ref(false);
-const billingError = ref('');
 
 const datePreferences = [
   { icon: Sparkles, label: "Activity mood", value: "Gallery walk, market, or low-key gig" },
@@ -59,20 +54,25 @@ const datePreferences = [
 ];
 
 async function saveProfile() {
-  const [updated] = await Promise.all([
-    $fetch<{ firstName: string | null; lastName: string | null }>("/api/account/v2/profile", {
-      method: "POST", body: { firstName: profile.firstName, lastName: profile.lastName },
-    }),
-    $fetch('/api/profile/identity', { method: 'PUT', body: { raceEthnicity: profile.raceEthnicity } }),
-  ]);
-  if (user.value) {
-    user.value.firstName = updated.firstName;
-    user.value.lastName = updated.lastName;
+  profileSaveError.value = '';
+  saved.value = false;
+  try {
+    const [updated] = await Promise.all([
+      $fetch<{ firstName: string | null; lastName: string | null }>("/api/account/v2/profile", {
+        method: "POST", body: { firstName: profile.firstName, lastName: profile.lastName },
+      }),
+      $fetch('/api/profile/display-name', { method: 'PUT', body: { displayName: profile.displayName } }),
+      $fetch('/api/profile/identity', { method: 'PUT', body: { raceEthnicity: profile.raceEthnicity } }),
+    ]);
+    if (user.value) {
+      user.value.firstName = updated.firstName;
+      user.value.lastName = updated.lastName;
+    }
+    saved.value = true;
+    window.setTimeout(() => { saved.value = false; }, 2200);
+  } catch (error: any) {
+    profileSaveError.value = error?.data?.statusMessage || 'Profile details could not be saved.';
   }
-  saved.value = true;
-  window.setTimeout(() => {
-    saved.value = false;
-  }, 2200);
 }
 
 async function deleteAccount() {
@@ -89,16 +89,6 @@ async function deleteAccount() {
   }
 }
 
-async function updatePause(choice = pauseChoice.value) {
-  savingPause.value = true;
-  pauseError.value = '';
-  try {
-    const result = await $fetch<{ paused: boolean; pausedUntil: string | null }>('/api/account/pause', { method: 'PUT', body: { choice } });
-    pauseState.value = result;
-  } catch (error: any) { pauseError.value = error?.data?.statusMessage || 'Your pause setting could not be updated.'; }
-  finally { savingPause.value = false; }
-}
-
 async function saveContactDetails() {
   savingContact.value = true;
   contactError.value = '';
@@ -110,24 +100,24 @@ async function saveContactDetails() {
   finally { savingContact.value = false; }
 }
 
-async function managePlan() {
-  openingBillingPortal.value = true;
-  billingError.value = '';
+async function saveLifestyle() {
+  lifestyleError.value = '';
+  lifestyleSaved.value = false;
   try {
-    const result = await $fetch<{ url: string }>('/api/stripe/portal', { method: 'POST' });
-    await navigateTo(result.url, { external: true });
-  } catch (error: any) {
-    billingError.value = error?.data?.statusMessage || 'Subscription management could not be opened.';
-    openingBillingPortal.value = false;
-  }
+    Object.assign(lifestyle, await $fetch('/api/profile/lifestyle', { method: 'PUT', body: lifestyle }));
+    lifestyleSaved.value = true;
+  } catch (error: any) { lifestyleError.value = error?.data?.statusMessage || 'Lifestyle details could not be saved.'; }
 }
 
 onMounted(async () => {
   await resolve({ force: true });
-  try { pauseState.value = await $fetch('/api/account/pause'); } catch { /* Account remains usable if pause status is unavailable. */ }
-  try { reliability.value = await $fetch('/api/account/reliability'); } catch { /* Reliability status is informational. */ }
   try { Object.assign(contact, await $fetch('/api/profile/contact')); } catch { /* Contact details remain optional. */ }
-  try { const result = await $fetch<any>('/api/profile/me'); profile.raceEthnicity = result.profile?.raceEthnicity || ''; } catch { /* Identity remains editable when profile data is available. */ }
+  try {
+    const result = await $fetch<any>('/api/profile/me');
+    profile.raceEthnicity = result.profile?.raceEthnicity || '';
+    profile.displayName = result.profile?.displayName || '';
+    Object.assign(lifestyle, { heightCm: result.profile?.heightCm || null, drinking: result.profile?.drinking || '', smoking: result.profile?.smoking || '', dailyRhythm: result.profile?.dailyRhythm || '' });
+  } catch { /* Profile details remain editable when profile data is available. */ }
   try {
     readiness.value = await $fetch('/api/profile/readiness');
     readinessCollapsed.value = readiness.value.percentage === 100;
@@ -157,43 +147,11 @@ onMounted(async () => {
           </p>
         </div>
 
-        <div class="rounded-lg bg-[#2A1520] p-6 text-white shadow-[0_14px_32px_rgba(42,21,32,0.16)]">
-          <HeartHandshake class="size-6 text-[#F7B7C4]" aria-hidden="true" />
-          <div class="mt-4 flex flex-wrap items-center gap-2"><h2 class="text-lg font-semibold">Plan preview</h2><span class="rounded-full px-2.5 py-1 text-xs font-bold" :class="isPaidPlan ? 'bg-[#EAF2DE] text-[#4D2F39]' : 'bg-white/15 text-white'">{{ isPaidPlan ? 'Paid' : 'Free' }}</span></div>
-          <p class="mt-2 text-sm leading-6 text-white/72">You are currently on the <strong class="text-white">{{ planLabel }}</strong>.</p>
-          <div class="mt-5 flex flex-col gap-2 min-[400px]:flex-row min-[400px]:flex-wrap">
-            <button v-if="isPaidPlan" type="button" class="inline-flex justify-center rounded-lg bg-white px-4 py-2 text-sm font-semibold text-[#8F1839] transition hover:bg-[#F3E8DA] disabled:opacity-60" :disabled="openingBillingPortal" @click="managePlan">{{ openingBillingPortal ? 'Opening Stripe…' : 'Manage plan' }}</button>
-            <NuxtLink v-else to="/upgrade" class="inline-flex justify-center rounded-lg bg-white px-4 py-2 text-sm font-semibold text-[#8F1839] transition hover:bg-[#F3E8DA]">View paid plans</NuxtLink>
-          </div>
-          <p v-if="billingError" class="mt-3 text-sm font-semibold text-[#F7B7C4]" role="alert">{{ billingError }}</p>
-        </div>
-
-        <section class="rounded-lg bg-[#EAF2DE] p-6 shadow-[0_10px_24px_rgba(180,35,74,0.08)]">
-          <div class="flex items-start gap-3">
-            <PauseCircle class="mt-1 size-5 text-[#6E8B52]" aria-hidden="true" />
-            <div class="min-w-0 flex-1">
-              <h2 class="text-lg font-semibold">Pause discovery</h2>
-              <p class="mt-2 text-sm leading-6 text-[#4D2F39]">Hide your profile from new people while keeping existing matches, plans, and confirmed dates available.</p>
-              <div v-if="pauseState.paused" class="mt-4 rounded-lg bg-white/75 p-4">
-                <p class="text-sm font-semibold">Your profile is paused<span v-if="pauseState.pausedUntil"> until {{ new Date(pauseState.pausedUntil).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) }}</span><span v-else> indefinitely</span>.</p>
-                <button type="button" class="mt-3 rounded-lg bg-[#B4234A] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50" :disabled="savingPause" @click="updatePause('resume')">{{ savingPause ? 'Resuming…' : 'Resume discovery now' }}</button>
-              </div>
-              <div v-else class="mt-4 flex flex-col gap-3">
-                <label class="text-sm font-semibold">Pause for<select v-model="pauseChoice" class="field"><option value="7_days">7 days</option><option value="30_days">30 days</option><option value="indefinite">Until I resume</option></select></label>
-                <button type="button" class="rounded-lg bg-[#4D2F39] px-4 py-3 text-sm font-semibold text-white disabled:opacity-50" :disabled="savingPause" @click="updatePause()">{{ savingPause ? 'Pausing…' : 'Pause my profile' }}</button>
-              </div>
-              <p v-if="pauseError" class="mt-3 text-sm font-semibold text-[#8F1839]" role="alert">{{ pauseError }}</p>
-            </div>
-          </div>
-        </section>
-
-        <section v-if="reliability" class="rounded-lg bg-white p-6 shadow-[0_12px_28px_rgba(180,35,74,0.08)]">
-          <div class="flex items-start gap-3"><ShieldCheck class="mt-1 size-5 text-[#6E8B52]" aria-hidden="true" /><div class="min-w-0 flex-1"><div class="flex flex-wrap items-center gap-2"><h2 class="text-lg font-semibold">Date reliability</h2><span class="rounded-full bg-[#EAF2DE] px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-[#52713A]">Private</span></div><p class="mt-2 text-sm leading-6 text-[#4D2F39]">This history is private. We reward clear cancellations and only restrict discovery after repeated confirmed, undisputed no-shows.</p>
-            <div class="mt-4 grid grid-cols-2 gap-3"><div class="rounded-lg bg-[#EAF2DE] p-3"><strong class="text-xl">{{ reliability.attendedDates }}</strong><span class="mt-1 block text-xs text-[#4D2F39]">Dates confirmed as attended</span></div><div class="rounded-lg bg-[#FBF7F1] p-3"><strong class="text-xl">{{ reliability.confirmedNoShows }}</strong><span class="mt-1 block text-xs text-[#4D2F39]">Confirmed no-shows</span></div></div>
-            <p v-if="reliability.pendingReports" class="mt-3 rounded-lg bg-[#FFF1C7] p-3 text-xs font-semibold text-[#694C00]">You have an attendance report awaiting your response.</p>
-            <p v-if="reliability.restrictedUntil && new Date(reliability.restrictedUntil) > new Date()" class="mt-3 rounded-lg bg-[#FCE3E8] p-3 text-xs font-semibold text-[#8F1839]">New discovery is paused until {{ new Date(reliability.restrictedUntil).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' }) }}. Existing matches and plans remain available.</p>
-          </div></div>
-        </section>
+        <NuxtLink to="/account/controls" class="group flex items-center gap-3 rounded-lg bg-[#2A1520] p-5 text-white shadow-[0_14px_32px_rgba(42,21,32,0.16)]">
+          <SlidersHorizontal class="size-6 shrink-0 text-[#F7B7C4]" aria-hidden="true" />
+          <span class="min-w-0 flex-1"><strong class="block">Account controls</strong><span class="mt-1 block text-sm text-white/70">Plan, discovery pause and private date reliability</span></span>
+          <ArrowRight class="size-5 transition-transform group-hover:translate-x-1" aria-hidden="true" />
+        </NuxtLink>
 
         <section v-if="readiness" class="rounded-lg bg-white p-6 shadow-[0_12px_28px_rgba(180,35,74,0.08)]">
           <button type="button" class="flex w-full items-start justify-between gap-4 text-left" :aria-expanded="!readinessCollapsed" aria-controls="discovery-readiness-details" @click="readinessCollapsed = !readinessCollapsed">
@@ -239,6 +197,12 @@ onMounted(async () => {
             </label>
 
             <label class="block text-sm font-medium sm:col-span-2">
+              Profile name
+              <input v-model="profile.displayName" class="field" type="text" :maxlength="accountNameLimit" autocomplete="nickname" required placeholder="Name shown to other members">
+              <span class="mt-1 block text-xs font-normal text-[#6E4D58]">This is your unique public name. Changing it does not change your private first or last name.</span>
+            </label>
+
+            <label class="block text-sm font-medium sm:col-span-2">
               Racial or ethnic identity
               <select v-model="profile.raceEthnicity" class="field" required>
                 <option value="" disabled>Select an option</option>
@@ -257,6 +221,28 @@ onMounted(async () => {
               </button>
               <span v-if="saved" class="text-sm font-medium text-[#6E8B52]">Profile saved.</span>
             </div>
+            <p v-if="profileSaveError" class="text-sm font-semibold text-[#8F1839] sm:col-span-2" role="alert">{{ profileSaveError }}</p>
+          </form>
+        </section>
+
+        <section class="rounded-lg bg-white p-6 shadow-[0_12px_28px_rgba(180,35,74,0.08)]">
+          <h2 class="text-xl font-semibold">Lifestyle and profile details</h2>
+          <p class="mt-2 text-sm leading-6 text-[#6E4D58]">Optional details shown on your profile. Your interests continue to come from Activity preferences.</p>
+          <form class="mt-5 grid gap-4 sm:grid-cols-2" @submit.prevent="saveLifestyle">
+            <label class="text-sm font-medium">Height <span class="font-normal text-[#6E4D58]">(optional)</span>
+              <div class="relative"><input v-model.number="lifestyle.heightCm" class="field pr-12" type="number" min="120" max="230" placeholder="170"><span class="pointer-events-none absolute right-4 top-1/2 mt-1 -translate-y-1/2 text-sm text-[#6E4D58]">cm</span></div>
+            </label>
+            <label class="text-sm font-medium">Daily rhythm <span class="font-normal text-[#6E4D58]">(optional)</span>
+              <select v-model="lifestyle.dailyRhythm" class="field"><option value="">Not set</option><option value="early_bird">Early bird</option><option value="night_owl">Night owl</option><option value="flexible">A bit of both</option></select>
+            </label>
+            <label class="text-sm font-medium">Drinking <span class="font-normal text-[#6E4D58]">(optional)</span>
+              <select v-model="lifestyle.drinking" class="field"><option value="">Not set</option><option value="never">Never</option><option value="socially">Socially</option><option value="regularly">Regularly</option><option value="prefer_not_to_say">Prefer not to say</option></select>
+            </label>
+            <label class="text-sm font-medium">Smoking <span class="font-normal text-[#6E4D58]">(optional)</span>
+              <select v-model="lifestyle.smoking" class="field"><option value="">Not set</option><option value="never">Never</option><option value="socially">Socially</option><option value="regularly">Regularly</option><option value="prefer_not_to_say">Prefer not to say</option></select>
+            </label>
+            <div class="flex items-center gap-3 sm:col-span-2"><button type="submit" class="rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white">Save lifestyle details</button><span v-if="lifestyleSaved" class="text-sm font-semibold text-[#6E8B52]" role="status">Details saved.</span></div>
+            <p v-if="lifestyleError" class="text-sm font-semibold text-[#8F1839] sm:col-span-2" role="alert">{{ lifestyleError }}</p>
           </form>
         </section>
 

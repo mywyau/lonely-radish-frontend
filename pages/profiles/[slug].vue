@@ -9,7 +9,7 @@ const { todaysInterests, dailyInterestLimit, activeMatchLimit, hasUsedDailyInter
 const profiles: Record<string, any> = {
   maya: {
     isDemo: true,
-    name: 'Maya', age: 31, pronouns: 'she/her', place: 'Shoreditch', distance: '2 km away',
+    name: 'Maya', age: 31, pronouns: 'she/her', place: 'London',
     bio: 'I’m a book designer who is happiest wandering around a small exhibition, finding the best thing at a Sunday market, or catching a low-key gig. I’m looking for someone kind and curious who is up for making an actual plan.',
     activities: ['Gallery walks', 'Sunday markets', 'Live music', 'Bookshops', 'Riverside walks'],
     interests: ['Design', 'Independent magazines', 'Cooking', 'City history'],
@@ -19,7 +19,7 @@ const profiles: Record<string, any> = {
   },
   nina: {
     isDemo: true,
-    name: 'Nina', age: 29, pronouns: 'she/her', place: 'Hackney', distance: '3 km away',
+    name: 'Nina', age: 29, pronouns: 'she/her', place: 'London',
     isMatched: true,
     bio: 'I work in community radio and spend a lot of my free time looking for films, food, and corners of London I have not seen before. I appreciate thoughtful people, silly observations, and plans that leave room for a spontaneous second stop.',
     activities: ['Indie films', 'City walks', 'Casual food spots', 'Comedy nights', 'Markets'],
@@ -31,7 +31,7 @@ const profiles: Record<string, any> = {
   },
   alex: {
     isDemo: true,
-    name: 'Alex', age: 34, pronouns: 'they/them', place: 'Bethnal Green', distance: '4 km away',
+    name: 'Alex', age: 34, pronouns: 'they/them', place: 'London',
     bio: 'I’m a product researcher, enthusiastic beginner climber, and collector of second-hand books I absolutely intend to read. I like people who are curious, direct, and happy to alternate active plans with a quiet wander and a good snack.',
     activities: ['Climbing', 'Book markets', 'Riverside walks', 'Board games', 'Cooking classes'],
     interests: ['Architecture', 'Science fiction', 'Ceramics', 'Neighbourhood history'],
@@ -73,6 +73,15 @@ const gallerySlots = computed(() => [
   })),
 ])
 const profileInterests = computed(() => profile.value?.interests?.length ? profile.value.interests : profile.value?.interestCategories || [])
+const lifestyleLabels = computed(() => {
+  if (!profile.value) return []
+  const labels = []
+  if (profile.value.heightCm) labels.push(`${profile.value.heightCm} cm`)
+  if (profile.value.drinking && profile.value.drinking !== 'prefer_not_to_say') labels.push(`Drinks ${profile.value.drinking}`)
+  if (profile.value.smoking && profile.value.smoking !== 'prefer_not_to_say') labels.push(profile.value.smoking === 'never' ? 'Non-smoker' : `Smokes ${profile.value.smoking}`)
+  if (profile.value.dailyRhythm) labels.push({ early_bird: 'Early bird', night_owl: 'Night owl', flexible: 'A bit of both' }[profile.value.dailyRhythm] || profile.value.dailyRhythm)
+  return labels
+})
 
 async function sendApology() {
   if (!profile.value?.matchId || !apologyMessage.value.trim()) return
@@ -143,9 +152,9 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
             <h1 class="text-3xl font-semibold">{{ profile.name }}, {{ profile.age }}</h1><span
               class="text-sm text-[#6E4D58]">{{ profile.pronouns }}</span>
           </div>
-          <p v-if="profile.place || profile.distance"
+          <p v-if="profile.place"
             class="mt-2 inline-flex items-center gap-1 text-sm text-[#6E4D58]">
-            <MapPin class="size-4" /><span>{{ [profile.place, profile.distance].filter(Boolean).join(' · ') }}</span>
+            <MapPin class="size-4" /><span>{{ profile.place }}</span>
           </p>
           <div v-if="profile.matchReason" class="mt-5 rounded-lg bg-[#EAF2DE] p-4">
             <p class="inline-flex items-center gap-2 text-sm font-semibold">
@@ -213,6 +222,7 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
             <h2 class="text-xl font-semibold">About me</h2>
           </div>
           <p class="mt-4 leading-7 text-[#4D2F39]">{{ profile.bio }}</p>
+          <div v-if="lifestyleLabels.length" class="mt-5 flex flex-wrap gap-2"><span v-for="label in lifestyleLabels" :key="label" class="rounded-full bg-[#F3E8DA] px-3 py-2 text-sm font-semibold text-[#4D2F39]">{{ label }}</span></div>
         </section>
         <section v-if="profile.availability?.length && (profile.isMatched || profile.availabilityVisibleBeforeMatch)"
           class="rounded-lg bg-white p-5 shadow-[0_10px_24px_rgba(180,35,74,0.08)] sm:p-6">

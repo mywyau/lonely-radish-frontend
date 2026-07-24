@@ -17,7 +17,8 @@ export default defineEventHandler(async (event) => {
 
   const [candidates, preferenceResult] = await Promise.all([
     db.query(`select p.slug,p.display_name as name,p.updated_at::text as "sortAt",
-    extract(year from age(current_date,p.date_of_birth))::int as age,p.neighbourhood as place,p.bio as detail,
+    extract(year from age(current_date,p.date_of_birth))::int as age,
+    coalesce(p.location_label,p.postcode_area,p.neighbourhood) as place,p.bio as detail,
     photo.storage_key as "photoStorageKey",photo.public_url as "legacyPhotoUrl",shared."activityTags",
     ${discoveryDistanceSelect}
     ,exists(select 1 from daily_interests di where di.sender_id=$2 and di.recipient_id=p.user_id) as "interestSent"
@@ -47,7 +48,7 @@ export default defineEventHandler(async (event) => {
   const page = pageRows(candidates.rows, pageSize, row => ({ sortAt: row.sortAt, tieBreaker: row.slug }))
   const people = await Promise.all(page.items.map(async person => ({
     slug: person.slug, name: person.name, age: person.age,
-    place: person.distanceKm != null ? `${person.distanceKm} km away` : person.place || 'Nearby',
+    place: person.place || 'Location not shared',
     detail: person.detail || `Interested in ${category.name.toLowerCase()} activities.`,
     activityTags: person.activityTags || [], reason: 'Selected interests', interestSent: person.interestSent === true, photoUrl: person.photoStorageKey
       ? await signedPhotoUrl(person.photoStorageKey) : person.legacyPhotoUrl || null,
