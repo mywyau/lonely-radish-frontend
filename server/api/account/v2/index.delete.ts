@@ -9,6 +9,7 @@ import { Client as QStashClient } from "@upstash/qstash";
 
 import { db } from "~/server/repositories/db";
 import { getUserFromSession } from "@/server/utils/auth";
+import { useAuthSession } from "~/server/utils/authSession";
 import { redactIdentifier } from "~/server/utils/logging/redact";
 
 type DeleteBody = {
@@ -193,6 +194,10 @@ export default defineEventHandler(async (event) => {
       });
     }
   }
+
+  // Stop an account marked for deletion from continuing to use the app even if
+  // the background worker has not yet removed the Auth0 identity.
+  await (await useAuthSession(event)).clear();
 
   setResponseStatus(event, 202);
 

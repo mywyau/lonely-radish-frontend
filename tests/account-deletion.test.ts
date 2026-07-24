@@ -16,6 +16,8 @@ describe('account deletion', () => {
     const endpoint = read('server/api/account/v2/index.delete.ts')
     expect(endpoint).toContain('Confirmation text did not match')
     expect(endpoint).toContain('account_deletion_jobs')
+    expect(endpoint).toContain('useAuthSession')
+    expect(endpoint).toContain('.clear()')
   })
 
   it('removes external services, stored photos, and cascading database data', () => {
@@ -33,6 +35,8 @@ describe('account deletion', () => {
     const page = read('pages/business/account.vue')
     expect(page).toContain("method: 'DELETE'")
     expect(page).toContain("'/api/account/v2'")
+    expect(page).toContain("window.location.assign('/api/auth/logout')")
+    expect(page).not.toContain("navigateTo('/account/deleting')")
     expect(page).toContain('Any active subscription will be cancelled')
     expect(read('components/BusinessNavBar.vue')).toContain("to:'/business/account'")
   })

@@ -15,7 +15,7 @@ async function deleteAccount() {
   errorMessage.value = ''
   try {
     await $fetch('/api/account/v2', { method: 'DELETE', body: { confirm: confirmation.value } })
-    await navigateTo('/account/deleting')
+    window.location.assign('/api/auth/logout')
   } catch (error: any) {
     errorMessage.value = error?.data?.statusMessage || 'Account deletion could not be started.'
     deleting.value = false
