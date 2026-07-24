@@ -42,6 +42,7 @@ onMounted(() => load().catch((error: any) => { errorMessage.value = error?.data?
       <p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">Lonely Radish for business</p>
       <h1 class="mt-2 text-4xl font-semibold sm:text-5xl">{{ business ? business.name : 'Bring more dates through your door.' }}</h1>
       <p class="mt-3 max-w-2xl leading-7 text-[#6E4D58]">{{ business ? 'Manage your venue, offers and business subscription.' : 'Create date-friendly offers for couples already deciding where to meet.' }}</p>
+      <p v-if="!loading && !business && $route.query.onboarding === 'required'" class="mt-5 rounded-lg bg-[#FFF1C7] p-4 text-sm font-semibold text-[#694C00]" role="status">Complete your business profile before using the rest of the business portal.</p>
 
       <div v-if="loading" class="mt-8 rounded-lg bg-white p-8 text-center text-[#6E4D58]">Loading business tools…</div>
 
