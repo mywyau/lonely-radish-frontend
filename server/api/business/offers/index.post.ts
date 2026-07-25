@@ -26,7 +26,8 @@ export default defineEventHandler(async (event) => {
   const { rows } = await db.query(`insert into business_offers(business_id,venue_id,title,description,
       discount_type,discount_value,terms,active)
     select $1,v.id,$3,$4,$5,$6,$7,$8 from business_venues v where v.id=$2 and v.business_id=$1
-    returning id,title,description,discount_type as "discountType",discount_value::float as "discountValue",terms,active`,
+    returning id,title,description,discount_type as "discountType",discount_value::float as "discountValue",
+      terms,active,approval_status as "approvalStatus"`,
   [business.id,venueId,title,description,discountType,discountValue,terms,active])
   if (!rows[0]) throw createError({ statusCode: 400, statusMessage: 'Choose a venue belonging to this business' })
   return { offer: rows[0], limit }

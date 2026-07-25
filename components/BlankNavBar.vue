@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useMeStateV2 } from '@/composables/useMeStateV2'
-import { Bell, Building2, Eye, HeartHandshake, History, House, Menu, Send, ShieldCheck, Sparkles, X } from '@lucide/vue'
+import { BadgePercent, Bell, Building2, ClipboardCheck, Eye, HeartHandshake, History, House, Menu, Send, ShieldCheck, Sparkles, X } from '@lucide/vue'
 import { login, logout, signup } from '@/composables/useAuth'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
@@ -16,12 +16,14 @@ const menuOpen = ref(false)
 const navOpen = ref(false)
 const unreadCount = ref(0)
 const matchCount = ref(0)
+const isAdmin = ref(false)
 const menuRoot = ref<HTMLElement | null>(null)
 
 const navLinks = computed(() => {
   const links = [
     { to: '/', label: 'Home', icon: House },
     { to: '/activities', label: 'Discover date ideas', icon: Sparkles },
+    { to: '/offers', label: 'Date offers', icon: BadgePercent },
     { to: '/matches', label: 'Matches & plans', icon: HeartHandshake },
     { to: '/matches/past', label: 'Past connections', icon: History },
     { to: '/interests/sent', label: 'Sent interests', icon: Send },
@@ -29,6 +31,7 @@ const navLinks = computed(() => {
     { to: '/notifications', label: unreadCount.value ? `Notifications (${unreadCount.value})` : 'Notifications', icon: Bell },
     { to: '/account/blocked', label: 'Blocked users', icon: ShieldCheck },
   ]
+  if (isAdmin.value) links.push({ to: '/admin/businesses', label: 'Business approvals', icon: ClipboardCheck })
 
   return links
 })
@@ -75,6 +78,12 @@ async function loadNavigationCounts() {
 onMounted(async () => {
   await resolve({ force: true })
   await loadNavigationCounts()
+  if (isLoggedIn.value) {
+    try {
+      await $fetch('/api/admin/me')
+      isAdmin.value = true
+    } catch { isAdmin.value = false }
+  }
   document.addEventListener('click', onDocumentClick)
   document.addEventListener('keydown', onDocumentKeydown)
 })
