@@ -141,7 +141,7 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
 </script>
 
 <template>
-  <main class="min-h-screen bg-[#FBF7F1] px-5 py-8 text-[#2A1520] sm:px-8 sm:py-10">
+  <main class="min-h-screen overflow-x-hidden bg-[#FBF7F1] px-4 py-8 text-[#2A1520] min-[360px]:px-5 sm:px-8 sm:py-10">
     <section v-if="!profile && !profileLoaded" class="mx-auto max-w-5xl" aria-busy="true" aria-live="polite">
       <span class="sr-only">Loading profile</span>
       <div class="grid animate-pulse gap-5 lg:grid-cols-[1.05fr_0.95fr]">
@@ -156,9 +156,9 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
     </section>
 
     <section v-else-if="profile" class="mx-auto max-w-5xl">
-      <div class="grid gap-5 lg:grid-cols-[1.05fr_0.95fr] lg:items-start">
-        <section v-if="activePhoto" aria-label="Profile photos" class="sm:hidden">
-          <button type="button" class="profile-photo relative block aspect-[4/3] w-full overflow-hidden rounded-lg"
+      <div class="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-5 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:items-start">
+        <section v-if="activePhoto" aria-label="Profile photos" class="min-w-0 max-w-full sm:hidden">
+          <button type="button" class="profile-photo relative block aspect-[4/3] w-full max-w-full overflow-hidden rounded-lg"
             :aria-label="`Expand ${activePhoto.alt || `${profile.name} profile photo`}`"
             @click="photoViewerOpen = true">
             <img :src="activePhoto.src" :alt="activePhoto.alt || `${profile.name} profile photo`"
@@ -168,7 +168,7 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
             </span>
             <span class="absolute left-3 top-3 rounded-full bg-[#2A1520]/75 px-2.5 py-1 text-xs font-semibold text-white">{{ activePhotoIndex + 1 }} / {{ galleryPhotos.length }}</span>
           </button>
-          <div v-if="galleryPhotos.length > 1" class="mt-2 flex gap-2 overflow-x-auto pb-1" aria-label="Choose a profile photo">
+          <div v-if="galleryPhotos.length > 1" class="mt-2 flex min-w-0 max-w-full gap-2 overflow-x-auto overscroll-x-contain pb-1" aria-label="Choose a profile photo">
             <button v-for="(photo, index) in galleryPhotos" :key="`${photo.src}-${photo.panel}-mobile`" type="button"
               class="profile-photo size-16 shrink-0 overflow-hidden rounded-lg border-2"
               :class="index === activePhotoIndex ? 'border-[#B4234A]' : 'border-transparent opacity-70'"
@@ -193,7 +193,7 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
           </div>
         </section>
 
-        <aside class="rounded-lg bg-white p-5 shadow-[0_12px_28px_rgba(180,35,74,0.08)] sm:p-6 lg:sticky lg:top-24">
+        <aside class="min-w-0 max-w-full rounded-lg bg-white p-4 shadow-[0_12px_28px_rgba(180,35,74,0.08)] min-[360px]:p-5 sm:p-6 lg:sticky lg:top-24">
           <p v-if="profile.isDemo"
             class="mb-3 inline-flex rounded-full bg-[#FFF1C7] px-3 py-1 text-xs font-bold text-[#694C00]">Demo profile
           </p>
@@ -214,7 +214,7 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
           <DailyInterestCounter class="mt-5" :count="todaysInterests.length" :limit="dailyInterestLimit" />
           <button type="button"
             :disabled="sending || profile.isMatched || (profile.relationshipStatus === 'unmatched' && !profile.secondChanceAvailable) || profile.interestSent || isTodaysChoice(profileSlug) || atMatchLimit || hasUsedDailyInterest"
-            class="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#8F1839] disabled:cursor-not-allowed disabled:bg-[#D7A7B3]"
+            class="mt-5 inline-flex w-full min-w-0 items-center justify-center gap-2 whitespace-normal break-words rounded-lg bg-[#B4234A] px-3 py-3 text-center text-sm font-semibold text-white transition hover:bg-[#8F1839] disabled:cursor-not-allowed disabled:bg-[#D7A7B3] min-[360px]:px-5"
             @click="showInterest(profileSlug, profile.name)">
             <HeartHandshake class="size-4" />{{ sending ? 'Sending…' : profile.isMatched ? `Already matched with ${profile.name}` : profile.interestSent || isTodaysChoice(profileSlug) ? 'Interest already sent' : profile.relationshipStatus === 'unmatched' && profile.secondChanceAvailable ? `Show interest in ${profile.name} again` : profile.relationshipStatus === 'unmatched' ? `Unmatched from ${profile.name}` :
               atMatchLimit ? `${activeMatchLimit}-match limit reached` :
@@ -338,10 +338,10 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
     </section>
 
     <Teleport to="body">
-      <div v-if="photoViewerOpen && activePhoto" class="fixed inset-0 z-50 flex items-center justify-center bg-[#160B10]/95 p-4"
+      <div v-if="photoViewerOpen && activePhoto" class="fixed inset-0 z-[100] flex items-center justify-center bg-[#160B10]/95 p-4"
         role="dialog" aria-modal="true" aria-label="Expanded profile photo" @click.self="photoViewerOpen = false">
-        <button type="button" class="absolute right-4 top-4 rounded-full bg-white/15 p-3 text-white"
-          aria-label="Close expanded photo" @click="photoViewerOpen = false"><X class="size-6" /></button>
+        <button type="button" class="absolute left-4 top-[max(1rem,env(safe-area-inset-top))] rounded-full bg-white/20 p-3 text-white"
+          aria-label="Close expanded photo" @click.stop="photoViewerOpen = false"><X class="size-6" /></button>
         <button v-if="galleryPhotos.length > 1" type="button" class="absolute left-3 rounded-full bg-white/15 p-3 text-white"
           aria-label="Previous photo" @click="changePhoto(-1)"><ChevronLeft class="size-7" /></button>
         <div class="profile-photo h-[78vh] w-[calc(100vw-2rem)] max-w-3xl overflow-hidden rounded-lg bg-black">
