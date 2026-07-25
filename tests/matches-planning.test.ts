@@ -65,6 +65,7 @@ describe('matches and date planning dashboard', () => {
     expect(read('pages/matches/index.vue')).toContain('Yes, remove match')
     const remove = read('server/api/matches/[id].delete.ts')
     expect(remove).toContain("set status='unmatched'")
+    expect(remove).toContain('delete from date_proposals where match_id=$1')
     expect(remove).toContain("'match_ended'")
   })
 })

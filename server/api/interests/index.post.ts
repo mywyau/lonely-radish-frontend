@@ -64,6 +64,9 @@ export default defineEventHandler(async (event) => {
       const created = await client.query(`insert into matches(user_one_id,user_two_id) values($1,$2)
         on conflict(user_one_id,user_two_id) do update set status='active',matched_at=now(),
           ended_by=null,ended_reason=null,ended_at=null returning id`, [one,two])
+      if (endedMatch.rows[0]) {
+        await client.query('delete from date_proposals where match_id=$1', [created.rows[0].id])
+      }
       await client.query(`insert into notifications(recipient_id,actor_id,match_id,kind) values
         ($1,$2,$3,'new_match'),($2,$1,$3,'new_match')`, [sub,recipientId,created.rows[0].id])
       matched = true

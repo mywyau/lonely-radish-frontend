@@ -30,6 +30,9 @@ export default defineEventHandler(async (event) => {
       ? await client.query(`update matches set status='active',matched_at=now(),ended_by=null,ended_reason=null,ended_at=null
           where id=$1 returning id`, [existing.rows[0].id])
       : await client.query(`insert into matches(user_one_id,user_two_id) values($1,$2) returning id`, pair)
+    if (existing.rows[0]?.status === 'unmatched') {
+      await client.query('delete from date_proposals where match_id=$1', [match.rows[0].id])
+    }
     await client.query(`insert into notifications(recipient_id,actor_id,match_id,kind) values
       ($1,$2,$3,'new_match'),($2,$1,$3,'new_match')`, [sub,senderId,match.rows[0].id])
     await client.query('commit')

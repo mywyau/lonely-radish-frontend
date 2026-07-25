@@ -13,6 +13,7 @@ export default defineEventHandler(async (event) => {
       returning id,case when user_one_id=$2 then user_two_id else user_one_id end as "recipientId"`, [id,sub])
     const match = rows[0]
     if (!match) throw createError({ statusCode: 404, statusMessage: 'Active match not found' })
+    await client.query('delete from date_proposals where match_id=$1', [id])
     await client.query(`insert into notifications(recipient_id,actor_id,match_id,kind)
       values($1,$2,$3,'match_ended')`, [match.recipientId,sub,id])
     await client.query('commit')
