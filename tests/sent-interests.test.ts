@@ -9,7 +9,7 @@ describe('sent interest feedback and history', () => {
     const composable = read('composables/useDailyInterest.ts')
     expect(composable).toContain('Interest sent to ${profileName}')
     expect(composable).toContain("const sending = useState<boolean>")
-    expect(read('pages/activities/[slug].vue')).toContain('View sent interests')
+    expect(read('pages/profiles/[slug].vue')).toContain('View sent interests')
   })
 
   it('lists persisted interests and match outcomes', () => {

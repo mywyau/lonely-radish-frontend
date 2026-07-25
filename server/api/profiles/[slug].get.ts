@@ -13,11 +13,16 @@ export default defineEventHandler(async (event) => {
     p.height_cm as "heightCm",p.drinking,p.smoking,p.daily_rhythm as "dailyRhythm",
     relationship.id as "matchId",relationship.status as "relationshipStatus",
     relationship.status='active' as "isMatched",relationship.ended_by=$2 as "endedByMe",
-    exists(select 1 from match_apology_notes man where man.match_id=relationship.id and man.sender_id=$2) as "apologySent",
-    exists(select 1 from daily_interests di where di.sender_id=$2 and di.recipient_id=p.user_id) as "interestSent"
+    exists(select 1 from match_apology_notes man where man.match_id=relationship.id and man.sender_id=$2
+      and man.created_at>relationship.ended_at) as "apologySent",
+    exists(select 1 from match_apology_notes man where man.match_id=relationship.id) as "secondChanceUsed",
+    exists(select 1 from match_apology_notes man where man.match_id=relationship.id
+      and man.sender_id=relationship.ended_by and man.created_at>relationship.ended_at) as "secondChanceAvailable",
+    exists(select 1 from daily_interests di where di.sender_id=$2 and di.recipient_id=p.user_id
+      and (relationship.status is distinct from 'unmatched' or di.created_at>relationship.ended_at)) as "interestSent"
     ,coalesce(mp.availability_visible_before_match,false) as "availabilityVisibleBeforeMatch"
     from profiles p join users u on u.id=p.user_id left join match_preferences mp on mp.user_id=p.user_id
-    left join lateral (select m.id,m.status,m.ended_by from matches m where
+    left join lateral (select m.id,m.status,m.ended_by,m.ended_at from matches m where
       (m.user_one_id=$2 and m.user_two_id=p.user_id) or (m.user_two_id=$2 and m.user_one_id=p.user_id)
       order by coalesce(m.ended_at,m.matched_at) desc limit 1) relationship on true
     where p.slug=$1 and p.visibility='active' and (u.account_status='active' or

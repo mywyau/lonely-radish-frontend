@@ -88,7 +88,8 @@ async function sendApology() {
   apologySending.value = true; apologyError.value = ''
   try {
     await $fetch(`/api/matches/${profile.value.matchId}/apology`, { method: 'POST', body: { message: apologyMessage.value } })
-    profile.value.apologySent = true
+    if (databaseProfile.value) Object.assign(databaseProfile.value, { apologySent: true, secondChanceAvailable: true })
+    else Object.assign(profiles[profileSlug.value], { apologySent: true, secondChanceAvailable: true })
     apologyMessage.value = ''
   } catch (error: any) { apologyError.value = error?.data?.statusMessage || 'Your apology could not be sent.' }
   finally { apologySending.value = false }
@@ -164,11 +165,11 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
           </div>
           <DailyInterestCounter class="mt-5" :count="todaysInterests.length" :limit="dailyInterestLimit" />
           <button type="button"
-            :disabled="sending || profile.isMatched || profile.relationshipStatus === 'unmatched' || profile.interestSent || atMatchLimit || hasUsedDailyInterest"
+            :disabled="sending || profile.isMatched || (profile.relationshipStatus === 'unmatched' && !profile.secondChanceAvailable) || profile.interestSent || isTodaysChoice(profileSlug) || atMatchLimit || hasUsedDailyInterest"
             class="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#8F1839] disabled:cursor-not-allowed disabled:bg-[#D7A7B3]"
             @click="showInterest(profileSlug, profile.name)">
-            <HeartHandshake class="size-4" />{{ sending ? 'Sending…' : profile.isMatched ? `Already matched with ${profile.name}` : profile.relationshipStatus === 'unmatched' ? `Unmatched from ${profile.name}` :
-              profile.interestSent ? 'Interest already sent' : atMatchLimit ? `${activeMatchLimit}-match limit reached` :
+            <HeartHandshake class="size-4" />{{ sending ? 'Sending…' : profile.isMatched ? `Already matched with ${profile.name}` : profile.interestSent || isTodaysChoice(profileSlug) ? 'Interest already sent' : profile.relationshipStatus === 'unmatched' && profile.secondChanceAvailable ? `Show interest in ${profile.name} again` : profile.relationshipStatus === 'unmatched' ? `Unmatched from ${profile.name}` :
+              atMatchLimit ? `${activeMatchLimit}-match limit reached` :
                 isTodaysChoice(profileSlug) ? `Interest sent to ${profile.name}` : 'Show interest' }}
           </button>
           <p v-if="profile.isMatched" class="mt-3 rounded-lg bg-[#EAF2DE] p-3 text-xs leading-5 text-[#4D2F39]"
@@ -176,7 +177,7 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
           <div v-else-if="profile.relationshipStatus === 'unmatched'"
             class="mt-3 rounded-lg bg-[#F3E8DA] p-3 text-xs leading-5 text-[#4D2F39]" role="status">
             <p>You and {{ profile.name }} are no longer matched.</p>
-            <form v-if="profile.endedByMe && !profile.apologySent" class="mt-3" @submit.prevent="sendApology"><label
+            <form v-if="profile.endedByMe && !profile.apologySent && !profile.secondChanceUsed" class="mt-3" @submit.prevent="sendApology"><label
                 class="font-semibold">Send one private apology note<textarea v-model="apologyMessage" maxlength="500"
                   rows="3" class="mt-1 w-full rounded-lg border border-[#D8C8B6] bg-white p-3 font-normal"
                   placeholder="Keep it brief, respectful, and without pressure." /><span class="mt-1 block text-right font-normal text-[#6E4D58]">{{ apologyMessage.length }}/500</span></label><button type="submit"
@@ -186,7 +187,9 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
               <p v-if="apologyError" class="mt-2 font-semibold text-[#8F1839]" role="alert">{{ apologyError }}</p>
             </form>
             <p v-else-if="profile.apologySent" class="mt-2 font-semibold text-[#6E8B52]">Your apology note has been
-              sent.</p>
+              sent. You can now show interest again, without putting them under pressure.</p>
+            <p v-else-if="profile.secondChanceAvailable" class="mt-2 font-semibold text-[#6E8B52]">A second chance is available. Either of you can send fresh interest; the other person still chooses whether to accept.</p>
+            <p v-else-if="profile.secondChanceUsed" class="mt-2 font-semibold text-[#6E4D58]">The one-time second chance for this connection has already been used.</p>
           </div>
           <p v-else-if="profile.interestSent" class="mt-3 rounded-lg bg-[#F3E8DA] p-3 text-xs leading-5 text-[#4D2F39]"
             role="status">You have already shown interest in {{ profile.name }}. You cannot send it again.</p>

@@ -28,4 +28,18 @@ describe('past connections', () => {
     expect(page).toContain('Load more past connections')
     expect(read('pages/matches/index.vue')).toContain("localStorage.setItem('lonely-radish-preview-rejected-match'")
   })
+
+  it('allows one apology-led second chance through fresh interest', () => {
+    const profileApi = read('server/api/profiles/[slug].get.ts')
+    const interestApi = read('server/api/interests/index.post.ts')
+    const acceptApi = read('server/api/interests/[id]/accept.post.ts')
+    const profilePage = read('pages/profiles/[slug].vue')
+    expect(profileApi).toContain('"secondChanceAvailable"')
+    expect(profileApi).toContain('man.created_at>relationship.ended_at')
+    expect(interestApi).toContain('Send an apology before asking for a second chance')
+    expect(interestApi).toContain("set status='active',matched_at=now()")
+    expect(acceptApi).toContain("set status='active',matched_at=now()")
+    expect(profilePage).toContain('Show interest in ${profile.name} again')
+    expect(profilePage).toContain('the other person still chooses whether to accept')
+  })
 })

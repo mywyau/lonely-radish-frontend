@@ -11,7 +11,12 @@ export default defineEventHandler(async (event) => {
     const incoming = await client.query(`select di.sender_id,p.slug,p.display_name from daily_interests di
       join profiles p on p.user_id=di.sender_id join users u on u.id=di.sender_id
       where di.id=$1 and di.recipient_id=$2 and p.visibility='active' and (u.account_status='active' or
-        (u.account_status='paused' and u.paused_until is not null and u.paused_until<=now())) for update`, [id,sub])
+        (u.account_status='paused' and u.paused_until is not null and u.paused_until<=now()))
+      and not exists(select 1 from matches ended where ended.status='unmatched'
+        and ((ended.user_one_id=$2 and ended.user_two_id=di.sender_id) or (ended.user_two_id=$2 and ended.user_one_id=di.sender_id))
+        and (di.created_at<=ended.ended_at or not exists(select 1 from match_apology_notes man
+          where man.match_id=ended.id and man.sender_id=ended.ended_by
+            and man.created_at>ended.ended_at))) for update`, [id,sub])
     if (!incoming.rows[0]) throw createError({ statusCode: 404, statusMessage: 'Received interest not found' })
     const senderId = incoming.rows[0].sender_id
     const pair = [sub,senderId].sort()
@@ -19,10 +24,12 @@ export default defineEventHandler(async (event) => {
     const blocked = await client.query(`select 1 from blocks where
       (blocker_id=$1 and blocked_id=$2) or (blocker_id=$2 and blocked_id=$1) limit 1`, [sub,senderId])
     if (blocked.rows[0]) throw createError({ statusCode: 404, statusMessage: 'Received interest not found' })
-    const existing = await client.query(`select status from matches where user_one_id=$1 and user_two_id=$2`, pair)
+    const existing = await client.query(`select id,status from matches where user_one_id=$1 and user_two_id=$2`, pair)
     if (existing.rows[0]?.status === 'active') throw createError({ statusCode: 409, statusMessage: 'You are already matched' })
-    if (existing.rows[0]) throw createError({ statusCode: 409, statusMessage: 'This connection has already ended' })
-    const match = await client.query(`insert into matches(user_one_id,user_two_id) values($1,$2) returning id`, pair)
+    const match = existing.rows[0]
+      ? await client.query(`update matches set status='active',matched_at=now(),ended_by=null,ended_reason=null,ended_at=null
+          where id=$1 returning id`, [existing.rows[0].id])
+      : await client.query(`insert into matches(user_one_id,user_two_id) values($1,$2) returning id`, pair)
     await client.query(`insert into notifications(recipient_id,actor_id,match_id,kind) values
       ($1,$2,$3,'new_match'),($2,$1,$3,'new_match')`, [sub,senderId,match.rows[0].id])
     await client.query('commit')

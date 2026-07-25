@@ -28,12 +28,30 @@ export default defineEventHandler(async (event) => {
     const existingMatch = await client.query(`select 1 from matches where status='active' and
       ((user_one_id=$1 and user_two_id=$2) or (user_one_id=$2 and user_two_id=$1)) limit 1`, [sub,recipientId])
     if (existingMatch.rows[0]) throw createError({ statusCode: 409, statusMessage: 'You have already matched with this person' })
-    const existingInterest = await client.query(`select 1 from daily_interests
+    const endedMatch = await client.query(`select m.id,m.ended_by,m.ended_at,
+      exists(select 1 from match_apology_notes man where man.match_id=m.id and man.sender_id=m.ended_by
+        and man.created_at>m.ended_at) as "secondChanceAvailable"
+      from matches m where m.status='unmatched' and
+      ((m.user_one_id=$1 and m.user_two_id=$2) or (m.user_one_id=$2 and m.user_two_id=$1)) limit 1`, [sub,recipientId])
+    if (endedMatch.rows[0] && !endedMatch.rows[0].secondChanceAvailable) {
+      throw createError({ statusCode: 409, statusMessage: endedMatch.rows[0].ended_by === sub
+        ? 'Send an apology before asking for a second chance'
+        : 'This past connection is not open for a second chance yet' })
+    }
+    const existingInterest = await client.query(`select created_at from daily_interests
       where sender_id=$1 and recipient_id=$2 limit 1`, [sub,recipientId])
-    if (existingInterest.rows[0]) throw createError({ statusCode: 409, statusMessage: 'You have already sent interest to this person' })
+    if (existingInterest.rows[0] && (!endedMatch.rows[0] ||
+      new Date(existingInterest.rows[0].created_at) > new Date(endedMatch.rows[0].ended_at))) {
+      throw createError({ statusCode: 409, statusMessage: 'You have already sent interest to this person' })
+    }
     const allowance = await client.query(`select count(*)::int as count from daily_interests di join users u on u.id=di.sender_id
       where di.sender_id=$1 and di.sender_day=(now() at time zone coalesce(u.timezone,'UTC'))::date`, [sub])
     if ((allowance.rows[0]?.count || 0) >= 5) throw createError({ statusCode: 409, statusMessage: 'You have reached today’s limit of 5 interests' })
+    if (endedMatch.rows[0]) {
+      await client.query(`delete from daily_interests where
+        ((sender_id=$1 and recipient_id=$2) or (sender_id=$2 and recipient_id=$1))
+        and created_at<=$3`, [sub,recipientId,endedMatch.rows[0].ended_at])
+    }
     const inserted = await client.query(`insert into daily_interests(sender_id,recipient_id,sender_day)
       select $1,$2,(now() at time zone coalesce(timezone,'UTC'))::date from users where id=$1
       returning sender_day::text as date`, [sub,recipientId])
@@ -44,7 +62,8 @@ export default defineEventHandler(async (event) => {
     if (reverse.rows[0]) {
       const [one,two] = [sub,recipientId].sort()
       const created = await client.query(`insert into matches(user_one_id,user_two_id) values($1,$2)
-        on conflict(user_one_id,user_two_id) do update set status='active' returning id`, [one,two])
+        on conflict(user_one_id,user_two_id) do update set status='active',matched_at=now(),
+          ended_by=null,ended_reason=null,ended_at=null returning id`, [one,two])
       await client.query(`insert into notifications(recipient_id,actor_id,match_id,kind) values
         ($1,$2,$3,'new_match'),($2,$1,$3,'new_match')`, [sub,recipientId,created.rows[0].id])
       matched = true

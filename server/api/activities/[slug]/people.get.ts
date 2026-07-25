@@ -21,7 +21,6 @@ export default defineEventHandler(async (event) => {
     coalesce(p.location_label,p.postcode_area,p.neighbourhood) as place,p.bio as detail,
     photo.storage_key as "photoStorageKey",photo.public_url as "legacyPhotoUrl",shared."activityTags",
     ${discoveryDistanceSelect}
-    ,exists(select 1 from daily_interests di where di.sender_id=$2 and di.recipient_id=p.user_id) as "interestSent"
     from profiles p join users u on u.id=p.user_id
     ${viewerDiscoveryJoins}
     left join lateral (select storage_key,public_url from profile_photos where user_id=p.user_id order by position limit 1) photo on true
@@ -50,7 +49,7 @@ export default defineEventHandler(async (event) => {
     slug: person.slug, name: person.name, age: person.age,
     place: person.place || 'Location not shared',
     detail: person.detail || `Interested in ${category.name.toLowerCase()} activities.`,
-    activityTags: person.activityTags || [], reason: 'Selected interests', interestSent: person.interestSent === true, photoUrl: person.photoStorageKey
+    activityTags: person.activityTags || [], reason: 'Selected interests', photoUrl: person.photoStorageKey
       ? await signedPhotoUrl(person.photoStorageKey) : person.legacyPhotoUrl || null,
   })))
   const preferences = preferenceResult.rows[0] ?? { minimumAge: 18, maximumAge: 100, distance: 10, openToEveryone: true, genders: [], noRacePreference: true }

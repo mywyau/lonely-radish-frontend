@@ -15,7 +15,11 @@ export default defineEventHandler(async (event) => {
     photo.storage_key as "photoStorageKey",photo.public_url as "legacyPhotoUrl",
     proposal.id as "proposalId",proposal.activity_label as activity,
     coalesce(followup.can_reconsider,false) as "canReconsider",
-    exists(select 1 from match_apology_notes man where man.match_id=m.id and man.sender_id=$1) as "apologySent"
+    exists(select 1 from match_apology_notes man where man.match_id=m.id and man.sender_id=$1
+      and man.created_at>m.ended_at) as "apologySent",
+    exists(select 1 from match_apology_notes man where man.match_id=m.id) as "secondChanceUsed",
+    exists(select 1 from match_apology_notes man where man.match_id=m.id and man.recipient_id=$1
+      and man.created_at>m.ended_at) as "apologyReceived"
     from matches m join profiles p on p.user_id=case when m.user_one_id=$1 then m.user_two_id else m.user_one_id end
     left join lateral (select storage_key,public_url from profile_photos where user_id=p.user_id order by position limit 1) photo on true
     left join lateral (select dp.id,dp.activity_label from date_proposals dp where dp.match_id=m.id order by dp.created_at desc limit 1) proposal on true
@@ -27,7 +31,7 @@ export default defineEventHandler(async (event) => {
     order by coalesce(m.ended_at,m.matched_at) desc,m.id desc limit $4`, [sub,cursor?.sortAt || null,cursor?.tieBreaker || null,pageSize+1])
   const page = pageRows(rows, pageSize, row => ({ sortAt: row.sortAt, tieBreaker: row.id }))
   const connections = await Promise.all(page.items.map(async row => ({ ...row, sortAt: undefined,
-    canViewProfile: row.endedByMe === true || row.canReconsider === true,
+    canViewProfile: row.endedByMe === true || row.canReconsider === true || row.apologyReceived === true,
     photoStorageKey: undefined, legacyPhotoUrl: undefined,
     photoUrl: row.photoStorageKey ? await signedPhotoUrl(row.photoStorageKey) : row.legacyPhotoUrl || null,
   })))
