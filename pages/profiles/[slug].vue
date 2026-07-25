@@ -50,6 +50,7 @@ const apologyError = ref('')
 const activitiesFlipped = ref(false)
 const activePhotoIndex = ref(0)
 const photoViewerOpen = ref(false)
+const photoSwipeStartX = ref<number | null>(null)
 const profile = computed(() => {
   const resolvedProfile = databaseProfile.value || profiles[route.params.slug as keyof typeof profiles]
   if (!resolvedProfile || route.query.connection !== 'past') return resolvedProfile
@@ -106,6 +107,18 @@ function changePhoto(direction: -1 | 1) {
   const count = galleryPhotos.value.length
   if (!count) return
   activePhotoIndex.value = (activePhotoIndex.value + direction + count) % count
+}
+
+function startPhotoSwipe(event: TouchEvent) {
+  photoSwipeStartX.value = event.changedTouches[0]?.clientX ?? null
+}
+
+function endPhotoSwipe(event: TouchEvent) {
+  const startX = photoSwipeStartX.value
+  const endX = event.changedTouches[0]?.clientX
+  photoSwipeStartX.value = null
+  if (startX == null || endX == null || Math.abs(endX - startX) < 40) return
+  changePhoto(endX < startX ? 1 : -1)
 }
 
 function handleGalleryKeydown(event: KeyboardEvent) {
@@ -340,15 +353,16 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
     <Teleport to="body">
       <div v-if="photoViewerOpen && activePhoto" class="fixed inset-0 z-[100] flex items-center justify-center bg-[#160B10]/95 p-4"
         role="dialog" aria-modal="true" aria-label="Expanded profile photo" @click.self="photoViewerOpen = false">
-        <button type="button" class="absolute left-4 top-[max(1rem,env(safe-area-inset-top))] rounded-full bg-white/20 p-3 text-white"
+        <button type="button" class="absolute right-4 top-[max(1rem,env(safe-area-inset-top))] z-10 rounded-full bg-white/20 p-3 text-white"
           aria-label="Close expanded photo" @click.stop="photoViewerOpen = false"><X class="size-6" /></button>
-        <button v-if="galleryPhotos.length > 1" type="button" class="absolute left-3 rounded-full bg-white/15 p-3 text-white"
+        <button v-if="galleryPhotos.length > 1" type="button" class="absolute left-3 z-10 rounded-full bg-white/20 p-3 text-white"
           aria-label="Previous photo" @click="changePhoto(-1)"><ChevronLeft class="size-7" /></button>
-        <div class="profile-photo h-[78vh] w-[calc(100vw-2rem)] max-w-3xl overflow-hidden rounded-lg bg-black">
+        <div class="profile-photo h-[78vh] w-[calc(100vw-2rem)] max-w-3xl touch-pan-y overflow-hidden rounded-lg bg-black"
+          @touchstart.passive="startPhotoSwipe" @touchend.passive="endPhotoSwipe">
           <img :src="activePhoto.src" :alt="activePhoto.alt || `${profile.name} profile photo`"
             :class="activePhoto.panel ? ['triptych', `triptych-${activePhoto.panel}`] : 'h-full w-full object-contain'">
         </div>
-        <button v-if="galleryPhotos.length > 1" type="button" class="absolute right-3 rounded-full bg-white/15 p-3 text-white"
+        <button v-if="galleryPhotos.length > 1" type="button" class="absolute right-3 z-10 rounded-full bg-white/20 p-3 text-white"
           aria-label="Next photo" @click="changePhoto(1)"><ChevronRight class="size-7" /></button>
         <p class="absolute bottom-4 rounded-full bg-black/60 px-3 py-1.5 text-sm font-semibold text-white">{{ activePhotoIndex + 1 }} / {{ galleryPhotos.length }}</p>
       </div>
