@@ -57,100 +57,63 @@ onMounted(async () => {
     <section class="mx-auto max-w-5xl">
       <div class="rounded-lg bg-[#2A1520] p-6 text-white shadow-[0_14px_32px_rgba(42,21,32,0.16)] sm:p-8">
         <Sparkles class="size-6 text-[#F7B7C4]" aria-hidden="true" />
-        <h1 class="mt-2 text-3xl font-semibold sm:text-4xl">Meet people interested in {{ activityName.toLowerCase() }}.
-        </h1>
-        <p class="mt-3 max-w-2xl text-sm leading-6 text-white/75">People in this broader category may enjoy different
-          specific activities. Open a profile to see what each person selected.</p>
+        <h1 class="mt-2 text-3xl font-semibold sm:text-4xl">Meet people interested in {{ activityName.toLowerCase() }}.</h1>
+        <p class="mt-3 max-w-2xl text-sm leading-6 text-white/75">People in this broader category may enjoy different specific activities. Open a profile to see what each person selected.</p>
       </div>
 
-      <section v-if="appliedFilters"
-        class="mt-5 rounded-lg border border-[#E8D8C4] bg-white p-4 shadow-[0_8px_20px_rgba(180,35,74,0.05)]"
-        aria-label="Applied discovery filters">
+      <section v-if="appliedFilters" class="mt-5 rounded-lg border border-[#E8D8C4] bg-white p-4 shadow-[0_8px_20px_rgba(180,35,74,0.05)]" aria-label="Applied discovery filters">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div class="flex flex-wrap gap-2 text-xs font-semibold text-[#4D2F39]">
-            <span class="rounded-full bg-[#F3E8DA] px-3 py-2">Ages {{ appliedFilters.minimumAge }}–{{
-              appliedFilters.maximumAge }}</span>
+            <span class="rounded-full bg-[#F3E8DA] px-3 py-2">Ages {{ appliedFilters.minimumAge }}–{{ appliedFilters.maximumAge }}</span>
             <span class="rounded-full bg-[#EAF2DE] px-3 py-2">Within {{ appliedFilters.distance }} km</span>
             <span class="rounded-full bg-[#FCE3E8] px-3 py-2">{{ appliedFilters.genderLabel }}</span>
-            <span class="rounded-full bg-[#FFF1C7] px-3 py-2">{{ appliedFilters.racialPreferencesApplied ? 'Racial
-              preferences applied' : 'No racial preference' }}</span>
+            <span class="rounded-full bg-[#FFF1C7] px-3 py-2">{{ appliedFilters.racialPreferencesApplied ? 'Racial preferences applied' : 'No racial preference' }}</span>
           </div>
-          <NuxtLink to="/preferences" class="shrink-0 text-sm font-semibold text-[#8F1839] hover:underline">Adjust
-            filters</NuxtLink>
+          <NuxtLink to="/preferences" class="shrink-0 text-sm font-semibold text-[#8F1839] hover:underline">Adjust filters</NuxtLink>
         </div>
       </section>
 
-      <div v-if="!candidatesLoaded && !candidatesError"
-        class="mt-8 rounded-lg bg-white p-8 text-center text-sm text-[#6E4D58]" aria-live="polite">Loading matching
-        profiles…</div>
+      <div v-if="!candidatesLoaded && !candidatesError" class="mt-8 rounded-lg bg-white p-8 text-center text-sm text-[#6E4D58]" aria-live="polite">Loading matching profiles…</div>
 
       <div v-else-if="visiblePeople.length" class="mt-8">
         <div class="flex flex-wrap items-center justify-between gap-3">
-          <p class="inline-flex items-center gap-2 text-sm font-semibold text-[#6E4D58]">
-            <UsersRound class="size-4" />{{ visiblePeople.length }} {{ visiblePeople.length === 1 ? 'person' : 'people'
-            }}
-          </p>
-          <NuxtLink to="/preferences" class="text-sm font-semibold text-[#8F1839] hover:underline">Review match
-            preferences</NuxtLink>
+          <p class="inline-flex items-center gap-2 text-sm font-semibold text-[#6E4D58]"><UsersRound class="size-4" />{{ visiblePeople.length }} {{ visiblePeople.length === 1 ? 'person' : 'people' }}</p>
+          <NuxtLink to="/preferences" class="text-sm font-semibold text-[#8F1839] hover:underline">Review match preferences</NuxtLink>
         </div>
         <div class="mt-4 grid gap-4">
-          <article v-for="(person, index) in visiblePeople" :key="person.slug"
-            class="rounded-lg p-5 shadow-[0_10px_24px_rgba(180,35,74,0.08)] sm:p-6"
-            :class="person.tone || ['bg-[#FCE3E8]', 'bg-[#EAF2DE]', 'bg-[#F3E8DA]'][index % 3]">
+          <article v-for="(person, index) in visiblePeople" :key="person.slug" class="rounded-lg p-5 shadow-[0_10px_24px_rgba(180,35,74,0.08)] sm:p-6" :class="person.tone || ['bg-[#FCE3E8]','bg-[#EAF2DE]','bg-[#F3E8DA]'][index % 3]">
             <div class="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
               <div class="flex min-w-0 gap-3 sm:gap-4">
-                <img v-if="person.photoUrl" :src="person.photoUrl" :alt="`${person.name}'s profile photo`"
-                  class="size-12 shrink-0 rounded-full object-cover sm:size-14">
-                <div v-else
-                  class="flex size-12 shrink-0 items-center justify-center rounded-full bg-white/75 text-lg font-semibold text-[#B4234A] sm:size-14 sm:text-xl">
-                  {{ person.name.charAt(0) }}</div>
+                <img v-if="person.photoUrl" :src="person.photoUrl" :alt="`${person.name}'s profile photo`" class="size-12 shrink-0 rounded-full object-cover sm:size-14">
+                <div v-else class="flex size-12 shrink-0 items-center justify-center rounded-full bg-white/75 text-lg font-semibold text-[#B4234A] sm:size-14 sm:text-xl">{{ person.name.charAt(0) }}</div>
                 <div>
                   <h2 class="text-xl font-semibold">{{ person.name }}, {{ person.age }}</h2>
-                  <p class="mt-1 inline-flex items-center gap-1 text-sm text-[#6E4D58]">
-                    <MapPin class="size-3.5" />{{ person.place }}
-                  </p>
+                  <p class="mt-1 inline-flex items-center gap-1 text-sm text-[#6E4D58]"><MapPin class="size-3.5" />{{ person.place }}</p>
                   <p class="mt-3 text-sm leading-6 text-[#4D2F39]">{{ person.detail }}</p>
-                  <div v-if="person.activityTags?.length" class="mt-3 flex flex-wrap gap-1.5"
-                    :aria-label="`${person.name}'s selected interests in ${activityName}`"><span
-                      v-for="tag in person.activityTags" :key="tag"
-                      class="rounded-full bg-white/75 px-2.5 py-1 text-xs font-semibold text-[#8F1839]">{{ tag }}</span>
-                  </div>
+                  <div v-if="person.activityTags?.length" class="mt-3 flex flex-wrap gap-1.5" :aria-label="`${person.name}'s selected interests in ${activityName}`"><span v-for="tag in person.activityTags" :key="tag" class="rounded-full bg-white/75 px-2.5 py-1 text-xs font-semibold text-[#8F1839]">{{ tag }}</span></div>
                 </div>
               </div>
-              <div
-                class="flex shrink-0 flex-wrap gap-2 text-xs font-semibold text-[#4D2F39] sm:max-w-52 sm:justify-end">
-                <span class="inline-flex items-center gap-1 rounded-full bg-white/70 px-3 py-1.5">
-                  <ShieldCheck class="size-3.5" />{{ person.activityTags?.length }} selected
-                </span>
+              <div class="flex shrink-0 flex-wrap gap-2 text-xs font-semibold text-[#4D2F39] sm:max-w-52 sm:justify-end">
+                <span class="inline-flex items-center gap-1 rounded-full bg-white/70 px-3 py-1.5"><ShieldCheck class="size-3.5" />{{ person.activityTags?.length }} selected</span>
               </div>
             </div>
             <div class="mt-5 flex flex-wrap gap-2">
-              <NuxtLink :to="`/profiles/${person.slug}`"
-                class="inline-flex items-center rounded-lg bg-[#B4234A] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#8F1839]">
-                View profile</NuxtLink>
+              <NuxtLink :to="`/profiles/${person.slug}`" class="inline-flex items-center rounded-lg bg-[#B4234A] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#8F1839]">View profile</NuxtLink>
             </div>
           </article>
         </div>
-        <div v-if="hasMore" class="mt-6 text-center"><button type="button" :disabled="loadingMore"
-            class="rounded-lg bg-[#4D2F39] px-5 py-3 text-sm font-semibold text-white disabled:opacity-50"
-            @click="loadCandidates(true)">{{ loadingMore ? 'Loading…' : 'Load more people' }}</button></div>
-        <p v-if="candidatesError && databasePeople.length" class="mt-4 text-center text-sm font-semibold text-[#8F1839]"
-          role="alert">{{ candidatesError }}</p>
+        <div v-if="hasMore" class="mt-6 text-center"><button type="button" :disabled="loadingMore" class="rounded-lg bg-[#4D2F39] px-5 py-3 text-sm font-semibold text-white disabled:opacity-50" @click="loadCandidates(true)">{{ loadingMore ? 'Loading…' : 'Load more people' }}</button></div>
+        <p v-if="candidatesError && databasePeople.length" class="mt-4 text-center text-sm font-semibold text-[#8F1839]" role="alert">{{ candidatesError }}</p>
       </div>
 
       <div v-else class="mt-8 rounded-lg bg-white p-8 text-center shadow-[0_10px_24px_rgba(180,35,74,0.08)]">
         <UsersRound class="mx-auto size-8 text-[#B4234A]" />
         <h2 class="mt-4 text-xl font-semibold">No profiles match your filters yet</h2>
-        <p class="mt-2 text-sm leading-6 text-[#6E4D58]">Try adjusting your distance, age or dating preferences, or
-          check this category again later.</p>
-        <NuxtLink to="/preferences"
-          class="mt-5 inline-flex rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white">Adjust match
-          preferences</NuxtLink>
+        <p class="mt-2 text-sm leading-6 text-[#6E4D58]">Try adjusting your distance, age or dating preferences, or check this category again later.</p>
+        <NuxtLink to="/preferences" class="mt-5 inline-flex rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white">Adjust match preferences</NuxtLink>
       </div>
 
-      <NuxtLink to="/activities"
-        class="mt-8 inline-flex rounded-lg bg-[#F3E8DA] px-5 py-3 text-sm font-semibold text-[#8F1839] hover:bg-[#FCE3E8]">
-        ← Browse all categories</NuxtLink>
+      <NuxtLink to="/activities" class="mt-8 inline-flex rounded-lg bg-[#F3E8DA] px-5 py-3 text-sm font-semibold text-[#8F1839] hover:bg-[#FCE3E8]">← Browse all categories</NuxtLink>
     </section>
   </main>
 </template>
