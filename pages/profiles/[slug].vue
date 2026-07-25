@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { CalendarDays, HeartHandshake, Mail, MapPin, Phone, ShieldCheck, Sparkles, UserRound } from '@lucide/vue'
+import { CalendarDays, ChevronLeft, ChevronRight, Expand, HeartHandshake, Mail, MapPin, Phone, ShieldCheck, Sparkles, UserRound, X } from '@lucide/vue'
 
 definePageMeta({ middleware: 'logged-in' })
 
@@ -48,6 +48,8 @@ const apologyMessage = ref('')
 const apologySending = ref(false)
 const apologyError = ref('')
 const activitiesFlipped = ref(false)
+const activePhotoIndex = ref(0)
+const photoViewerOpen = ref(false)
 const profile = computed(() => {
   const resolvedProfile = databaseProfile.value || profiles[route.params.slug as keyof typeof profiles]
   if (!resolvedProfile || route.query.connection !== 'past') return resolvedProfile
@@ -72,6 +74,7 @@ const gallerySlots = computed(() => [
     src: '', panel: null, alt: '', empty: true, slot: galleryPhotos.value.length + index + 1,
   })),
 ])
+const activePhoto = computed(() => galleryPhotos.value[activePhotoIndex.value] || null)
 const profileInterests = computed(() => profile.value?.interests?.length ? profile.value.interests : profile.value?.interestCategories || [])
 const lifestyleLabels = computed(() => {
   if (!profile.value) return []
@@ -95,7 +98,25 @@ async function sendApology() {
   finally { apologySending.value = false }
 }
 
+function selectPhoto(index: number) {
+  activePhotoIndex.value = index
+}
+
+function changePhoto(direction: -1 | 1) {
+  const count = galleryPhotos.value.length
+  if (!count) return
+  activePhotoIndex.value = (activePhotoIndex.value + direction + count) % count
+}
+
+function handleGalleryKeydown(event: KeyboardEvent) {
+  if (!photoViewerOpen.value) return
+  if (event.key === 'Escape') photoViewerOpen.value = false
+  if (event.key === 'ArrowLeft') changePhoto(-1)
+  if (event.key === 'ArrowRight') changePhoto(1)
+}
+
 onMounted(async () => {
+  window.addEventListener('keydown', handleGalleryKeydown)
   await loadInterest()
   try {
     databaseProfile.value = await $fetch(`/api/profiles/${profileSlug.value}`)
@@ -110,6 +131,11 @@ onMounted(async () => {
   } finally {
     profileLoaded.value = true
   }
+})
+onBeforeUnmount(() => window.removeEventListener('keydown', handleGalleryKeydown))
+watch(profileSlug, () => {
+  activePhotoIndex.value = 0
+  photoViewerOpen.value = false
 })
 useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lonely Radish` : !profileLoaded.value ? 'Loading Profile · Lonely Radish' : 'Profile Not Found · Lonely Radish' }))
 </script>
@@ -131,7 +157,29 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
 
     <section v-else-if="profile" class="mx-auto max-w-5xl">
       <div class="grid gap-5 lg:grid-cols-[1.05fr_0.95fr] lg:items-start">
-        <section aria-label="Profile photos" class="grid grid-cols-2 gap-2 overflow-hidden rounded-lg sm:grid-cols-3">
+        <section v-if="activePhoto" aria-label="Profile photos" class="sm:hidden">
+          <button type="button" class="profile-photo relative block aspect-[4/3] w-full overflow-hidden rounded-lg"
+            :aria-label="`Expand ${activePhoto.alt || `${profile.name} profile photo`}`"
+            @click="photoViewerOpen = true">
+            <img :src="activePhoto.src" :alt="activePhoto.alt || `${profile.name} profile photo`"
+              :class="activePhoto.panel ? ['triptych', `triptych-${activePhoto.panel}`] : 'h-full w-full object-cover'">
+            <span class="absolute bottom-3 right-3 inline-flex items-center gap-1.5 rounded-full bg-[#2A1520]/80 px-3 py-2 text-xs font-semibold text-white">
+              <Expand class="size-3.5" aria-hidden="true" />Tap to expand
+            </span>
+            <span class="absolute left-3 top-3 rounded-full bg-[#2A1520]/75 px-2.5 py-1 text-xs font-semibold text-white">{{ activePhotoIndex + 1 }} / {{ galleryPhotos.length }}</span>
+          </button>
+          <div v-if="galleryPhotos.length > 1" class="mt-2 flex gap-2 overflow-x-auto pb-1" aria-label="Choose a profile photo">
+            <button v-for="(photo, index) in galleryPhotos" :key="`${photo.src}-${photo.panel}-mobile`" type="button"
+              class="profile-photo size-16 shrink-0 overflow-hidden rounded-lg border-2"
+              :class="index === activePhotoIndex ? 'border-[#B4234A]' : 'border-transparent opacity-70'"
+              :aria-label="`View profile photo ${index + 1}`" :aria-pressed="index === activePhotoIndex"
+              @click="selectPhoto(index)">
+              <img :src="photo.src" alt="" :class="photo.panel ? ['triptych', `triptych-${photo.panel}`] : 'h-full w-full object-cover'">
+            </button>
+          </div>
+        </section>
+
+        <section aria-label="Profile photos" class="hidden grid-cols-3 gap-2 overflow-hidden rounded-lg sm:grid">
           <div v-for="(photo, index) in gallerySlots"
             :key="photo.empty ? `empty-${photo.slot}` : `${photo.src}-${photo.panel}`"
             class="profile-photo aspect-square"
@@ -288,6 +336,23 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
         class="mt-5 inline-flex rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white">
         Browse matches</NuxtLink>
     </section>
+
+    <Teleport to="body">
+      <div v-if="photoViewerOpen && activePhoto" class="fixed inset-0 z-50 flex items-center justify-center bg-[#160B10]/95 p-4"
+        role="dialog" aria-modal="true" aria-label="Expanded profile photo" @click.self="photoViewerOpen = false">
+        <button type="button" class="absolute right-4 top-4 rounded-full bg-white/15 p-3 text-white"
+          aria-label="Close expanded photo" @click="photoViewerOpen = false"><X class="size-6" /></button>
+        <button v-if="galleryPhotos.length > 1" type="button" class="absolute left-3 rounded-full bg-white/15 p-3 text-white"
+          aria-label="Previous photo" @click="changePhoto(-1)"><ChevronLeft class="size-7" /></button>
+        <div class="profile-photo h-[78vh] w-[calc(100vw-2rem)] max-w-3xl overflow-hidden rounded-lg bg-black">
+          <img :src="activePhoto.src" :alt="activePhoto.alt || `${profile.name} profile photo`"
+            :class="activePhoto.panel ? ['triptych', `triptych-${activePhoto.panel}`] : 'h-full w-full object-contain'">
+        </div>
+        <button v-if="galleryPhotos.length > 1" type="button" class="absolute right-3 rounded-full bg-white/15 p-3 text-white"
+          aria-label="Next photo" @click="changePhoto(1)"><ChevronRight class="size-7" /></button>
+        <p class="absolute bottom-4 rounded-full bg-black/60 px-3 py-1.5 text-sm font-semibold text-white">{{ activePhotoIndex + 1 }} / {{ galleryPhotos.length }}</p>
+      </div>
+    </Teleport>
   </main>
 </template>
 
