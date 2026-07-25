@@ -187,7 +187,7 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
               <p v-if="apologyError" class="mt-2 font-semibold text-[#8F1839]" role="alert">{{ apologyError }}</p>
             </form>
             <p v-else-if="profile.apologySent" class="mt-2 font-semibold text-[#6E8B52]">Your apology note has been
-              sent. You can now show interest again, without putting them under pressure.</p>
+              sent. You can now show interest again.</p>
             <p v-else-if="profile.secondChanceAvailable" class="mt-2 font-semibold text-[#6E8B52]">A second chance is available. Either of you can send fresh interest; the other person still chooses whether to accept.</p>
             <p v-else-if="profile.secondChanceUsed" class="mt-2 font-semibold text-[#6E4D58]">The one-time second chance for this connection has already been used.</p>
           </div>
