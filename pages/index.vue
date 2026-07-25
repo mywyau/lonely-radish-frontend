@@ -3,7 +3,6 @@ import {
   CalendarDays,
   CheckCircle2,
   HeartHandshake,
-  MapPin,
   MessageCircle,
   ShieldCheck,
   Sparkles,
@@ -68,7 +67,6 @@ const featuredMatches = [
     name: 'Maya',
     age: 31,
     photo: '/images/maya-profile-triptych.png',
-    distance: '2 km away',
     detail: 'Gallery walks, Sunday markets, low-key gigs',
     time: 'Free Thu evening',
     tone: 'bg-[#F3E8DA]',
@@ -77,7 +75,6 @@ const featuredMatches = [
     name: 'Theo',
     age: 32,
     photo: '/images/theo-profile-triptych.png',
-    distance: '2 km away',
     detail: 'Bookshops, live jazz, evening walks',
     time: 'Free Sat morning',
     tone: 'bg-[#EAF2DE]',
@@ -86,7 +83,6 @@ const featuredMatches = [
     name: 'Nina',
     age: 29,
     photo: '/images/nina-profile-triptych.png',
-    distance: '3 km away',
     detail: 'Indie films, city walks, casual food spots',
     time: 'Free after work',
     tone: 'bg-[#F7D4DC]',
@@ -244,15 +240,9 @@ onBeforeUnmount(() => {
         >
           <div class="match-photo"><img :src="match.photo" :alt="`${match.name} profile example`"></div>
           <div class="min-w-0 flex-1">
-            <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
-              <h3 class="text-lg font-semibold">
-                {{ match.name }}, {{ match.age }}
-              </h3>
-              <span class="inline-flex items-center gap-1 text-xs font-medium text-[#6E4D58]">
-                <MapPin class="size-3.5" aria-hidden="true" />
-                {{ match.distance }}
-              </span>
-            </div>
+            <h3 class="text-lg font-semibold">
+              {{ match.name }}, {{ match.age }}
+            </h3>
             <p class="mt-1 text-sm text-[#6E4D58]">
               {{ match.detail }}
             </p>

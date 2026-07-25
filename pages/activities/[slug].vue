@@ -88,9 +88,12 @@ onMounted(async () => {
               <img v-if="person.photoUrl" :src="person.photoUrl" :alt="`${person.name}'s profile photo`" class="size-20 shrink-0 rounded-lg object-cover sm:size-24">
               <div v-else class="flex size-20 shrink-0 items-center justify-center rounded-lg bg-white/75 text-2xl font-semibold text-[#B4234A] sm:size-24 sm:text-3xl">{{ person.name.charAt(0) }}</div>
               <div class="min-w-0">
-                <h2 class="text-xl font-semibold group-hover:text-[#8F1839]">{{ person.name }}, {{ person.age }}</h2>
-                <p class="mt-1 inline-flex items-center gap-1 text-sm text-[#6E4D58]"><MapPin class="size-3.5" />{{ person.place }}</p>
-                <p class="mt-3 line-clamp-2 text-sm leading-6 text-[#4D2F39]">{{ person.detail }}</p>
+                <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                  <h2 class="text-xl font-semibold group-hover:text-[#8F1839]">{{ person.name }}, {{ person.age }}</h2>
+                  <span class="hidden items-center gap-1 text-xs font-semibold text-[#6E4D58] sm:inline-flex"><MapPin class="size-3.5" />{{ person.place }}</span>
+                </div>
+                <p class="mt-1 inline-flex items-center gap-1 text-sm text-[#6E4D58] sm:hidden"><MapPin class="size-3.5" />{{ person.place }}</p>
+                <p v-if="person.activityTags?.length" class="mt-3 line-clamp-2 text-sm leading-6 text-[#4D2F39]">{{ person.activityTags.slice(0, 3).join(', ') }}</p>
               </div>
             </div>
           </NuxtLink>

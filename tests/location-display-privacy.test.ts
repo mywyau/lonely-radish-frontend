@@ -12,7 +12,8 @@ describe('approximate public locations', () => {
     expect(read('server/api/profiles/[slug].get.ts')).toContain('coalesce(p.location_label,p.postcode_area,p.neighbourhood) as place')
   })
 
-  it('does not render per-person distance on discovery or profile pages', () => {
+  it('shows rough location rather than per-person distance', () => {
+    expect(read('pages/activities/[slug].vue')).toContain('person.place')
     expect(read('pages/activities/[slug].vue')).not.toContain('person.distance')
     expect(read('pages/profiles/[slug].vue')).not.toContain('profile.distance')
   })

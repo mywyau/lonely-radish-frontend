@@ -3,7 +3,7 @@ import { db } from '~/server/repositories/db'
 import { requireUser } from '~/server/utils/requireUser'
 import { signedPhotoUrl } from '~/server/utils/supabaseStorage'
 import { discoveryCategory } from '~/utils/activityDiscovery'
-import { discoveryDistanceSelect, viewerDiscoveryJoins, viewerDiscoveryWhere } from '~/server/utils/discoveryFilters'
+import { viewerDiscoveryJoins, viewerDiscoveryWhere } from '~/server/utils/discoveryFilters'
 import { decodeCursor, pageRows } from '~/server/utils/cursorPagination'
 
 export default defineEventHandler(async (event) => {
@@ -19,8 +19,7 @@ export default defineEventHandler(async (event) => {
     db.query(`select p.slug,p.display_name as name,p.updated_at::text as "sortAt",
     extract(year from age(current_date,p.date_of_birth))::int as age,
     coalesce(p.location_label,p.postcode_area,p.neighbourhood) as place,p.bio as detail,
-    photo.storage_key as "photoStorageKey",photo.public_url as "legacyPhotoUrl",shared."activityTags",
-    ${discoveryDistanceSelect}
+    photo.storage_key as "photoStorageKey",photo.public_url as "legacyPhotoUrl",shared."activityTags"
     from profiles p join users u on u.id=p.user_id
     ${viewerDiscoveryJoins}
     left join lateral (select storage_key,public_url from profile_photos where user_id=p.user_id order by position limit 1) photo on true
@@ -48,8 +47,7 @@ export default defineEventHandler(async (event) => {
   const people = await Promise.all(page.items.map(async person => ({
     slug: person.slug, name: person.name, age: person.age,
     place: person.place || 'Location not shared',
-    detail: person.detail || `Interested in ${category.name.toLowerCase()} activities.`,
-    activityTags: person.activityTags || [], reason: 'Selected interests', photoUrl: person.photoStorageKey
+    activityTags: (person.activityTags || []).slice(0, 3), photoUrl: person.photoStorageKey
       ? await signedPhotoUrl(person.photoStorageKey) : person.legacyPhotoUrl || null,
   })))
   const preferences = preferenceResult.rows[0] ?? { minimumAge: 18, maximumAge: 100, distance: 10, openToEveryone: true, genders: [], noRacePreference: true }
