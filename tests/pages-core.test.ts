@@ -94,7 +94,7 @@ describe("core page contracts", () => {
     expect(profile).toContain(".profile-flip-card:hover");
     expect(profile).toContain("useDailyInterest()");
     expect(activityMatches).not.toContain("useDailyInterest()");
-    expect(activityMatches).toContain("View profile");
+    expect(activityMatches).toContain(':to="`/profiles/${person.slug}`"');
     expect(matches).toContain("title: 'Matches & Plans · Lonely Radish'");
     expect(matches).toContain("Make plans and take the next step.");
     expect(matches).toContain("title: 'New matches'");

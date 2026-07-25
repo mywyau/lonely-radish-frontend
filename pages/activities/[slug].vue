@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { MapPin, ShieldCheck, Sparkles, UsersRound } from '@lucide/vue'
+import { MapPin, Sparkles, UsersRound } from '@lucide/vue'
 import { discoveryCategory } from '~/utils/activityDiscovery'
 
 definePageMeta({ middleware: 'logged-in' })
@@ -65,7 +65,6 @@ onMounted(async () => {
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div class="flex flex-wrap gap-2 text-xs font-semibold text-[#4D2F39]">
             <span class="rounded-full bg-[#F3E8DA] px-3 py-2">Ages {{ appliedFilters.minimumAge }}–{{ appliedFilters.maximumAge }}</span>
-            <span class="rounded-full bg-[#EAF2DE] px-3 py-2">Within {{ appliedFilters.distance }} km</span>
             <span class="rounded-full bg-[#FCE3E8] px-3 py-2">{{ appliedFilters.genderLabel }}</span>
             <span class="rounded-full bg-[#FFF1C7] px-3 py-2">{{ appliedFilters.racialPreferencesApplied ? 'Racial preferences applied' : 'No racial preference' }}</span>
           </div>
@@ -81,26 +80,20 @@ onMounted(async () => {
           <NuxtLink to="/preferences" class="text-sm font-semibold text-[#8F1839] hover:underline">Review match preferences</NuxtLink>
         </div>
         <div class="mt-4 grid gap-4">
-          <article v-for="(person, index) in visiblePeople" :key="person.slug" class="rounded-lg p-5 shadow-[0_10px_24px_rgba(180,35,74,0.08)] sm:p-6" :class="person.tone || ['bg-[#FCE3E8]','bg-[#EAF2DE]','bg-[#F3E8DA]'][index % 3]">
-            <div class="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
-              <div class="flex min-w-0 gap-3 sm:gap-4">
-                <img v-if="person.photoUrl" :src="person.photoUrl" :alt="`${person.name}'s profile photo`" class="size-12 shrink-0 rounded-full object-cover sm:size-14">
-                <div v-else class="flex size-12 shrink-0 items-center justify-center rounded-full bg-white/75 text-lg font-semibold text-[#B4234A] sm:size-14 sm:text-xl">{{ person.name.charAt(0) }}</div>
-                <div>
-                  <h2 class="text-xl font-semibold">{{ person.name }}, {{ person.age }}</h2>
-                  <p class="mt-1 inline-flex items-center gap-1 text-sm text-[#6E4D58]"><MapPin class="size-3.5" />{{ person.place }}</p>
-                  <p class="mt-3 text-sm leading-6 text-[#4D2F39]">{{ person.detail }}</p>
-                  <div v-if="person.activityTags?.length" class="mt-3 flex flex-wrap gap-1.5" :aria-label="`${person.name}'s selected interests in ${activityName}`"><span v-for="tag in person.activityTags" :key="tag" class="rounded-full bg-white/75 px-2.5 py-1 text-xs font-semibold text-[#8F1839]">{{ tag }}</span></div>
-                </div>
-              </div>
-              <div class="flex shrink-0 flex-wrap gap-2 text-xs font-semibold text-[#4D2F39] sm:max-w-52 sm:justify-end">
-                <span class="inline-flex items-center gap-1 rounded-full bg-white/70 px-3 py-1.5"><ShieldCheck class="size-3.5" />{{ person.activityTags?.length }} selected</span>
+          <NuxtLink v-for="(person, index) in visiblePeople" :key="person.slug" :to="`/profiles/${person.slug}`"
+            class="group block rounded-lg p-5 shadow-[0_10px_24px_rgba(180,35,74,0.08)] transition hover:-translate-y-0.5 hover:shadow-[0_14px_30px_rgba(180,35,74,0.14)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#B4234A] sm:p-6"
+            :class="person.tone || ['bg-[#FCE3E8]','bg-[#EAF2DE]','bg-[#F3E8DA]'][index % 3]"
+            :aria-label="`View ${person.name}'s profile`">
+            <div class="flex min-w-0 gap-4">
+              <img v-if="person.photoUrl" :src="person.photoUrl" :alt="`${person.name}'s profile photo`" class="size-20 shrink-0 rounded-lg object-cover sm:size-24">
+              <div v-else class="flex size-20 shrink-0 items-center justify-center rounded-lg bg-white/75 text-2xl font-semibold text-[#B4234A] sm:size-24 sm:text-3xl">{{ person.name.charAt(0) }}</div>
+              <div class="min-w-0">
+                <h2 class="text-xl font-semibold group-hover:text-[#8F1839]">{{ person.name }}, {{ person.age }}</h2>
+                <p class="mt-1 inline-flex items-center gap-1 text-sm text-[#6E4D58]"><MapPin class="size-3.5" />{{ person.place }}</p>
+                <p class="mt-3 line-clamp-2 text-sm leading-6 text-[#4D2F39]">{{ person.detail }}</p>
               </div>
             </div>
-            <div class="mt-5 flex flex-wrap gap-2">
-              <NuxtLink :to="`/profiles/${person.slug}`" class="inline-flex items-center rounded-lg bg-[#B4234A] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#8F1839]">View profile</NuxtLink>
-            </div>
-          </article>
+          </NuxtLink>
         </div>
         <div v-if="hasMore" class="mt-6 text-center"><button type="button" :disabled="loadingMore" class="rounded-lg bg-[#4D2F39] px-5 py-3 text-sm font-semibold text-white disabled:opacity-50" @click="loadCandidates(true)">{{ loadingMore ? 'Loading…' : 'Load more people' }}</button></div>
         <p v-if="candidatesError && databasePeople.length" class="mt-4 text-center text-sm font-semibold text-[#8F1839]" role="alert">{{ candidatesError }}</p>
