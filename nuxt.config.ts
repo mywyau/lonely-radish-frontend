@@ -32,7 +32,13 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     auth0ClientSecret: process.env.AUTH0_CLIENT_SECRET,
-    authSessionSecret: process.env.AUTH_SESSION_SECRET || process.env.AUTH0_CLIENT_SECRET,
+    authSessionSecret:
+      process.env.AUTH_SESSION_SECRET || process.env.AUTH0_CLIENT_SECRET,
+    offerClaimSecret:
+      process.env.OFFER_CLAIM_SECRET ||
+      (process.env.NODE_ENV !== "production"
+        ? process.env.AUTH_SESSION_SECRET || process.env.AUTH0_CLIENT_SECRET
+        : undefined),
     qstashUrl: process.env.QSTASH_URL,
     qstashCurrentSigningKey: process.env.QSTASH_CURRENT_SIGNING_KEY,
     qstashNextSigningKey: process.env.QSTASH_NEXT_SIGNING_KEY,
@@ -44,7 +50,8 @@ export default defineNuxtConfig({
       auth0ClientId: process.env.AUTH0_CLIENT_ID,
       auth0Audience: process.env.AUTH0_AUDIENCE,
       siteUrl: process.env.SITE_URL || "http://localhost:3000",
-      supabaseUrl: process.env.NUXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL,
+      supabaseUrl:
+        process.env.NUXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL,
       supabasePublishableKey: process.env.NUXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
     },
   },

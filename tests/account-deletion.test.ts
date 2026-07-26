@@ -1,43 +1,46 @@
-import { readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
-import { describe, expect, it } from 'vitest'
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { describe, expect, it } from "vitest";
 
-const read = (path: string) => readFileSync(resolve(process.cwd(), path), 'utf8')
+const read = (path: string) =>
+  readFileSync(resolve(process.cwd(), path), "utf8");
 
-describe('account deletion', () => {
-  it('requires typed confirmation and queues the authenticated account', () => {
-    const page = read('pages/account/v2/index.vue')
-    expect(page).toContain("$fetch('/api/account/v2', { method: 'DELETE'")
-    expect(page).toContain('Continue to final confirmation')
-    expect(page).toContain('Delete your account permanently?')
-    expect(page).toContain('Yes, permanently delete')
-    expect(page).toContain('role="dialog"')
-    expect(page).toContain("window.location.assign('/api/auth/logout')")
-    const endpoint = read('server/api/account/v2/index.delete.ts')
-    expect(endpoint).toContain('Confirmation text did not match')
-    expect(endpoint).toContain('account_deletion_jobs')
-    expect(endpoint).toContain('useAuthSession')
-    expect(endpoint).toContain('.clear()')
-  })
+describe("account deletion", () => {
+  it("requires typed confirmation and queues the authenticated account", () => {
+    const page = read("pages/account/v2/index.vue");
+    expect(page).toContain("$fetch('/api/account/v2', { method: 'DELETE'");
+    expect(page).toContain("Continue to final confirmation");
+    expect(page).toContain("Delete your account permanently?");
+    expect(page).toContain("Yes, permanently delete");
+    expect(page).toContain('role="dialog"');
+    expect(page).toContain("window.location.assign('/api/auth/logout')");
+    const endpoint = read("server/api/account/v2/index.delete.ts");
+    expect(endpoint).toContain("Confirmation text did not match");
+    expect(endpoint).toContain("account_deletion_jobs");
+    expect(endpoint).toContain("useAuthSession");
+    expect(endpoint).toContain(".clear()");
+  });
 
-  it('removes external services, stored photos, and cascading database data', () => {
-    const worker = read('server/api/account/v2/worker-delete.post.ts')
-    expect(worker).toContain('deleteAuth0User')
-    expect(worker).toContain('stripe.subscriptions.cancel')
-    const local = read('server/utils/deleteUserData.ts')
-    expect(local).toContain('PROFILE_PHOTO_BUCKET')
-    expect(local).toContain('DELETE FROM users WHERE id = $1')
-    expect(local).toContain('DELETE FROM businesses')
-    expect(worker).toContain('business_subscriptions')
-  })
+  it("removes external services, stored photos, and cascading database data", () => {
+    const worker = read("server/api/account/v2/worker-delete.post.ts");
+    expect(worker).toContain("deleteAuth0User");
+    expect(worker).toContain("stripe.subscriptions.cancel");
+    const local = read("server/utils/deleteUserData.ts");
+    expect(local).toContain("PROFILE_PHOTO_BUCKET");
+    expect(local).toContain("DELETE FROM users WHERE id = $1");
+    expect(local).toContain("DELETE FROM businesses");
+    expect(worker).toContain("business_subscriptions");
+  });
 
-  it('offers deletion from the isolated business account area', () => {
-    const page = read('pages/business/account.vue')
-    expect(page).toContain("method: 'DELETE'")
-    expect(page).toContain("'/api/account/v2'")
-    expect(page).toContain("window.location.assign('/api/auth/logout')")
-    expect(page).not.toContain("navigateTo('/account/deleting')")
-    expect(page).toContain('Any active subscription will be cancelled')
-    expect(read('components/BusinessNavBar.vue')).toContain("to:'/business/account'")
-  })
-})
+  it("offers deletion from the isolated business account area", () => {
+    const page = read("pages/business/account.vue");
+    expect(page).toContain("method: 'DELETE'");
+    expect(page).toContain("'/api/account/v2'");
+    expect(page).toContain("window.location.assign('/api/auth/logout')");
+    expect(page).not.toContain("navigateTo('/account/deleting')");
+    expect(page).toContain("Any active subscription will be cancelled");
+    expect(read("components/BusinessNavBar.vue")).toMatch(
+      /to:\s*['"]\/business\/account['"]/,
+    );
+  });
+});
