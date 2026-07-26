@@ -47,11 +47,16 @@ export default defineEventHandler(async (event) => {
       `select c.id,c.status,
       c.expires_at as "expiresAt",c.offer_title as "offerTitle",c.discount_type as "discountType",
       c.discount_value::float as "discountValue",c.terms,c.business_name as "businessName",
-      c.venue_name as "venueName",o.active,o.approval_status as "approvalStatus",o.starts_at as "startsAt",
+      v.name as "venueName",o.active,o.approval_status as "approvalStatus",o.starts_at as "startsAt",
       o.ends_at as "endsAt",v.status as "venueStatus"
       from business_offer_claims c join business_offers o on o.id=c.offer_id
-      join business_venues v on v.id=o.venue_id and v.business_id=o.business_id
-      where c.code_digest=$1 and o.business_id=$2 and v.id=$3 and v.status='active'
+      join business_venues v on v.id=$3 and v.business_id=o.business_id and v.status='active'
+      where c.code_digest=$1 and o.business_id=$2 and (
+        o.venue_scope='all' or
+        (o.venue_scope='single' and o.venue_id=v.id) or
+        (o.venue_scope='selected' and exists(select 1 from business_offer_venues ov
+          where ov.offer_id=o.id and ov.venue_id=v.id))
+      )
       for update of c`,
       [parsed.codeDigest, business.id, venueId],
     );
@@ -84,9 +89,9 @@ export default defineEventHandler(async (event) => {
       });
     const redeemed = await client.query(
       `update business_offer_claims set status='redeemed',redeemed_at=now(),
-      redeemed_by_user_id=$2 where id=$1 and status='issued'
+      redeemed_by_user_id=$2,redeemed_venue_id=$3,venue_name=$4 where id=$1 and status='issued'
       returning id,redeemed_at as "redeemedAt"`,
-      [claim.id, business.userId],
+      [claim.id, business.userId, venueId, claim.venueName],
     );
     if (!redeemed.rows[0])
       throw createError({

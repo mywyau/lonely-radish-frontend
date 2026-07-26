@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { BadgePercent, Building2, CreditCard, LayoutDashboard, LogOut, ScanLine, UserRoundCog } from '@lucide/vue'
+import { BadgePercent, Building2, CreditCard, LayoutDashboard, LogOut, MapPin, ScanLine, UserRoundCog } from '@lucide/vue'
 import { logout } from '~/composables/useAuth'
 
 const route = useRoute()
 const links = [
   { to: '/business', label: 'Dashboard', icon: LayoutDashboard },
+  { to: '/business/venues', label: 'Locations', icon: MapPin },
   { to: '/business/offers', label: 'Offers', icon: BadgePercent },
   { to: '/business/redeem', label: 'Redeem', icon: ScanLine },
   { to: '/business/pricing', label: 'Plans', icon: CreditCard },

@@ -75,12 +75,16 @@ onMounted(() => load().catch((error: any) => { errorMessage.value = error?.data?
             <Store class="size-6 text-[#52713A]" />
             <p class="mt-4 text-xs font-bold uppercase tracking-wide text-[#52713A]">Venues</p>
             <h2 class="mt-1 text-xl font-semibold">{{ business.venues.length }}</h2>
-            <p class="mt-2 text-sm text-[#4D2F39]">Offers and redemptions stay attached to their specific location.</p>
+            <p class="mt-2 text-sm text-[#4D2F39]">Campaigns can cover one, selected, or every approved location.</p>
           </article>
         </div>
 
         <section class="mt-5 rounded-lg bg-white p-6 shadow-[0_10px_24px_rgba(180,35,74,0.08)]">
-          <h2 class="text-xl font-semibold">Your venue</h2>
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <h2 class="text-xl font-semibold">Your locations</h2>
+            <NuxtLink to="/business/venues" class="text-sm font-semibold text-[#8F1839] hover:underline">Manage
+              locations</NuxtLink>
+          </div>
           <div v-for="venue in business.venues" :key="venue.id"
             class="mt-4 flex items-start gap-3 rounded-lg bg-[#FBF7F1] p-4">
             <MapPin class="mt-0.5 size-5 shrink-0 text-[#B4234A]" />
@@ -94,11 +98,16 @@ onMounted(() => load().catch((error: any) => { errorMessage.value = error?.data?
           </div>
         </section>
 
-        <div class="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div class="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <NuxtLink to="/business/venues" class="group rounded-lg bg-[#2A1520] p-6 text-white">
+            <MapPin class="size-6" />
+            <h2 class="mt-4 text-xl font-semibold">Manage locations</h2>
+            <p class="mt-2 text-sm text-white/75">Add establishments and follow each venue’s approval state.</p>
+          </NuxtLink>
           <NuxtLink to="/business/offers" class="group rounded-lg bg-[#B4234A] p-6 text-white">
             <Plus class="size-6" />
-            <h2 class="mt-4 text-xl font-semibold">Manage offers</h2>
-            <p class="mt-2 text-sm text-white/75">Create discounts and control which offers are active.</p>
+            <h2 class="mt-4 text-xl font-semibold">Manage campaigns</h2>
+            <p class="mt-2 text-sm text-white/75">Create one offer for one, selected, or all locations.</p>
           </NuxtLink>
           <NuxtLink to="/business/redeem" class="group rounded-lg bg-[#52713A] p-6 text-white">
             <ScanLine class="size-6" />

@@ -3,6 +3,14 @@ import { BadgeCheck, BadgePercent, Clock3, Copy, MapPin, Store, TicketCheck } fr
 
 definePageMeta({ title: 'Date offers · Lonely Radish', middleware: 'logged-in' })
 
+type OfferVenue = {
+  id: string
+  name: string
+  category: string
+  city: string
+  postcode: string
+}
+
 type Offer = {
   id: string
   title: string
@@ -11,8 +19,9 @@ type Offer = {
   discountValue: number
   terms: string | null
   businessName: string
-  venueName: string
-  city: string
+  venueScope: 'single' | 'selected' | 'all'
+  locationCount: number
+  venues: OfferVenue[]
 }
 type OfferClaim = {
   id: string
@@ -34,6 +43,14 @@ const claimingId = ref('')
 const copiedClaimId = ref('')
 const now = ref(Date.now())
 let clock: ReturnType<typeof setInterval> | undefined
+
+function offerLocationLabel(offer: Offer) {
+  if (offer.locationCount === 1) {
+    const venue = offer.venues[0]
+    return venue ? `${venue.name}, ${venue.city}` : 'One participating location'
+  }
+  return `${offer.locationCount} participating locations`
+}
 
 function claimStatus(claim?: OfferClaim) {
   if (!claim) return null
@@ -120,8 +137,18 @@ onBeforeUnmount(() => { if (clock) clearInterval(clock) })
           <p class="mt-2 text-lg font-bold text-[#52713A]">{{ offer.discountType === 'percentage' ?
             `${offer.discountValue}% off` : `£${offer.discountValue} off` }}</p>
           <p class="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-[#6E4D58]">
-            <MapPin class="size-4" />{{ offer.venueName }}, {{ offer.city }}
+            <MapPin class="size-4" />{{ offerLocationLabel(offer) }}
           </p>
+          <details v-if="offer.locationCount > 1" class="mt-2 rounded-lg bg-[#FBF7F1] px-3 py-2 text-xs text-[#6E4D58]">
+            <summary class="cursor-pointer font-semibold text-[#4D2F39]">Preview participating locations</summary>
+            <ul class="mt-2 grid gap-1.5">
+              <li v-for="venue in offer.venues" :key="venue.id">{{ venue.name }} · {{ venue.city }}, {{ venue.postcode
+                }}</li>
+            </ul>
+            <p v-if="offer.locationCount > offer.venues.length" class="mt-2 font-semibold">
+              And {{ offer.locationCount - offer.venues.length }} more locations.
+            </p>
+          </details>
           <p v-if="offer.description" class="mt-3 text-sm leading-6 text-[#4D2F39]">{{ offer.description }}</p>
           <p v-if="offer.terms" class="mt-4 rounded-lg bg-[#F3E8DA] p-3 text-xs leading-5 text-[#6E4D58]">Terms: {{
             offer.terms }}</p>
@@ -136,9 +163,10 @@ onBeforeUnmount(() => { if (clock) clearInterval(clock) })
               </div>
               <div v-if="qrCodes[claims[offer.id].id]" class="mt-3 rounded-lg bg-white p-3 text-center">
                 <img :src="qrCodes[claims[offer.id].id]"
-                  :alt="`QR redemption code for ${offer.title} at ${offer.venueName}`"
+                  :alt="`QR redemption code for ${offer.title} at ${offerLocationLabel(offer)}`"
                   class="mx-auto size-52 max-w-full" width="208" height="208">
-                <p class="mt-2 text-xs text-[#6E4D58]">The QR contains only the short-lived offer code.</p>
+                <p class="mt-2 text-xs text-[#6E4D58]">The QR contains only the short-lived offer code and can be used
+                  once at any participating location.</p>
               </div>
               <button type="button"
                 class="mt-3 w-full rounded-lg bg-white px-3 py-3 text-center font-mono text-lg font-bold tracking-wider text-[#2A1520]"

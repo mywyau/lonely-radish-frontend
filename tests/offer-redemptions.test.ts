@@ -56,11 +56,13 @@ describe("offer claims and redemptions", () => {
     expect(redeem).toContain("set status='redeemed'");
   });
 
-  it("allows a code only at the offer's assigned venue", () => {
+  it("allows a code only at a participating active venue", () => {
     const redeem = read("server/api/business/offer-claims/redeem.post.ts");
     const page = read("pages/business/redeem.vue");
     expect(redeem).toContain('text(body.venueId, "Venue"');
-    expect(redeem).toContain("and v.id=$3 and v.status='active'");
+    expect(redeem).toContain("o.venue_scope='all'");
+    expect(redeem).toContain("o.venue_scope='selected'");
+    expect(redeem).toContain("redeemed_venue_id=$3");
     expect(page).toContain("venueId: selectedVenueId.value");
     expect(page).toContain("This device is redeeming for");
     expect(read("pages/business/index.vue")).toContain('to="/business/redeem"');

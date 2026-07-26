@@ -37,12 +37,23 @@ export default defineEventHandler(async (event) => {
     ]);
     const offerResult = await client.query(
       `select o.id,o.title,o.discount_type as "discountType",
-      o.discount_value::float as "discountValue",o.terms,b.name as "businessName",v.name as "venueName",
+      o.discount_value::float as "discountValue",o.terms,b.name as "businessName",
+      case when locations."venueCount"=1 then locations."firstVenueName"
+        else concat(locations."venueCount",' participating locations') end as "venueName",
       least(now()+interval '15 minutes',coalesce(o.ends_at,now()+interval '15 minutes')) as "expiresAt"
       from business_offers o join businesses b on b.id=o.business_id
-      join business_venues v on v.id=o.venue_id
+      join lateral (
+        select count(*)::int as "venueCount",min(v.name) as "firstVenueName"
+        from business_venues v
+        where v.business_id=o.business_id and v.status='active' and (
+          o.venue_scope='all' or
+          (o.venue_scope='single' and v.id=o.venue_id) or
+          (o.venue_scope='selected' and exists(select 1 from business_offer_venues ov
+            where ov.offer_id=o.id and ov.venue_id=v.id))
+        )
+      ) locations on locations."venueCount">0
       where o.id=$1 and o.approval_status='approved' and o.active=true
-        and b.status='active' and v.status='active'
+        and b.status='active'
         and (o.starts_at is null or o.starts_at<=now())
         and (o.ends_at is null or o.ends_at>now())`,
       [offerId],
@@ -89,7 +100,8 @@ export default defineEventHandler(async (event) => {
       claimResult = await client.query(
         `update business_offer_claims set proposal_id=$2,token_version=token_version+1,
           status='issued',offer_title=$3,discount_type=$4,discount_value=$5,terms=$6,business_name=$7,
-          venue_name=$8,claimed_at=now(),expires_at=$9,redeemed_at=null,redeemed_by_user_id=null
+          venue_name=$8,claimed_at=now(),expires_at=$9,redeemed_at=null,redeemed_by_user_id=null,
+          redeemed_venue_id=null
           where id=$1 returning id,offer_id as "offerId",token_version as "tokenVersion",status,
           claimed_at as "claimedAt",expires_at as "expiresAt",offer_title as "offerTitle",
           discount_type as "discountType",discount_value::float as "discountValue",terms,

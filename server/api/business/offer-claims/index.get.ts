@@ -27,16 +27,17 @@ export default defineEventHandler(async (event) => {
       `select count(*)::int as total,
       count(*) filter(where c.redeemed_at>=now()-interval '30 days')::int as "last30Days"
       from business_offer_claims c join business_offers o on o.id=c.offer_id
-      where o.business_id=$1 and ($2::uuid is null or o.venue_id=$2::uuid)
+      where o.business_id=$1 and ($2::uuid is null or coalesce(c.redeemed_venue_id,o.venue_id)=$2::uuid)
         and c.status='redeemed'`,
       [business.id, venueId],
     ),
     db.query(
       `select c.offer_title as "offerTitle",c.discount_type as "discountType",
-      c.discount_value::float as "discountValue",c.venue_name as "venueName",
-      o.venue_id as "venueId",c.redeemed_at as "redeemedAt"
+      c.discount_value::float as "discountValue",coalesce(v.name,c.venue_name) as "venueName",
+      coalesce(c.redeemed_venue_id,o.venue_id) as "venueId",c.redeemed_at as "redeemedAt"
       from business_offer_claims c join business_offers o on o.id=c.offer_id
-      where o.business_id=$1 and ($2::uuid is null or o.venue_id=$2::uuid)
+      left join business_venues v on v.id=c.redeemed_venue_id
+      where o.business_id=$1 and ($2::uuid is null or coalesce(c.redeemed_venue_id,o.venue_id)=$2::uuid)
         and c.status='redeemed' order by c.redeemed_at desc limit 50`,
       [business.id, venueId],
     ),

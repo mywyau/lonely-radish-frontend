@@ -28,6 +28,9 @@ describe("business subscriptions", () => {
     expect(read("server/api/business/offers/index.post.ts")).toContain(
       "requireBusiness(event)",
     );
+    expect(read("server/api/business/venues/index.post.ts")).toContain(
+      "requireBusiness(event)",
+    );
     expect(read("server/api/business/portal.post.ts")).toContain(
       "requireBusiness(event)",
     );
@@ -55,15 +58,20 @@ describe("business subscriptions", () => {
 
   it("enforces free, standard and featured offer limits on the server", () => {
     const offers = read("server/api/business/offers/index.post.ts");
-    expect(offers).toContain("plan.rows[0]?.plan === 'featured' ? 10");
-    expect(offers).toContain("plan.rows[0]?.plan === 'standard' ? 5 : 1");
+    expect(offers).toMatch(
+      /plan\.rows\[0\]\?\.plan === ["']featured["']\s*\? 10/,
+    );
+    expect(offers).toMatch(
+      /plan\.rows\[0\]\?\.plan === ["']standard["']\s*\? 5\s*:\s*1/,
+    );
   });
 
-  it("provides onboarding, offers and pricing pages", () => {
+  it("provides onboarding, location, offers and pricing pages", () => {
     expect(read("pages/business/index.vue")).toContain(
       "Create your business profile",
     );
     expect(read("pages/business/offers.vue")).toContain("Create an offer");
+    expect(read("pages/business/venues.vue")).toContain("Add another location");
     expect(read("pages/business/pricing.vue")).toContain(
       "Business subscriptions",
     );
@@ -100,8 +108,8 @@ describe("business subscriptions", () => {
     expect(businessOnly).toContain("!mode.hasBusiness");
     expect(businessOnly).toContain("to.path !== '/business'");
     expect(businessOnly).toContain("onboarding:'required'");
-    expect(read("pages/business/index.vue")).toContain(
-      "Complete your business profile before using the rest of the business portal.",
+    expect(read("pages/business/index.vue")).toMatch(
+      /Complete your\s+business profile before using the rest of the business portal\./,
     );
     const personalNav = read("components/BlankNavBar.vue");
     expect(personalNav.indexOf("<template v-else>")).toBeLessThan(
