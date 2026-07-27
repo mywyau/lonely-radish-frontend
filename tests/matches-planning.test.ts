@@ -32,6 +32,8 @@ describe('matches and date planning dashboard', () => {
     expect(read('server/api/proposals/[id].put.ts')).toContain('recipientReproposing')
     expect(read('server/api/proposals/index.post.ts')).toContain("'Proposed time', 1")
     expect(read('pages/plans/[slug].vue')).toContain('Send suggested changes')
+    expect(read('pages/plans/[slug].vue')).toContain('Short reply')
+    expect(read('server/api/proposals/[id].put.ts')).toContain('recipientSuggestingChange')
     expect(read('pages/plans/[slug].vue')).toContain('type="datetime-local"')
     expect(read('pages/plans/[slug].vue')).toContain(':min="earliestCustomTime"')
     expect(read('pages/plans/[slug].vue')).toContain('Selected: {{ chosenCustomTimeLabel }}')
@@ -42,6 +44,20 @@ describe('matches and date planning dashboard', () => {
     expect(read('server/api/proposals/[id]/send.post.ts')).toContain("'proposal_received'")
     expect(read('server/api/planning/[slug].get.ts')).toContain("dp.status<>'draft' or dp.inviter_id=$1")
     expect(read('pages/plans/[slug].vue')).toContain("route.query.new !== '1'")
+  })
+
+  it('keeps proposed times within the other person’s usual availability', () => {
+    const page = read('pages/plans/[slug].vue')
+    const availabilityGuard = read('server/utils/proposalAvailability.ts')
+    expect(page).toContain('fitsMatchAvailability')
+    expect(page).toContain('with at least an hour free')
+    expect(page).toContain('3. Suggest a date and time')
+    expect(page).not.toContain('v-for="time in times"')
+    expect(read('server/api/planning/[slug].get.ts')).not.toContain('suggestedTimes')
+    expect(read('server/api/proposals/index.post.ts')).toContain('ensureTimesFitAvailability')
+    expect(read('server/api/proposals/[id].put.ts')).toContain('ensureTimesFitAvailability')
+    expect(availabilityGuard).toContain('Choose a time within the other person’s usual availability')
+    expect(availabilityGuard).toContain("a.end_time-(chosen.proposed_at at time zone")
   })
 
   it('shows at most five matches and confirms removal before notifying the other person', () => {

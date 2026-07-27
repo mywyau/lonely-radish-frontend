@@ -2,6 +2,7 @@ import { createError, readBody } from 'h3'
 import { db } from '~/server/repositories/db'
 import { requireUser } from '~/server/utils/requireUser'
 import { objectBody, stringArray, text, badRequest } from '~/server/utils/productValidation'
+import { ensureTimesFitAvailability } from '~/server/utils/proposalAvailability'
 
 export default defineEventHandler(async (event) => {
   const { sub } = await requireUser(event)
@@ -19,6 +20,7 @@ export default defineEventHandler(async (event) => {
     const match = await client.query(`select m.id,p.user_id from profiles p join matches m on m.status='active'
       and ((m.user_one_id=$1 and m.user_two_id=p.user_id) or (m.user_two_id=$1 and m.user_one_id=p.user_id)) where p.slug=$2`, [sub,profileSlug])
     if (!match.rows[0]) throw createError({ statusCode: 404, statusMessage: 'Active match not found' })
+    await ensureTimesFitAvailability(client, match.rows[0].user_id, times)
     const proposal = await client.query(`insert into date_proposals(match_id,inviter_id,invitee_id,activity_label,invite_note,venue,venue_details,status)
       values($1,$2,$3,$4,$5,$6,$7,'draft') returning id,status,created_at as "createdAt"`,
       [match.rows[0].id,sub,match.rows[0].user_id,activity,inviteNote,venue,venueDetails])

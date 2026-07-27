@@ -2,6 +2,7 @@ import { createError, getRouterParam, readBody } from 'h3'
 import { db } from '~/server/repositories/db'
 import { requireUser } from '~/server/utils/requireUser'
 import { badRequest, objectBody, stringArray, text } from '~/server/utils/productValidation'
+import { ensureTimesFitAvailability } from '~/server/utils/proposalAvailability'
 
 export default defineEventHandler(async (event) => {
   const { sub } = await requireUser(event)
@@ -24,14 +25,17 @@ export default defineEventHandler(async (event) => {
     const current = existing.rows[0]
     if (!current) throw createError({ statusCode: 404, statusMessage: 'Date proposal not found' })
     const senderEditingDraft = current.inviterId === sub && ['draft','pending'].includes(current.status)
+    const recipientSuggestingChange = current.inviteeId === sub && current.status === 'pending'
     const recipientReproposing = current.inviteeId === sub && current.status === 'pending' && fullReproposal
+    const otherUserId = current.inviterId === sub ? current.inviteeId : current.inviterId
+    await ensureTimesFitAvailability(client, otherUserId, times)
     const proposal = await client.query(`update date_proposals set
       activity_label=$3,invite_note=$4,venue=$5,venue_details=$6,status=$7,selected_time_id=null,confirmed_at=null,
       inviter_id=$2,invitee_id=$8
       where id=$1 returning id,status,match_id as "matchId",invitee_id as "inviteeId",
         activity_label as activity,invite_note as "inviteNote"`,
       [id,sub,senderEditingDraft || recipientReproposing ? activity : current.activity,
-        senderEditingDraft || recipientReproposing ? inviteNote : current.inviteNote,
+        senderEditingDraft || recipientSuggestingChange ? inviteNote : current.inviteNote,
         venue,venueDetails,senderEditingDraft ? 'draft' : 'pending',current.inviterId === sub ? current.inviteeId : current.inviterId])
     await client.query('delete from proposal_times where proposal_id=$1', [id])
     for (const [index,time] of times.entries()) await client.query(`insert into proposal_times(proposal_id,proposed_at,position)

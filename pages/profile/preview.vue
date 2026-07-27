@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { CalendarDays, ChevronLeft, ChevronRight, Expand, Eye, HeartHandshake, ImagePlus, MapPin, ShieldCheck, UserRound, X } from '@lucide/vue';
+import { profileDetails } from '~/utils/profileDetails';
 
 definePageMeta({ title: 'Profile Preview · Lonely Radish', middleware: 'logged-in' })
 
@@ -8,6 +9,7 @@ type PreviewData = {
   photos: Array<{ id: string; url: string; altText?: string; position: number }>
   activities: string[]
   interestCategories: string[]
+  personalInterests: string[]
   availability: string[]
 }
 
@@ -18,16 +20,9 @@ const activitiesFlipped = ref(false)
 const activePhotoIndex = ref(0)
 const photoViewerOpen = ref(false)
 const photoSwipeStartX = ref<number | null>(null)
-const lifestyleLabels = computed(() => {
+const lifestyleDetails = computed(() => {
   const profile = data.value?.profile
-  if (!profile) return []
-  const labels: string[] = []
-  if (profile.heightCm) labels.push(`${profile.heightCm} cm`)
-  if (profile.weightKg) labels.push(`${profile.weightKg} kg`)
-  if (profile.drinking && profile.drinking !== 'prefer_not_to_say') labels.push(`Drinks ${profile.drinking}`)
-  if (profile.smoking && profile.smoking !== 'prefer_not_to_say') labels.push(profile.smoking === 'never' ? 'Non-smoker' : `Smokes ${profile.smoking}`)
-  if (profile.dailyRhythm) labels.push({ early_bird: 'Early bird', night_owl: 'Night owl', flexible: 'A bit of both' }[profile.dailyRhythm] || profile.dailyRhythm)
-  return labels
+  return profile ? profileDetails(profile) : []
 })
 const age = computed(() => {
   const value = data.value?.profile?.dateOfBirth
@@ -165,7 +160,15 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleGalleryKeydown
             </div>
             <p class="mt-4 leading-7 text-[#4D2F39]">{{ data.profile.bio || 'Add a short bio to introduce yourself.' }}
             </p>
-            <div v-if="lifestyleLabels.length" class="mt-5 flex flex-wrap gap-2"><span v-for="label in lifestyleLabels" :key="label" class="rounded-full bg-[#F3E8DA] px-3 py-2 text-sm font-semibold text-[#4D2F39]">{{ label }}</span></div>
+            <div v-if="lifestyleDetails.length" class="mt-5 border-t border-[#E8D8C4] pt-5">
+              <h4 class="text-sm font-semibold text-[#4D2F39]">Profile details</h4>
+              <dl class="mt-3 grid gap-2 sm:grid-cols-2">
+                <div v-for="detail in lifestyleDetails" :key="detail.label" class="rounded-lg bg-[#F3E8DA] p-3">
+                  <dt class="text-xs font-bold uppercase tracking-wide text-[#6E4D58]">{{ detail.label }}</dt>
+                  <dd class="mt-1 text-sm font-semibold text-[#2A1520]">{{ detail.value }}</dd>
+                </div>
+              </dl>
+            </div>
           </section>
           <section v-if="data.availability?.length"
             class="rounded-lg bg-white p-5 shadow-[0_10px_24px_rgba(180,35,74,.08)] sm:p-6">
@@ -179,7 +182,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleGalleryKeydown
           </section>
           <button type="button" class="flip-card text-left" :class="activitiesFlipped && 'is-flipped'"
             :aria-pressed="activitiesFlipped"
-            :aria-label="activitiesFlipped ? 'Show detailed activities' : 'Show broader interests'"
+            :aria-label="activitiesFlipped ? 'Show detailed activities' : 'Show personal interests'"
             @click="activitiesFlipped = !activitiesFlipped">
             <span class="flip-card-inner">
               <span class="flip-face flip-front"><span class="flex items-center justify-between gap-3"><span
@@ -191,16 +194,14 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleGalleryKeydown
                     }}</span></span><span v-else class="mt-2 block text-sm text-[#6E4D58]">No activities selected
                   yet.</span></span>
               <span class="flip-face flip-back"><span class="flex items-center justify-between gap-3"><span
-                    class="text-xl font-semibold">My broader interests</span>
+                    class="text-xl font-semibold">My personal interests</span>
                   <!-- <span class="flip-hint">Tap to see activities ↻</span> -->
-                </span><span v-if="data.interestCategories?.length" class="mt-4 flex flex-wrap gap-2"><span
-                    v-for="interest in data.interestCategories" :key="interest"
+                </span><span v-if="data.personalInterests?.length" class="mt-4 flex flex-wrap gap-2"><span
+                    v-for="interest in data.personalInterests" :key="interest"
                     class="rounded-full bg-white/85 px-3 py-2 text-sm font-semibold text-[#4D2F39]">{{ interest
-                    }}</span></span><span v-else class="mt-2 block text-sm text-[#4D2F39]">Your broader interests will
+                    }}</span></span><span v-else class="mt-2 block text-sm text-[#4D2F39]">Your personal interests will
                   appear
-                  here.</span><span class="mt-4 block text-xs leading-5 text-[#4D2F39]">These are the categories where
-                  other
-                  people can discover your profile.</span></span>
+                  here after you add them in Personal interests.</span><span class="mt-4 block text-xs leading-5 text-[#4D2F39]">These are written by you and do not change your discovery or matching preferences.</span></span>
             </span>
           </button>
         </div>

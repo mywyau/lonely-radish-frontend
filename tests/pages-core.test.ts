@@ -103,12 +103,13 @@ describe("core page contracts", () => {
     expect(matches).toContain("`/profiles/${match.slug}`");
     expect(matches).toContain("View {{ match.name }}’s profile");
     expect(plan).toContain("Plan a date with {{ personName }}");
-    expect(plan).toContain("Choose a date and time");
+    expect(plan).toContain("Suggest a date and time");
     expect(plan).toContain("Enter a public venue");
-    expect(plan).toContain("Keep logistics simple");
-    expect(plan).toContain("Add preset");
-    expect(plan).toContain("removeQuickMessage");
-    expect(plan).toContain("lonely-radish-planning-quick-messages");
+    expect(plan).not.toContain("Keep logistics simple");
+    expect(plan).toContain("Short reply");
+    expect(plan).not.toContain("Add preset");
+    expect(plan).not.toContain("removeQuickMessage");
+    expect(plan).not.toContain("lonely-radish-planning-quick-messages");
     expect(plan).toContain("interestsByPerson");
     expect(plan).toContain("Add a short invite note");
     expect(plan).toContain("inviteMessageLimit = 240");
@@ -137,7 +138,7 @@ describe("core page contracts", () => {
     expect(preview).toContain('class="mt-5 grid gap-5 lg:grid-cols-2"');
     expect(preview).toContain("Activities I’d enjoy together");
     expect(preview).toContain("activitiesFlipped && 'is-flipped'");
-    expect(preview).toContain("My broader interests");
+    expect(preview).toContain("My personal interests");
     expect(preview).toContain(".flip-card:hover");
     expect(preview).toContain("prefers-reduced-motion: reduce");
     expect(preview).toContain(
@@ -161,5 +162,11 @@ describe("core page contracts", () => {
         "utf8",
       ),
     ).toContain("interestCategories:");
+    expect(
+      readFileSync(
+        resolve(process.cwd(), "server/api/profile/me.get.ts"),
+        "utf8",
+      ),
+    ).toContain("personalInterests:");
   });
 });

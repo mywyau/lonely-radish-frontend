@@ -6,7 +6,8 @@ export default defineEventHandler(async (event) => {
   setHeader(event, 'Cache-Control', 'private, no-store')
   const { sub } = await requireUser(event)
   const slug = getRouterParam(event, 'slug')
-  const { rows } = await db.query(`select p.user_id as "userId",p.display_name as name from profiles p
+  const { rows } = await db.query(`select p.user_id as "userId",p.display_name as name,
+    coalesce(u.timezone,'UTC') as timezone from profiles p join users u on u.id=p.user_id
     join matches m on m.status='active' and ((m.user_one_id=$1 and m.user_two_id=p.user_id) or (m.user_two_id=$1 and m.user_one_id=p.user_id))
     where p.slug=$2`, [sub,slug])
   if (!rows[0]) throw createError({ statusCode: 404, statusMessage: 'Active match not found' })
@@ -25,5 +26,6 @@ export default defineEventHandler(async (event) => {
     db.query(`select label,weekday,start_time::text as "startTime",end_time::text as "endTime"
       from availability where user_id=$1 order by coalesce(weekday,position)`, [rows[0].userId])])
   return { person: rows[0], activities: activities.rows.map(row => row.name), proposal: proposal.rows[0] ?? null,
-    availability: availability.rows, viewerId: sub }
+    availability: availability.rows,
+    availabilityTimezone: rows[0].timezone, viewerId: sub }
 })

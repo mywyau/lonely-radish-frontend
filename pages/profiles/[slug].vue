@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { CalendarDays, ChevronLeft, ChevronRight, Expand, HeartHandshake, Mail, MapPin, Phone, ShieldCheck, Sparkles, UserRound, X } from '@lucide/vue'
+import { profileDetails } from '~/utils/profileDetails'
 
 definePageMeta({ middleware: 'logged-in' })
 
@@ -79,17 +80,10 @@ const gallerySlots = computed(() => [
   })),
 ])
 const activePhoto = computed(() => galleryPhotos.value[activePhotoIndex.value] || null)
-const profileInterests = computed(() => profile.value?.interests?.length ? profile.value.interests : profile.value?.interestCategories || [])
-const lifestyleLabels = computed(() => {
-  if (!profile.value) return []
-  const labels = []
-  if (profile.value.heightCm) labels.push(`${profile.value.heightCm} cm`)
-  if (profile.value.weightKg) labels.push(`${profile.value.weightKg} kg`)
-  if (profile.value.drinking && profile.value.drinking !== 'prefer_not_to_say') labels.push(`Drinks ${profile.value.drinking}`)
-  if (profile.value.smoking && profile.value.smoking !== 'prefer_not_to_say') labels.push(profile.value.smoking === 'never' ? 'Non-smoker' : `Smokes ${profile.value.smoking}`)
-  if (profile.value.dailyRhythm) labels.push({ early_bird: 'Early bird', night_owl: 'Night owl', flexible: 'A bit of both' }[profile.value.dailyRhythm] || profile.value.dailyRhythm)
-  return labels
-})
+const profileInterests = computed(() => profile.value?.personalInterests?.length
+  ? profile.value.personalInterests
+  : profile.value?.isDemo ? profile.value.interests || [] : [])
+const lifestyleDetails = computed(() => profile.value ? profileDetails(profile.value) : [])
 
 async function sendApology() {
   if (!profile.value?.matchId || !apologyMessage.value.trim()) return
@@ -311,7 +305,15 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
             <h2 class="text-xl font-semibold">About me</h2>
           </div>
           <p class="mt-4 leading-7 text-[#4D2F39]">{{ profile.bio }}</p>
-          <div v-if="lifestyleLabels.length" class="mt-5 flex flex-wrap gap-2"><span v-for="label in lifestyleLabels" :key="label" class="rounded-full bg-[#F3E8DA] px-3 py-2 text-sm font-semibold text-[#4D2F39]">{{ label }}</span></div>
+          <div v-if="lifestyleDetails.length" class="mt-5 border-t border-[#E8D8C4] pt-5">
+            <h3 class="text-sm font-semibold text-[#4D2F39]">Profile details</h3>
+            <dl class="mt-3 grid gap-2 sm:grid-cols-2">
+              <div v-for="detail in lifestyleDetails" :key="detail.label" class="rounded-lg bg-[#F3E8DA] p-3">
+                <dt class="text-xs font-bold uppercase tracking-wide text-[#6E4D58]">{{ detail.label }}</dt>
+                <dd class="mt-1 text-sm font-semibold text-[#2A1520]">{{ detail.value }}</dd>
+              </div>
+            </dl>
+          </div>
         </section>
         <section v-if="profile.availability?.length && (profile.isMatched || profile.availabilityVisibleBeforeMatch)"
           class="rounded-lg bg-white p-5 shadow-[0_10px_24px_rgba(180,35,74,0.08)] sm:p-6">
@@ -339,7 +341,7 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
           </div>
         </section>
         <button v-if="profile.relationshipStatus !== 'unmatched'" type="button" class="profile-flip-card text-left" :class="activitiesFlipped && 'is-flipped'"
-          :aria-pressed="activitiesFlipped" :aria-label="activitiesFlipped ? 'Show activities' : 'Show interests'"
+          :aria-pressed="activitiesFlipped" :aria-label="activitiesFlipped ? 'Show activities' : 'Show personal interests'"
           @click="activitiesFlipped = !activitiesFlipped"><span class="profile-flip-inner"><span
               class="profile-flip-face profile-flip-front"><span class="flex items-center justify-between gap-3"><span
                   class="text-xl font-semibold">Activities I’d enjoy together</span>
@@ -348,13 +350,12 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
                   v-for="activity in profile.activities" :key="activity"
                   class="rounded-full bg-white/80 px-3 py-2 text-sm font-semibold text-[#8F1839]">{{ activity
                   }}</span></span></span><span class="profile-flip-face profile-flip-back"><span
-                class="flex items-center justify-between gap-3"><span class="text-xl font-semibold">A few more
-                  interests</span>
+                class="flex items-center justify-between gap-3"><span class="text-xl font-semibold">Personal interests</span>
                 <!-- <span class="profile-flip-hint">Tap to see activities ↻</span> -->
               </span><span v-if="profileInterests.length" class="mt-4 flex flex-wrap gap-2"><span
                   v-for="interest in profileInterests" :key="interest"
                   class="rounded-full bg-white/80 px-3 py-2 text-sm font-semibold text-[#4D2F39]">{{ interest
-                  }}</span></span><span v-else class="mt-3 block text-sm text-[#4D2F39]">No additional interests shared
+                  }}</span></span><span v-else class="mt-3 block text-sm text-[#4D2F39]">No personal interests shared
                 yet.</span></span></span></button>
         <section v-else class="rounded-lg bg-[#F3E8DA] p-5 sm:p-6">
           <h2 class="text-xl font-semibold">Past connection</h2>

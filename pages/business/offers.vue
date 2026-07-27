@@ -158,7 +158,7 @@ onMounted(() => load()
                                 <p v-if="offer.rejectionNote" class="mt-2 text-xs text-[#8F1839]">Review note: {{
                                     offer.rejectionNote }}</p>
                             </div>
-                            <button type="button" class="rounded-lg px-4 py-2 text-sm font-semibold"
+                            <button type="button" class="rounded-lg px-4 py-2 text-sm font-semibold hover:brightness-90"
                                 :class="offer.active ? 'bg-[#EAF2DE] text-[#52713A]' : 'bg-[#F3E8DA] text-[#8F1839]'"
                                 @click="toggleOffer(offer)">
                                 {{ offer.active ? 'Active · Pause' : 'Inactive · Activate' }}
@@ -232,7 +232,7 @@ onMounted(() => load()
 
                         <div v-else-if="form.venueScope === 'selected'" class="sm:col-span-2">
                             <div class="flex items-end justify-between gap-3">
-                                <label class="flex-1 text-sm font-semibold">Find locations
+                                <label class="flex-1 text-sm font-semibold">Find your venues
                                     <input v-model="venueSearch" class="field"
                                         placeholder="Search name, city or postcode">
                                 </label>

@@ -238,7 +238,7 @@ onMounted(async () => {
 
         <section class="rounded-lg bg-white p-6 shadow-[0_12px_28px_rgba(180,35,74,0.08)]">
           <h2 class="text-xl font-semibold">Lifestyle and profile details</h2>
-          <p class="mt-2 text-sm leading-6 text-[#6E4D58]">Optional details shown on your profile. Your interests continue to come from Activity preferences.</p>
+          <p class="mt-2 text-sm leading-6 text-[#6E4D58]">Optional details shown on your profile. Activity and personal interests are managed separately in preferences.</p>
           <form class="mt-5 grid gap-4 sm:grid-cols-2" @submit.prevent="saveLifestyle">
             <label class="text-sm font-medium">Height <span class="font-normal text-[#6E4D58]">(optional)</span>
               <div class="relative"><input v-model.number="lifestyle.heightCm" class="field pr-12" type="number" min="120" max="230" placeholder="170"><span class="pointer-events-none absolute right-4 top-1/2 mt-1 -translate-y-1/2 text-sm text-[#6E4D58]">cm</span></div>
@@ -247,7 +247,7 @@ onMounted(async () => {
               <div class="relative"><input v-model.number="lifestyle.weightKg" class="field pr-12" type="number" min="35" max="300" placeholder="70"><span class="pointer-events-none absolute right-4 top-1/2 mt-1 -translate-y-1/2 text-sm text-[#6E4D58]">kg</span></div>
             </label>
             <label class="text-sm font-medium">Daily rhythm <span class="font-normal text-[#6E4D58]">(optional)</span>
-              <select v-model="lifestyle.dailyRhythm" class="field"><option value="">Not set</option><option value="early_bird">Early bird</option><option value="night_owl">Night owl</option><option value="flexible">A bit of both</option></select>
+              <select v-model="lifestyle.dailyRhythm" class="field"><option value="">Not set</option><option value="early_bird">Early bird — prefers mornings</option><option value="night_owl">Night owl — prefers evenings</option><option value="flexible">Flexible — mornings or evenings</option></select>
             </label>
             <label class="text-sm font-medium">Drinking <span class="font-normal text-[#6E4D58]">(optional)</span>
               <select v-model="lifestyle.drinking" class="field"><option value="">Not set</option><option value="never">Never</option><option value="socially">Socially</option><option value="regularly">Regularly</option><option value="prefer_not_to_say">Prefer not to say</option></select>

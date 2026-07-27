@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { CalendarClock, ChevronRight, Heart, MapPin, Sparkles } from '@lucide/vue'
+import { CalendarClock, ChevronRight, Heart, MapPin, Sparkles, Tags } from '@lucide/vue'
 
 definePageMeta({ title: 'Match Preferences · Lonely Radish', middleware: 'logged-in' })
 
@@ -108,13 +108,19 @@ onMounted(async () => {
           <p class="mt-2 text-sm leading-6 text-[#6E4D58]">Choose the plans, sports, games, and experiences you would enjoy sharing.</p>
         </NuxtLink>
 
+        <NuxtLink to="/preferences/interests" class="group rounded-lg bg-[#F3E8DA] p-6 shadow-[0_10px_24px_rgba(180,35,74,0.08)] transition hover:-translate-y-0.5">
+          <div class="flex items-center justify-between"><Tags class="size-6 text-[#B4234A]" /><ChevronRight class="size-5 transition group-hover:translate-x-1" /></div>
+          <h2 class="mt-5 text-xl font-semibold">Personal interests</h2>
+          <p class="mt-2 text-sm leading-6 text-[#6E4D58]">Write up to five interests in your own words to show more of your personality.</p>
+        </NuxtLink>
+
         <NuxtLink to="/preferences/dating" class="group rounded-lg bg-[#EAF2DE] p-6 shadow-[0_10px_24px_rgba(110,139,82,0.1)] transition hover:-translate-y-0.5">
           <div class="flex items-center justify-between"><Heart class="size-6 text-[#B4234A]" /><ChevronRight class="size-5 transition group-hover:translate-x-1" /></div>
           <h2 class="mt-5 text-xl font-semibold">Dating preferences</h2>
           <p class="mt-2 text-sm leading-6 text-[#6E4D58]">Set sexual, racial, and ethnic preferences, or keep your matching pool open.</p>
         </NuxtLink>
 
-        <NuxtLink to="/preferences/schedule" class="group rounded-lg bg-[#F3E8DA] p-6 shadow-[0_10px_24px_rgba(180,35,74,0.08)] transition hover:-translate-y-0.5 sm:col-span-2">
+        <NuxtLink to="/preferences/schedule" class="group rounded-lg bg-white p-6 shadow-[0_10px_24px_rgba(180,35,74,0.08)] transition hover:-translate-y-0.5">
           <div class="flex items-center justify-between"><CalendarClock class="size-6 text-[#B4234A]" /><ChevronRight class="size-5 transition group-hover:translate-x-1" /></div>
           <h2 class="mt-5 text-xl font-semibold">Timing and safety</h2>
           <p class="mt-2 text-sm leading-6 text-[#6E4D58]">Set the days and time ranges when you are usually free, and keep first meetings in public places.</p>

@@ -104,6 +104,7 @@ describe("auth and billing page contracts", () => {
     expect(preferences).toContain('preferences.maximumAge');
     expect(preferences).not.toContain('preferences.neighbourhood');
     expect(preferences).toContain('to="/preferences/activities"');
+    expect(preferences).toContain('to="/preferences/interests"');
     expect(preferences).toContain('to="/preferences/dating"');
     expect(preferences).toContain('to="/preferences/schedule"');
     expect(preferences.indexOf('id="location-and-age"')).toBeLessThan(preferences.indexOf('to="/preferences/activities"'));
