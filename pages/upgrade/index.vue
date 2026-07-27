@@ -2,9 +2,9 @@
 
 definePageMeta({ layout: 'default' })
 
-import { CalendarDays, ChevronDown, HeartHandshake, MapPin, ShieldCheck, Sparkles, Tags } from '@lucide/vue';
-import { markRaw } from 'vue';
 import { useUpgrade } from '@/composables/useUpgrade';
+import { CalendarDays, ChevronDown, HeartHandshake, MapPin, ShieldCheck, SlidersHorizontal, Sparkles, Tags } from '@lucide/vue';
+import { markRaw } from 'vue';
 import { useMeStateV2 } from '~/composables/useMeStateV2';
 import { hasPaidAccess } from '~/utils/paidAccess';
 
@@ -38,13 +38,13 @@ const upgradeError = ref('')
 const showPaidPlans = ref(false)
 
 const benefits = [
-  { icon: markRaw(HeartHandshake), text: 'Respectfully apologise to previous matches and rejections' },
   { icon: markRaw(CalendarDays), text: 'See past connections' },
-  { icon: markRaw(Sparkles), text: 'Get deals with partners and brand discounts' },
-  { icon: markRaw(MapPin), text: 'Incognitio Discovery' },
+  { icon: markRaw(HeartHandshake), text: 'Apologise to previous matches and rejections' },
+  // { icon: markRaw(Sparkles), text: 'Get deals with partners and brand discounts' },
+  // { icon: markRaw(MapPin), text: 'Incognitio Discovery' },
   { icon: markRaw(ShieldCheck), text: 'Extra safety and privacy controls as they launch' },
   { icon: markRaw(Tags), text: 'Early access to new dating features' },
-  { icon: markRaw(Sparkles), text: 'Profile polish tools for clearer first impressions' },
+  // { icon: markRaw(Sparkles), text: 'Profile polish tools for clearer first impressions' },
 ]
 
 // Already paid → manage subscription instead
@@ -113,7 +113,8 @@ onMounted(() => resolve())
           <div class="relative rounded-lg border bg-white p-5"
             :class="currentPlan === 'free' ? 'border-[#B4234A] ring-2 ring-[#F7B7C4]' : 'border-[#E8D8C4]'">
             <span v-if="currentPlan === 'free'"
-              class="absolute right-4 top-4 rounded-full bg-[#B4234A] px-2.5 py-1 text-[11px] font-bold text-white">Current plan</span>
+              class="absolute right-4 top-4 rounded-full bg-[#B4234A] px-2.5 py-1 text-[11px] font-bold text-white">Current
+              plan</span>
             <p class="text-xs font-extrabold uppercase tracking-widest text-[#6E4D58]">Free plan</p>
             <h3 class="mt-2 text-lg font-semibold">Core free experience</h3>
             <ul class="mt-4 space-y-2 text-sm text-[#4D2F39]">
@@ -128,8 +129,7 @@ onMounted(() => resolve())
           <button type="button"
             class="rounded-lg border bg-[#FCE3E8] p-5 text-left shadow-[0_10px_24px_rgba(180,35,74,0.08)] transition hover:border-[#B4234A] hover:bg-[#F7D4DC] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B4234A] focus-visible:ring-offset-2"
             :class="showPaidPlans ? 'border-[#B4234A] ring-2 ring-[#F7B7C4]' : 'border-[#E6A8B8]'"
-            :aria-expanded="showPaidPlans" aria-controls="paid-plan-options"
-            @click="showPaidPlans = !showPaidPlans">
+            :aria-expanded="showPaidPlans" aria-controls="paid-plan-options" @click="showPaidPlans = !showPaidPlans">
             <p class="text-xs font-extrabold uppercase tracking-widest text-[#8F1839]">All paid plans</p>
             <h3 class="mt-2 text-lg font-semibold">More room to discover and plan</h3>
             <div class="mt-4 space-y-2 text-sm text-[#4D2F39]">
@@ -139,10 +139,20 @@ onMounted(() => resolve())
               <p class="flex items-center gap-2">
                 <HeartHandshake class="size-4 text-[#B4234A]" />Up to 5 active matches
               </p>
+              <p class="flex items-center gap-2">
+                <SlidersHorizontal class="size-4 text-[#B4234A]" />Advanced matching options and filters
+              </p>
+              <p class="flex items-center gap-2">
+                <Sparkles class="size-4 text-[#B4234A]" />Get discounts for dates with selected partners and brands
+              </p>
+              <p class="flex items-center gap-2">
+                <MapPin class="size-4 text-[#B4234A]" />Incognitio Discovery
+              </p>
             </div>
             <span class="mt-5 flex items-center justify-between text-sm font-semibold text-[#8F1839]">
               {{ showPaidPlans ? 'Hide pricing options' : 'View pricing options' }}
-              <ChevronDown class="size-5 transition-transform" :class="showPaidPlans && 'rotate-180'" aria-hidden="true" />
+              <ChevronDown class="size-5 transition-transform" :class="showPaidPlans && 'rotate-180'"
+                aria-hidden="true" />
             </span>
           </button>
         </section>
@@ -160,7 +170,8 @@ onMounted(() => resolve())
               : 'hover:bg-[#F7D4DC] active:scale-[0.98]'" :disabled="isSubscribed || Boolean(upgradingPlan)"
             @click="upgrade('monthly')">
             <span v-if="isCurrentPlan('monthly')"
-              class="mb-1 inline-flex rounded-full bg-white px-2 py-0.5 text-[11px] font-bold text-[#8F1839]">Current plan</span>
+              class="mb-1 inline-flex rounded-full bg-white px-2 py-0.5 text-[11px] font-bold text-[#8F1839]">Current
+              plan</span>
             <span class="block">{{ upgradingPlan === 'monthly' ? 'Opening secure checkout…' : `Monthly plan ·
               £${monthlyPrice}` }}</span>
             <span class="mt-0.5 block text-xs text-[#6E4D58]">Flexible month-to-month billing</span>
@@ -172,7 +183,8 @@ onMounted(() => resolve())
               : 'hover:bg-[#E8D8C4] active:scale-[0.98]'" :disabled="isSubscribed || Boolean(upgradingPlan)"
             @click="upgrade('quarterly')">
             <span v-if="isCurrentPlan('quarterly')"
-              class="mb-1 inline-flex rounded-full bg-white px-2 py-0.5 text-[11px] font-bold text-[#8F1839]">Current plan</span>
+              class="mb-1 inline-flex rounded-full bg-white px-2 py-0.5 text-[11px] font-bold text-[#8F1839]">Current
+              plan</span>
             <span class="block">{{ upgradingPlan === 'quarterly' ? 'Opening secure checkout…' : `Three-month plan ·
               £${quarterlyPrice}` }}</span>
             <span class="mt-0.5 block text-xs text-[#6E4D58]">≈ £{{ quarterlyMonthlyEquivalent }}/mo · Save £{{
@@ -186,7 +198,8 @@ onMounted(() => resolve())
               : 'hover:bg-[#8F1839] active:scale-[0.98]'" :disabled="isSubscribed || Boolean(upgradingPlan)"
             @click="upgrade('yearly')">
             <span v-if="isCurrentPlan('yearly')"
-              class="mb-1 inline-flex rounded-full bg-white px-2 py-0.5 text-[11px] font-bold text-[#8F1839]">Current plan</span>
+              class="mb-1 inline-flex rounded-full bg-white px-2 py-0.5 text-[11px] font-bold text-[#8F1839]">Current
+              plan</span>
             <span class="block">{{ upgradingPlan === 'yearly' ? 'Opening secure checkout…' : `Yearly plan ·
               £${yearlyPrice}` }}</span>
             <span class="mt-0.5 block text-xs text-white/80">≈ £{{ yearlyMonthlyEquivalent }}/mo · Save £{{

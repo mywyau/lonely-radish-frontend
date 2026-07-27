@@ -11,10 +11,11 @@ export default defineEventHandler(async (event) => {
   const client = await db.connect()
   try {
     await client.query('begin')
-    const match = await client.query(`select ended_by as "recipientId",ended_at as "endedAt"
-      from matches where id=$1 and status='unmatched' and ended_by is not null and ended_by<>$2
+    const match = await client.query(`select case when user_one_id=$2 then user_two_id else user_one_id end as "recipientId",
+      ended_at as "endedAt"
+      from matches where id=$1 and status='unmatched' and ended_by is distinct from $2
       and ($2=user_one_id or $2=user_two_id) for update`, [matchId, sub])
-    if (!match.rows[0]) throw createError({ statusCode: 403, statusMessage: 'Only the person who was unmatched can send this message' })
+    if (!match.rows[0]) throw createError({ statusCode: 403, statusMessage: 'You cannot send this message for this ended match' })
     const currentMessage = await client.query(`select 1 from match_apology_notes
       where match_id=$1 and sender_id=$2 and message_type='contact' and created_at>$3 limit 1`,
       [matchId, sub, match.rows[0].endedAt])

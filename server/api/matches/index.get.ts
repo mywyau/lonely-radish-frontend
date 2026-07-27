@@ -49,7 +49,7 @@ export default defineEventHandler(async (event) => {
         and (di.created_at<=ended.ended_at or not exists(select 1 from match_apology_notes man
           where man.match_id=ended.id and man.sender_id=di.sender_id and man.created_at>ended.ended_at
             and ((di.sender_id=ended.ended_by and man.message_type='apology')
-              or (di.sender_id<>ended.ended_by and man.message_type='contact')))))`, [sub]),
+              or (di.sender_id is distinct from ended.ended_by and man.message_type='contact')))))`, [sub]),
     getActiveMatchLimit(sub),
   ])
 

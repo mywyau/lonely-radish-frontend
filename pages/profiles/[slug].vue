@@ -241,16 +241,16 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
           </div>
           <DailyInterestCounter class="mt-5" :count="todaysInterests.length" :limit="dailyInterestLimit" />
           <button type="button"
-            :disabled="sending || profile.isMatched || (profile.relationshipStatus === 'unmatched' && !profile.secondChanceAvailable) || profile.interestSent || isTodaysChoice(profileSlug) || atMatchLimit || hasUsedDailyInterest"
+            :disabled="sending || profile.isMatched || (profile.relationshipStatus === 'unmatched' && !profile.secondChanceAvailable) || profile.interestSent || (profile.relationshipStatus !== 'unmatched' && isTodaysChoice(profileSlug)) || atMatchLimit || (hasUsedDailyInterest && !(profile.relationshipStatus === 'unmatched' && isTodaysChoice(profileSlug)))"
             class="mt-5 inline-flex w-full min-w-0 items-center justify-center gap-2 whitespace-normal break-words rounded-lg bg-[#B4234A] px-3 py-3 text-center text-sm font-semibold text-white transition hover:bg-[#8F1839] disabled:cursor-not-allowed disabled:bg-[#D7A7B3] min-[360px]:px-5"
-            @click="showInterest(profileSlug, profile.name)">
-            <HeartHandshake class="size-4" />{{ sending ? 'Sending…' : profile.isMatched ? `Already matched with ${profile.name}` : profile.interestSent || isTodaysChoice(profileSlug) ? 'Interest already sent' : profile.relationshipStatus === 'unmatched' && profile.secondChanceAvailable ? `Show interest in ${profile.name} again` : profile.relationshipStatus === 'unmatched' ? `Unmatched from ${profile.name}` :
+            @click="showInterest(profileSlug, profile.name, profile.relationshipStatus === 'unmatched' && isTodaysChoice(profileSlug))">
+            <HeartHandshake class="size-4" />{{ sending ? 'Sending…' : profile.isMatched ? `Already matched with ${profile.name}` : profile.interestSent || (profile.relationshipStatus !== 'unmatched' && isTodaysChoice(profileSlug)) ? 'Interest already sent' : profile.relationshipStatus === 'unmatched' && profile.secondChanceAvailable ? `Show interest in ${profile.name} again` : profile.relationshipStatus === 'unmatched' ? `Unmatched from ${profile.name}` :
               atMatchLimit ? `${activeMatchLimit}-match limit reached` :
                 isTodaysChoice(profileSlug) ? `Interest sent to ${profile.name}` : 'Show interest' }}
           </button>
           <p v-if="profile.isMatched" class="mt-3 rounded-lg bg-[#EAF2DE] p-3 text-xs leading-5 text-[#4D2F39]"
             role="status">You and {{ profile.name }} have already matched. You can continue from Matches & plans.</p>
-          <div v-else-if="profile.relationshipStatus === 'unmatched' && !profile.interestSent && !isTodaysChoice(profileSlug)"
+          <div v-else-if="profile.relationshipStatus === 'unmatched' && !profile.interestSent"
             class="mt-3 rounded-lg bg-[#F3E8DA] p-3 text-xs leading-5 text-[#4D2F39]" role="status">
             <p>You and {{ profile.name }} are no longer matched.</p>
             <form v-if="profile.endedByMe && !profile.apologySent" class="mt-3" @submit.prevent="sendApology"><label
@@ -276,7 +276,7 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
               <p v-else-if="profile.contactSent" class="mt-2 font-semibold text-[#6E8B52]">Your message was sent. They may not necessarily respond, and you can now show interest in the, again.</p>
             <p v-else-if="profile.secondChanceAvailable" class="mt-2 font-semibold text-[#6E8B52]">A second chance is available. Either of you can send fresh interest; the other person still chooses whether to accept.</p>
           </div>
-          <p v-else-if="profile.interestSent || isTodaysChoice(profileSlug)" class="mt-3 rounded-lg bg-[#EAF2DE] p-3 text-xs leading-5 text-[#4D2F39]"
+          <p v-else-if="profile.interestSent || (profile.relationshipStatus !== 'unmatched' && isTodaysChoice(profileSlug))" class="mt-3 rounded-lg bg-[#EAF2DE] p-3 text-xs leading-5 text-[#4D2F39]"
             role="status"><template v-if="profile.relationshipStatus === 'unmatched'">You have re-offered interest to {{ profile.name }}. They can choose whether to reconnect.</template><template v-else>You have shown interest in {{ profile.name }}.</template></p>
           <p v-else-if="atMatchLimit" class="mt-3 rounded-lg bg-[#FFF1C7] p-3 text-xs leading-5 text-[#694C00]"
             role="status">You already have {{ activeMatchLimit }} active matches. Complete or remove one before matching with someone new.

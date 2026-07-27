@@ -60,9 +60,10 @@ export function useDailyInterest() {
     }
   }
 
-  async function showInterest(profileSlug: string, profileName: string) {
-    if (!import.meta.client || hasUsedDailyInterest.value || atMatchLimit.value) return false
-    const remainingAfterSend = Math.max(0, dailyInterestLimit - todaysInterests.value.length - 1)
+  async function showInterest(profileSlug: string, profileName: string, replaceTodaysInterest = false) {
+    if (!import.meta.client || (hasUsedDailyInterest.value && !replaceTodaysInterest) || atMatchLimit.value) return false
+    const interestAlreadyCountedToday = replaceTodaysInterest && isTodaysChoice(profileSlug)
+    const remainingAfterSend = Math.max(0, dailyInterestLimit - todaysInterests.value.length - (interestAlreadyCountedToday ? 0 : 1))
     const confirmed = window.confirm(`Show interest in ${profileName}? This will use 1 of your 5 daily interests. You will have ${remainingAfterSend} ${remainingAfterSend === 1 ? 'interest' : 'interests'} remaining today.`)
     if (!confirmed) return false
     errorMessage.value = null
@@ -70,6 +71,7 @@ export function useDailyInterest() {
     sending.value = true
     try {
       const response = await $fetch<{ interest: DailyInterest; matched?: boolean }>('/api/interests', { method: 'POST', body: { profileSlug } })
+      interests.value = interests.value.filter(interest => interest.profileSlug !== profileSlug)
       interests.value.push(normaliseInterest(response.interest))
       if (response.matched) activeMatchCount.value += 1
     } catch (error) {
@@ -80,7 +82,7 @@ export function useDailyInterest() {
       } else {
         errorMessage.value = status === 409 && failure.data?.statusMessage?.includes('Resume your profile')
           ? 'Your profile is paused. Resume discovery in Account before sending new interest.'
-          : status === 409 && failure.data?.statusMessage?.includes('apology')
+          : status === 409 && (failure.data?.statusMessage?.includes('apology') || failure.data?.statusMessage?.includes('private message'))
           ? failure.data.statusMessage
           : status === 409 && failure.data?.statusMessage?.includes('already sent interest')
           ? 'You have already sent interest to this person.'

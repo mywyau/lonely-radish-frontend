@@ -13,7 +13,7 @@ export default defineEventHandler(async (event) => {
     p.height_cm as "heightCm",p.drinking,p.smoking,p.daily_rhythm as "dailyRhythm",
     relationship.id as "matchId",relationship.status as "relationshipStatus",
     relationship.status='active' as "isMatched",relationship.ended_by=$2 as "endedByMe",
-    (relationship.ended_by is not null and relationship.ended_by<>$2) as "wasUnmatched",
+    (relationship.status='unmatched' and relationship.ended_by is distinct from $2) as "wasUnmatched",
     exists(select 1 from match_apology_notes man where man.match_id=relationship.id and man.sender_id=$2
       and man.message_type='apology' and man.created_at>relationship.ended_at) as "apologySent",
     exists(select 1 from match_apology_notes man where man.match_id=relationship.id and man.sender_id=$2
@@ -21,13 +21,13 @@ export default defineEventHandler(async (event) => {
     exists(select 1 from match_apology_notes man where man.match_id=relationship.id
       and man.sender_id=$2 and man.created_at>relationship.ended_at
       and ((relationship.ended_by=$2 and man.message_type='apology')
-        or (relationship.ended_by<>$2 and man.message_type='contact'))) as "secondChanceAvailable",
+        or (relationship.ended_by is distinct from $2 and man.message_type='contact'))) as "secondChanceAvailable",
     exists(select 1 from daily_interests di where di.sender_id=$2 and di.recipient_id=p.user_id
       and (relationship.status is distinct from 'unmatched' or (di.created_at>relationship.ended_at
         and exists(select 1 from match_apology_notes man where man.match_id=relationship.id
           and man.sender_id=$2 and man.created_at>relationship.ended_at
           and ((relationship.ended_by=$2 and man.message_type='apology')
-            or (relationship.ended_by<>$2 and man.message_type='contact')))))) as "interestSent"
+            or (relationship.ended_by is distinct from $2 and man.message_type='contact')))))) as "interestSent"
     ,coalesce(mp.availability_visible_before_match,false) as "availabilityVisibleBeforeMatch"
     from profiles p join users u on u.id=p.user_id left join match_preferences mp on mp.user_id=p.user_id
     left join lateral (select m.id,m.status,m.ended_by,m.ended_at from matches m where
