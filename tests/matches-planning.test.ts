@@ -50,6 +50,7 @@ describe('matches and date planning dashboard', () => {
     expect(read('pages/matches/index.vue')).toContain("showSummaryCounts ? 'Hide counts' : 'Show counts'")
     expect(read('pages/matches/index.vue')).toContain('EyeOff v-if="showSummaryCounts"')
     expect(read('server/api/matches/index.get.ts')).toContain('count(distinct di.sender_id)::int as count')
+    expect(read('server/api/matches/index.get.ts')).toContain('di.created_at<=ended.ended_at')
     expect(read('pages/matches/index.vue')).toContain('Your plan allows up to {{ activeMatchLimit }} active matches')
     expect(read('pages/matches/index.vue')).toContain('class="summary-icon"')
     expect(read('pages/matches/index.vue')).toContain('summary-confirmed')

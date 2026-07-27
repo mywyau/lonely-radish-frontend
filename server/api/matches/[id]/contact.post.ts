@@ -19,6 +19,10 @@ export default defineEventHandler(async (event) => {
       where match_id=$1 and sender_id=$2 and message_type='contact' and created_at>$3 limit 1`,
       [matchId, sub, match.rows[0].endedAt])
     if (currentMessage.rows[0]) throw createError({ statusCode: 409, statusMessage: 'You have already sent a message for this ended match' })
+    await client.query(`delete from daily_interests where sender_id=$1 and recipient_id=$2
+      and created_at>$3`, [sub, match.rows[0].recipientId, match.rows[0].endedAt])
+    await client.query(`delete from notifications where recipient_id=$1 and actor_id=$2
+      and kind='interest_received' and created_at>$3`, [match.rows[0].recipientId, sub, match.rows[0].endedAt])
     await client.query(`insert into match_apology_notes(match_id,sender_id,recipient_id,message,message_type)
       values($1,$2,$3,$4,'contact')`, [matchId, sub, match.rows[0].recipientId, message])
     await client.query(`insert into notifications(recipient_id,actor_id,match_id,kind)

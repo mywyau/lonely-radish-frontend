@@ -42,7 +42,14 @@ export default defineEventHandler(async (event) => {
         (u.account_status='paused' and u.paused_until is not null and u.paused_until<=now()))
       join profiles p on p.user_id=di.sender_id and p.visibility='active'
       where di.recipient_id=$1 and not exists(select 1 from blocks b where
-        (b.blocker_id=$1 and b.blocked_id=di.sender_id) or (b.blocker_id=di.sender_id and b.blocked_id=$1))`, [sub]),
+        (b.blocker_id=$1 and b.blocked_id=di.sender_id) or (b.blocker_id=di.sender_id and b.blocked_id=$1))
+      and not exists(select 1 from matches ended where ended.status='unmatched'
+        and ((ended.user_one_id=$1 and ended.user_two_id=di.sender_id)
+          or (ended.user_two_id=$1 and ended.user_one_id=di.sender_id))
+        and (di.created_at<=ended.ended_at or not exists(select 1 from match_apology_notes man
+          where man.match_id=ended.id and man.sender_id=di.sender_id and man.created_at>ended.ended_at
+            and ((di.sender_id=ended.ended_by and man.message_type='apology')
+              or (di.sender_id<>ended.ended_by and man.message_type='contact')))))`, [sub]),
     getActiveMatchLimit(sub),
   ])
 

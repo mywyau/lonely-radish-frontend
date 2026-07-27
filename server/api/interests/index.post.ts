@@ -29,15 +29,15 @@ export default defineEventHandler(async (event) => {
       ((user_one_id=$1 and user_two_id=$2) or (user_one_id=$2 and user_two_id=$1)) limit 1`, [sub,recipientId])
     if (existingMatch.rows[0]) throw createError({ statusCode: 409, statusMessage: 'You have already matched with this person' })
     const endedMatch = await client.query(`select m.id,m.ended_by,m.ended_at,
-      (m.ended_by<>$1 or exists(select 1 from match_apology_notes man where man.match_id=m.id
-        and man.sender_id=m.ended_by and man.message_type='apology'
-        and man.created_at>m.ended_at)) as "secondChanceAvailable"
+      exists(select 1 from match_apology_notes man where man.match_id=m.id and man.sender_id=$1
+        and man.created_at>m.ended_at and ((m.ended_by=$1 and man.message_type='apology')
+          or (m.ended_by<>$1 and man.message_type='contact'))) as "secondChanceAvailable"
       from matches m where m.status='unmatched' and
       ((m.user_one_id=$1 and m.user_two_id=$2) or (m.user_one_id=$2 and m.user_two_id=$1)) limit 1`, [sub,recipientId])
     if (endedMatch.rows[0] && !endedMatch.rows[0].secondChanceAvailable) {
       throw createError({ statusCode: 409, statusMessage: endedMatch.rows[0].ended_by === sub
-        ? 'Send an apology before asking for a second chance'
-        : 'This past connection is not open for renewed interest' })
+        ? 'Send a private note before asking for a second chance'
+        : 'Send a private message before re-offering interest' })
     }
     const existingInterest = await client.query(`select created_at from daily_interests
       where sender_id=$1 and recipient_id=$2 limit 1`, [sub,recipientId])

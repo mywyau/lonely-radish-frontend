@@ -19,11 +19,15 @@ export default defineEventHandler(async (event) => {
     exists(select 1 from match_apology_notes man where man.match_id=relationship.id and man.sender_id=$2
       and man.message_type='contact' and man.created_at>relationship.ended_at) as "contactSent",
     exists(select 1 from match_apology_notes man where man.match_id=relationship.id
-      and man.message_type='apology' and man.sender_id=relationship.ended_by
-      and man.created_at>relationship.ended_at)
-      or (relationship.ended_by is not null and relationship.ended_by<>$2) as "secondChanceAvailable",
+      and man.sender_id=$2 and man.created_at>relationship.ended_at
+      and ((relationship.ended_by=$2 and man.message_type='apology')
+        or (relationship.ended_by<>$2 and man.message_type='contact'))) as "secondChanceAvailable",
     exists(select 1 from daily_interests di where di.sender_id=$2 and di.recipient_id=p.user_id
-      and (relationship.status is distinct from 'unmatched' or di.created_at>relationship.ended_at)) as "interestSent"
+      and (relationship.status is distinct from 'unmatched' or (di.created_at>relationship.ended_at
+        and exists(select 1 from match_apology_notes man where man.match_id=relationship.id
+          and man.sender_id=$2 and man.created_at>relationship.ended_at
+          and ((relationship.ended_by=$2 and man.message_type='apology')
+            or (relationship.ended_by<>$2 and man.message_type='contact')))))) as "interestSent"
     ,coalesce(mp.availability_visible_before_match,false) as "availabilityVisibleBeforeMatch"
     from profiles p join users u on u.id=p.user_id left join match_preferences mp on mp.user_id=p.user_id
     left join lateral (select m.id,m.status,m.ended_by,m.ended_at from matches m where
