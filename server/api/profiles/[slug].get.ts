@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
   const { rows } = await db.query(`select p.user_id as "userId",p.slug,p.display_name as name,
     extract(year from age(current_date,p.date_of_birth))::int as age,p.pronouns,p.bio,
     coalesce(p.location_label,p.postcode_area,p.neighbourhood) as place,
-    p.height_cm as "heightCm",p.drinking,p.smoking,p.daily_rhythm as "dailyRhythm",
+    p.height_cm as "heightCm",p.weight_kg as "weightKg",p.drinking,p.smoking,p.daily_rhythm as "dailyRhythm",
     relationship.id as "matchId",relationship.status as "relationshipStatus",
     relationship.status='active' as "isMatched",relationship.ended_by=$2 as "endedByMe",
     (relationship.status='unmatched' and relationship.ended_by is distinct from $2) as "wasUnmatched",

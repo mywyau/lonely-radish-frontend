@@ -1,19 +1,28 @@
 <script setup lang="ts">
 import { Heart, Info, UsersRound } from '@lucide/vue'
+import { sexualOrientationOptions } from '~/utils/sexualOrientation'
 
 definePageMeta({ title: 'Dating Preferences · Lonely Radish', middleware: 'logged-in' })
 
 const genderOptions = ['Women', 'Men', 'Non-binary']
 const raceEthnicityOptions = ['Asian', 'Black / African / Caribbean', 'Hispanic / Latino', 'Middle Eastern', 'North African', 'Native / Indigenous', 'Pacific Islander', 'White', 'Multiracial / multi-ethnic']
-const preferences = reactive({ genders: [] as string[], raceEthnicities: [] as string[], openToEveryone: true, noRaceEthnicityPreference: true })
+const preferences = reactive({ genders: [] as string[], orientations: [] as string[], raceEthnicities: [] as string[],
+  openToEveryone: true, noOrientationPreference: false, noRaceEthnicityPreference: true })
 const saved = ref(false)
+const saveError = ref('')
 
 function toggle(list: string[], value: string) { const index = list.indexOf(value); index >= 0 ? list.splice(index, 1) : list.push(value) }
 function toggleGender(value: string) { preferences.openToEveryone = false; toggle(preferences.genders, value); if (!preferences.genders.length) preferences.openToEveryone = true }
 function selectEveryone() { preferences.openToEveryone = true; preferences.genders.splice(0) }
+function toggleOrientation(value: string) { toggle(preferences.orientations, value) }
 function toggleRaceEthnicity(value: string) { preferences.noRaceEthnicityPreference = false; toggle(preferences.raceEthnicities, value); if (!preferences.raceEthnicities.length) preferences.noRaceEthnicityPreference = true }
 function selectNoRacePreference() { preferences.noRaceEthnicityPreference = true; preferences.raceEthnicities.splice(0) }
-async function save() { await $fetch('/api/preferences/dating', { method: 'PUT', body: preferences }); saved.value = true; window.setTimeout(() => { saved.value = false }, 2200) }
+async function save() {
+  saveError.value = ''
+  if (!preferences.orientations.length) { saveError.value = 'Choose at least one sexual orientation you are open to dating.'; return }
+  await $fetch('/api/preferences/dating', { method: 'PUT', body: preferences })
+  saved.value = true; window.setTimeout(() => { saved.value = false }, 2200)
+}
 onMounted(async () => { Object.assign(preferences, await $fetch('/api/preferences/dating')) })
 </script>
 
@@ -26,11 +35,19 @@ onMounted(async () => { Object.assign(preferences, await $fetch('/api/preference
 
       <form class="mt-8 space-y-5" @submit.prevent="save">
         <section class="rounded-lg bg-white p-6 shadow-[0_12px_28px_rgba(180,35,74,0.08)]">
-          <div class="flex items-start gap-3"><Heart class="mt-1 size-5 text-[#B4234A]" /><div><h2 class="text-xl font-semibold">Sexual preference</h2><p class="mt-1 text-sm text-[#6E4D58]">Select the genders you are open to dating.</p></div></div>
+          <div class="flex items-start gap-3"><Heart class="mt-1 size-5 text-[#B4234A]" /><div><h2 class="text-xl font-semibold">Gender preference</h2><p class="mt-1 text-sm text-[#6E4D58]">Select the genders you are open to dating.</p></div></div>
           <div class="mt-5 grid gap-2 sm:grid-cols-2">
             <button type="button" class="choice" :class="preferences.openToEveryone && 'choice-selected'" :aria-pressed="preferences.openToEveryone" @click="selectEveryone">Everyone</button>
             <button v-for="option in genderOptions" :key="option" type="button" class="choice" :class="preferences.genders.includes(option) && 'choice-selected'" :aria-pressed="preferences.genders.includes(option)" @click="toggleGender(option)">{{ option }}</button>
           </div>
+        </section>
+
+        <section class="rounded-lg bg-white p-6 shadow-[0_12px_28px_rgba(180,35,74,0.08)]">
+          <div class="flex items-start gap-3"><Heart class="mt-1 size-5 text-[#B4234A]" /><div><h2 class="text-xl font-semibold">Sexual orientation preference</h2><p class="mt-1 text-sm text-[#6E4D58]">Choose one or more orientations you are open to dating, separately from gender.</p></div></div>
+          <div class="mt-5 grid gap-2 sm:grid-cols-2">
+            <button v-for="option in sexualOrientationOptions" :key="option.value" type="button" class="choice" :class="preferences.orientations.includes(option.value) && 'choice-selected'" :aria-pressed="preferences.orientations.includes(option.value)" @click="toggleOrientation(option.value)">{{ option.label }}</button>
+          </div>
+          <p class="mt-3 text-xs font-semibold text-[#6E4D58]">{{ preferences.orientations.length ? `${preferences.orientations.length} selected` : 'Select at least one orientation' }}</p>
         </section>
 
         <section class="rounded-lg bg-white p-6 shadow-[0_12px_28px_rgba(180,35,74,0.08)]">
@@ -42,7 +59,8 @@ onMounted(async () => { Object.assign(preferences, await $fetch('/api/preference
           <div class="mt-5 flex gap-2 rounded-lg bg-[#F3E8DA] p-4 text-sm leading-6 text-[#4D2F39]"><Info class="mt-0.5 size-4 shrink-0" /><p>Identity is personal and nuanced. These broad options are only matching controls; they do not define how another person identifies.</p></div>
         </section>
 
-        <div class="flex flex-wrap items-center gap-3"><button type="submit" class="rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white">Save dating preferences</button><NuxtLink to="/preferences" class="px-3 py-2 text-sm font-semibold text-[#8F1839]">Back to match preferences</NuxtLink><span v-if="saved" class="text-sm font-semibold text-[#6E8B52]">Dating preferences saved.</span></div>
+        <div class="flex flex-wrap items-center gap-3"><button type="submit" :disabled="!preferences.orientations.length" class="rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white disabled:opacity-50">Save dating preferences</button><NuxtLink to="/preferences" class="px-3 py-2 text-sm font-semibold text-[#8F1839]">Back to match preferences</NuxtLink><span v-if="saved" class="text-sm font-semibold text-[#6E8B52]">Dating preferences saved.</span></div>
+        <p v-if="saveError" class="text-sm font-semibold text-[#8F1839]" role="alert">{{ saveError }}</p>
       </form>
     </section>
   </main>

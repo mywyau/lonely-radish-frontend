@@ -20,13 +20,13 @@ const candidatesError = ref('')
 const nextCursor = ref<string | null>(null)
 const hasMore = ref(false)
 const loadingMore = ref(false)
-const appliedFilters = ref<{ minimumAge: number; maximumAge: number; distance: number; genderLabel: string; racialPreferencesApplied: boolean } | null>(null)
+const appliedFilters = ref<{ minimumAge: number; maximumAge: number; distance: number; genderLabel: string; orientationLabel: string; racialPreferencesApplied: boolean } | null>(null)
 
 async function loadCandidates(loadMore = false) {
   if (loadMore) loadingMore.value = true
   candidatesError.value = ''
   try {
-    const result = await $fetch<{ people: any[]; nextCursor: string | null; hasMore: boolean; filters: { minimumAge: number; maximumAge: number; distance: number; genderLabel: string; racialPreferencesApplied: boolean } }>(`/api/activities/${slug.value}/people`, {
+    const result = await $fetch<{ people: any[]; nextCursor: string | null; hasMore: boolean; filters: { minimumAge: number; maximumAge: number; distance: number; genderLabel: string; orientationLabel: string; racialPreferencesApplied: boolean } }>(`/api/activities/${slug.value}/people`, {
       query: loadMore && nextCursor.value ? { cursor: nextCursor.value } : undefined,
     })
     databasePeople.value = loadMore ? [...databasePeople.value, ...result.people] : result.people
@@ -66,6 +66,7 @@ onMounted(async () => {
           <div class="flex flex-wrap gap-2 text-xs font-semibold text-[#4D2F39]">
             <span class="rounded-full bg-[#F3E8DA] px-3 py-2">Ages {{ appliedFilters.minimumAge }}–{{ appliedFilters.maximumAge }}</span>
             <span class="rounded-full bg-[#FCE3E8] px-3 py-2">{{ appliedFilters.genderLabel }}</span>
+            <span class="rounded-full bg-[#FCE3E8] px-3 py-2">{{ appliedFilters.orientationLabel }}</span>
             <span class="rounded-full bg-[#FFF1C7] px-3 py-2">{{ appliedFilters.racialPreferencesApplied ? 'Racial preferences applied' : 'No racial preference' }}</span>
           </div>
           <NuxtLink to="/preferences" class="shrink-0 text-sm font-semibold text-[#8F1839] hover:underline">Adjust filters</NuxtLink>

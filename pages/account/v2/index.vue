@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ArrowRight, CalendarDays, CheckCircle2, ChevronDown, Circle, MapPin, ShieldCheck, SlidersHorizontal, Sparkles, Trash2, UserRound } from "@lucide/vue";
+import { sexualOrientationOptions } from '~/utils/sexualOrientation';
 
 definePageMeta({
   title: "Account · Lonely Radish",
@@ -7,7 +8,7 @@ definePageMeta({
 });
 
 const { user, resolve } = useMeStateV2();
-const profile = reactive({ firstName: "", lastName: "", displayName: "", raceEthnicity: "" });
+const profile = reactive({ firstName: "", lastName: "", displayName: "", raceEthnicity: "", sexualOrientation: "" });
 const raceEthnicityOptions = ['Asian', 'Black / African / Caribbean', 'Hispanic / Latino', 'Middle Eastern', 'North African', 'Native / Indigenous', 'Pacific Islander', 'White', 'Multiracial / multi-ethnic', 'Prefer not to say'];
 
 const saved = ref(false);
@@ -19,7 +20,7 @@ const deletingAccount = ref(false);
 const deleteError = ref("");
 const deletionQueued = ref(false);
 const contact = reactive({ phoneNumber: '', contactEmail: '', socialHandle: '', shareWithMatches: false });
-const lifestyle = reactive<{ heightCm: number | null; drinking: string; smoking: string; dailyRhythm: string }>({ heightCm: null, drinking: '', smoking: '', dailyRhythm: '' });
+const lifestyle = reactive<{ heightCm: number | null; weightKg: number | null; drinking: string; smoking: string; dailyRhythm: string }>({ heightCm: null, weightKg: null, drinking: '', smoking: '', dailyRhythm: '' });
 const lifestyleSaved = ref(false);
 const lifestyleError = ref('');
 const accountNameLimit = 80;
@@ -62,7 +63,7 @@ async function saveProfile() {
         method: "POST", body: { firstName: profile.firstName, lastName: profile.lastName },
       }),
       $fetch('/api/profile/display-name', { method: 'PUT', body: { displayName: profile.displayName } }),
-      $fetch('/api/profile/identity', { method: 'PUT', body: { raceEthnicity: profile.raceEthnicity } }),
+      $fetch('/api/profile/identity', { method: 'PUT', body: { raceEthnicity: profile.raceEthnicity, sexualOrientation: profile.sexualOrientation } }),
     ]);
     if (user.value) {
       user.value.firstName = updated.firstName;
@@ -115,8 +116,10 @@ onMounted(async () => {
   try {
     const result = await $fetch<any>('/api/profile/me');
     profile.raceEthnicity = result.profile?.raceEthnicity || '';
+    profile.sexualOrientation = result.profile?.sexualOrientation || '';
     profile.displayName = result.profile?.displayName || '';
-    Object.assign(lifestyle, { heightCm: result.profile?.heightCm || null, drinking: result.profile?.drinking || '', smoking: result.profile?.smoking || '', dailyRhythm: result.profile?.dailyRhythm || '' });
+    Object.assign(lifestyle, { heightCm: result.profile?.heightCm || null, weightKg: result.profile?.weightKg || null,
+      drinking: result.profile?.drinking || '', smoking: result.profile?.smoking || '', dailyRhythm: result.profile?.dailyRhythm || '' });
   } catch { /* Profile details remain editable when profile data is available. */ }
   try {
     readiness.value = await $fetch('/api/profile/readiness');
@@ -203,6 +206,14 @@ onMounted(async () => {
             </label>
 
             <label class="block text-sm font-medium sm:col-span-2">
+              Sexual orientation
+              <select v-model="profile.sexualOrientation" class="field" required>
+                <option value="" disabled>Select an option</option>
+                <option v-for="option in sexualOrientationOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
+              </select>
+            </label>
+
+            <label class="block text-sm font-medium sm:col-span-2">
               Racial or ethnic identity
               <select v-model="profile.raceEthnicity" class="field" required>
                 <option value="" disabled>Select an option</option>
@@ -231,6 +242,9 @@ onMounted(async () => {
           <form class="mt-5 grid gap-4 sm:grid-cols-2" @submit.prevent="saveLifestyle">
             <label class="text-sm font-medium">Height <span class="font-normal text-[#6E4D58]">(optional)</span>
               <div class="relative"><input v-model.number="lifestyle.heightCm" class="field pr-12" type="number" min="120" max="230" placeholder="170"><span class="pointer-events-none absolute right-4 top-1/2 mt-1 -translate-y-1/2 text-sm text-[#6E4D58]">cm</span></div>
+            </label>
+            <label class="text-sm font-medium">Weight <span class="font-normal text-[#6E4D58]">(optional)</span>
+              <div class="relative"><input v-model.number="lifestyle.weightKg" class="field pr-12" type="number" min="35" max="300" placeholder="70"><span class="pointer-events-none absolute right-4 top-1/2 mt-1 -translate-y-1/2 text-sm text-[#6E4D58]">kg</span></div>
             </label>
             <label class="text-sm font-medium">Daily rhythm <span class="font-normal text-[#6E4D58]">(optional)</span>
               <select v-model="lifestyle.dailyRhythm" class="field"><option value="">Not set</option><option value="early_bird">Early bird</option><option value="night_owl">Night owl</option><option value="flexible">A bit of both</option></select>

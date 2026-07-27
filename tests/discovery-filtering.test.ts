@@ -20,12 +20,14 @@ describe('scalable discovery filtering', () => {
     expect(endpoint).not.toContain('returning latitude')
   })
 
-  it('applies the viewing users age, gender, ethnicity and distance filters on the server', () => {
+  it('applies age, reciprocal gender and orientation, ethnicity and distance filters on the server', () => {
     const filters = read('server/utils/discoveryFilters.ts')
     const discovery = read('server/api/activities/[slug]/people.get.ts')
     expect(filters).toContain('between')
     expect(filters).toContain('mine.interested_genders')
-    expect(filters).not.toContain('theirs.interested_genders')
+    expect(filters).toContain('theirs.interested_genders')
+    expect(filters).toContain('mine.interested_orientations')
+    expect(filters).toContain('theirs.interested_orientations')
     expect(filters).toContain('mine.preferred_ethnicities')
     expect(filters).not.toContain('theirs.preferred_ethnicities')
     expect(filters).toContain('extensions.ST_DWithin')

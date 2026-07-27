@@ -84,6 +84,7 @@ const lifestyleLabels = computed(() => {
   if (!profile.value) return []
   const labels = []
   if (profile.value.heightCm) labels.push(`${profile.value.heightCm} cm`)
+  if (profile.value.weightKg) labels.push(`${profile.value.weightKg} kg`)
   if (profile.value.drinking && profile.value.drinking !== 'prefer_not_to_say') labels.push(`Drinks ${profile.value.drinking}`)
   if (profile.value.smoking && profile.value.smoking !== 'prefer_not_to_say') labels.push(profile.value.smoking === 'never' ? 'Non-smoker' : `Smokes ${profile.value.smoking}`)
   if (profile.value.dailyRhythm) labels.push({ early_bird: 'Early bird', night_owl: 'Night owl', flexible: 'A bit of both' }[profile.value.dailyRhythm] || profile.value.dailyRhythm)

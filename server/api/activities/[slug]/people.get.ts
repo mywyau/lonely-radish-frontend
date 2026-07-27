@@ -3,7 +3,7 @@ import { db } from '~/server/repositories/db'
 import { requireUser } from '~/server/utils/requireUser'
 import { signedPhotoUrl } from '~/server/utils/supabaseStorage'
 import { discoveryCategory } from '~/utils/activityDiscovery'
-import { viewerDiscoveryJoins, viewerDiscoveryWhere } from '~/server/utils/discoveryFilters'
+import { discoveryDistanceSelect, viewerDiscoveryJoins, viewerDiscoveryWhere } from '~/server/utils/discoveryFilters'
 import { decodeCursor, pageRows } from '~/server/utils/cursorPagination'
 
 export default defineEventHandler(async (event) => {
@@ -19,7 +19,8 @@ export default defineEventHandler(async (event) => {
     db.query(`select p.slug,p.display_name as name,p.updated_at::text as "sortAt",
     extract(year from age(current_date,p.date_of_birth))::int as age,
     coalesce(p.location_label,p.postcode_area,p.neighbourhood) as place,p.bio as detail,
-    photo.storage_key as "photoStorageKey",photo.public_url as "legacyPhotoUrl",shared."activityTags"
+    photo.storage_key as "photoStorageKey",photo.public_url as "legacyPhotoUrl",shared."activityTags",
+    ${discoveryDistanceSelect}
     from profiles p join users u on u.id=p.user_id
     ${viewerDiscoveryJoins}
     left join lateral (select storage_key,public_url from profile_photos where user_id=p.user_id order by position limit 1) photo on true
@@ -40,23 +41,26 @@ export default defineEventHandler(async (event) => {
     order by p.updated_at desc,p.slug desc limit $5`, [category.databaseCategories,sub,cursor?.sortAt || null,cursor?.tieBreaker || null,pageSize+1]),
     db.query(`select minimum_age as "minimumAge",maximum_age as "maximumAge",max_distance_km as "distance",
       open_to_everyone as "openToEveryone",interested_genders as genders,
+      no_orientation_preference as "noOrientationPreference",interested_orientations as orientations,
       no_ethnicity_preference as "noRacePreference" from match_preferences where user_id=$1`, [sub]),
   ])
 
   const page = pageRows(candidates.rows, pageSize, row => ({ sortAt: row.sortAt, tieBreaker: row.slug }))
   const people = await Promise.all(page.items.map(async person => ({
     slug: person.slug, name: person.name, age: person.age,
-    place: person.place || 'Location not shared',
+    place: person.place || 'Location not shared', distanceKm: person.distanceKm,
     activityTags: (person.activityTags || []).slice(0, 3), photoUrl: person.photoStorageKey
       ? await signedPhotoUrl(person.photoStorageKey) : person.legacyPhotoUrl || null,
   })))
-  const preferences = preferenceResult.rows[0] ?? { minimumAge: 18, maximumAge: 100, distance: 10, openToEveryone: true, genders: [], noRacePreference: true }
+  const preferences = preferenceResult.rows[0] ?? { minimumAge: 18, maximumAge: 100, distance: 10,
+    openToEveryone: true, genders: [], noOrientationPreference: true, orientations: [], noRacePreference: true }
   return {
     activityName: category.name, categoryName: category.name, people,
     nextCursor: page.nextCursor, hasMore: page.hasMore,
     filters: {
       minimumAge: preferences.minimumAge, maximumAge: preferences.maximumAge, distance: preferences.distance,
       genderLabel: preferences.openToEveryone ? 'Everyone' : preferences.genders.join(', '),
+      orientationLabel: preferences.noOrientationPreference ? 'Any orientation' : `${preferences.orientations.length} orientation ${preferences.orientations.length === 1 ? 'choice' : 'choices'}`,
       racialPreferencesApplied: preferences.noRacePreference === false,
     },
   }

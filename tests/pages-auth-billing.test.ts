@@ -126,7 +126,7 @@ describe("auth and billing page contracts", () => {
     expect(activityApi).toContain('length > 3')
     expect(activityPreferences).toContain("name: 'Gaming'");
     expect(datingPreferences).toContain("title: 'Dating Preferences · Lonely Radish'");
-    expect(datingPreferences).toContain("Sexual preference");
+    expect(datingPreferences).toContain("Sexual orientation preference");
     expect(datingPreferences).toContain("Racial and ethnic preferences");
     expect(datingPreferences).toContain("No racial or ethnic preference");
     expect(datingPreferences).toContain("Save dating preferences");

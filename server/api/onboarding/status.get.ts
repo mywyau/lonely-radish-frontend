@@ -7,12 +7,15 @@ export default defineEventHandler(async (event) => {
   const { sub } = await requireUser(event)
   const { rows } = await db.query(`select u.onboarding_completed_at as "completedAt",
     (nullif(trim(u.first_name),'') is not null and nullif(trim(u.last_name),'') is not null
-      and p.user_id is not null and p.date_of_birth is not null and nullif(trim(p.bio),'') is not null) as "profileComplete",
+      and p.user_id is not null and p.gender_identity is not null and p.sexual_orientation is not null
+      and p.date_of_birth is not null and nullif(trim(p.bio),'') is not null) as "profileComplete",
     (p.race_ethnicity is not null) as "racialIdentityComplete",
     (select count(*)::int from profile_activities pa where pa.user_id=u.id) as "activityCount",
     (select count(*)::int from profile_photos pp where pp.user_id=u.id) as "photoCount",
     (mp.user_id is not null) as "preferencesComplete",
-    (mp.user_id is not null and mp.dating_preferences_set=true and (mp.open_to_everyone=true or cardinality(mp.interested_genders)>0)) as "datingComplete"
+    (mp.user_id is not null and mp.dating_preferences_set=true
+      and (mp.open_to_everyone=true or cardinality(mp.interested_genders)>0)
+      and mp.no_orientation_preference=false and cardinality(mp.interested_orientations)>0) as "datingComplete"
     from users u left join profiles p on p.user_id=u.id
     left join match_preferences mp on mp.user_id=u.id where u.id=$1`, [sub])
   const state = rows[0]
@@ -24,5 +27,7 @@ export default defineEventHandler(async (event) => {
   const datingComplete = state.datingComplete === true
   const photoCount = Number(state.photoCount || 0)
   const nextStep = !profileComplete ? 1 : !racialIdentityComplete ? 2 : activityCount < 1 ? 3 : !preferencesComplete ? 4 : !datingComplete ? 5 : 6
-  return { complete: Boolean(state.completedAt), completedAt: state.completedAt, nextStep, profileComplete, racialIdentityComplete, activityCount, photoCount, preferencesComplete, datingComplete }
+  const complete = Boolean(state.completedAt) && profileComplete && racialIdentityComplete
+    && activityCount > 0 && preferencesComplete && datingComplete
+  return { complete, completedAt: state.completedAt, nextStep, profileComplete, racialIdentityComplete, activityCount, photoCount, preferencesComplete, datingComplete }
 })

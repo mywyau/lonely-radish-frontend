@@ -4,7 +4,7 @@ import { CalendarDays, ChevronLeft, ChevronRight, Expand, Eye, HeartHandshake, I
 definePageMeta({ title: 'Profile Preview · Lonely Radish', middleware: 'logged-in' })
 
 type PreviewData = {
-  profile: { displayName: string; dateOfBirth?: string; pronouns?: string; bio?: string; neighbourhood?: string; visibility?: string; heightCm?: number; drinking?: string; smoking?: string; dailyRhythm?: string } | null
+  profile: { displayName: string; dateOfBirth?: string; pronouns?: string; bio?: string; neighbourhood?: string; visibility?: string; heightCm?: number; weightKg?: number; drinking?: string; smoking?: string; dailyRhythm?: string } | null
   photos: Array<{ id: string; url: string; altText?: string; position: number }>
   activities: string[]
   interestCategories: string[]
@@ -23,6 +23,7 @@ const lifestyleLabels = computed(() => {
   if (!profile) return []
   const labels: string[] = []
   if (profile.heightCm) labels.push(`${profile.heightCm} cm`)
+  if (profile.weightKg) labels.push(`${profile.weightKg} kg`)
   if (profile.drinking && profile.drinking !== 'prefer_not_to_say') labels.push(`Drinks ${profile.drinking}`)
   if (profile.smoking && profile.smoking !== 'prefer_not_to_say') labels.push(profile.smoking === 'never' ? 'Non-smoker' : `Smokes ${profile.smoking}`)
   if (profile.dailyRhythm) labels.push({ early_bird: 'Early bird', night_owl: 'Night owl', flexible: 'A bit of both' }[profile.dailyRhythm] || profile.dailyRhythm)

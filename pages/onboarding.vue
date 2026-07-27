@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ArrowLeft, ArrowRight, Brain, Check, Compass, Gamepad2, HandHeart, HeartHandshake, HeartPulse, ImagePlus, MoonStar, Sparkles, Trophy, UserRound, UsersRound } from '@lucide/vue'
+import { sexualOrientationOptions } from '~/utils/sexualOrientation'
 
 definePageMeta({ title: 'Set up your profile · Lonely Radish', middleware: 'logged-in' })
 
@@ -16,7 +17,9 @@ const displayNameLimit = 80
 const pronounsLimit = 40
 const bioLimit = 1000
 const customActivityLimit = 100
-const profile = reactive({ firstName: '', lastName: '', displayName: '', genderIdentity: '', raceEthnicity: '', slug: '', dateOfBirth: '', pronouns: '', bio: '', heightCm: null as number | null, drinking: '', smoking: '', dailyRhythm: '' })
+const profile = reactive({ firstName: '', lastName: '', displayName: '', genderIdentity: '', sexualOrientation: '',
+  raceEthnicity: '', slug: '', dateOfBirth: '', pronouns: '', bio: '', heightCm: null as number | null,
+  weightKg: null as number | null, drinking: '', smoking: '', dailyRhythm: '' })
 const birthDate = reactive({ day: '', month: '', year: '' })
 const profileNameStatus = ref<'idle' | 'checking' | 'available' | 'taken'>('idle')
 const onboardingLocation = reactive({ postcode: '', postcodeArea: '', label: '', hasLocation: false })
@@ -40,7 +43,8 @@ const customActivityInputs = reactive<Record<string, string>>(Object.fromEntries
 const activitySelectionLimit = ref(5)
 const activityLimitReached = computed(() => selectedActivities.value.length >= activitySelectionLimit.value)
 const preferences = reactive({ distance: 10, minimumAge: 24, maximumAge: 40, timing: [] as string[], publicOnly: true,
-  genders: [] as string[], openToEveryone: false, raceEthnicities: [] as string[], noRaceEthnicityPreference: true })
+  genders: [] as string[], openToEveryone: false, orientations: [] as string[], noOrientationPreference: false,
+  raceEthnicities: [] as string[], noRaceEthnicityPreference: true })
 const availabilityDays = reactive([
   { weekday: 0, name: 'Monday', enabled: false, startTime: '18:00', endTime: '21:00' },
   { weekday: 1, name: 'Tuesday', enabled: false, startTime: '18:00', endTime: '21:00' },
@@ -102,6 +106,9 @@ function toggleGenderPreference(value: string) {
   preferences.openToEveryone = false
   toggle(preferences.genders, value)
 }
+function toggleOrientationPreference(value: string) {
+  toggle(preferences.orientations, value, sexualOrientationOptions.length)
+}
 
 function activityIsSelected(name: string) {
   return selectedActivities.value.some(activity => activity.name === name)
@@ -142,8 +149,10 @@ async function load() {
   profile.lastName = user.value?.lastName || ''
   if (profileData.profile) Object.assign(profile, {
     displayName: profileData.profile.displayName || '', slug: profileData.profile.slug || '',
-    genderIdentity: profileData.profile.genderIdentity || '', raceEthnicity: profileData.profile.raceEthnicity || '', dateOfBirth: profileData.profile.dateOfBirth?.slice(0, 10) || '', pronouns: profileData.profile.pronouns || '', bio: profileData.profile.bio || '',
-    heightCm: profileData.profile.heightCm || null, drinking: profileData.profile.drinking || '', smoking: profileData.profile.smoking || '', dailyRhythm: profileData.profile.dailyRhythm || '',
+    genderIdentity: profileData.profile.genderIdentity || '', sexualOrientation: profileData.profile.sexualOrientation || '',
+    raceEthnicity: profileData.profile.raceEthnicity || '', dateOfBirth: profileData.profile.dateOfBirth?.slice(0, 10) || '', pronouns: profileData.profile.pronouns || '', bio: profileData.profile.bio || '',
+    heightCm: profileData.profile.heightCm || null, weightKg: profileData.profile.weightKg || null,
+    drinking: profileData.profile.drinking || '', smoking: profileData.profile.smoking || '', dailyRhythm: profileData.profile.dailyRhythm || '',
   })
   if (profile.dateOfBirth) {
     const [year, month, day] = profile.dateOfBirth.split('-')
@@ -163,7 +172,7 @@ async function load() {
 
 async function saveBasics() {
   errorMessage.value = ''
-  if (!profile.firstName.trim() || !profile.lastName.trim() || !profile.displayName.trim() || !profile.genderIdentity || !profile.dateOfBirth || !profile.bio.trim()) {
+  if (!profile.firstName.trim() || !profile.lastName.trim() || !profile.displayName.trim() || !profile.genderIdentity || !profile.sexualOrientation || !profile.dateOfBirth || !profile.bio.trim()) {
     errorMessage.value = 'Please complete all required fields.'; return
   }
   if (profileNameStatus.value === 'taken') { errorMessage.value = 'That profile name is already in use. Please choose another.'; return }
@@ -172,8 +181,10 @@ async function saveBasics() {
     const account = await $fetch<any>('/api/account/v2/profile', { method: 'POST', body: { firstName: profile.firstName, lastName: profile.lastName } })
     if (user.value) { user.value.firstName = account.firstName; user.value.lastName = account.lastName }
     profile.slug ||= createProfileSlug()
-    await $fetch('/api/profile/me', { method: 'PUT', body: { displayName: profile.displayName, genderIdentity: profile.genderIdentity, raceEthnicity: profile.raceEthnicity || null, slug: profile.slug,
-      dateOfBirth: profile.dateOfBirth, pronouns: profile.pronouns, bio: profile.bio, heightCm: profile.heightCm, drinking: profile.drinking, smoking: profile.smoking, dailyRhythm: profile.dailyRhythm, availability: [] } })
+    await $fetch('/api/profile/me', { method: 'PUT', body: { displayName: profile.displayName, genderIdentity: profile.genderIdentity,
+      sexualOrientation: profile.sexualOrientation, raceEthnicity: profile.raceEthnicity || null, slug: profile.slug,
+      dateOfBirth: profile.dateOfBirth, pronouns: profile.pronouns, bio: profile.bio, heightCm: profile.heightCm,
+      weightKg: profile.weightKg, drinking: profile.drinking, smoking: profile.smoking, dailyRhythm: profile.dailyRhythm, availability: [] } })
     step.value = 2
   } catch (error: any) { errorMessage.value = error?.data?.statusMessage || 'We could not save your profile.' }
   finally { saving.value = false }
@@ -184,9 +195,10 @@ async function saveRacialIdentity() {
   if (!profile.raceEthnicity) { errorMessage.value = 'Choose the option that best describes how you identify.'; return }
   saving.value = true
   try {
-    await $fetch('/api/profile/me', { method: 'PUT', body: { displayName: profile.displayName, genderIdentity: profile.genderIdentity,
+    await $fetch('/api/profile/me', { method: 'PUT', body: { displayName: profile.displayName, genderIdentity: profile.genderIdentity, sexualOrientation: profile.sexualOrientation,
       raceEthnicity: profile.raceEthnicity, slug: profile.slug, dateOfBirth: profile.dateOfBirth,
-      pronouns: profile.pronouns, bio: profile.bio, heightCm: profile.heightCm, drinking: profile.drinking, smoking: profile.smoking, dailyRhythm: profile.dailyRhythm, availability: [] } })
+      pronouns: profile.pronouns, bio: profile.bio, heightCm: profile.heightCm, weightKg: profile.weightKg,
+      drinking: profile.drinking, smoking: profile.smoking, dailyRhythm: profile.dailyRhythm, availability: [] } })
     step.value = 3
   } catch (error: any) { errorMessage.value = error?.data?.statusMessage || 'We could not save how you identify.' }
   finally { saving.value = false }
@@ -229,10 +241,12 @@ async function savePreferences() {
 async function saveDatingPreferences() {
   errorMessage.value = ''
   if (!preferences.openToEveryone && !preferences.genders.length) { errorMessage.value = 'Choose at least one type of person you are open to meeting.'; return }
+  if (!preferences.orientations.length) { errorMessage.value = 'Choose at least one sexual orientation you are open to dating.'; return }
   saving.value = true
   try {
     await $fetch('/api/preferences/dating', { method: 'PUT', body: { genders: preferences.genders,
-      openToEveryone: preferences.openToEveryone, raceEthnicities: preferences.raceEthnicities,
+      openToEveryone: preferences.openToEveryone, orientations: preferences.orientations,
+      noOrientationPreference: preferences.noOrientationPreference, raceEthnicities: preferences.raceEthnicities,
       noRaceEthnicityPreference: preferences.noRaceEthnicityPreference } })
     step.value = 6
   } catch (error: any) { errorMessage.value = error?.data?.statusMessage || 'We could not save who you are open to meeting.' }
@@ -272,10 +286,12 @@ onMounted(() => { load().catch(() => { errorMessage.value = 'We could not load o
           <label>Last name <input v-model="profile.lastName" required :maxlength="nameLimit" autocomplete="family-name" placeholder="Your last name"></label>
           <label class="sm:col-span-2">Profile name <input v-model="profile.displayName" required :maxlength="displayNameLimit" autocomplete="nickname" placeholder="Name shown to other members" @input="profileNameStatus = 'idle'" @blur="checkProfileName"><span v-if="profileNameStatus === 'checking'" class="field-hint">Checking availability…</span><span v-else-if="profileNameStatus === 'available'" class="field-hint success">Name available</span><span v-else-if="profileNameStatus === 'taken'" class="field-hint error">That name is already in use</span><span class="field-hint text-right">{{ profile.displayName.length }}/{{ displayNameLimit }}</span></label>
           <label>How do you identify?<select v-model="profile.genderIdentity" required><option value="" disabled>Select an option</option><option value="man">Man</option><option value="woman">Woman</option><option value="neither">Neither / another identity</option></select></label>
+          <label>Sexual orientation<select v-model="profile.sexualOrientation" required><option value="" disabled>Select an option</option><option v-for="option in sexualOrientationOptions" :key="option.value" :value="option.value">{{ option.label }}</option></select></label>
           <label>Pronouns <input v-model="profile.pronouns" :maxlength="pronounsLimit" autocomplete="off" placeholder="Optional"></label>
           <fieldset class="dob-field sm:col-span-2"><legend>Date of birth</legend><p class="field-hint">You must be 18 or over. This is never shown publicly.</p><div class="dob-grid"><label><span>Day</span><select v-model="birthDate.day" required @change="updateDateOfBirth"><option value="" disabled>Day</option><option v-for="day in birthDays" :key="day" :value="String(day)">{{ day }}</option></select></label><label><span>Month</span><select v-model="birthDate.month" required @change="updateDateOfBirth"><option value="" disabled>Month</option><option v-for="(month, index) in months" :key="month" :value="String(index + 1)">{{ month }}</option></select></label><label><span>Year</span><select v-model="birthDate.year" required @change="updateDateOfBirth"><option value="" disabled>Year</option><option v-for="year in birthYears" :key="year" :value="String(year)">{{ year }}</option></select></label></div></fieldset>
           <label class="sm:col-span-2">Short bio <textarea v-model="profile.bio" required :maxlength="bioLimit" rows="5" placeholder="A little about you and the kind of person you would enjoy meeting…" /><span class="field-hint text-right">{{ profile.bio.length }}/{{ bioLimit }}</span></label>
           <label>Height <span class="font-normal text-[#6E4D58]">(optional)</span><input v-model.number="profile.heightCm" type="number" min="120" max="230" placeholder="Height in cm"></label>
+          <label>Weight <span class="font-normal text-[#6E4D58]">(optional)</span><input v-model.number="profile.weightKg" type="number" min="35" max="300" placeholder="Weight in kg"></label>
           <label>Daily rhythm <span class="font-normal text-[#6E4D58]">(optional)</span><select v-model="profile.dailyRhythm"><option value="">Not set</option><option value="early_bird">Early bird</option><option value="night_owl">Night owl</option><option value="flexible">A bit of both</option></select></label>
           <label>Drinking <span class="font-normal text-[#6E4D58]">(optional)</span><select v-model="profile.drinking"><option value="">Not set</option><option value="never">Never</option><option value="socially">Socially</option><option value="regularly">Regularly</option><option value="prefer_not_to_say">Prefer not to say</option></select></label>
           <label>Smoking <span class="font-normal text-[#6E4D58]">(optional)</span><select v-model="profile.smoking"><option value="">Not set</option><option value="never">Never</option><option value="socially">Socially</option><option value="regularly">Regularly</option><option value="prefer_not_to_say">Prefer not to say</option></select></label>
@@ -324,8 +340,9 @@ onMounted(() => { load().catch(() => { errorMessage.value = 'We could not load o
       <form v-else-if="step === 5" class="onboarding-card" @submit.prevent="saveDatingPreferences">
         <div class="step-title"><UsersRound class="size-5 text-[#B4234A]" /><div><h2>Who are you open to meeting?</h2><p>These private preferences shape who appears in your match pool and can be changed later.</p></div></div>
         <fieldset class="meeting-preferences"><legend>Gender preferences</legend><p class="mt-1 text-sm font-normal leading-6 text-[#6E4D58]">Choose everyone, or select one or more types of people you are open to dating.</p><div class="mt-4 grid gap-2 sm:grid-cols-2"><button type="button" class="meeting-choice sm:col-span-2" :class="preferences.openToEveryone && 'selected'" :aria-pressed="preferences.openToEveryone" @click="selectEveryone"><span class="choice-indicator" aria-hidden="true">{{ preferences.openToEveryone ? '✓' : '' }}</span><span>Everyone</span></button><button v-for="option in genderOptions" :key="option" type="button" class="meeting-choice" :class="preferences.genders.includes(option) && 'selected'" :aria-pressed="preferences.genders.includes(option)" @click="toggleGenderPreference(option)"><span class="choice-indicator" aria-hidden="true">{{ preferences.genders.includes(option) ? '✓' : '' }}</span><span>{{ option }}</span></button></div><p class="mt-3 text-xs font-semibold text-[#6E4D58]">{{ preferences.openToEveryone ? 'Everyone selected' : preferences.genders.length ? `${preferences.genders.length} selected` : 'Select at least one option' }}</p></fieldset>
+        <fieldset class="meeting-preferences"><legend>Sexual orientation preferences</legend><p class="mt-1 text-sm font-normal leading-6 text-[#6E4D58]">Choose one or more orientations you are open to dating, separately from gender.</p><div class="mt-4 grid gap-2 sm:grid-cols-2"><button v-for="option in sexualOrientationOptions" :key="option.value" type="button" class="meeting-choice" :class="preferences.orientations.includes(option.value) && 'selected'" :aria-pressed="preferences.orientations.includes(option.value)" @click="toggleOrientationPreference(option.value)"><span class="choice-indicator" aria-hidden="true">{{ preferences.orientations.includes(option.value) ? '✓' : '' }}</span><span>{{ option.label }}</span></button></div><p class="mt-3 text-xs font-semibold text-[#6E4D58]">{{ preferences.orientations.length ? `${preferences.orientations.length} selected` : 'Select at least one orientation' }}</p></fieldset>
         <fieldset class="meeting-preferences"><legend>Racial and ethnic preferences</legend><p class="mt-1 text-sm font-normal leading-6 text-[#6E4D58]">Optional. Choose communities you are interested in dating, or keep your match pool open.</p><div class="mt-4 grid gap-2 sm:grid-cols-2"><button type="button" class="meeting-choice sm:col-span-2" :class="preferences.noRaceEthnicityPreference && 'selected'" :aria-pressed="preferences.noRaceEthnicityPreference" @click="selectNoRacePreference"><span class="choice-indicator" aria-hidden="true">{{ preferences.noRaceEthnicityPreference ? '✓' : '' }}</span><span>No racial or ethnic preference</span></button><button v-for="option in raceEthnicityOptions" :key="option" type="button" class="meeting-choice" :class="preferences.raceEthnicities.includes(option) && 'selected'" :aria-pressed="preferences.raceEthnicities.includes(option)" @click="toggleRaceEthnicity(option)"><span class="choice-indicator" aria-hidden="true">{{ preferences.raceEthnicities.includes(option) ? '✓' : '' }}</span><span>{{ option }}</span></button></div><p class="mt-3 text-xs leading-5 text-[#6E4D58]">Identity is personal and nuanced. These broad options are matching controls only.</p></fieldset>
-        <div class="actions"><button class="secondary" type="button" @click="step = 4"><ArrowLeft class="size-4" />Back</button><button :disabled="saving || (!preferences.openToEveryone && !preferences.genders.length)" class="primary" type="submit">{{ saving ? 'Saving…' : 'Continue' }}<ArrowRight class="size-4" /></button></div>
+        <div class="actions"><button class="secondary" type="button" @click="step = 4"><ArrowLeft class="size-4" />Back</button><button :disabled="saving || (!preferences.openToEveryone && !preferences.genders.length) || !preferences.orientations.length" class="primary" type="submit">{{ saving ? 'Saving…' : 'Continue' }}<ArrowRight class="size-4" /></button></div>
       </form>
 
       <section v-else class="onboarding-card">
