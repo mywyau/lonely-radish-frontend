@@ -23,10 +23,31 @@ describe('business approval workflow', () => {
   it('provides a review dashboard for businesses, venues, and offers', () => {
     const page = read('pages/admin/businesses.vue')
     expect(page).toContain("middleware: 'admin'")
-    expect(page).toContain("review('business'")
-    expect(page).toContain("review('venue'")
-    expect(page).toContain("review('offer'")
+    expect(page).toContain("{ value: 'business', label: 'Businesses' }")
+    expect(page).toContain("{ value: 'venue', label: 'Venues' }")
+    expect(page).toContain("{ value: 'offer', label: 'Offers' }")
+    expect(page).toContain('pendingCounts')
+    expect(page).toContain('Load more submissions')
     expect(page).toContain('Private review note')
+  })
+
+  it('paginates and filters approval queues on the server', () => {
+    const api = read('server/api/admin/businesses/index.get.ts')
+    expect(api).toContain('decodeCursor')
+    expect(api).toContain('pageRows')
+    expect(api).toContain('pageSize = 25')
+    expect(api).toContain('pendingCounts')
+    expect(api).toContain("entityType === 'business'")
+    expect(api).toContain("entityType === 'venue'")
+    expect(api).toContain("ilike '%'||$1||'%'")
+    expect(api).toContain('nextCursor')
+  })
+
+  it('adds indexes for large approval queues', () => {
+    const migration = read('docs/migrations/20260820_add_admin_approval_queue_indexes.sql')
+    expect(migration).toContain('businesses_approval_queue_idx')
+    expect(migration).toContain('business_venues_approval_queue_idx')
+    expect(migration).toContain('business_offers_approval_queue_idx')
   })
 
   it('only exposes fully approved active offers to dating users', () => {

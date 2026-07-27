@@ -39,10 +39,15 @@ const copy: Record<string, (notice: Notice) => string> = {
   no_show_disputed: () => 'Your no-show report was disputed and will not trigger an automatic restriction.',
   no_show_warning: () => 'A no-show was confirmed. Please cancel or reschedule plans you cannot attend.',
   discovery_restricted: () => 'New discovery has been temporarily paused after repeated confirmed no-shows.',
+  moderation_warning: () => 'Your account received a warning under the community standards.',
+  account_suspended: () => 'Your account was suspended. Check your email or contact support for information.',
+  account_restored: () => 'Your account access has been restored.',
   date_reschedule_requested: n => `${n.actorName || 'Your date'} needs to reschedule.`,
   date_cancelled: n => `${n.actorName || 'Your date'} cancelled the date. Your match remains open.`,
 }
 function destination(notice: Notice) {
+  if (notice.kind === 'account_suspended') return '/account/suspended'
+  if (['moderation_warning','account_restored'].includes(notice.kind)) return '/account/v2'
   if (['match_apology','match_contact'].includes(notice.kind)) return '/matches/past'
   if (notice.kind === 'interest_received') return '/interests/received'
   return notice.proposalId && ['follow_up_ready','date_follow_up_closed','date_follow_up_changed','date_outcome_needed','no_show_reported','no_show_disputed','no_show_warning','discovery_restricted'].includes(notice.kind)

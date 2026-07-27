@@ -23,6 +23,9 @@ const subjects: Record<string, string> = {
   no_show_disputed: 'Your attendance report was disputed',
   no_show_warning: 'A reminder about attending confirmed dates',
   discovery_restricted: 'Your discovery access is temporarily paused',
+  moderation_warning: 'A warning about your Lonely Radish account',
+  account_suspended: 'Your Lonely Radish account has been suspended',
+  account_restored: 'Your Lonely Radish account has been restored',
 }
 
 const preferenceColumn: Record<string, string> = {
@@ -79,11 +82,16 @@ function message(kind: string, actorName?: string | null) {
     no_show_disputed: 'Your no-show report was disputed and will not trigger an automatic restriction.',
     no_show_warning: 'A no-show was confirmed. Please cancel or reschedule as early as possible when plans change.',
     discovery_restricted: 'New discovery has been temporarily paused after repeated confirmed no-shows. Existing matches and plans remain available.',
+    moderation_warning: 'Your account received a warning under the Lonely Radish community standards. Please contact support if you believe this was a mistake.',
+    account_suspended: 'Your Lonely Radish account has been suspended. Your profile is hidden and account features are unavailable. Contact support if you believe this was a mistake.',
+    account_restored: 'Your Lonely Radish account access has been restored.',
   }
   return copy[kind] || 'You have a new update on Lonely Radish.'
 }
 
 function emailDestination(kind: string, baseUrl: string) {
+  if (kind === 'account_suspended') return `${baseUrl}/account/suspended`
+  if (['moderation_warning','account_restored'].includes(kind)) return `${baseUrl}/account/v2`
   if (kind === 'interest_received') return `${baseUrl}/interests/received`
   if (['match_apology','match_contact'].includes(kind)) return `${baseUrl}/matches/past`
   if (kind.includes('follow_up')) return `${baseUrl}/matches`
@@ -183,7 +191,7 @@ export async function processPendingNotificationEmails(limit = 20) {
   let skipped = 0
   for (const row of rows) {
     const setting = preferenceColumn[row.kind]
-    const enabled = setting === 'interests' ? row.interests : setting === 'matches' ? row.matches
+    const enabled = setting == null ? true : setting === 'interests' ? row.interests : setting === 'matches' ? row.matches
       : setting === 'date_plans' ? row.datePlans : row.followUps
     if (!enabled) {
       await db.query(`update email_deliveries set status='skipped',locked_at=null,last_error='Disabled by recipient' where id=$1`, [row.id])

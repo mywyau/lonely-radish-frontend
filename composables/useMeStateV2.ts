@@ -12,8 +12,12 @@ export function useMeStateV2() {
     state.value = { status: "loading" };
     try {
       state.value = { status: "logged-in", user: await $fetch<MeUser>("/api/meV2") };
-    } catch {
+    } catch (error: any) {
       state.value = { status: "logged-out" };
+      const code = error?.data?.data?.code || error?.data?.code;
+      if (code === "ACCOUNT_SUSPENDED" && useRoute().path !== "/account/suspended") {
+        await navigateTo("/account/suspended");
+      }
     } finally {
       resolved.value = true;
     }
