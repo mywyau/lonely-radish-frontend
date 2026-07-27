@@ -1,6 +1,7 @@
 // // https://nuxt.com/docs/api/configuration/nuxt-config
 
 export default defineNuxtConfig({
+  compatibilityDate: "2026-07-27",
   modules: ["@nuxtjs/tailwindcss"],
 
   // image: false, // ⛔ force-disable Nuxt Image

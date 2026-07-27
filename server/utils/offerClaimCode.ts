@@ -4,6 +4,9 @@ import { createError } from "h3";
 const uuidPattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+const fourBits = BigInt(4);
+const fiveBits = BigInt(5);
+const fiveBitMask = BigInt(31);
 
 function validateSecret(secret: string) {
   if (Buffer.byteLength(secret, "utf8") < 32)
@@ -26,11 +29,11 @@ export function createOfferClaimCode(
   const bytes = createHmac("sha256", secret)
     .update(`offer-claim:${claimId.toLowerCase()}:${tokenVersion}`)
     .digest();
-  let bits = bytes.readBigUInt64BE(0) >> 4n;
+  let bits = bytes.readBigUInt64BE(0) >> fourBits;
   let value = "";
   for (let index = 0; index < 12; index += 1) {
-    value = alphabet[Number(bits & 31n)] + value;
-    bits >>= 5n;
+    value = alphabet[Number(bits & fiveBitMask)] + value;
+    bits >>= fiveBits;
   }
   return `LR-${value.slice(0, 4)}-${value.slice(4, 8)}-${value.slice(8)}`;
 }

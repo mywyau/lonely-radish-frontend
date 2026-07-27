@@ -103,6 +103,21 @@ describe("offer claims and redemptions", () => {
     expect(businessPage).toContain("or enter manually");
   });
 
+  it("keeps a large offer catalogue compact, filtered, and paginated", () => {
+    const page = read("pages/offers.vue");
+    const api = read("server/api/offers/index.get.ts");
+    expect(page).toContain("Search offers");
+    expect(page).toContain("View details");
+    expect(page).toContain("Load more offers");
+    expect(page).toContain("pinnedClaims");
+    expect(page).toContain("revealClaimQr");
+    expect(api).toContain("decodeCursor");
+    expect(api).toContain("pageRows");
+    expect(api).toContain("pageSize = 20");
+    expect(api).toContain("discountType");
+    expect(api).toContain("location");
+  });
+
   it("lets members attach an offer to one of their confirmed dates", () => {
     const matches = read("pages/matches/index.vue");
     const memberPage = read("pages/offers.vue");
