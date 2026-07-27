@@ -12,6 +12,7 @@ const subjects: Record<string, string> = {
   date_follow_up_closed: 'Your post-date check-in is complete',
   date_follow_up_changed: 'A past connection changed their answer',
   match_apology: 'You received a note from a past connection',
+  match_contact: 'You received a message from a past connection',
   date_reminder_24h: 'Your date is tomorrow',
   date_reminder_2h: 'Your date starts in about 2 hours',
   date_attendance_confirmed: 'Your date confirmed they are still going',
@@ -29,6 +30,7 @@ const preferenceColumn: Record<string, string> = {
   new_match: 'matches',
   match_ended: 'matches',
   match_apology: 'matches',
+  match_contact: 'matches',
   proposal_received: 'date_plans',
   proposal_updated: 'date_plans',
   date_confirmed: 'date_plans',
@@ -66,6 +68,7 @@ function message(kind: string, actorName?: string | null) {
     date_follow_up_closed: 'Your post-date answers were different, so the connection has closed.',
     date_follow_up_changed: `${actor} changed their answer and would like to meet again.`,
     match_apology: `${actor} sent you a note through Past connections.`,
+    match_contact: `${actor} sent you a private message through Past connections. You do not need to respond.`,
     date_reminder_24h: 'Your confirmed date is about 24 hours away. Open the app to confirm you are still going.',
     date_reminder_2h: 'Your confirmed date starts in about 2 hours. Check the plan before you leave.',
     date_attendance_confirmed: `${actor} confirmed they are still going to your date.`,
@@ -82,7 +85,7 @@ function message(kind: string, actorName?: string | null) {
 
 function emailDestination(kind: string, baseUrl: string) {
   if (kind === 'interest_received') return `${baseUrl}/interests/received`
-  if (kind === 'match_apology') return `${baseUrl}/matches/past`
+  if (['match_apology','match_contact'].includes(kind)) return `${baseUrl}/matches/past`
   if (kind.includes('follow_up')) return `${baseUrl}/matches`
   return `${baseUrl}/matches`
 }
@@ -92,7 +95,7 @@ function actionLabel(kind: string) {
   if (kind === 'new_match') return 'View your match'
   if (kind.startsWith('proposal_') || kind.startsWith('date_')) return 'Review the date plan'
   if (kind.includes('follow_up')) return 'View your check-in'
-  if (kind === 'match_apology') return 'View past connection'
+  if (['match_apology','match_contact'].includes(kind)) return 'View past connection'
   return 'View update'
 }
 

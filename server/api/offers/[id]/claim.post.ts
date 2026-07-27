@@ -65,6 +65,9 @@ export default defineEventHandler(async (event) => {
         statusMessage: "This offer is no longer available",
       });
     if (proposalId) {
+      await client.query("select pg_advisory_xact_lock(hashtext($1))", [
+        `date-offer:${proposalId}:${sub}`,
+      ]);
       const proposal = await client.query(
         `select 1 from date_proposals where id=$1 and status='accepted'
         and selected_time_id is not null and ($2=inviter_id or $2=invitee_id)`,
@@ -75,6 +78,11 @@ export default defineEventHandler(async (event) => {
           statusCode: 400,
           statusMessage: "Choose one of your confirmed dates",
         });
+      await client.query(
+        `update business_offer_claims set proposal_id=null
+        where proposal_id=$1 and claimant_user_id=$2 and offer_id<>$3`,
+        [proposalId, sub, offerId],
+      );
     }
     const existingResult = await client.query(
       `select id,status,token_version as "tokenVersion"
@@ -159,6 +167,7 @@ export default defineEventHandler(async (event) => {
     return {
       claim: {
         ...claim,
+        proposalId: proposalId || null,
         code,
       },
     };

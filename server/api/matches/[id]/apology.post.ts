@@ -11,18 +11,21 @@ export default defineEventHandler(async (event) => {
   const client = await db.connect()
   try {
     await client.query('begin')
-    const match = await client.query(`select case when user_one_id=$2 then user_two_id else user_one_id end as "recipientId"
-      from matches where id=$1 and status='unmatched' and ended_by=$2 and ($2=user_one_id or $2=user_two_id)`, [matchId, sub])
+    const match = await client.query(`select case when user_one_id=$2 then user_two_id else user_one_id end as "recipientId",
+      ended_at as "endedAt" from matches where id=$1 and status='unmatched' and ended_by=$2
+      and ($2=user_one_id or $2=user_two_id) for update`, [matchId, sub])
     if (!match.rows[0]) throw createError({ statusCode: 403, statusMessage: 'Only the person who ended this match can send an apology' })
-    await client.query(`insert into match_apology_notes(match_id,sender_id,recipient_id,message) values($1,$2,$3,$4)`,
+    const currentApology = await client.query(`select 1 from match_apology_notes
+      where match_id=$1 and sender_id=$2 and message_type='apology' and created_at>$3 limit 1`, [matchId, sub, match.rows[0].endedAt])
+    if (currentApology.rows[0]) throw createError({ statusCode: 409, statusMessage: 'You have already sent an apology for this ended match' })
+    await client.query(`insert into match_apology_notes(match_id,sender_id,recipient_id,message,message_type) values($1,$2,$3,$4,'apology')`,
       [matchId, sub, match.rows[0].recipientId, message])
     await client.query(`insert into notifications(recipient_id,actor_id,match_id,kind) values($1,$2,$3,'match_apology')`,
       [match.rows[0].recipientId, sub, matchId])
     await client.query('commit')
     return { sent: true }
-  } catch (error: any) {
+  } catch (error) {
     await client.query('rollback')
-    if (error?.code === '23505') throw createError({ statusCode: 409, statusMessage: 'You have already sent an apology for this match' })
     throw error
   } finally { client.release() }
 })

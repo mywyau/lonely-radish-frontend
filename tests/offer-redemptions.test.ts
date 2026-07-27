@@ -79,6 +79,24 @@ describe("offer claims and redemptions", () => {
     expect(businessPage).toContain("or enter manually");
   });
 
+  it("lets members attach an offer to one of their confirmed dates", () => {
+    const matches = read("pages/matches/index.vue");
+    const memberPage = read("pages/offers.vue");
+    const claims = read("server/api/offer-claims/index.get.ts");
+    const matchesApi = read("server/api/matches/index.get.ts");
+    expect(matches).toContain("`/offers?proposal=${match.proposalId}`");
+    expect(matches).toContain("Attach an offer");
+    expect(memberPage).toContain("Attach this offer");
+    expect(memberPage).toContain("Replace attached offer");
+    expect(memberPage).toContain("attachedToCurrentDate");
+    expect(claims).toContain('proposal_id as "proposalId"');
+    expect(matchesApi).toContain("c.proposal_id=proposal.id");
+    expect(matchesApi).toContain('as "attachedOfferTitle"');
+    expect(read("server/api/offers/[id]/claim.post.ts")).toContain(
+      "set proposal_id=null",
+    );
+  });
+
   it("keeps member identity out of business redemption responses", () => {
     const history = read("server/api/business/offer-claims/index.get.ts");
     expect(history).not.toContain("claimant_user_id");

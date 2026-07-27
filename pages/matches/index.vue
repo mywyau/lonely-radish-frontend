@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { Bell, CalendarCheck, CalendarDays, ChevronRight, Clock3, Eye, EyeOff, HeartHandshake, MapPin, Sparkles, UsersRound, X } from '@lucide/vue'
+import { BadgePercent, Bell, CalendarCheck, CalendarDays, ChevronRight, Clock3, Eye, EyeOff, HeartHandshake, MapPin, Sparkles, UsersRound, X } from '@lucide/vue'
 
 definePageMeta({ title: 'Matches & Plans · Lonely Radish', middleware: 'logged-in' })
 
 type MatchCard = {
   id: string; name: string; slug: string; place?: string; photoUrl?: string; stage: 'fresh' | 'planning' | 'confirmed'
   proposalId?: string; proposalStatus?: string; activity?: string; venue?: string; confirmedTime?: string
+  offerClaimId?: string; attachedOfferId?: string; attachedOfferTitle?: string
   matchedAt: string; isInviter?: boolean; needsResponse?: boolean; dateHasPassed?: boolean
   attendanceConfirmed?: boolean; otherAttendanceConfirmed?: boolean
   hasFollowedUp?: boolean; bothFollowedUp?: boolean; followUpResult?: 'mutual' | 'closed' | null
@@ -74,10 +75,13 @@ function notificationCopy(notification: MatchNotification) {
     date_attendance_confirmed: `${actor} confirmed they are still going.`,
     date_reschedule_requested: `${actor} needs to reschedule your date.`,
     date_cancelled: `${actor} cancelled your date. You remain matched.`,
+    match_apology: `${actor} sent you an apology through Past connections.`,
+    match_contact: `${actor} sent you a private message through Past connections. No response is required.`,
   }
   return copy[notification.kind] || 'You have a new match or date-plan update.'
 }
 function notificationUrl(notification: MatchNotification) {
+  if (['match_apology','match_contact'].includes(notification.kind)) return '/matches/past'
   return notification.proposalId && ['follow_up_ready','date_follow_up_closed','date_follow_up_changed'].includes(notification.kind)
     ? `/dates/${notification.proposalId}/follow-up` : '/matches'
 }
@@ -211,6 +215,16 @@ onMounted(async () => {
                   <button type="button" class="rounded-lg bg-[#F3E8DA] px-3 py-2 text-xs font-semibold text-[#4D2F39] disabled:opacity-50" :disabled="Boolean(attendanceUpdating)" @click="updateAttendance(match, 'reschedule')">Reschedule</button>
                   <button type="button" class="rounded-lg border border-[#B4234A]/35 px-3 py-2 text-xs font-semibold text-[#8F1839] disabled:opacity-50" :disabled="Boolean(attendanceUpdating)" @click="updateAttendance(match, 'cancel')">Cancel date</button>
                 </div>
+              </div>
+              <div v-if="match.stage === 'confirmed' && !match.dateHasPassed && match.proposalId" class="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-lg bg-white/65 p-4">
+                <div class="flex items-start gap-2">
+                  <BadgePercent class="mt-0.5 size-4 shrink-0 text-[#B4234A]" />
+                  <div>
+                    <h4 class="text-sm font-semibold">{{ match.attachedOfferTitle || 'Add an offer to this date' }}</h4>
+                    <p class="mt-1 text-xs text-[#6E4D58]">{{ match.attachedOfferTitle ? 'This offer is attached for you to use at the venue.' : 'Browse date-friendly venue offers and attach one to this plan.' }}</p>
+                  </div>
+                </div>
+                <NuxtLink :to="`/offers?proposal=${match.proposalId}`" class="rounded-lg bg-[#FCE3E8] px-3 py-2 text-xs font-semibold text-[#8F1839]">{{ match.attachedOfferTitle ? 'View attached offer' : 'Attach an offer' }}</NuxtLink>
               </div>
             </article>
           </div>

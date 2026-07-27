@@ -47,6 +47,9 @@ const profileLoadError = ref('')
 const apologyMessage = ref('')
 const apologySending = ref(false)
 const apologyError = ref('')
+const contactMessage = ref('')
+const contactSending = ref(false)
+const contactError = ref('')
 const activitiesFlipped = ref(false)
 const activePhotoIndex = ref(0)
 const photoViewerOpen = ref(false)
@@ -97,6 +100,18 @@ async function sendApology() {
     apologyMessage.value = ''
   } catch (error: any) { apologyError.value = error?.data?.statusMessage || 'Your apology could not be sent.' }
   finally { apologySending.value = false }
+}
+
+async function sendContact() {
+  if (!profile.value?.matchId || !contactMessage.value.trim()) return
+  contactSending.value = true; contactError.value = ''
+  try {
+    await $fetch(`/api/matches/${profile.value.matchId}/contact`, { method: 'POST', body: { message: contactMessage.value } })
+    if (databaseProfile.value) Object.assign(databaseProfile.value, { contactSent: true })
+    else Object.assign(profiles[profileSlug.value], { contactSent: true })
+    contactMessage.value = ''
+  } catch (error: any) { contactError.value = error?.data?.statusMessage || 'Your message could not be sent.' }
+  finally { contactSending.value = false }
 }
 
 function selectPhoto(index: number) {
@@ -238,19 +253,28 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
           <div v-else-if="profile.relationshipStatus === 'unmatched'"
             class="mt-3 rounded-lg bg-[#F3E8DA] p-3 text-xs leading-5 text-[#4D2F39]" role="status">
             <p>You and {{ profile.name }} are no longer matched.</p>
-            <form v-if="profile.endedByMe && !profile.apologySent && !profile.secondChanceUsed" class="mt-3" @submit.prevent="sendApology"><label
-                class="font-semibold">Send one private apology note<textarea v-model="apologyMessage" maxlength="500"
+            <form v-if="profile.endedByMe && !profile.apologySent" class="mt-3" @submit.prevent="sendApology"><label
+                class="font-semibold">Send a private message for this ended match<textarea v-model="apologyMessage" maxlength="500"
                   rows="3" class="mt-1 w-full rounded-lg border border-[#D8C8B6] bg-white p-3 font-normal"
                   placeholder="Keep it brief, respectful, and without pressure." /><span class="mt-1 block text-right font-normal text-[#6E4D58]">{{ apologyMessage.length }}/500</span></label><button type="submit"
                 :disabled="apologySending || !apologyMessage.trim()"
                 class="mt-2 rounded-lg bg-[#8F1839] px-3 py-2 font-semibold text-white disabled:opacity-50">{{
-                  apologySending ? 'Sending…' : 'Send apology' }}</button>
+                  apologySending ? 'Sending…' : 'Send message' }}</button>
               <p v-if="apologyError" class="mt-2 font-semibold text-[#8F1839]" role="alert">{{ apologyError }}</p>
+            </form>
+            <form v-else-if="profile.wasUnmatched && !profile.contactSent" class="mt-3" @submit.prevent="sendContact"><label
+                class="font-semibold">Send a private message <span class="font-normal text-[#6E4D58]">(not an apology)</span><textarea v-model="contactMessage" maxlength="500"
+                  rows="3" class="mt-1 w-full rounded-lg border border-[#D8C8B6] bg-white p-3 font-normal"
+                  placeholder="Say what you would like them to know, without pressure." /><span class="mt-1 block text-right font-normal text-[#6E4D58]">{{ contactMessage.length }}/500</span></label><p class="mt-1 text-[#6E4D58]">They can read this privately and do not need to respond. You can re-offer interest separately.</p><button type="submit"
+                :disabled="contactSending || !contactMessage.trim()"
+                class="mt-2 rounded-lg bg-[#8F1839] px-3 py-2 font-semibold text-white disabled:opacity-50">{{
+                  contactSending ? 'Sending…' : 'Send message' }}</button>
+              <p v-if="contactError" class="mt-2 font-semibold text-[#8F1839]" role="alert">{{ contactError }}</p>
             </form>
             <p v-else-if="profile.apologySent" class="mt-2 font-semibold text-[#6E8B52]">Your apology note has been
               sent. You can now show interest again.</p>
+            <p v-else-if="profile.contactSent" class="mt-2 font-semibold text-[#6E8B52]">Your message was sent. They do not need to respond, and you can still re-offer interest.</p>
             <p v-else-if="profile.secondChanceAvailable" class="mt-2 font-semibold text-[#6E8B52]">A second chance is available. Either of you can send fresh interest; the other person still chooses whether to accept.</p>
-            <p v-else-if="profile.secondChanceUsed" class="mt-2 font-semibold text-[#6E4D58]">The one-time second chance for this connection has already been used.</p>
           </div>
           <p v-else-if="profile.interestSent" class="mt-3 rounded-lg bg-[#F3E8DA] p-3 text-xs leading-5 text-[#4D2F39]"
             role="status">You have already shown interest in {{ profile.name }}. You cannot send it again.</p>

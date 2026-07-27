@@ -10,10 +10,12 @@ export default defineEventHandler(async (event) => {
   const cursor = decodeCursor(getQuery(event).cursor)
   const pageSize = 25
   const { rows } = await db.query(`select n.id,n.kind,n.created_at as "createdAt",n.created_at::text as "sortAt",p.display_name as "actorName",
-    apology.message,
+    connection_message.message,
     coalesce(n.proposal_id,proposal.id) as "proposalId",n.read_at as "readAt"
     from notifications n left join profiles p on p.user_id=n.actor_id
-    left join match_apology_notes apology on apology.match_id=n.match_id and apology.sender_id=n.actor_id
+    left join lateral (select man.message from match_apology_notes man
+      where man.match_id=n.match_id and man.sender_id=n.actor_id and man.created_at<=n.created_at
+      order by man.created_at desc limit 1) connection_message on true
     left join lateral (select dp.id from date_proposals dp where dp.match_id=n.match_id
       and dp.status='accepted' order by dp.created_at desc limit 1) proposal on true
     where n.recipient_id=$1 and ($2::boolean or n.read_at is null)

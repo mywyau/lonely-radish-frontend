@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
   const { sub } = await requirePersonalUser(event);
   const secret = requireOfferClaimSecret(event);
   const { rows } = await db.query(
-    `select id,offer_id as "offerId",token_version as "tokenVersion",
+    `select id,offer_id as "offerId",proposal_id as "proposalId",token_version as "tokenVersion",
     case when status='issued' and expires_at<=now() then 'expired' else status end as status,
     claimed_at as "claimedAt",expires_at as "expiresAt",redeemed_at as "redeemedAt",
     offer_title as "offerTitle",discount_type as "discountType",discount_value::float as "discountValue",

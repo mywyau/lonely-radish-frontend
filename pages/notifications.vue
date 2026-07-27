@@ -28,6 +28,7 @@ const copy: Record<string, (notice: Notice) => string> = {
   follow_up_ready: n => `${n.actorName || 'Your date'} completed their post-date check-in.`,
   match_ended: n => `${n.actorName || 'Your match'} ended the match.`,
   match_apology: n => `${n.actorName || 'A past connection'} sent you an apology note: “${n.message || ''}”`,
+  match_contact: n => `${n.actorName || 'A past connection'} sent you a private message: “${n.message || ''}” No response is required.`,
   date_follow_up_closed: () => 'Your post-date answers were different and the connection closed.',
   date_follow_up_changed: n => `${n.actorName || 'Your date'} changed their answer and would like to meet again.`,
   date_reminder_24h: () => 'Your confirmed date is about 24 hours away. Are you still going?',
@@ -42,7 +43,7 @@ const copy: Record<string, (notice: Notice) => string> = {
   date_cancelled: n => `${n.actorName || 'Your date'} cancelled the date. Your match remains open.`,
 }
 function destination(notice: Notice) {
-  if (notice.kind === 'match_apology') return '/matches/past'
+  if (['match_apology','match_contact'].includes(notice.kind)) return '/matches/past'
   if (notice.kind === 'interest_received') return '/interests/received'
   return notice.proposalId && ['follow_up_ready','date_follow_up_closed','date_follow_up_changed','date_outcome_needed','no_show_reported','no_show_disputed','no_show_warning','discovery_restricted'].includes(notice.kind)
     ? `/dates/${notice.proposalId}/follow-up` : '/matches'

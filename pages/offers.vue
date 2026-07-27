@@ -26,6 +26,7 @@ type Offer = {
 type OfferClaim = {
   id: string
   offerId: string
+  proposalId: string | null
   status: 'issued' | 'redeemed' | 'expired' | 'revoked'
   code: string | null
   expiresAt: string
@@ -33,6 +34,8 @@ type OfferClaim = {
 }
 
 const route = useRoute()
+const proposalId = computed(() => typeof route.query.proposal === 'string' ? route.query.proposal : '')
+const currentAttachedClaim = computed(() => Object.values(claims.value).find(claim => attachedToCurrentDate(claim)))
 const offers = ref<Offer[]>([])
 const claims = ref<Record<string, OfferClaim>>({})
 const loading = ref(true)
@@ -58,6 +61,10 @@ function claimStatus(claim?: OfferClaim) {
   return claim.status
 }
 
+function attachedToCurrentDate(claim?: OfferClaim) {
+  return Boolean(proposalId.value && claim?.proposalId === proposalId.value)
+}
+
 async function generateQrCode(claim: OfferClaim) {
   if (!claim.code || claim.status !== 'issued') return
   try {
@@ -76,11 +83,15 @@ async function generateQrCode(claim: OfferClaim) {
 async function claimOffer(offer: Offer) {
   claimingId.value = offer.id
   claimErrors.value[offer.id] = ''
-  const proposalId = typeof route.query.proposal === 'string' ? route.query.proposal : undefined
   try {
     const result = await $fetch<{ claim: OfferClaim }>(`/api/offers/${offer.id}/claim`, {
-      method: 'POST', body: proposalId ? { proposalId } : {},
+      method: 'POST', body: proposalId.value ? { proposalId: proposalId.value } : {},
     })
+    if (proposalId.value) {
+      for (const claim of Object.values(claims.value)) {
+        if (claim.offerId !== offer.id && claim.proposalId === proposalId.value) claim.proposalId = null
+      }
+    }
     claims.value[offer.id] = result.claim
     await generateQrCode(result.claim)
   } catch (error: any) {
@@ -125,6 +136,10 @@ onBeforeUnmount(() => { if (clock) clearInterval(clock) })
       <h1 class="mt-2 text-4xl font-semibold">Date-friendly offers</h1>
       <p class="mt-3 max-w-2xl leading-7 text-[#6E4D58]">Offers from businesses and venues reviewed by Lonely Radish.
         Claim a code only when you are ready to show it at the venue.</p>
+      <div v-if="proposalId" class="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-lg bg-[#EAF2DE] p-4">
+        <div><p class="text-sm font-semibold text-[#52713A]">Choose an offer for your confirmed date</p><p class="mt-1 text-xs text-[#4D2F39]">Attach one here so it stays connected to your plan. Your date will not see your private redemption code.</p></div>
+        <NuxtLink to="/matches" class="text-sm font-semibold text-[#52713A] hover:underline">Back to matches</NuxtLink>
+      </div>
       <p v-if="errorMessage" class="mt-5 rounded-lg bg-[#FCE3E8] p-4 text-sm font-semibold text-[#8F1839]" role="alert">
         {{ errorMessage }}</p>
       <div v-if="loading" class="mt-8 rounded-lg bg-white p-8 text-[#6E4D58]">Loading offers…</div>
@@ -153,10 +168,20 @@ onBeforeUnmount(() => { if (clock) clearInterval(clock) })
           <p v-if="offer.terms" class="mt-4 rounded-lg bg-[#F3E8DA] p-3 text-xs leading-5 text-[#6E4D58]">Terms: {{
             offer.terms }}</p>
           <div class="mt-5 border-t border-[#E8D8C4] pt-5">
+            <div v-if="attachedToCurrentDate(claims[offer.id])" class="mb-3 flex items-center gap-2 rounded-lg bg-[#EAF2DE] p-3 text-sm font-semibold text-[#52713A]">
+              <BadgeCheck class="size-5" />Attached to this date
+            </div>
             <div v-if="claimStatus(claims[offer.id]) === 'redeemed'"
               class="flex items-center gap-2 rounded-lg bg-[#EAF2DE] p-3 text-sm font-semibold text-[#52713A]">
               <BadgeCheck class="size-5" />Offer redeemed
             </div>
+            <div v-else-if="claimStatus(claims[offer.id]) === 'revoked'"
+              class="rounded-lg bg-[#F3E8DA] p-3 text-sm text-[#6E4D58]">This claim is no longer available.</div>
+            <button v-else-if="proposalId && !attachedToCurrentDate(claims[offer.id])" type="button" :disabled="claimingId === offer.id"
+              class="inline-flex items-center gap-2 rounded-lg bg-[#B4234A] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
+              @click="claimOffer(offer)">
+              <TicketCheck class="size-4" />{{ claimingId === offer.id ? 'Attaching offer…' : currentAttachedClaim ? 'Replace attached offer' : 'Attach this offer' }}
+            </button>
             <div v-else-if="claimStatus(claims[offer.id]) === 'issued'" class="rounded-lg bg-[#FCE3E8] p-4">
               <div class="flex items-center gap-2 text-sm font-semibold text-[#8F1839]">
                 <TicketCheck class="size-5" />Ask the venue to scan this code
@@ -180,8 +205,6 @@ onBeforeUnmount(() => { if (clock) clearInterval(clock) })
                   <Copy class="size-3.5" />{{ copiedClaimId === claims[offer.id].id ? 'Copied' : 'Copy code' }}
                 </button></div>
             </div>
-            <div v-else-if="claimStatus(claims[offer.id]) === 'revoked'"
-              class="rounded-lg bg-[#F3E8DA] p-3 text-sm text-[#6E4D58]">This claim is no longer available.</div>
             <button v-else type="button" :disabled="claimingId === offer.id"
               class="inline-flex items-center gap-2 rounded-lg bg-[#B4234A] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
               @click="claimOffer(offer)">

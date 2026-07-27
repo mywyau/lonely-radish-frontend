@@ -14,6 +14,8 @@ export default defineEventHandler(async (event) => {
     proposal.id as "proposalId",proposal.status as "proposalStatus",proposal.activity_label as activity,
     proposal.venue,proposal.inviter_id as "inviterId",proposal.invitee_id as "inviteeId",
     proposal.confirmed_at as "confirmedAt",selected.proposed_at as "confirmedTime",
+    attached_offer.id as "offerClaimId",attached_offer.offer_id as "attachedOfferId",
+    attached_offer.offer_title as "attachedOfferTitle",
     my_attendance.response as "myAttendance",their_attendance.response as "theirAttendance",
     my_followup.meet_again as "myMeetAgain",my_followup.responded_at as "myFollowUpAt",
     their_followup.meet_again as "theirMeetAgain",their_followup.responded_at as "theirFollowUpAt",
@@ -25,6 +27,9 @@ export default defineEventHandler(async (event) => {
     left join lateral (select dp.* from date_proposals dp where dp.match_id=m.id
       and (dp.status<>'draft' or dp.inviter_id=$1) order by dp.created_at desc limit 1) proposal on true
     left join proposal_times selected on selected.id=proposal.selected_time_id
+    left join lateral (select c.id,c.offer_id,c.offer_title from business_offer_claims c
+      where c.proposal_id=proposal.id and c.claimant_user_id=$1 and c.status<>'revoked'
+      order by c.claimed_at desc limit 1) attached_offer on true
     left join date_attendance_responses my_attendance on my_attendance.proposal_id=proposal.id and my_attendance.user_id=$1
     left join date_attendance_responses their_attendance on their_attendance.proposal_id=proposal.id and their_attendance.user_id<>$1
     left join date_follow_ups my_followup on my_followup.proposal_id=proposal.id and my_followup.user_id=$1
