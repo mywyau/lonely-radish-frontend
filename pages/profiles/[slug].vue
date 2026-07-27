@@ -273,7 +273,7 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
             </form>
             <p v-else-if="profile.apologySent" class="mt-2 font-semibold text-[#6E8B52]">Your private note has been
               sent. You can now show interest again.</p>
-              <p v-else-if="profile.contactSent" class="mt-2 font-semibold text-[#6E8B52]">Your message was sent. They do not need to respond, and you can now re-offer interest.</p>
+              <p v-else-if="profile.contactSent" class="mt-2 font-semibold text-[#6E8B52]">Your message was sent. They may not necessarily respond, and you can now show interest in the, again.</p>
             <p v-else-if="profile.secondChanceAvailable" class="mt-2 font-semibold text-[#6E8B52]">A second chance is available. Either of you can send fresh interest; the other person still chooses whether to accept.</p>
           </div>
           <p v-else-if="profile.interestSent || isTodaysChoice(profileSlug)" class="mt-3 rounded-lg bg-[#EAF2DE] p-3 text-xs leading-5 text-[#4D2F39]"
