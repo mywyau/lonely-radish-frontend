@@ -114,7 +114,7 @@ describe("core page contracts", () => {
     expect(plan).toContain("inviteMessageLimit = 240");
     expect(nav).toContain("to: '/activities'");
     expect(nav).toContain("to: '/matches'");
-    expect(nav).toContain("label: 'Discover date ideas'");
+    expect(nav).toContain("label: 'Browse date activities'");
     expect(nav).toContain("label: 'Matches & plans'");
   });
 
@@ -129,6 +129,11 @@ describe("core page contracts", () => {
     expect(preview).toContain("Contact details and private matching");
     expect(preview).toContain("preferences are never included");
     expect(preview).toContain("gallerySlots");
+    expect(preview).toContain('class="min-w-0 max-w-full sm:hidden"');
+    expect(preview).toContain("Tap to expand");
+    expect(preview).toContain("overflow-x-auto overscroll-x-contain");
+    expect(preview).toContain('aria-label="Expanded profile photo"');
+    expect(preview).toContain("endPhotoSwipe");
     expect(preview).toContain('class="mt-5 grid gap-5 lg:grid-cols-2"');
     expect(preview).toContain("Activities I’d enjoy together");
     expect(preview).toContain("activitiesFlipped && 'is-flipped'");

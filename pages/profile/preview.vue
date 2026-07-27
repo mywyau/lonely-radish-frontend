@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { CalendarDays, Eye, HeartHandshake, ImagePlus, MapPin, ShieldCheck, UserRound } from '@lucide/vue';
+import { CalendarDays, ChevronLeft, ChevronRight, Expand, Eye, HeartHandshake, ImagePlus, MapPin, ShieldCheck, UserRound, X } from '@lucide/vue';
 
 definePageMeta({ title: 'Profile Preview · Lonely Radish', middleware: 'logged-in' })
 
@@ -15,6 +15,9 @@ const loading = ref(true)
 const errorMessage = ref('')
 const data = ref<PreviewData | null>(null)
 const activitiesFlipped = ref(false)
+const activePhotoIndex = ref(0)
+const photoViewerOpen = ref(false)
+const photoSwipeStartX = ref<number | null>(null)
 const lifestyleLabels = computed(() => {
   const profile = data.value?.profile
   if (!profile) return []
@@ -34,20 +37,48 @@ const age = computed(() => {
   if (today.getUTCMonth() < birth.getUTCMonth() || (today.getUTCMonth() === birth.getUTCMonth() && today.getUTCDate() < birth.getUTCDate())) years--
   return years
 })
+const galleryPhotos = computed(() => (data.value?.photos || []).slice(0, 6))
 const gallerySlots = computed(() => [
-  ...(data.value?.photos || []).slice(0, 6).map(photo => ({ ...photo, empty: false })),
-  ...Array.from({ length: Math.max(0, 6 - (data.value?.photos.length || 0)) }, (_, index) => ({ id: `empty-${index}`, url: '', empty: true, position: (data.value?.photos.length || 0) + index + 1 })),
+  ...galleryPhotos.value.map(photo => ({ ...photo, empty: false })),
+  ...Array.from({ length: Math.max(0, 6 - galleryPhotos.value.length) }, (_, index) => ({ id: `empty-${index}`, url: '', empty: true, position: galleryPhotos.value.length + index + 1 })),
 ])
+const activePhoto = computed(() => galleryPhotos.value[activePhotoIndex.value] || null)
 
+function selectPhoto(index: number) {
+  activePhotoIndex.value = index
+}
+function changePhoto(direction: -1 | 1) {
+  const count = galleryPhotos.value.length
+  if (!count) return
+  activePhotoIndex.value = (activePhotoIndex.value + direction + count) % count
+}
+function startPhotoSwipe(event: TouchEvent) {
+  photoSwipeStartX.value = event.changedTouches[0]?.clientX ?? null
+}
+function endPhotoSwipe(event: TouchEvent) {
+  const startX = photoSwipeStartX.value
+  const endX = event.changedTouches[0]?.clientX
+  photoSwipeStartX.value = null
+  if (startX == null || endX == null || Math.abs(endX - startX) < 40) return
+  changePhoto(endX < startX ? 1 : -1)
+}
+function handleGalleryKeydown(event: KeyboardEvent) {
+  if (!photoViewerOpen.value) return
+  if (event.key === 'Escape') photoViewerOpen.value = false
+  if (event.key === 'ArrowLeft') changePhoto(-1)
+  if (event.key === 'ArrowRight') changePhoto(1)
+}
 onMounted(async () => {
+  window.addEventListener('keydown', handleGalleryKeydown)
   try { data.value = await $fetch<PreviewData>('/api/profile/me') }
   catch (error: any) { errorMessage.value = error?.data?.statusMessage || 'Your profile preview could not be loaded.' }
   finally { loading.value = false }
 })
+onBeforeUnmount(() => window.removeEventListener('keydown', handleGalleryKeydown))
 </script>
 
 <template>
-  <main class="min-h-screen bg-[#FBF7F1] px-5 py-8 text-[#2A1520] sm:px-8 sm:py-10">
+  <main class="min-h-screen overflow-x-hidden bg-[#FBF7F1] px-4 py-8 text-[#2A1520] min-[360px]:px-5 sm:px-8 sm:py-10">
     <section class="mx-auto max-w-5xl">
       <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
@@ -71,8 +102,28 @@ onMounted(async () => {
         {{ errorMessage }}</p>
       <template v-else-if="data?.profile">
         <div class="grid gap-5 lg:grid-cols-[1.05fr_.95fr] lg:items-start">
+          <section v-if="activePhoto" aria-label="Your profile photos" class="min-w-0 max-w-full sm:hidden">
+            <button type="button" class="profile-photo relative block aspect-[4/3] w-full max-w-full overflow-hidden rounded-lg"
+              :aria-label="`Expand ${activePhoto.altText || 'your profile photo'}`" @click="photoViewerOpen = true">
+              <img :src="activePhoto.url" :alt="activePhoto.altText || `Your profile photo ${activePhotoIndex + 1}`"
+                class="h-full w-full object-cover">
+              <span class="absolute bottom-3 right-3 inline-flex items-center gap-1.5 rounded-full bg-[#2A1520]/80 px-3 py-2 text-xs font-semibold text-white">
+                <Expand class="size-3.5" aria-hidden="true" />Tap to expand
+              </span>
+              <span class="absolute left-3 top-3 rounded-full bg-[#2A1520]/75 px-2.5 py-1 text-xs font-semibold text-white">{{ activePhotoIndex + 1 }} / {{ galleryPhotos.length }}</span>
+            </button>
+            <div v-if="galleryPhotos.length > 1" class="mt-2 flex min-w-0 max-w-full gap-2 overflow-x-auto overscroll-x-contain pb-1" aria-label="Choose a profile photo">
+              <button v-for="(photo, index) in galleryPhotos" :key="`${photo.id}-mobile`" type="button"
+                class="profile-photo size-16 shrink-0 overflow-hidden rounded-lg border-2"
+                :class="index === activePhotoIndex ? 'border-[#B4234A]' : 'border-transparent opacity-70'"
+                :aria-label="`View profile photo ${index + 1}`" :aria-pressed="index === activePhotoIndex"
+                @click="selectPhoto(index)">
+                <img :src="photo.url" alt="" class="h-full w-full object-cover">
+              </button>
+            </div>
+          </section>
           <section aria-label="Your profile photos"
-            class="grid grid-cols-2 gap-2 overflow-hidden rounded-lg sm:grid-cols-3">
+            class="hidden grid-cols-3 gap-2 overflow-hidden rounded-lg sm:grid">
             <div v-for="(photo, index) in gallerySlots" :key="photo.id"
               class="relative aspect-square overflow-hidden bg-[#F3E8DA]"
               :class="[index === 0 && 'col-span-2 row-span-2', photo.empty && 'border-2 border-dashed border-[#CDB9A8]']">
@@ -162,10 +213,34 @@ onMounted(async () => {
         </NuxtLink>
       </div>
     </section>
+
+    <Teleport to="body">
+      <div v-if="photoViewerOpen && activePhoto" class="fixed inset-0 z-[100] flex items-center justify-center bg-[#160B10]/95 p-4"
+        role="dialog" aria-modal="true" aria-label="Expanded profile photo" @click.self="photoViewerOpen = false">
+        <button type="button" class="absolute right-4 top-[max(1rem,env(safe-area-inset-top))] z-10 rounded-full bg-white/20 p-3 text-white"
+          aria-label="Close expanded photo" @click.stop="photoViewerOpen = false"><X class="size-6" /></button>
+        <button v-if="galleryPhotos.length > 1" type="button" class="absolute left-3 z-10 rounded-full bg-white/20 p-3 text-white"
+          aria-label="Previous photo" @click="changePhoto(-1)"><ChevronLeft class="size-7" /></button>
+        <div class="profile-photo h-[78vh] w-[calc(100vw-2rem)] max-w-3xl touch-pan-y overflow-hidden rounded-lg bg-black"
+          @touchstart.passive="startPhotoSwipe" @touchend.passive="endPhotoSwipe">
+          <img :src="activePhoto.url" :alt="activePhoto.altText || `Your profile photo ${activePhotoIndex + 1}`"
+            class="h-full w-full object-contain">
+        </div>
+        <button v-if="galleryPhotos.length > 1" type="button" class="absolute right-3 z-10 rounded-full bg-white/20 p-3 text-white"
+          aria-label="Next photo" @click="changePhoto(1)"><ChevronRight class="size-7" /></button>
+        <p class="absolute bottom-4 rounded-full bg-black/60 px-3 py-1.5 text-sm font-semibold text-white">{{ activePhotoIndex + 1 }} / {{ galleryPhotos.length }}</p>
+      </div>
+    </Teleport>
   </main>
 </template>
 
 <style scoped>
+.profile-photo {
+  position: relative;
+  overflow: hidden;
+  background: #F3E8DA;
+}
+
 .flip-card {
   min-height: 13rem;
   border-radius: .5rem;
