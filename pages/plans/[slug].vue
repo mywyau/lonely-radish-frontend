@@ -200,7 +200,7 @@ onMounted(async () => {
     databasePerson.value = response.person
     databaseActivities.value = response.activities
     matchAvailability.value = response.availability || []
-    if (response.proposal) {
+    if (response.proposal && route.query.new !== '1') {
       proposalId.value = response.proposal.id
       proposalStatus.value = response.proposal.status
       confirmed.value = ['pending','accepted'].includes(response.proposal.status)

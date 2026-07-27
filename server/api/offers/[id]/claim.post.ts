@@ -20,8 +20,8 @@ export default defineEventHandler(async (event) => {
   if (!uuidPattern.test(offerId))
     throw createError({ statusCode: 400, statusMessage: "Invalid offer" });
   const body = objectBody(await readBody(event));
-  const proposalId = text(body.proposalId, "Confirmed date", 80);
-  if (proposalId && !uuidPattern.test(proposalId)) {
+  const proposalId = text(body.proposalId, "Confirmed date", 80, true)!;
+  if (!uuidPattern.test(proposalId)) {
     throw createError({
       statusCode: 400,
       statusMessage: "Invalid confirmed date",
@@ -33,7 +33,7 @@ export default defineEventHandler(async (event) => {
   try {
     await client.query("begin");
     await client.query("select pg_advisory_xact_lock(hashtext($1))", [
-      `offer-claim:${offerId}:${sub}`,
+      `offer-date:${offerId}:${proposalId}`,
     ]);
     const offerResult = await client.query(
       `select o.id,o.title,o.discount_type as "discountType",
@@ -64,36 +64,32 @@ export default defineEventHandler(async (event) => {
         statusCode: 404,
         statusMessage: "This offer is no longer available",
       });
-    if (proposalId) {
-      await client.query("select pg_advisory_xact_lock(hashtext($1))", [
-        `date-offer:${proposalId}:${sub}`,
-      ]);
-      const proposal = await client.query(
-        `select 1 from date_proposals where id=$1 and status='accepted'
-        and selected_time_id is not null and ($2=inviter_id or $2=invitee_id)`,
-        [proposalId, sub],
-      );
-      if (!proposal.rows[0])
-        throw createError({
-          statusCode: 400,
-          statusMessage: "Choose one of your confirmed dates",
-        });
-      await client.query(
-        `update business_offer_claims set proposal_id=null
-        where proposal_id=$1 and claimant_user_id=$2 and offer_id<>$3`,
-        [proposalId, sub, offerId],
-      );
-    }
+    const proposal = await client.query(
+      `select 1 from date_proposals where id=$1 and status='accepted'
+      and selected_time_id is not null and ($2=inviter_id or $2=invitee_id)`,
+      [proposalId, sub],
+    );
+    if (!proposal.rows[0])
+      throw createError({
+        statusCode: 400,
+        statusMessage: "Choose one of your confirmed dates",
+      });
+    await client.query(
+      `update business_offer_claims set proposal_id=null
+      where proposal_id=$1 and claimant_user_id=$2 and offer_id<>$3 and status='issued'`,
+      [proposalId, sub, offerId],
+    );
     const existingResult = await client.query(
-      `select id,status,token_version as "tokenVersion"
-      from business_offer_claims where offer_id=$1 and claimant_user_id=$2 for update`,
-      [offerId, sub],
+      `select id,status,claimant_user_id as "claimantUserId",expires_at as "expiresAt",
+      token_version as "tokenVersion" from business_offer_claims
+      where offer_id=$1 and proposal_id=$2 for update`,
+      [offerId, proposalId],
     );
     const existing = existingResult.rows[0];
     if (existing?.status === "redeemed") {
       throw createError({
         statusCode: 409,
-        statusMessage: "You have already used this offer",
+        statusMessage: "This offer has already been used for this confirmed date",
       });
     }
     if (existing?.status === "revoked") {
@@ -102,11 +98,17 @@ export default defineEventHandler(async (event) => {
         statusMessage: "This claim is no longer available",
       });
     }
+    if (existing && existing.claimantUserId !== sub && new Date(existing.expiresAt) > new Date()) {
+      throw createError({
+        statusCode: 409,
+        statusMessage: "This offer already has an active code for your confirmed date",
+      });
+    }
     let claimResult;
     let code: string;
     if (existing) {
       claimResult = await client.query(
-        `update business_offer_claims set proposal_id=$2,token_version=token_version+1,
+        `update business_offer_claims set claimant_user_id=$2,token_version=token_version+1,
           status='issued',offer_title=$3,discount_type=$4,discount_value=$5,terms=$6,business_name=$7,
           venue_name=$8,claimed_at=now(),expires_at=$9,redeemed_at=null,redeemed_by_user_id=null,
           redeemed_venue_id=null
@@ -116,7 +118,7 @@ export default defineEventHandler(async (event) => {
           business_name as "businessName",venue_name as "venueName"`,
         [
           existing.id,
-          proposalId,
+          sub,
           offer.title,
           offer.discountType,
           offer.discountValue,

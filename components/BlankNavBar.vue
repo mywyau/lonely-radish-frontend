@@ -22,7 +22,7 @@ const menuRoot = ref<HTMLElement | null>(null)
 const navLinks = computed(() => {
   const links = [
     { to: '/', label: 'Home', icon: House },
-    { to: '/activities', label: 'Discover date ideas', icon: Sparkles },
+    { to: '/activities', label: 'Browse date activities', icon: Sparkles },
     { to: '/offers', label: 'Date offers', icon: BadgePercent },
     { to: '/matches', label: 'Matches & plans', icon: HeartHandshake },
     { to: '/matches/past', label: 'Past connections', icon: History },

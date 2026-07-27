@@ -33,7 +33,7 @@ describe("offer claims and redemptions", () => {
     );
   });
 
-  it("stores one private claim per member and offer", () => {
+  it("starts with private claim records before later date-scoped policy migrations", () => {
     const migration = read("docs/migrations/20260818_add_offer_claims.sql");
     expect(migration).toContain("unique (offer_id,claimant_user_id)");
     expect(migration).toContain("code_digest bytea not null unique");
@@ -43,6 +43,30 @@ describe("offer claims and redemptions", () => {
     expect(migration).toContain(
       "claimant_user_id text not null references users(id) on delete cascade",
     );
+  });
+
+  it("allows one redemption per offer and confirmed couple date", () => {
+    const migration = read(
+      "docs/migrations/20260822_offer_once_per_confirmed_date.sql",
+    );
+    const claim = read("server/api/offers/[id]/claim.post.ts");
+    const claims = read("server/api/offer-claims/index.get.ts");
+    const page = read("pages/offers.vue");
+    expect(migration).toContain(
+      "business_offer_claims_offer_proposal_unique",
+    );
+    expect(migration).toContain("on business_offer_claims(offer_id,proposal_id)");
+    expect(migration).toContain(
+      "drop constraint if exists business_offer_claims_offer_id_claimant_user_id_key",
+    );
+    expect(claim).toContain('text(body.proposalId, "Confirmed date", 80, true)');
+    expect(claim).toContain("where offer_id=$1 and proposal_id=$2");
+    expect(claim).toContain(
+      "This offer has already been used for this confirmed date",
+    );
+    expect(claims).toContain("proposal.status='accepted'");
+    expect(page).toContain("once per confirmed couple date");
+    expect(page).toContain("Your date has the active redemption code");
   });
 
   it("uses personal-account checks, rate limits, and atomic redemption", () => {

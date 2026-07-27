@@ -50,7 +50,10 @@ const additionalMatches = computed(() => Math.max(0, totalMatches.value - matche
 
 function actionLabel(match: MatchCard) {
   if (match.stage === 'fresh') return 'Start planning'
-  if (match.stage === 'confirmed' && match.dateHasPassed) return match.hasFollowedUp ? 'View date follow-up' : 'Would you meet again?'
+  if (match.stage === 'confirmed' && match.dateHasPassed) {
+    if (match.followUpResult === 'mutual') return 'Plan another date'
+    return match.hasFollowedUp ? 'View date follow-up' : 'Would you meet again?'
+  }
   if (match.stage === 'confirmed') return 'Edit date details'
   return match.needsResponse ? 'Review proposal' : 'Edit proposal'
 }
@@ -86,6 +89,7 @@ function notificationUrl(notification: MatchNotification) {
     ? `/dates/${notification.proposalId}/follow-up` : '/matches'
 }
 function planUrl(match: MatchCard) {
+  if (match.stage === 'confirmed' && match.dateHasPassed && match.followUpResult === 'mutual') return `/plans/${match.slug}?new=1`
   if (match.stage === 'confirmed' && match.dateHasPassed && match.proposalId) return `/dates/${match.proposalId}/follow-up`
   const query = match.stage === 'confirmed' && match.proposalId ? `?proposal=${match.proposalId}&mode=edit` : ''
   return `/plans/${match.slug}${query}`

@@ -12,6 +12,8 @@ describe('matches and date planning dashboard', () => {
     expect(page).toContain("return 'Edit date details'")
     expect(page).toContain("'Review proposal'")
     expect(page).toContain("'Edit proposal'")
+    expect(page).toContain("return 'Plan another date'")
+    expect(page).toContain("`/plans/${match.slug}?new=1`")
     expect(page).toContain('Draft — only you can see this')
     expect(read('server/api/matches/index.get.ts')).toContain("proposalStatus === 'accepted' ? 'confirmed'")
   })
@@ -39,6 +41,7 @@ describe('matches and date planning dashboard', () => {
     expect(read('server/api/proposals/index.post.ts')).not.toContain("'proposal_received'")
     expect(read('server/api/proposals/[id]/send.post.ts')).toContain("'proposal_received'")
     expect(read('server/api/planning/[slug].get.ts')).toContain("dp.status<>'draft' or dp.inviter_id=$1")
+    expect(read('pages/plans/[slug].vue')).toContain("route.query.new !== '1'")
   })
 
   it('shows at most five matches and confirms removal before notifying the other person', () => {

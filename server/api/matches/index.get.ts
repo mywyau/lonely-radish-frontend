@@ -28,7 +28,7 @@ export default defineEventHandler(async (event) => {
       and (dp.status<>'draft' or dp.inviter_id=$1) order by dp.created_at desc limit 1) proposal on true
     left join proposal_times selected on selected.id=proposal.selected_time_id
     left join lateral (select c.id,c.offer_id,c.offer_title from business_offer_claims c
-      where c.proposal_id=proposal.id and c.claimant_user_id=$1 and c.status<>'revoked'
+      where c.proposal_id=proposal.id and c.status<>'revoked'
       order by c.claimed_at desc limit 1) attached_offer on true
     left join date_attendance_responses my_attendance on my_attendance.proposal_id=proposal.id and my_attendance.user_id=$1
     left join date_attendance_responses their_attendance on their_attendance.proposal_id=proposal.id and their_attendance.user_id<>$1
