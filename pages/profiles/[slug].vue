@@ -113,6 +113,11 @@ function selectPhoto(index: number) {
   activePhotoIndex.value = index
 }
 
+function openPhoto(index: number) {
+  activePhotoIndex.value = index
+  photoViewerOpen.value = true
+}
+
 function changePhoto(direction: -1 | 1) {
   const count = galleryPhotos.value.length
   if (!count) return
@@ -183,7 +188,7 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
         <section v-if="activePhoto" aria-label="Profile photos" class="min-w-0 max-w-full sm:hidden">
           <button type="button" class="profile-photo relative block aspect-[4/3] w-full max-w-full overflow-hidden rounded-lg"
             :aria-label="`Expand ${activePhoto.alt || `${profile.name} profile photo`}`"
-            @click="photoViewerOpen = true">
+            @click="openPhoto(activePhotoIndex)">
             <img :src="activePhoto.src" :alt="activePhoto.alt || `${profile.name} profile photo`"
               :class="activePhoto.panel ? ['triptych', `triptych-${activePhoto.panel}`] : 'h-full w-full object-cover'">
             <span class="absolute bottom-3 right-3 inline-flex items-center gap-1.5 rounded-full bg-[#2A1520]/80 px-3 py-2 text-xs font-semibold text-white">
@@ -203,17 +208,22 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
         </section>
 
         <section aria-label="Profile photos" class="hidden grid-cols-3 gap-2 overflow-hidden rounded-lg sm:grid">
-          <div v-for="(photo, index) in gallerySlots"
+          <button v-for="(photo, index) in gallerySlots"
             :key="photo.empty ? `empty-${photo.slot}` : `${photo.src}-${photo.panel}`"
-            class="profile-photo aspect-square"
-            :class="[index === 0 && 'col-span-2 row-span-2', photo.empty && 'profile-photo-empty']">
+            type="button"
+            class="profile-photo group aspect-square text-left disabled:cursor-default"
+            :class="[index === 0 && 'col-span-2 row-span-2', photo.empty && 'profile-photo-empty']"
+            :disabled="photo.empty"
+            :aria-label="photo.empty ? `Empty photo slot ${photo.slot}` : `Expand ${photo.alt || `${profile.name} profile photo ${index + 1}`}`"
+            @click="!photo.empty && openPhoto(index)">
             <img v-if="!photo.empty" :src="photo.src" :alt="photo.alt || `${profile.name} profile photo`"
               :class="photo.panel ? ['triptych', `triptych-${photo.panel}`] : 'h-full w-full object-cover'">
+            <span v-if="!photo.empty" class="absolute bottom-3 right-3 inline-flex items-center gap-1.5 rounded-full bg-[#2A1520]/80 px-3 py-2 text-xs font-semibold text-white opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
+              <Expand class="size-3.5" aria-hidden="true" /> Expand
+            </span>
             <div v-else class="flex h-full w-full items-center justify-center"
-              :aria-label="`Empty photo slot ${photo.slot}`"><span
-                class="rounded-full bg-white/70 px-2.5 py-1 text-xs font-semibold text-[#8A6A74]">Photo {{ photo.slot
-                }}</span></div>
-          </div>
+              aria-hidden="true"><span class="rounded-full bg-white/70 px-2.5 py-1 text-xs font-semibold text-[#8A6A74]">Photo {{ photo.slot }}</span></div>
+          </button>
         </section>
 
         <aside class="min-w-0 max-w-full rounded-lg bg-white p-4 shadow-[0_12px_28px_rgba(180,35,74,0.08)] min-[360px]:p-5 sm:p-6 lg:sticky lg:top-24">
@@ -401,6 +411,12 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
   position: relative;
   overflow: hidden;
   background: #F3E8DA;
+}
+
+.profile-photo:focus-visible {
+  z-index: 1;
+  outline: 3px solid #B4234A;
+  outline-offset: -3px;
 }
 
 .profile-photo-empty {

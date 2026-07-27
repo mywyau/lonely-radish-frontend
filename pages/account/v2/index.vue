@@ -20,9 +20,6 @@ const deletingAccount = ref(false);
 const deleteError = ref("");
 const deletionQueued = ref(false);
 const contact = reactive({ phoneNumber: '', contactEmail: '', socialHandle: '', shareWithMatches: false });
-const lifestyle = reactive<{ heightCm: number | null; weightKg: number | null; drinking: string; smoking: string; dailyRhythm: string }>({ heightCm: null, weightKg: null, drinking: '', smoking: '', dailyRhythm: '' });
-const lifestyleSaved = ref(false);
-const lifestyleError = ref('');
 const accountNameLimit = 80;
 const phoneNumberLimit = 30;
 const contactEmailLimit = 254;
@@ -101,15 +98,6 @@ async function saveContactDetails() {
   finally { savingContact.value = false; }
 }
 
-async function saveLifestyle() {
-  lifestyleError.value = '';
-  lifestyleSaved.value = false;
-  try {
-    Object.assign(lifestyle, await $fetch('/api/profile/lifestyle', { method: 'PUT', body: lifestyle }));
-    lifestyleSaved.value = true;
-  } catch (error: any) { lifestyleError.value = error?.data?.statusMessage || 'Lifestyle details could not be saved.'; }
-}
-
 onMounted(async () => {
   await resolve({ force: true });
   try { Object.assign(contact, await $fetch('/api/profile/contact')); } catch { /* Contact details remain optional. */ }
@@ -118,8 +106,6 @@ onMounted(async () => {
     profile.raceEthnicity = result.profile?.raceEthnicity || '';
     profile.sexualOrientation = result.profile?.sexualOrientation || '';
     profile.displayName = result.profile?.displayName || '';
-    Object.assign(lifestyle, { heightCm: result.profile?.heightCm || null, weightKg: result.profile?.weightKg || null,
-      drinking: result.profile?.drinking || '', smoking: result.profile?.smoking || '', dailyRhythm: result.profile?.dailyRhythm || '' });
   } catch { /* Profile details remain editable when profile data is available. */ }
   try {
     readiness.value = await $fetch('/api/profile/readiness');
@@ -236,29 +222,14 @@ onMounted(async () => {
           </form>
         </section>
 
-        <section class="rounded-lg bg-white p-6 shadow-[0_12px_28px_rgba(180,35,74,0.08)]">
-          <h2 class="text-xl font-semibold">Lifestyle and profile details</h2>
-          <p class="mt-2 text-sm leading-6 text-[#6E4D58]">Optional details shown on your profile. Activity and personal interests are managed separately in preferences.</p>
-          <form class="mt-5 grid gap-4 sm:grid-cols-2" @submit.prevent="saveLifestyle">
-            <label class="text-sm font-medium">Height <span class="font-normal text-[#6E4D58]">(optional)</span>
-              <div class="relative"><input v-model.number="lifestyle.heightCm" class="field pr-12" type="number" min="120" max="230" placeholder="170"><span class="pointer-events-none absolute right-4 top-1/2 mt-1 -translate-y-1/2 text-sm text-[#6E4D58]">cm</span></div>
-            </label>
-            <label class="text-sm font-medium">Weight <span class="font-normal text-[#6E4D58]">(optional)</span>
-              <div class="relative"><input v-model.number="lifestyle.weightKg" class="field pr-12" type="number" min="35" max="300" placeholder="70"><span class="pointer-events-none absolute right-4 top-1/2 mt-1 -translate-y-1/2 text-sm text-[#6E4D58]">kg</span></div>
-            </label>
-            <label class="text-sm font-medium">Daily rhythm <span class="font-normal text-[#6E4D58]">(optional)</span>
-              <select v-model="lifestyle.dailyRhythm" class="field"><option value="">Not set</option><option value="early_bird">Early bird — prefers mornings</option><option value="night_owl">Night owl — prefers evenings</option><option value="flexible">Flexible — mornings or evenings</option></select>
-            </label>
-            <label class="text-sm font-medium">Drinking <span class="font-normal text-[#6E4D58]">(optional)</span>
-              <select v-model="lifestyle.drinking" class="field"><option value="">Not set</option><option value="never">Never</option><option value="socially">Socially</option><option value="regularly">Regularly</option><option value="prefer_not_to_say">Prefer not to say</option></select>
-            </label>
-            <label class="text-sm font-medium">Smoking <span class="font-normal text-[#6E4D58]">(optional)</span>
-              <select v-model="lifestyle.smoking" class="field"><option value="">Not set</option><option value="never">Never</option><option value="socially">Socially</option><option value="regularly">Regularly</option><option value="prefer_not_to_say">Prefer not to say</option></select>
-            </label>
-            <div class="flex items-center gap-3 sm:col-span-2"><button type="submit" class="rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white">Save lifestyle details</button><span v-if="lifestyleSaved" class="text-sm font-semibold text-[#6E8B52]" role="status">Details saved.</span></div>
-            <p v-if="lifestyleError" class="text-sm font-semibold text-[#8F1839] sm:col-span-2" role="alert">{{ lifestyleError }}</p>
-          </form>
-        </section>
+        <NuxtLink to="/profile/details" class="group flex items-center gap-4 rounded-lg bg-white p-6 shadow-[0_12px_28px_rgba(180,35,74,0.08)] transition hover:-translate-y-0.5">
+          <span class="flex size-11 shrink-0 items-center justify-center rounded-full bg-[#FCE3E8] text-[#B4234A]"><UserRound class="size-5" aria-hidden="true" /></span>
+          <span class="min-w-0 flex-1">
+            <strong class="block text-xl font-semibold">About me & lifestyle</strong>
+            <span class="mt-1 block text-sm leading-6 text-[#6E4D58]">Edit your bio, height, weight, daily rhythm, drinking and smoking details.</span>
+          </span>
+          <ArrowRight class="size-5 shrink-0 text-[#8F1839] transition-transform group-hover:translate-x-1" aria-hidden="true" />
+        </NuxtLink>
 
         <section class="rounded-lg bg-white p-6 shadow-[0_12px_28px_rgba(180,35,74,0.08)]">
           <h2 class="text-xl font-semibold">Contact details for matches</h2>
