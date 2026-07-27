@@ -88,7 +88,7 @@ describe("auth and billing page contracts", () => {
     expect(account).not.toContain("useMockProfile()");
     expect(account).not.toContain("persistProfile()");
     expect(account).toContain("profile.firstName");
-    expect(account).toContain("'/api/profile/identity'")
+    expect(account).toContain("'/api/profile/basics'")
     expect(account).toContain('Racial or ethnic identity')
     expect(nav).not.toContain("useMockProfile()");
     expect(nav).toContain('name.charAt(0).toLocaleUpperCase()');

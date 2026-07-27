@@ -7,12 +7,16 @@ definePageMeta({
   middleware: "logged-in",
 });
 
-const { user, resolve } = useMeStateV2();
+const { user } = useMeStateV2();
 const profile = reactive({ firstName: "", lastName: "", displayName: "", raceEthnicity: "", sexualOrientation: "" });
 const raceEthnicityOptions = ['Asian', 'Black / African / Caribbean', 'Hispanic / Latino', 'Middle Eastern', 'North African', 'Native / Indigenous', 'Pacific Islander', 'White', 'Multiracial / multi-ethnic', 'Prefer not to say'];
 
-const saved = ref(false);
-const profileSaveError = ref('');
+const savingAccountDetails = ref(false);
+const accountDetailsSaved = ref(false);
+const accountDetailsError = ref('');
+const savingProfileBasics = ref(false);
+const profileBasicsSaved = ref(false);
+const profileBasicsError = ref('');
 const showDeletePanel = ref(false);
 const showFinalDeleteConfirmation = ref(false);
 const deleteConfirmInput = ref("");
@@ -24,12 +28,17 @@ const accountNameLimit = 80;
 const phoneNumberLimit = 30;
 const contactEmailLimit = 254;
 const socialHandleLimit = 100;
+const requestTimeoutMs = 10000;
 const savingContact = ref(false);
 const contactSaved = ref(false);
 const contactError = ref('');
+const contactLoadError = ref('');
+const accountLoadError = ref('');
 type ReadinessChecks = { profileBasics: boolean; photos: boolean; activities: boolean; location: boolean; generalPreferences: boolean; datingPreferences: boolean };
 const readiness = ref<{ checks: ReadinessChecks; completed: number; total: number; percentage: number; photoCount: number; photosRequired: number } | null>(null);
 const readinessCollapsed = ref(false);
+const readinessLoading = ref(true);
+const readinessError = ref('');
 const readinessItems = computed(() => {
   const checks = readiness.value?.checks;
   return [
@@ -43,6 +52,7 @@ const readinessItems = computed(() => {
 });
 
 const fullName = computed(() => `${profile.firstName} ${profile.lastName}`.trim());
+const signInPath = computed(() => `/please-sign-in?redirect=${encodeURIComponent('/account/v2')}`);
 
 const datePreferences = [
   { icon: Sparkles, label: "Activity mood", value: "Gallery walk, market, or low-key gig" },
@@ -51,26 +61,87 @@ const datePreferences = [
   { icon: ShieldCheck, label: "Safety", value: "Public places only" },
 ];
 
-async function saveProfile() {
-  profileSaveError.value = '';
-  saved.value = false;
+function requestStatus(error: any) {
+  return error?.statusCode || error?.response?.status || error?.data?.statusCode
+}
+
+function requestMessage(error: any, fallback: string) {
+  if (requestStatus(error) === 401) {
+    accountLoadError.value = 'Your sign-in session has expired. Sign in again to load and save your account.'
+    return 'Your sign-in session has expired. Sign in again to continue.'
+  }
+  if (error?.name === 'AbortError' || /timeout|aborted/i.test(error?.message || '')) {
+    return `${fallback} The request timed out; please try again.`
+  }
+  return error?.data?.statusMessage || error?.statusMessage || fallback
+}
+
+async function loadReadiness() {
+  readinessLoading.value = true
+  readinessError.value = ''
   try {
-    const [updated] = await Promise.all([
-      $fetch<{ firstName: string | null; lastName: string | null }>("/api/account/v2/profile", {
-        method: "POST", body: { firstName: profile.firstName, lastName: profile.lastName },
-      }),
-      $fetch('/api/profile/display-name', { method: 'PUT', body: { displayName: profile.displayName } }),
-      $fetch('/api/profile/identity', { method: 'PUT', body: { raceEthnicity: profile.raceEthnicity, sexualOrientation: profile.sexualOrientation } }),
-    ]);
+    readiness.value = await $fetch('/api/profile/readiness', { timeout: requestTimeoutMs })
+    readinessCollapsed.value = readiness.value.percentage === 100
+  } catch (error: any) {
+    readiness.value = null
+    readinessError.value = requestMessage(error, 'Account readiness could not be loaded.')
+  } finally {
+    readinessLoading.value = false
+  }
+}
+
+async function saveAccountDetails() {
+  accountDetailsError.value = '';
+  accountDetailsSaved.value = false;
+  if (!profile.firstName.trim() || !profile.lastName.trim()) {
+    accountDetailsError.value = 'Add your first and last name.'
+    return
+  }
+  savingAccountDetails.value = true
+  try {
+    const updated = await $fetch<{ firstName: string | null; lastName: string | null }>("/api/account/v2/profile", {
+      method: "POST", body: { firstName: profile.firstName, lastName: profile.lastName }, timeout: requestTimeoutMs,
+    })
     if (user.value) {
       user.value.firstName = updated.firstName;
       user.value.lastName = updated.lastName;
     }
-    saved.value = true;
-    window.setTimeout(() => { saved.value = false; }, 2200);
+    accountDetailsSaved.value = true;
   } catch (error: any) {
-    profileSaveError.value = error?.data?.statusMessage || 'Profile details could not be saved.';
+    accountDetailsError.value = requestMessage(error, 'Account details could not be saved.');
+  } finally { savingAccountDetails.value = false }
+}
+
+async function saveProfileBasics() {
+  profileBasicsError.value = ''
+  profileBasicsSaved.value = false
+  if (!profile.displayName.trim()) {
+    profileBasicsError.value = 'Add the profile name shown to other members.'
+    return
   }
+  if (!profile.sexualOrientation) {
+    profileBasicsError.value = 'Select your sexual orientation.'
+    return
+  }
+  if (!profile.raceEthnicity) {
+    profileBasicsError.value = 'Select your racial or ethnic identity.'
+    return
+  }
+  savingProfileBasics.value = true
+  try {
+    Object.assign(profile, await $fetch('/api/profile/basics', {
+      method: 'PUT',
+      timeout: requestTimeoutMs,
+      body: {
+        displayName: profile.displayName,
+        raceEthnicity: profile.raceEthnicity,
+        sexualOrientation: profile.sexualOrientation,
+      },
+    }))
+    profileBasicsSaved.value = true
+  } catch (error: any) {
+    profileBasicsError.value = requestMessage(error, 'Public profile details could not be saved.')
+  } finally { savingProfileBasics.value = false }
 }
 
 async function deleteAccount() {
@@ -88,31 +159,63 @@ async function deleteAccount() {
 }
 
 async function saveContactDetails() {
-  savingContact.value = true;
   contactError.value = '';
   contactSaved.value = false;
+  const phoneNumber = contact.phoneNumber.trim()
+  const contactEmail = contact.contactEmail.trim()
+  const socialHandle = contact.socialHandle.trim()
+  if (phoneNumber) {
+    const digits = phoneNumber.replace(/\D/g, '')
+    if (!/^[+()\d.\s-]+$/.test(phoneNumber) || digits.length < 7 || digits.length > 15) {
+      contactError.value = 'Enter a valid phone number containing 7 to 15 digits.'
+      return
+    }
+  }
+  if (contactEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactEmail)) {
+    contactError.value = 'Enter a valid contact email address.'
+    return
+  }
+  if (contact.shareWithMatches && !phoneNumber && !contactEmail && !socialHandle) {
+    contactError.value = 'Add at least one contact detail before sharing with matches.'
+    return
+  }
+  savingContact.value = true;
   try {
-    Object.assign(contact, await $fetch('/api/profile/contact', { method: 'PUT', body: contact }));
+    Object.assign(contact, await $fetch('/api/profile/contact', {
+      method: 'PUT',
+      timeout: requestTimeoutMs,
+      body: { phoneNumber, contactEmail, socialHandle, shareWithMatches: contact.shareWithMatches },
+    }));
     contactSaved.value = true;
-  } catch (error: any) { contactError.value = error?.data?.statusMessage || 'Contact details could not be saved.'; }
+  } catch (error: any) { contactError.value = requestMessage(error, 'Contact details could not be saved.'); }
   finally { savingContact.value = false; }
 }
 
 onMounted(async () => {
-  await resolve({ force: true });
-  try { Object.assign(contact, await $fetch('/api/profile/contact')); } catch { /* Contact details remain optional. */ }
-  try {
-    const result = await $fetch<any>('/api/profile/me');
+  profile.firstName = user.value?.firstName || "";
+  profile.lastName = user.value?.lastName || "";
+
+  const contactRequest = $fetch('/api/profile/contact', { timeout: requestTimeoutMs })
+  const profileRequest = $fetch<any>('/api/profile/me', { timeout: requestTimeoutMs })
+  const [contactResult, profileResult] = await Promise.allSettled([
+    contactRequest,
+    profileRequest,
+    loadReadiness(),
+  ])
+
+  if (contactResult.status === 'fulfilled') {
+    Object.assign(contact, contactResult.value)
+  } else {
+    contactLoadError.value = requestMessage(contactResult.reason, 'Existing contact details could not be loaded. You can still enter and save them again.')
+  }
+  if (profileResult.status === 'fulfilled') {
+    const result = profileResult.value
     profile.raceEthnicity = result.profile?.raceEthnicity || '';
     profile.sexualOrientation = result.profile?.sexualOrientation || '';
     profile.displayName = result.profile?.displayName || '';
-  } catch { /* Profile details remain editable when profile data is available. */ }
-  try {
-    readiness.value = await $fetch('/api/profile/readiness');
-    readinessCollapsed.value = readiness.value.percentage === 100;
-  } catch { /* Readiness is helpful but does not block account access. */ }
-  profile.firstName = user.value?.firstName || "";
-  profile.lastName = user.value?.lastName || "";
+  } else {
+    accountLoadError.value ||= requestMessage(profileResult.reason, 'Some account details could not be loaded. Refresh the page and try again.')
+  }
 });
 </script>
 
@@ -120,6 +223,11 @@ onMounted(async () => {
   <main class="min-h-screen bg-[#FBF7F1] px-5 py-10 text-[#2A1520] sm:px-8">
     <section class="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[0.85fr_1.15fr]">
       <aside class="space-y-4">
+        <div v-if="accountLoadError" class="rounded-lg border border-[#E7A8B7] bg-[#FFF0F3] p-4 text-sm text-[#7A1733]" role="alert">
+          <p class="font-semibold">{{ accountLoadError }}</p>
+          <NuxtLink v-if="accountLoadError.includes('sign-in session')" :to="signInPath" class="mt-2 inline-block font-bold underline underline-offset-2">Sign in again</NuxtLink>
+        </div>
+
         <div class="rounded-lg bg-white p-6 shadow-[0_12px_28px_rgba(180,35,74,0.08)]">
           <div class="flex items-center gap-4">
             <div class="flex size-14 items-center justify-center rounded-full bg-[#FCE3E8] text-xl font-semibold text-[#B4234A]">
@@ -142,23 +250,37 @@ onMounted(async () => {
           <ArrowRight class="size-5 transition-transform group-hover:translate-x-1" aria-hidden="true" />
         </NuxtLink>
 
-        <section v-if="readiness" class="rounded-lg bg-white p-6 shadow-[0_12px_28px_rgba(180,35,74,0.08)]">
-          <button type="button" class="flex w-full items-start justify-between gap-4 text-left" :aria-expanded="!readinessCollapsed" aria-controls="discovery-readiness-details" @click="readinessCollapsed = !readinessCollapsed">
-            <div><p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">Discovery readiness</p><h2 class="mt-2 text-xl font-semibold">{{ readiness.percentage === 100 ? 'Ready to be discovered' : 'Complete your profile' }}</h2></div>
-            <span class="flex shrink-0 items-center gap-2"><span class="rounded-full bg-[#FCE3E8] px-3 py-2 text-sm font-bold text-[#8F1839]">{{ readiness.percentage }}%</span><ChevronDown class="mt-2 size-5 text-[#8F1839] transition-transform" :class="!readinessCollapsed && 'rotate-180'" aria-hidden="true" /></span>
-          </button>
-          <div class="mt-4 h-2 overflow-hidden rounded-full bg-[#F3E8DA]" aria-hidden="true"><div class="h-full rounded-full bg-[#B4234A] transition-[width] duration-300" :style="{ width: `${readiness.percentage}%` }" /></div>
-          <div id="discovery-readiness-details" v-show="!readinessCollapsed">
-            <p class="mt-3 text-xs leading-5 text-[#6E4D58]">{{ readiness.completed }} of {{ readiness.total }} discovery essentials complete.</p>
-            <ul class="mt-4 divide-y divide-[#E8D8C4]">
-              <li v-for="item in readinessItems" :key="item.key" class="flex items-center gap-3 py-3">
-                <CheckCircle2 v-if="item.complete" class="size-5 shrink-0 text-[#6E8B52]" aria-hidden="true" />
-                <Circle v-else class="size-5 shrink-0 text-[#D7A7B3]" aria-hidden="true" />
-                <div class="min-w-0 flex-1"><p class="text-sm font-semibold">{{ item.label }}</p><p class="text-xs text-[#6E4D58]">{{ item.complete ? 'Complete' : item.detail }}</p></div>
-                <NuxtLink v-if="!item.complete" :to="item.to" :aria-label="`Complete ${item.label}`" class="inline-flex items-center gap-1 text-xs font-bold text-[#8F1839]">Add <ArrowRight class="size-3.5" /></NuxtLink>
-              </li>
-            </ul>
+        <section class="rounded-lg bg-white p-6 shadow-[0_12px_28px_rgba(180,35,74,0.08)]">
+          <div v-if="readinessLoading">
+            <p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">Discovery readiness</p>
+            <p class="mt-2 text-sm text-[#6E4D58]" role="status">Loading account readiness…</p>
           </div>
+          <div v-else-if="readinessError">
+            <p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">Discovery readiness</p>
+            <p class="mt-2 text-sm font-semibold text-[#8F1839]" role="alert">{{ readinessError }}</p>
+            <div class="mt-3 flex flex-wrap gap-3">
+              <button type="button" class="rounded-lg bg-[#F3E8DA] px-4 py-2 text-sm font-semibold text-[#4D2F39]" @click="loadReadiness">Try again</button>
+              <NuxtLink v-if="readinessError.includes('sign-in session')" :to="signInPath" class="rounded-lg bg-[#B4234A] px-4 py-2 text-sm font-semibold text-white">Sign in again</NuxtLink>
+            </div>
+          </div>
+          <template v-else-if="readiness">
+            <button type="button" class="flex w-full items-start justify-between gap-4 text-left" :aria-expanded="!readinessCollapsed" aria-controls="discovery-readiness-details" @click="readinessCollapsed = !readinessCollapsed">
+              <div><p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">Discovery readiness</p><h2 class="mt-2 text-xl font-semibold">{{ readiness.percentage === 100 ? 'Ready to be discovered' : 'Complete your profile' }}</h2></div>
+              <span class="flex shrink-0 items-center gap-2"><span class="rounded-full bg-[#FCE3E8] px-3 py-2 text-sm font-bold text-[#8F1839]">{{ readiness.percentage }}%</span><ChevronDown class="mt-2 size-5 text-[#8F1839] transition-transform" :class="!readinessCollapsed && 'rotate-180'" aria-hidden="true" /></span>
+            </button>
+            <div class="mt-4 h-2 overflow-hidden rounded-full bg-[#F3E8DA]" aria-hidden="true"><div class="h-full rounded-full bg-[#B4234A] transition-[width] duration-300" :style="{ width: `${readiness.percentage}%` }" /></div>
+            <div id="discovery-readiness-details" v-show="!readinessCollapsed">
+              <p class="mt-3 text-xs leading-5 text-[#6E4D58]">{{ readiness.completed }} of {{ readiness.total }} discovery essentials complete.</p>
+              <ul class="mt-4 divide-y divide-[#E8D8C4]">
+                <li v-for="item in readinessItems" :key="item.key" class="flex items-center gap-3 py-3">
+                  <CheckCircle2 v-if="item.complete" class="size-5 shrink-0 text-[#6E8B52]" aria-hidden="true" />
+                  <Circle v-else class="size-5 shrink-0 text-[#D7A7B3]" aria-hidden="true" />
+                  <div class="min-w-0 flex-1"><p class="text-sm font-semibold">{{ item.label }}</p><p class="text-xs text-[#6E4D58]">{{ item.complete ? 'Complete' : item.detail }}</p></div>
+                  <NuxtLink v-if="!item.complete" :to="item.to" :aria-label="`Complete ${item.label}`" class="inline-flex items-center gap-1 text-xs font-bold text-[#8F1839]">Add <ArrowRight class="size-3.5" /></NuxtLink>
+                </li>
+              </ul>
+            </div>
+          </template>
         </section>
       </aside>
 
@@ -169,22 +291,38 @@ onMounted(async () => {
             <div>
               <h2 class="text-xl font-semibold">Account Details</h2>
               <p class="mt-1 text-sm text-[#6E4D58]">
-                Edit your account details here. These will only be shared with matches.
+                Your private account name is separate from the profile details shown to other members.
               </p>
             </div>
           </div>
 
-          <form class="mt-6 grid gap-4 sm:grid-cols-2" @submit.prevent="saveProfile">
+          <form class="mt-6 grid gap-4 sm:grid-cols-2" novalidate @submit.prevent="saveAccountDetails">
             <label class="block text-sm font-medium">
               First name
-              <input v-model="profile.firstName" class="field" type="text" :maxlength="accountNameLimit" autocomplete="given-name" placeholder="Your first name">
+              <input v-model="profile.firstName" class="field" type="text" :maxlength="accountNameLimit" autocomplete="given-name" required placeholder="Your first name">
             </label>
 
             <label class="block text-sm font-medium">
               Last name
-              <input v-model="profile.lastName" class="field" type="text" :maxlength="accountNameLimit" autocomplete="family-name" placeholder="Your last name">
+              <input v-model="profile.lastName" class="field" type="text" :maxlength="accountNameLimit" autocomplete="family-name" required placeholder="Your last name">
             </label>
 
+            <div class="flex flex-col items-start gap-2 sm:col-span-2 sm:flex-row sm:items-center">
+              <button type="submit" :disabled="savingAccountDetails" class="rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#8F1839] disabled:cursor-not-allowed disabled:opacity-50">
+                {{ savingAccountDetails ? 'Saving…' : 'Save account details' }}
+              </button>
+              <span v-if="accountDetailsSaved" class="text-sm font-medium text-[#52713A]" role="status">Account details saved.</span>
+            </div>
+            <p v-if="accountDetailsError" class="text-sm font-semibold text-[#8F1839] sm:col-span-2" role="alert">{{ accountDetailsError }}</p>
+          </form>
+
+          <div class="my-7 border-t border-[#E8D8C4]"></div>
+          <div>
+            <h3 class="text-lg font-semibold">Public profile details</h3>
+            <p class="mt-1 text-sm leading-6 text-[#6E4D58]">These details help people understand who they may be meeting.</p>
+          </div>
+
+          <form class="mt-5 grid gap-4 sm:grid-cols-2" novalidate @submit.prevent="saveProfileBasics">
             <label class="block text-sm font-medium sm:col-span-2">
               Profile name
               <input v-model="profile.displayName" class="field" type="text" :maxlength="accountNameLimit" autocomplete="nickname" required placeholder="Name shown to other members">
@@ -207,18 +345,13 @@ onMounted(async () => {
               </select>
             </label>
 
-            <!-- <label class="block text-sm font-medium">
-              Neighbourhood
-              <input v-model="profile.neighbourhood" class="field" type="text">
-            </label> -->
-
             <div class="flex flex-col items-start gap-2 sm:col-span-2 sm:flex-row sm:items-center">
-              <button type="submit" class="rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#8F1839]">
-                Save profile
+              <button type="submit" :disabled="savingProfileBasics" class="rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#8F1839] disabled:cursor-not-allowed disabled:opacity-50">
+                {{ savingProfileBasics ? 'Saving…' : 'Save profile' }}
               </button>
-              <span v-if="saved" class="text-sm font-medium text-[#6E8B52]">Profile saved.</span>
+              <span v-if="profileBasicsSaved" class="text-sm font-medium text-[#52713A]" role="status">Profile saved.</span>
             </div>
-            <p v-if="profileSaveError" class="text-sm font-semibold text-[#8F1839] sm:col-span-2" role="alert">{{ profileSaveError }}</p>
+            <p v-if="profileBasicsError" class="text-sm font-semibold text-[#8F1839] sm:col-span-2" role="alert">{{ profileBasicsError }}</p>
           </form>
         </section>
 
@@ -234,7 +367,8 @@ onMounted(async () => {
         <section class="rounded-lg bg-white p-6 shadow-[0_12px_28px_rgba(180,35,74,0.08)]">
           <h2 class="text-xl font-semibold">Contact details for matches</h2>
           <p class="mt-2 text-sm leading-6 text-[#6E4D58]">These details are never shown in discovery and are only available to active matches when sharing is switched on.</p>
-          <form class="mt-5 grid gap-4 sm:grid-cols-2" @submit.prevent="saveContactDetails">
+          <p v-if="contactLoadError" class="mt-4 rounded-lg bg-[#FFF1C7] p-3 text-sm font-semibold text-[#694C00]" role="alert">{{ contactLoadError }}</p>
+          <form class="mt-5 grid gap-4 sm:grid-cols-2" novalidate @submit.prevent="saveContactDetails">
             <label class="text-sm font-medium">Phone number <span class="font-normal text-[#6E4D58]">(optional)</span><input v-model="contact.phoneNumber" class="field" type="tel" :maxlength="phoneNumberLimit" autocomplete="tel" placeholder="+44 7700 900000"></label>
             <label class="text-sm font-medium">Contact email <span class="font-normal text-[#6E4D58]">(optional)</span><input v-model="contact.contactEmail" class="field" type="email" :maxlength="contactEmailLimit" autocomplete="email" placeholder="you@example.com"></label>
             <label class="text-sm font-medium sm:col-span-2">Social or contact handle <span class="font-normal text-[#6E4D58]">(optional)</span><input v-model="contact.socialHandle" class="field" type="text" :maxlength="socialHandleLimit" autocomplete="off" placeholder="@yourhandle or preferred contact app"><span class="mt-1 block text-right text-xs font-normal text-[#6E4D58]">{{ contact.socialHandle.length }}/{{ socialHandleLimit }}</span></label>
