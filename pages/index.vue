@@ -125,7 +125,7 @@ const dateFlow = [
 
 const principles = [
   'People who are open to forming new relationships',
-  'Activity preferences, neighbourhoods, and simple plans up front',
+  'Activity preferences and simple plans up front',
   'Public places first, with safety reminders and confirmations on meetups.',
 ]
 
@@ -227,7 +227,7 @@ onBeforeUnmount(() => {
           Skip the endless swiping. Say yes to a plan.
         </h2>
         <p class="mt-4 max-w-xl text-[#6E4D58]">
-          Lonely Radish is for people who would rather meet around a shared activity than keep guessing over messages.
+          Lonely Radish is for individuals who would rather meet around a shared activity.
         </p>
 
         <ul class="mt-6 space-y-3">
