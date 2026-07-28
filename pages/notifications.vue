@@ -15,6 +15,10 @@ const emailPreferences = reactive({ interests: true, matches: true, datePlans: t
 const emailPreferencesCollapsed = ref(true)
 const savingEmailPreferences = ref(false)
 const emailPreferencesSaved = ref(false)
+const unsubscribingFromAllEmail = ref(false)
+const emailPreferencesStatus = ref('')
+const emailPreferencesError = ref('')
+const hasAnyEmailSubscriptions = computed(() => Object.values(emailPreferences).some(Boolean))
 const deletingAll = ref(false)
 const showDeleteAllConfirmation = ref(false)
 
@@ -98,10 +102,29 @@ async function deleteAllNotices() {
 async function saveEmailPreferences() {
   savingEmailPreferences.value = true
   emailPreferencesSaved.value = false
+  emailPreferencesStatus.value = ''
+  emailPreferencesError.value = ''
   try {
     Object.assign(emailPreferences, await $fetch('/api/email/preferences', { method: 'PUT', body: emailPreferences }))
     emailPreferencesSaved.value = true
+    emailPreferencesStatus.value = 'Email preferences saved.'
+  } catch (error: any) {
+    emailPreferencesError.value = error?.data?.statusMessage || 'Your email preferences could not be saved.'
   } finally { savingEmailPreferences.value = false }
+}
+async function unsubscribeFromAllEmail() {
+  unsubscribingFromAllEmail.value = true
+  emailPreferencesSaved.value = false
+  emailPreferencesStatus.value = ''
+  emailPreferencesError.value = ''
+  try {
+    const disabledPreferences = { interests: false, matches: false, datePlans: false, followUps: false }
+    Object.assign(emailPreferences, await $fetch('/api/email/preferences', { method: 'PUT', body: disabledPreferences }))
+    emailPreferencesSaved.value = true
+    emailPreferencesStatus.value = 'Unsubscribed from all email notifications.'
+  } catch (error: any) {
+    emailPreferencesError.value = error?.data?.statusMessage || 'We could not unsubscribe you from all email notifications.'
+  } finally { unsubscribingFromAllEmail.value = false }
 }
 onMounted(async () => {
   await load()
@@ -126,7 +149,12 @@ onMounted(async () => {
           <label class="flex items-center gap-3 rounded-lg bg-[#FBF7F1] p-3 text-sm font-semibold"><input v-model="emailPreferences.matches" class="size-4 accent-[#B4234A]" type="checkbox">Matches and connections</label>
           <label class="flex items-center gap-3 rounded-lg bg-[#FBF7F1] p-3 text-sm font-semibold"><input v-model="emailPreferences.datePlans" class="size-4 accent-[#B4234A]" type="checkbox">Date plan updates</label>
           <label class="flex items-center gap-3 rounded-lg bg-[#FBF7F1] p-3 text-sm font-semibold"><input v-model="emailPreferences.followUps" class="size-4 accent-[#B4234A]" type="checkbox">Post-date check-ins</label>
-          <div class="flex items-center gap-3 sm:col-span-2"><button type="submit" :disabled="savingEmailPreferences" class="rounded-lg bg-[#4D2F39] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{{ savingEmailPreferences ? 'Saving…' : 'Save email preferences' }}</button><span v-if="emailPreferencesSaved" class="text-sm font-semibold text-[#52713A]" role="status">Saved</span></div>
+          <div class="flex flex-col items-start gap-3 sm:col-span-2 sm:flex-row sm:items-center">
+            <button type="submit" :disabled="savingEmailPreferences || unsubscribingFromAllEmail" class="rounded-lg bg-[#4D2F39] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{{ savingEmailPreferences ? 'Saving…' : 'Save email preferences' }}</button>
+            <button type="button" :disabled="savingEmailPreferences || unsubscribingFromAllEmail || !hasAnyEmailSubscriptions" class="rounded-lg border border-[#B4234A]/30 bg-white px-4 py-2.5 text-sm font-semibold text-[#8F1839] disabled:cursor-not-allowed disabled:opacity-50" @click="unsubscribeFromAllEmail">{{ unsubscribingFromAllEmail ? 'Unsubscribing…' : 'Unsubscribe from all' }}</button>
+          </div>
+          <p v-if="emailPreferencesSaved" class="text-sm font-semibold text-[#52713A] sm:col-span-2" role="status">{{ emailPreferencesStatus }}</p>
+          <p v-if="emailPreferencesError" class="text-sm font-semibold text-[#8F1839] sm:col-span-2" role="alert">{{ emailPreferencesError }}</p>
         </form>
       </section>
       <div v-if="loading" class="mt-8 rounded-lg bg-white p-8 text-center text-[#6E4D58]">Loading notifications…</div>

@@ -157,11 +157,6 @@ onMounted(async () => {
             <p v-if="bioError" class="mt-3 text-sm font-semibold text-[#8F1839]" role="alert">{{ bioError }}</p>
           </form>
         </section>
-
-        <div class="flex items-center gap-2 rounded-lg bg-[#F3E8DA] p-4 text-sm leading-6 text-[#4D2F39]">
-          <Ruler class="size-5 shrink-0 text-[#8F1839]" aria-hidden="true" />
-          Activity interests and personal interests remain available under Preferences.
-        </div>
       </div>
     </section>
   </main>
