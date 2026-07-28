@@ -1,6 +1,7 @@
 import { createError, readBody } from 'h3'
 import { db } from '~/server/repositories/db'
 import { requireUser } from '~/server/utils/requireUser'
+import { activateMatchOrQueue } from '~/server/utils/matchQueue'
 import { objectBody, text } from '~/server/utils/productValidation'
 
 export default defineEventHandler(async (event) => {
@@ -25,9 +26,10 @@ export default defineEventHandler(async (event) => {
         (b.blocker_id=$2 and b.blocked_id=p.user_id) or (b.blocker_id=p.user_id and b.blocked_id=$2)) for update`, [slug,sub])
     if (!target.rows[0]) throw createError({ statusCode: 404, statusMessage: 'Profile not found' })
     const recipientId = target.rows[0].user_id
-    const existingMatch = await client.query(`select 1 from matches where status='active' and
+    const existingMatch = await client.query(`select status from matches where status in ('active','queued') and
       ((user_one_id=$1 and user_two_id=$2) or (user_one_id=$2 and user_two_id=$1)) limit 1`, [sub,recipientId])
-    if (existingMatch.rows[0]) throw createError({ statusCode: 409, statusMessage: 'You have already matched with this person' })
+    if (existingMatch.rows[0]) throw createError({ statusCode: 409, statusMessage: existingMatch.rows[0].status === 'queued'
+      ? 'Your match with this person is already queued' : 'You have already matched with this person' })
     const endedMatch = await client.query(`select m.id,m.ended_by,m.ended_at,
       exists(select 1 from match_apology_notes man where man.match_id=m.id and man.sender_id=$1
         and man.created_at>m.ended_at and ((m.ended_by=$1 and man.message_type='apology')
@@ -58,22 +60,28 @@ export default defineEventHandler(async (event) => {
       returning sender_day::text as date`, [sub,recipientId])
     await client.query(`insert into notifications(recipient_id,actor_id,kind)
       values($1,$2,'interest_received')`, [recipientId,sub])
-    const reverse = await client.query('select 1 from daily_interests where sender_id=$1 and recipient_id=$2 limit 1', [recipientId,sub])
+    const reverse = await client.query(`select 1 from daily_interests
+      where sender_id=$1 and recipient_id=$2 and declined_at is null limit 1`, [recipientId,sub])
     let matched = false
+    let queued = false
     if (reverse.rows[0]) {
       const [one,two] = [sub,recipientId].sort()
-      const created = await client.query(`insert into matches(user_one_id,user_two_id) values($1,$2)
-        on conflict(user_one_id,user_two_id) do update set status='active',matched_at=now(),
-          ended_by=null,ended_reason=null,ended_at=null returning id`, [one,two])
+      const created = await client.query(`insert into matches(user_one_id,user_two_id,status) values($1,$2,'queued')
+        on conflict(user_one_id,user_two_id) do update set status='queued',matched_at=now(),
+          ended_by=null,ended_reason=null,ended_at=null,action_required_by=null,action_completed_at=null
+          returning id`, [one,two])
       if (endedMatch.rows[0]) {
         await client.query('delete from date_proposals where match_id=$1', [created.rows[0].id])
       }
+      const activated = await activateMatchOrQueue(client, created.rows[0].id)
+      queued = !activated
+      const notificationKind = activated ? 'new_match' : 'match_queued'
       await client.query(`insert into notifications(recipient_id,actor_id,match_id,kind) values
-        ($1,$2,$3,'new_match'),($2,$1,$3,'new_match')`, [sub,recipientId,created.rows[0].id])
+        ($1,$2,$3,$4),($2,$1,$3,$4)`, [sub,recipientId,created.rows[0].id,notificationKind])
       matched = true
     }
     await client.query('commit')
-    return { interest: { profileSlug: slug, profileName: target.rows[0].display_name, date: inserted.rows[0].date }, matched }
+    return { interest: { profileSlug: slug, profileName: target.rows[0].display_name, date: inserted.rows[0].date }, matched, queued }
   } catch (error) {
     await client.query('rollback')
     if ((error as { code?: string }).code === '23514') throw createError({ statusCode: 409, statusMessage: 'One of you has reached their active match limit' })

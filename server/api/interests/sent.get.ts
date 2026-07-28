@@ -16,7 +16,8 @@ export default defineEventHandler(async (event) => {
       order by m.matched_at desc limit 1) matched on true
     where di.sender_id=$1 order by di.created_at desc limit 100`, [sub])
   const interests = await Promise.all(rows.map(async row => ({ ...row,
-    matched: row.matchStatus === 'active', ended: row.matchStatus === 'unmatched' || row.matchStatus === 'blocked',
+    matched: row.matchStatus === 'active', queued: row.matchStatus === 'queued',
+    ended: row.matchStatus === 'unmatched' || row.matchStatus === 'blocked',
     photoStorageKey: undefined, legacyPhotoUrl: undefined,
     photoUrl: row.photoStorageKey ? await signedPhotoUrl(row.photoStorageKey) : row.legacyPhotoUrl || null,
   })))

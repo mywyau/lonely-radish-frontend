@@ -4,12 +4,13 @@ import { BadgePercent, Bell, CalendarCheck, CalendarDays, ChevronRight, Clock3, 
 definePageMeta({ title: 'Matches & Plans · Lonely Radish', middleware: 'logged-in' })
 
 type MatchCard = {
-  id: string; name: string; slug: string; place?: string; photoUrl?: string; stage: 'fresh' | 'planning' | 'confirmed'
+  id: string; name: string; slug: string; place?: string; photoUrl?: string; stage: 'queued' | 'fresh' | 'planning' | 'confirmed'
   proposalId?: string; proposalStatus?: string; activity?: string; venue?: string; confirmedTime?: string
   offerClaimId?: string; attachedOfferId?: string; attachedOfferTitle?: string
   matchedAt: string; isInviter?: boolean; needsResponse?: boolean; dateHasPassed?: boolean
   attendanceConfirmed?: boolean; otherAttendanceConfirmed?: boolean
   hasFollowedUp?: boolean; bothFollowedUp?: boolean; followUpResult?: 'mutual' | 'closed' | null
+  yourMove?: boolean
 }
 type MatchNotification = { id: string; kind: string; actorName?: string; proposalId?: string; createdAt: string }
 
@@ -18,6 +19,7 @@ const errorMessage = ref('')
 const matches = ref<MatchCard[]>([])
 const totalMatches = ref(0)
 const activeMatchLimit = ref(3)
+const activeMatchCount = ref(0)
 const interestReceivedCount = ref(0)
 const notifications = ref<MatchNotification[]>([])
 const pendingReject = ref<MatchCard | null>(null)
@@ -25,6 +27,8 @@ const rejecting = ref(false)
 const rejectError = ref('')
 const previewRejected = ref(false)
 const attendanceUpdating = ref<string | null>(null)
+const activatingMatch = ref<string | null>(null)
+const activationError = reactive<Record<string, string>>({})
 const showSummaryCounts = ref(true)
 const previewMatch: MatchCard = {
   id: 'preview-post-date', name: 'Nina', slug: 'nina', place: 'Hackney',
@@ -35,6 +39,7 @@ const previewMatch: MatchCard = {
 }
 
 const sectionDefinitions = [
+  { key: 'queued', title: 'Queued matches', description: 'You matched, but planning waits until both people have an available match space.', icon: Clock3, tone: 'bg-[#FFF1C7]' },
   { key: 'fresh', title: 'New matches', description: 'You both want to meet. Choose a date idea and start making a plan.', icon: HeartHandshake, tone: 'bg-[#FCE3E8]' },
   { key: 'planning', title: 'Planning', description: 'A proposal is in progress and needs a response or another detail.', icon: Clock3, tone: 'bg-[#F3E8DA]' },
   { key: 'confirmed', title: 'Confirmed dates', description: 'The activity, time, and public venue have been agreed.', icon: CalendarCheck, tone: 'bg-[#EAF2DE]' },
@@ -45,10 +50,12 @@ const sections = computed(() => sectionDefinitions.map(section => ({ ...section,
 })))
 const counts = computed(() => ({ fresh: matches.value.filter(match => match.stage === 'fresh').length,
   planning: matches.value.filter(match => match.stage === 'planning').length,
-  confirmed: matches.value.filter(match => match.stage === 'confirmed').length }))
+  confirmed: matches.value.filter(match => match.stage === 'confirmed').length,
+  queued: matches.value.filter(match => match.stage === 'queued').length }))
 const additionalMatches = computed(() => Math.max(0, totalMatches.value - matches.value.length))
 
 function actionLabel(match: MatchCard) {
+  if (match.stage === 'queued') return 'Activate match'
   if (match.stage === 'fresh') return 'Start planning'
   if (match.stage === 'confirmed' && match.dateHasPassed) {
     if (match.followUpResult === 'mutual') return 'Plan another date'
@@ -58,6 +65,8 @@ function actionLabel(match: MatchCard) {
   return match.needsResponse ? 'Review proposal' : 'Edit proposal'
 }
 function statusLabel(match: MatchCard) {
+  if (match.stage === 'queued') return 'Queued'
+  if (match.yourMove) return 'Your move'
   if (match.stage === 'fresh') return 'Ready to plan'
   if (match.stage === 'planning') {
     if (match.proposalStatus === 'draft') return 'Draft — only you can see this'
@@ -66,6 +75,18 @@ function statusLabel(match: MatchCard) {
   return match.confirmedTime ? new Date(match.confirmedTime).toLocaleDateString('en-GB', {
     weekday: 'short', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit',
   }) : 'Date confirmed'
+}
+async function activateQueuedMatch(match: MatchCard) {
+  if (activatingMatch.value) return
+  activatingMatch.value = match.id
+  activationError[match.id] = ''
+  try {
+    await $fetch(`/api/matches/${match.id}/activate`, { method: 'POST' })
+    match.stage = 'fresh'
+    activeMatchCount.value += 1
+  } catch (error: any) {
+    activationError[match.id] = error?.data?.statusMessage || 'This match could not be activated yet.'
+  } finally { activatingMatch.value = null }
 }
 function notificationCopy(notification: MatchNotification) {
   const actor = notification.actorName || 'Your date'
@@ -80,6 +101,7 @@ function notificationCopy(notification: MatchNotification) {
     date_cancelled: `${actor} cancelled your date. You remain matched.`,
     match_apology: `${actor} sent you an apology through Past connections.`,
     match_contact: `${actor} sent you a private message through Past connections. No response is required.`,
+    match_queued: `You matched with ${actor}, and the match is waiting in your queue.`,
   }
   return copy[notification.kind] || 'You have a new match or date-plan update.'
 }
@@ -119,9 +141,10 @@ function toggleSummaryCounts() {
 
 async function loadMatches() {
   if (import.meta.dev) previewRejected.value = Boolean(window.localStorage.getItem('lonely-radish-preview-rejected-match'))
-  const result = await $fetch<{ matches: MatchCard[]; totalMatches: number; interestReceivedCount: number; activeMatchLimit: number }>('/api/matches')
+  const result = await $fetch<{ matches: MatchCard[]; totalMatches: number; activeMatchCount: number; interestReceivedCount: number; activeMatchLimit: number }>('/api/matches')
   matches.value = result.matches
   totalMatches.value = result.totalMatches
+  activeMatchCount.value = result.activeMatchCount
   interestReceivedCount.value = result.interestReceivedCount
   activeMatchLimit.value = result.activeMatchLimit
   if (import.meta.dev && !previewRejected.value) {
@@ -170,9 +193,10 @@ onMounted(async () => {
       <NuxtLink to="/matches/past" class="mt-4 inline-flex text-sm font-semibold text-[#8F1839] hover:underline">View past connections →</NuxtLink>
 
       <div class="mt-6 flex justify-end"><button type="button" class="inline-flex items-center gap-1.5 text-sm font-semibold text-[#8F1839] hover:underline" :aria-pressed="!showSummaryCounts" @click="toggleSummaryCounts"><EyeOff v-if="showSummaryCounts" class="size-4" aria-hidden="true" /><Eye v-else class="size-4" aria-hidden="true" />{{ showSummaryCounts ? 'Hide counts' : 'Show counts' }}</button></div>
-      <div v-if="showSummaryCounts" class="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-5 sm:gap-4">
+      <div v-if="showSummaryCounts" class="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-6 sm:gap-4">
         <NuxtLink to="/interests/received" class="summary-card summary-interested col-span-2 sm:col-span-1"><HeartHandshake class="summary-icon" /><strong>{{ interestReceivedCount }}</strong><span>People interested in you</span></NuxtLink>
         <div class="summary-card summary-total"><UsersRound class="summary-icon" /><strong>{{ totalMatches }}</strong><span>Total matches</span></div>
+        <div class="summary-card bg-[#FFF1C7]"><Clock3 class="summary-icon" /><strong>{{ counts.queued }}</strong><span>Queued</span></div>
         <div class="summary-card summary-new"><Sparkles class="summary-icon" /><strong>{{ counts.fresh }}</strong><span>New</span></div>
         <div class="summary-card summary-planning"><Clock3 class="summary-icon" /><strong>{{ counts.planning }}</strong><span>Planning</span></div>
         <div class="summary-card summary-confirmed"><CalendarCheck class="summary-icon" /><strong>{{ counts.confirmed }}</strong><span>Confirmed</span></div>
@@ -208,10 +232,12 @@ onMounted(async () => {
                 <span class="inline-flex w-fit items-center gap-1 rounded-full bg-white/70 px-3 py-2 text-xs font-semibold"><component :is="section.icon" class="size-3.5" />{{ statusLabel(match) }}</span>
               </div>
               <div class="mt-5 flex flex-col gap-2 min-[380px]:flex-row">
-                <NuxtLink :to="planUrl(match)" class="group inline-flex items-center justify-center gap-2 rounded-lg bg-[#B4234A] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#8F1839]">{{ actionLabel(match) }}<ChevronRight class="size-4 transition group-hover:translate-x-1" /></NuxtLink>
+                <button v-if="match.stage === 'queued'" type="button" class="group inline-flex items-center justify-center gap-2 rounded-lg bg-[#B4234A] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#8F1839] disabled:opacity-50" :disabled="activatingMatch === match.id" @click="activateQueuedMatch(match)">{{ activatingMatch === match.id ? 'Checking space…' : actionLabel(match) }}<ChevronRight class="size-4 transition group-hover:translate-x-1" /></button>
+                <NuxtLink v-else :to="planUrl(match)" class="group inline-flex items-center justify-center gap-2 rounded-lg bg-[#B4234A] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#8F1839]">{{ actionLabel(match) }}<ChevronRight class="size-4 transition group-hover:translate-x-1" /></NuxtLink>
                 <NuxtLink :to="`/profiles/${match.slug}`" class="inline-flex items-center justify-center rounded-lg bg-white/75 px-4 py-2.5 text-sm font-semibold text-[#8F1839] transition hover:bg-white">View {{ match.name }}’s profile</NuxtLink>
                 <button type="button" class="inline-flex items-center justify-center rounded-lg border border-[#B4234A]/30 px-4 py-2.5 text-sm font-semibold text-[#8F1839] transition hover:bg-white/70" @click="pendingReject = match; rejectError = ''">Remove match</button>
               </div>
+              <p v-if="activationError[match.id]" class="mt-3 text-xs font-semibold text-[#8F1839]" role="alert">{{ activationError[match.id] }}</p>
               <div v-if="match.stage === 'confirmed' && !match.dateHasPassed" class="mt-4 rounded-lg bg-white/65 p-4">
                 <div class="flex flex-wrap items-center justify-between gap-2"><div><h4 class="text-sm font-semibold">Still going?</h4><p class="mt-1 text-xs text-[#6E4D58]">{{ match.attendanceConfirmed ? 'You confirmed you’re going.' : 'Let your date know, or change the plan early.' }}</p></div><span v-if="match.otherAttendanceConfirmed" class="rounded-full bg-[#EAF2DE] px-3 py-1 text-xs font-semibold text-[#52713A]">{{ match.name }} confirmed</span></div>
                 <div class="mt-3 flex flex-wrap gap-2">

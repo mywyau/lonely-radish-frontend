@@ -9,7 +9,7 @@ export default defineEventHandler(async (event) => {
   try {
     await client.query('begin')
     const { rows } = await client.query(`update matches set status='unmatched',ended_by=$2,ended_reason='removed',ended_at=now()
-      where id=$1 and status='active' and ($2=user_one_id or $2=user_two_id)
+      where id=$1 and status in ('active','queued') and ($2=user_one_id or $2=user_two_id)
       returning id,case when user_one_id=$2 then user_two_id else user_one_id end as "recipientId"`, [id,sub])
     const match = rows[0]
     if (!match) throw createError({ statusCode: 404, statusMessage: 'Active match not found' })

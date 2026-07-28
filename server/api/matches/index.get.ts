@@ -7,8 +7,8 @@ import { getActiveMatchLimit } from '~/server/utils/planLimits'
 export default defineEventHandler(async (event) => {
   setHeader(event, 'Cache-Control', 'private, no-store')
   const { sub } = await requireUser(event)
-  const [{ rows }, receivedInterest, activeMatchLimit] = await Promise.all([
-    db.query(`select m.id,p.slug,p.display_name as name,p.neighbourhood as place,
+  const [{ rows }, receivedInterest, activeCount, activeMatchLimit] = await Promise.all([
+    db.query(`select m.id,m.status,p.slug,p.display_name as name,p.neighbourhood as place,
     count(*) over()::int as "totalMatches",
     photo.storage_key as "photoStorageKey",photo.public_url as "legacyPhotoUrl",m.matched_at as "matchedAt",
     proposal.id as "proposalId",proposal.status as "proposalStatus",proposal.activity_label as activity,
@@ -16,6 +16,7 @@ export default defineEventHandler(async (event) => {
     proposal.confirmed_at as "confirmedAt",selected.proposed_at as "confirmedTime",
     attached_offer.id as "offerClaimId",attached_offer.offer_id as "attachedOfferId",
     attached_offer.offer_title as "attachedOfferTitle",
+    m.action_required_by=$1 and m.action_completed_at is null as "yourMove",
     my_attendance.response as "myAttendance",their_attendance.response as "theirAttendance",
     my_followup.meet_again as "myMeetAgain",my_followup.responded_at as "myFollowUpAt",
     their_followup.meet_again as "theirMeetAgain",their_followup.responded_at as "theirFollowUpAt",
@@ -34,14 +35,14 @@ export default defineEventHandler(async (event) => {
     left join date_attendance_responses their_attendance on their_attendance.proposal_id=proposal.id and their_attendance.user_id<>$1
     left join date_follow_ups my_followup on my_followup.proposal_id=proposal.id and my_followup.user_id=$1
     left join date_follow_ups their_followup on their_followup.proposal_id=proposal.id and their_followup.user_id<>$1
-    where m.status='active' and (m.user_one_id=$1 or m.user_two_id=$1)
-      and p.visibility='active' order by coalesce(proposal.updated_at,m.matched_at) desc limit 5`, [sub]),
+    where m.status in ('active','queued') and (m.user_one_id=$1 or m.user_two_id=$1)
+      and p.visibility='active' order by (m.status='active') desc,coalesce(proposal.updated_at,m.matched_at) desc limit 25`, [sub]),
     db.query(`select count(distinct di.sender_id)::int as count
       from daily_interests di
       join users u on u.id=di.sender_id and (u.account_status='active' or
         (u.account_status='paused' and u.paused_until is not null and u.paused_until<=now()))
       join profiles p on p.user_id=di.sender_id and p.visibility='active'
-      where di.recipient_id=$1 and not exists(select 1 from blocks b where
+      where di.recipient_id=$1 and di.declined_at is null and not exists(select 1 from blocks b where
         (b.blocker_id=$1 and b.blocked_id=di.sender_id) or (b.blocker_id=di.sender_id and b.blocked_id=$1))
       and not exists(select 1 from matches ended where ended.status='unmatched'
         and ((ended.user_one_id=$1 and ended.user_two_id=di.sender_id)
@@ -50,12 +51,14 @@ export default defineEventHandler(async (event) => {
           where man.match_id=ended.id and man.sender_id=di.sender_id and man.created_at>ended.ended_at
             and ((di.sender_id=ended.ended_by and man.message_type='apology')
               or (di.sender_id is distinct from ended.ended_by and man.message_type='contact')))))`, [sub]),
+    db.query(`select count(*)::int as count from matches where status='active'
+      and (user_one_id=$1 or user_two_id=$1)`, [sub]),
     getActiveMatchLimit(sub),
   ])
 
   const matches = await Promise.all(rows.map(async row => {
     const proposalStatus = row.proposalStatus as string | null
-    const stage = proposalStatus === 'accepted' ? 'confirmed'
+    const stage = row.status === 'queued' ? 'queued' : proposalStatus === 'accepted' ? 'confirmed'
       : ['draft','pending'].includes(proposalStatus || '') ? 'planning' : 'fresh'
     const photoUrl = row.photoStorageKey ? await signedPhotoUrl(row.photoStorageKey) : row.legacyPhotoUrl || null
     const dateHasPassed = Boolean(row.confirmedTime && new Date(row.confirmedTime) <= new Date())
@@ -68,5 +71,7 @@ export default defineEventHandler(async (event) => {
       attendanceConfirmed: row.myAttendance === 'confirmed', otherAttendanceConfirmed: row.theirAttendance === 'confirmed',
       isInviter: row.inviterId === sub, needsResponse: proposalStatus === 'pending' && row.inviteeId === sub }
   }))
-  return { matches, totalMatches: rows[0]?.totalMatches || 0, interestReceivedCount: receivedInterest.rows[0]?.count || 0, activeMatchLimit }
+  return { matches, totalMatches: rows[0]?.totalMatches || 0,
+    activeMatchCount: activeCount.rows[0]?.count || 0,
+    interestReceivedCount: receivedInterest.rows[0]?.count || 0, activeMatchLimit }
 })

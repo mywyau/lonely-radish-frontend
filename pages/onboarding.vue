@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ArrowLeft, ArrowRight, Brain, Check, ChevronDown, Compass, Gamepad2, HandHeart, HeartHandshake, HeartPulse, ImagePlus, MoonStar, Sparkles, Trophy, UserRound, UsersRound } from '@lucide/vue'
+import { openRaceEthnicityPreferenceLabel, raceEthnicityOptions, raceEthnicitySelfDescriptionLimit, usesRaceEthnicitySelfDescription } from '~/utils/raceEthnicity'
 import { sexualOrientationOptions, sexualOrientationPreferenceOptions } from '~/utils/sexualOrientation'
 
 definePageMeta({ title: 'Set up your profile · Lonely Radish', middleware: 'logged-in' })
@@ -18,7 +19,7 @@ const pronounsLimit = 40
 const bioLimit = 1000
 const customActivityLimit = 100
 const profile = reactive({ firstName: '', lastName: '', displayName: '', genderIdentity: '', sexualOrientation: '',
-  raceEthnicity: '', slug: '', dateOfBirth: '', pronouns: '', bio: '', heightCm: null as number | null,
+  raceEthnicity: '', raceEthnicitySelfDescription: '', slug: '', dateOfBirth: '', pronouns: '', bio: '', heightCm: null as number | null,
   weightKg: null as number | null, drinking: '', smoking: '', dailyRhythm: '' })
 const birthDate = reactive({ day: '', month: '', year: '' })
 const profileNameStatus = ref<'idle' | 'checking' | 'available' | 'taken'>('idle')
@@ -58,7 +59,6 @@ const availabilityDays = reactive([
 const selectedAvailabilityCount = computed(() => availabilityDays.filter(day => day.enabled).length)
 const invalidAvailabilityDay = computed(() => availabilityDays.find(day => day.enabled && day.startTime >= day.endTime))
 const genderOptions = ['Women', 'Men', 'Non-binary']
-const raceEthnicityOptions = ['Asian', 'Black / African / Caribbean', 'Hispanic / Latino', 'Middle Eastern', 'North African', 'Native / Indigenous', 'Pacific Islander', 'White', 'Multiracial / multi-ethnic']
 const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 const birthYears = Array.from({ length: 83 }, (_, index) => new Date().getFullYear() - 18 - index)
 const birthDays = computed(() => {
@@ -163,7 +163,8 @@ async function load() {
   if (profileData.profile) Object.assign(profile, {
     displayName: profileData.profile.displayName || '', slug: profileData.profile.slug || '',
     genderIdentity: profileData.profile.genderIdentity || '', sexualOrientation: profileData.profile.sexualOrientation || '',
-    raceEthnicity: profileData.profile.raceEthnicity || '', dateOfBirth: profileData.profile.dateOfBirth?.slice(0, 10) || '', pronouns: profileData.profile.pronouns || '', bio: profileData.profile.bio || '',
+    raceEthnicity: profileData.profile.raceEthnicity || '', raceEthnicitySelfDescription: profileData.profile.raceEthnicitySelfDescription || '',
+    dateOfBirth: profileData.profile.dateOfBirth?.slice(0, 10) || '', pronouns: profileData.profile.pronouns || '', bio: profileData.profile.bio || '',
     heightCm: profileData.profile.heightCm || null, weightKg: profileData.profile.weightKg || null,
     drinking: profileData.profile.drinking || '', smoking: profileData.profile.smoking || '', dailyRhythm: profileData.profile.dailyRhythm || '',
   })
@@ -197,7 +198,8 @@ async function saveBasics() {
     if (user.value) { user.value.firstName = account.firstName; user.value.lastName = account.lastName }
     profile.slug ||= createProfileSlug()
     await $fetch('/api/profile/me', { method: 'PUT', body: { displayName: profile.displayName, genderIdentity: profile.genderIdentity,
-      sexualOrientation: profile.sexualOrientation, raceEthnicity: profile.raceEthnicity || null, slug: profile.slug,
+      sexualOrientation: profile.sexualOrientation, raceEthnicity: profile.raceEthnicity || null,
+      raceEthnicitySelfDescription: profile.raceEthnicitySelfDescription, slug: profile.slug,
       dateOfBirth: profile.dateOfBirth, pronouns: profile.pronouns, bio: profile.bio, heightCm: profile.heightCm,
       weightKg: profile.weightKg, drinking: profile.drinking, smoking: profile.smoking, dailyRhythm: profile.dailyRhythm, availability: [] } })
     step.value = 2
@@ -208,10 +210,14 @@ async function saveBasics() {
 async function saveRacialIdentity() {
   errorMessage.value = ''
   if (!profile.raceEthnicity) { errorMessage.value = 'Choose the option that best describes how you identify.'; return }
+  if (usesRaceEthnicitySelfDescription(profile.raceEthnicity) && !profile.raceEthnicitySelfDescription.trim()) {
+    errorMessage.value = 'Describe your racial or ethnic identity.'; return
+  }
   saving.value = true
   try {
     await $fetch('/api/profile/me', { method: 'PUT', body: { displayName: profile.displayName, genderIdentity: profile.genderIdentity, sexualOrientation: profile.sexualOrientation,
-      raceEthnicity: profile.raceEthnicity, slug: profile.slug, dateOfBirth: profile.dateOfBirth,
+      raceEthnicity: profile.raceEthnicity, raceEthnicitySelfDescription: profile.raceEthnicitySelfDescription,
+      slug: profile.slug, dateOfBirth: profile.dateOfBirth,
       pronouns: profile.pronouns, bio: profile.bio, heightCm: profile.heightCm, weightKg: profile.weightKg,
       drinking: profile.drinking, smoking: profile.smoking, dailyRhythm: profile.dailyRhythm, availability: [] } })
     step.value = 3
@@ -317,8 +323,8 @@ onMounted(() => { load().catch(() => { errorMessage.value = 'We could not load o
 
       <form v-else-if="step === 2" class="onboarding-card" @submit.prevent="saveRacialIdentity">
         <div class="step-title"><UserRound class="size-5 text-[#B4234A]" /><div><h2>How do you racially or ethnically identify?</h2><p>Choose the single option that best fits. You can change this later from your profile.</p></div></div>
-        <fieldset class="meeting-preferences"><legend>Your identity</legend><div class="mt-3 grid gap-2 sm:grid-cols-2"><button v-for="option in raceEthnicityOptions" :key="option" type="button" class="meeting-choice" :class="profile.raceEthnicity === option && 'selected'" :aria-pressed="profile.raceEthnicity === option" @click="profile.raceEthnicity = option"><span class="choice-indicator" aria-hidden="true">{{ profile.raceEthnicity === option ? '✓' : '' }}</span><span>{{ option }}</span></button><button type="button" class="meeting-choice" :class="profile.raceEthnicity === 'Prefer not to say' && 'selected'" :aria-pressed="profile.raceEthnicity === 'Prefer not to say'" @click="profile.raceEthnicity = 'Prefer not to say'"><span class="choice-indicator" aria-hidden="true">{{ profile.raceEthnicity === 'Prefer not to say' ? '✓' : '' }}</span><span>Prefer not to say</span></button></div></fieldset>
-        <div class="actions"><button class="secondary" type="button" @click="step = 1"><ArrowLeft class="size-4" />Back</button><button :disabled="saving || !profile.raceEthnicity" class="primary" type="submit">{{ saving ? 'Saving…' : 'Continue' }}<ArrowRight class="size-4" /></button></div>
+        <fieldset class="meeting-preferences"><legend>Your identity</legend><div class="mt-3 grid gap-2 sm:grid-cols-2"><button v-for="option in raceEthnicityOptions" :key="option" type="button" class="meeting-choice" :class="profile.raceEthnicity === option && 'selected'" :aria-pressed="profile.raceEthnicity === option" @click="profile.raceEthnicity = option"><span class="choice-indicator" aria-hidden="true">{{ profile.raceEthnicity === option ? '✓' : '' }}</span><span>{{ option }}</span></button></div><label v-if="usesRaceEthnicitySelfDescription(profile.raceEthnicity)" class="mt-4 block">How do you describe your background?<input v-model="profile.raceEthnicitySelfDescription" class="mt-2 w-full" :maxlength="raceEthnicitySelfDescriptionLimit" required placeholder="Use the words that feel right to you"><span class="field-hint text-right">{{ profile.raceEthnicitySelfDescription.length }}/{{ raceEthnicitySelfDescriptionLimit }}</span></label></fieldset>
+        <div class="actions"><button class="secondary" type="button" @click="step = 1"><ArrowLeft class="size-4" />Back</button><button :disabled="saving || !profile.raceEthnicity || (usesRaceEthnicitySelfDescription(profile.raceEthnicity) && !profile.raceEthnicitySelfDescription.trim())" class="primary" type="submit">{{ saving ? 'Saving…' : 'Continue' }}<ArrowRight class="size-4" /></button></div>
       </form>
 
       <form v-else-if="step === 3" class="onboarding-card" @submit.prevent="saveActivities">
@@ -369,8 +375,8 @@ onMounted(() => { load().catch(() => { errorMessage.value = 'We could not load o
       <form v-else-if="step === 5" class="onboarding-card" @submit.prevent="saveDatingPreferences">
         <div class="step-title"><UsersRound class="size-5 text-[#B4234A]" /><div><h2>Who are you open to meeting?</h2><p>These private preferences shape who appears in your match pool and can be changed later.</p></div></div>
         <fieldset class="meeting-preferences"><legend>Gender preferences</legend><p class="mt-1 text-sm font-normal leading-6 text-[#6E4D58]">Choose everyone, or select one or more types of people you are open to dating.</p><div class="mt-4 grid gap-2 sm:grid-cols-2"><button type="button" class="meeting-choice sm:col-span-2" :class="preferences.openToEveryone && 'selected'" :aria-pressed="preferences.openToEveryone" @click="selectEveryone"><span class="choice-indicator" aria-hidden="true">{{ preferences.openToEveryone ? '✓' : '' }}</span><span>Everyone</span></button><button v-for="option in genderOptions" :key="option" type="button" class="meeting-choice" :class="preferences.genders.includes(option) && 'selected'" :aria-pressed="preferences.genders.includes(option)" @click="toggleGenderPreference(option)"><span class="choice-indicator" aria-hidden="true">{{ preferences.genders.includes(option) ? '✓' : '' }}</span><span>{{ option }}</span></button></div><p class="mt-3 text-xs font-semibold text-[#6E4D58]">{{ preferences.openToEveryone ? 'Everyone selected' : preferences.genders.length ? `${preferences.genders.length} selected` : 'Select at least one option' }}</p></fieldset>
-        <fieldset class="meeting-preferences"><legend>Sexual orientation preferences</legend><p class="mt-1 text-sm font-normal leading-6 text-[#6E4D58]">Choose one or more broad orientation groups you are open to dating, separately from gender.</p><div class="mt-4 grid gap-2 sm:grid-cols-3"><button v-for="option in sexualOrientationPreferenceOptions" :key="option.value" type="button" class="meeting-choice" :class="preferences.orientations.includes(option.value) && 'selected'" :aria-pressed="preferences.orientations.includes(option.value)" @click="toggleOrientationPreference(option.value)"><span class="choice-indicator" aria-hidden="true">{{ preferences.orientations.includes(option.value) ? '✓' : '' }}</span><span>{{ option.label }}</span></button></div><p class="mt-3 text-xs font-semibold text-[#6E4D58]">{{ preferences.orientations.length ? `${preferences.orientations.length} selected` : 'Select at least one orientation group' }}</p></fieldset>
-        <fieldset class="meeting-preferences"><legend>Racial and ethnic preferences</legend><p class="mt-1 text-sm font-normal leading-6 text-[#6E4D58]">Optional. Choose communities you are interested in dating, or keep your match pool open.</p><div class="mt-4 grid gap-2 sm:grid-cols-2"><button type="button" class="meeting-choice sm:col-span-2" :class="preferences.noRaceEthnicityPreference && 'selected'" :aria-pressed="preferences.noRaceEthnicityPreference" @click="selectNoRacePreference"><span class="choice-indicator" aria-hidden="true">{{ preferences.noRaceEthnicityPreference ? '✓' : '' }}</span><span>No racial or ethnic preference</span></button><button v-for="option in raceEthnicityOptions" :key="option" type="button" class="meeting-choice" :class="preferences.raceEthnicities.includes(option) && 'selected'" :aria-pressed="preferences.raceEthnicities.includes(option)" @click="toggleRaceEthnicity(option)"><span class="choice-indicator" aria-hidden="true">{{ preferences.raceEthnicities.includes(option) ? '✓' : '' }}</span><span>{{ option }}</span></button></div><p class="mt-3 text-xs leading-5 text-[#6E4D58]">Identity is personal and nuanced. These broad options are matching controls only.</p></fieldset>
+        <fieldset class="meeting-preferences"><legend>Sexual orientation preferences</legend><p class="mt-1 text-sm font-normal leading-6 text-[#6E4D58]">Choose one or more orientations you are open to dating, separately from gender.</p><div class="mt-4 grid gap-2 sm:grid-cols-3"><button v-for="option in sexualOrientationPreferenceOptions" :key="option.value" type="button" class="meeting-choice" :class="preferences.orientations.includes(option.value) && 'selected'" :aria-pressed="preferences.orientations.includes(option.value)" @click="toggleOrientationPreference(option.value)"><span class="choice-indicator" aria-hidden="true">{{ preferences.orientations.includes(option.value) ? '✓' : '' }}</span><span>{{ option.label }}</span></button></div><p class="mt-3 text-xs font-semibold text-[#6E4D58]">{{ preferences.orientations.length ? `${preferences.orientations.length} selected` : 'Select at least one orientation' }}</p></fieldset>
+        <fieldset class="meeting-preferences"><legend>Racial and ethnic preferences</legend><p class="mt-1 text-sm font-normal leading-6 text-[#6E4D58]">Optional. Choose communities you are interested in dating, or keep your match pool open.</p><div class="mt-4 grid gap-2 sm:grid-cols-2"><button type="button" class="meeting-choice sm:col-span-2" :class="preferences.noRaceEthnicityPreference && 'selected'" :aria-pressed="preferences.noRaceEthnicityPreference" @click="selectNoRacePreference"><span class="choice-indicator" aria-hidden="true">{{ preferences.noRaceEthnicityPreference ? '✓' : '' }}</span><span>{{ openRaceEthnicityPreferenceLabel }}</span></button><button v-for="option in raceEthnicityOptions" :key="option" type="button" class="meeting-choice" :class="preferences.raceEthnicities.includes(option) && 'selected'" :aria-pressed="preferences.raceEthnicities.includes(option)" @click="toggleRaceEthnicity(option)"><span class="choice-indicator" aria-hidden="true">{{ preferences.raceEthnicities.includes(option) ? '✓' : '' }}</span><span>{{ option }}</span></button></div><p class="mt-3 text-xs leading-5 text-[#6E4D58]">Identity is personal and nuanced. These broad options are matching controls only.</p></fieldset>
         <div class="actions"><button class="secondary" type="button" @click="step = 4"><ArrowLeft class="size-4" />Back</button><button :disabled="saving || (!preferences.openToEveryone && !preferences.genders.length) || !preferences.orientations.length" class="primary" type="submit">{{ saving ? 'Saving…' : 'Continue' }}<ArrowRight class="size-4" /></button></div>
       </form>
 

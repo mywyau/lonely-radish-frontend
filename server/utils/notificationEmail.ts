@@ -3,6 +3,7 @@ import { db } from '~/server/repositories/db'
 const subjects: Record<string, string> = {
   interest_received: 'Someone is interested in meeting you',
   new_match: 'You have a new match',
+  match_queued: 'A new match is waiting in your queue',
   proposal_received: 'A new date plan is waiting',
   proposal_updated: 'Your date plan was updated',
   date_confirmed: 'Your date is confirmed',
@@ -31,6 +32,7 @@ const subjects: Record<string, string> = {
 const preferenceColumn: Record<string, string> = {
   interest_received: 'interests',
   new_match: 'matches',
+  match_queued: 'matches',
   match_ended: 'matches',
   match_apology: 'matches',
   match_contact: 'matches',
@@ -62,6 +64,7 @@ function message(kind: string, actorName?: string | null) {
   const copy: Record<string, string> = {
     interest_received: `${actor} showed interest in meeting you.`,
     new_match: `You and ${actor} matched. You can now start planning something together.`,
+    match_queued: `You and ${actor} matched. The match is waiting until you both have an available active match space.`,
     proposal_received: `${actor} sent you a date proposal.`,
     proposal_updated: `${actor} updated your date proposal.`,
     date_confirmed: `${actor} confirmed your date plan.`,
@@ -100,7 +103,7 @@ function emailDestination(kind: string, baseUrl: string) {
 
 function actionLabel(kind: string) {
   if (kind === 'interest_received') return 'View their profile'
-  if (kind === 'new_match') return 'View your match'
+  if (['new_match','match_queued'].includes(kind)) return 'View your match'
   if (kind.startsWith('proposal_') || kind.startsWith('date_')) return 'Review the date plan'
   if (kind.includes('follow_up')) return 'View your check-in'
   if (['match_apology','match_contact'].includes(kind)) return 'View past connection'

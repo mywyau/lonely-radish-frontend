@@ -34,7 +34,7 @@ export default defineEventHandler(async (event) => {
       and (u.discovery_restricted_until is null or u.discovery_restricted_until<=now())
       and not exists(select 1 from blocks b where
         (b.blocker_id=$2 and b.blocked_id=p.user_id) or (b.blocker_id=p.user_id and b.blocked_id=$2))
-      and not exists(select 1 from matches m where m.status='active' and
+      and not exists(select 1 from matches m where m.status in ('active','queued') and
         ((m.user_one_id=$2 and m.user_two_id=p.user_id) or (m.user_two_id=$2 and m.user_one_id=p.user_id)))
       ${viewerDiscoveryWhere}
       and ($3::timestamptz is null or (p.updated_at,p.slug)<($3::timestamptz,$4::text))

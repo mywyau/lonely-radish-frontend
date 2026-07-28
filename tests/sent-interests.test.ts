@@ -17,10 +17,11 @@ describe('sent interest feedback and history', () => {
     expect(api).toContain('from daily_interests di join profiles p')
     expect(api).toContain('matched.status as "matchStatus"')
     expect(api).toContain("ended: row.matchStatus === 'unmatched'")
+    expect(api).toContain("queued: row.matchStatus === 'queued'")
     const page = read('pages/interests/sent.vue')
     expect(page).toContain("'/api/interests/sent'")
-    expect(page).toContain("interest.ended ? 'Match ended' : 'Interest sent'")
-    expect(page).toContain("interest.ended ? '/matches/past'")
+    expect(page).toContain("interest.queued ? 'Match queued'")
+    expect(page).toContain("interest.matched || interest.queued ? '/matches'")
     expect(page).toContain('DailyInterestCounter')
   })
 

@@ -133,7 +133,7 @@ describe("auth and billing page contracts", () => {
     expect(datingPreferences).toContain("title: 'Dating Preferences · Lonely Radish'");
     expect(datingPreferences).toContain("Sexual orientation preference");
     expect(datingPreferences).toContain("Racial and ethnic preferences");
-    expect(datingPreferences).toContain("No racial or ethnic preference");
+    expect(datingPreferences).toContain("openRaceEthnicityPreferenceLabel");
     expect(datingPreferences).toContain("Save dating preferences");
     expect(photos).toContain("title: 'Profile Photos · Lonely Radish'");
     expect(photos).toContain("Save photo order");

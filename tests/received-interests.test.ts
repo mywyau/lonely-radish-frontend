@@ -11,6 +11,7 @@ describe('received interests', () => {
     expect(api).toContain('di.created_at<=ended.ended_at')
     expect(read('server/api/matches/index.get.ts')).toContain('di.created_at<=ended.ended_at')
     expect(read('pages/interests/received.vue')).toContain('Accept and match')
+    expect(read('pages/interests/received.vue')).toContain('Pass')
   })
   it('allows the recipient to deliberately create a match', () => {
     const api = read('server/api/interests/[id]/accept.post.ts')

@@ -12,7 +12,7 @@ describe('real activity candidates', () => {
     expect(api).toContain('pa.custom_category=any($1::text[])')
     expect(api).toContain('activityTags: (person.activityTags || []).slice(0, 3)')
     expect(api).toContain('p.user_id<>$2')
-    expect(api).toContain("m.status='active'")
+    expect(api).toContain("m.status in ('active','queued')")
     const page = read('pages/activities/[slug].vue')
     expect(page).toContain('databasePeople.value')
     expect(page).toContain(":aria-label=\"`View ${person.name}'s profile`\"")

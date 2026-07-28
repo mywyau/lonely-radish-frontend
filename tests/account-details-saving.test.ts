@@ -28,7 +28,7 @@ describe('account details saving', () => {
     expect(endpoint).toContain('requireUser(event)')
     expect(endpoint).toContain('display_name=$2,race_ethnicity=$3')
     expect(endpoint).toContain('sexual_orientation=$4')
-    expect(endpoint).toContain('[sub, displayName, raceEthnicity, sexualOrientation]')
+    expect(endpoint).toContain('[sub, displayName, raceEthnicity, sexualOrientation, raceEthnicitySelfDescription]')
   })
 
   it('shows contact validation errors instead of relying on native browser validation', () => {

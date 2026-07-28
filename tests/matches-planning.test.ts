@@ -13,9 +13,12 @@ describe('matches and date planning dashboard', () => {
     expect(page).toContain("'Review proposal'")
     expect(page).toContain("'Edit proposal'")
     expect(page).toContain("return 'Plan another date'")
+    expect(page).toContain("return 'Activate match'")
     expect(page).toContain("`/plans/${match.slug}?new=1`")
     expect(page).toContain('Draft — only you can see this')
-    expect(read('server/api/matches/index.get.ts')).toContain("proposalStatus === 'accepted' ? 'confirmed'")
+    const matchesApi = read('server/api/matches/index.get.ts')
+    expect(matchesApi).toContain("proposalStatus === 'accepted' ? 'confirmed'")
+    expect(matchesApi).toContain("row.status === 'queued' ? 'queued'")
   })
 
   it('allows a proposal to be confirmed and material details to be edited', () => {
@@ -60,9 +63,11 @@ describe('matches and date planning dashboard', () => {
     expect(availabilityGuard).toContain("a.end_time-(chosen.proposed_at at time zone")
   })
 
-  it('shows at most five matches and confirms removal before notifying the other person', () => {
-    expect(read('server/api/matches/index.get.ts')).toContain('limit 5')
+  it('shows active and queued matches and confirms removal before notifying the other person', () => {
+    expect(read('server/api/matches/index.get.ts')).toContain('limit 25')
     expect(read('pages/matches/index.vue')).toContain('You have {{ additionalMatches }} more')
+    expect(read('pages/matches/index.vue')).toContain("title: 'Queued matches'")
+    expect(read('pages/matches/index.vue')).toContain('activateQueuedMatch(match)')
     expect(read('pages/matches/index.vue')).toContain('v-if="showSummaryCounts" class="mt-3 grid')
     expect(read('pages/matches/index.vue')).toContain('<strong>{{ totalMatches }}</strong>')
     expect(read('pages/matches/index.vue')).toContain('<strong>{{ interestReceivedCount }}</strong>')
@@ -74,7 +79,7 @@ describe('matches and date planning dashboard', () => {
     expect(read('pages/matches/index.vue')).toContain('class="summary-icon"')
     expect(read('pages/matches/index.vue')).toContain('summary-confirmed')
     expect(read('components/BlankNavBar.vue')).toContain('matchCount')
-    expect(read('server/api/navigation/counts.get.ts')).toContain("status='active'")
+    expect(read('server/api/navigation/counts.get.ts')).toContain("status in ('active','queued')")
     const migration = read('docs/migrations/20260722_enforce_five_active_matches.sql')
     expect(migration).toContain('matches_enforce_five_active')
     expect(migration).toContain('pg_advisory_xact_lock')

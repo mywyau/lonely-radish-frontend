@@ -2,7 +2,8 @@ import { readBody } from 'h3'
 import { db } from '~/server/repositories/db'
 import { requireUser } from '~/server/utils/requireUser'
 import { boolean, objectBody, stringArray } from '~/server/utils/productValidation'
-import { expandSexualOrientationPreferences, groupSexualOrientationPreferences, sexualOrientationPreferenceValues, sexualOrientationValues } from '~/utils/sexualOrientation'
+import { isRaceEthnicity, raceEthnicityOptions } from '~/utils/raceEthnicity'
+import { expandSexualOrientationPreferences, groupSexualOrientationPreferences, sexualOrientationValues } from '~/utils/sexualOrientation'
 
 export default defineEventHandler(async (event) => {
   const { sub } = await requireUser(event)
@@ -14,19 +15,21 @@ export default defineEventHandler(async (event) => {
   }
   const openToEveryone = boolean(body.openToEveryone, 'Open to everyone')
   const requestedOrientations = stringArray(body.orientations, 'Sexual orientation preferences', sexualOrientationValues.length)
-  const validOrientationInputs = [...sexualOrientationPreferenceValues, ...sexualOrientationValues]
-  if (requestedOrientations.some(orientation => !validOrientationInputs.includes(orientation as typeof validOrientationInputs[number]))) {
+  if (requestedOrientations.some(orientation => !sexualOrientationValues.includes(orientation as typeof sexualOrientationValues[number]))) {
     throw createError({ statusCode: 400, statusMessage: 'Select valid sexual orientation preferences' })
   }
   const orientations = expandSexualOrientationPreferences(requestedOrientations)
   if (!orientations.length) throw createError({ statusCode: 400, statusMessage: 'Choose at least one sexual orientation you are open to dating' })
   const noOrientationPreference = false
-  const raceEthnicities = stringArray(body.raceEthnicities, 'Ethnicity preferences', 20)
-  const allowedRaceEthnicities = ['Asian', 'Black / African / Caribbean', 'Hispanic / Latino', 'Middle Eastern', 'North African', 'Native / Indigenous', 'Pacific Islander', 'White', 'Multiracial / multi-ethnic']
-  if (raceEthnicities.some(identity => !allowedRaceEthnicities.includes(identity))) {
+  const requestedRaceEthnicities = stringArray(body.raceEthnicities, 'Ethnicity preferences', raceEthnicityOptions.length)
+  if (requestedRaceEthnicities.some(identity => !isRaceEthnicity(identity))) {
     throw createError({ statusCode: 400, statusMessage: 'Select valid racial or ethnic preferences' })
   }
   const noRaceEthnicityPreference = boolean(body.noRaceEthnicityPreference, 'No ethnicity preference')
+  const raceEthnicities = noRaceEthnicityPreference ? [] : requestedRaceEthnicities
+  if (!noRaceEthnicityPreference && !raceEthnicities.length) {
+    throw createError({ statusCode: 400, statusMessage: 'Choose at least one background or remain open to all backgrounds' })
+  }
   const { rows } = await db.query(`insert into match_preferences
     (user_id, interested_genders, open_to_everyone, interested_orientations, no_orientation_preference,
       preferred_ethnicities, no_ethnicity_preference, dating_preferences_set)

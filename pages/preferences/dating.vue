@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { Heart, Info, UsersRound } from '@lucide/vue'
+import { openRaceEthnicityPreferenceLabel, raceEthnicityOptions } from '~/utils/raceEthnicity'
 import { sexualOrientationPreferenceOptions } from '~/utils/sexualOrientation'
 
 definePageMeta({ title: 'Dating Preferences · Lonely Radish', middleware: 'logged-in' })
 
 const genderOptions = ['Women', 'Men', 'Non-binary']
-const raceEthnicityOptions = ['Asian', 'Black / African / Caribbean', 'Hispanic / Latino', 'Middle Eastern', 'North African', 'Native / Indigenous', 'Pacific Islander', 'White', 'Multiracial / multi-ethnic']
 const preferences = reactive({ genders: [] as string[], orientations: [] as string[], raceEthnicities: [] as string[],
   openToEveryone: true, noOrientationPreference: false, noRaceEthnicityPreference: true })
 const saved = ref(false)
@@ -43,17 +43,17 @@ onMounted(async () => { Object.assign(preferences, await $fetch('/api/preference
         </section>
 
         <section class="rounded-lg bg-white p-6 shadow-[0_12px_28px_rgba(180,35,74,0.08)]">
-          <div class="flex items-start gap-3"><Heart class="mt-1 size-5 text-[#B4234A]" /><div><h2 class="text-xl font-semibold">Sexual orientation preference</h2><p class="mt-1 text-sm text-[#6E4D58]">Choose one or more broad orientation groups you are open to dating, separately from gender.</p></div></div>
+          <div class="flex items-start gap-3"><Heart class="mt-1 size-5 text-[#B4234A]" /><div><h2 class="text-xl font-semibold">Sexual orientation preferences</h2><p class="mt-1 text-sm text-[#6E4D58]">Choose one or more orientations you are open to dating, separately from gender.</p></div></div>
           <div class="mt-5 grid gap-2 sm:grid-cols-3">
             <button v-for="option in sexualOrientationPreferenceOptions" :key="option.value" type="button" class="choice" :class="preferences.orientations.includes(option.value) && 'choice-selected'" :aria-pressed="preferences.orientations.includes(option.value)" @click="toggleOrientation(option.value)">{{ option.label }}</button>
           </div>
-          <p class="mt-3 text-xs font-semibold text-[#6E4D58]">{{ preferences.orientations.length ? `${preferences.orientations.length} selected` : 'Select at least one orientation group' }}</p>
+          <p class="mt-3 text-xs font-semibold text-[#6E4D58]">{{ preferences.orientations.length ? `${preferences.orientations.length} selected` : 'Select at least one orientation' }}</p>
         </section>
 
         <section class="rounded-lg bg-white p-6 shadow-[0_12px_28px_rgba(180,35,74,0.08)]">
           <div class="flex items-start gap-3"><UsersRound class="mt-1 size-5 text-[#B4234A]" /><div><h2 class="text-xl font-semibold">Racial and ethnic preferences</h2><p class="mt-1 text-sm text-[#6E4D58]">Optional. Choose communities you are interested in dating, or leave your match pool open.</p></div></div>
           <div class="mt-5 grid gap-2 sm:grid-cols-2">
-            <button type="button" class="choice sm:col-span-2" :class="preferences.noRaceEthnicityPreference && 'choice-selected'" :aria-pressed="preferences.noRaceEthnicityPreference" @click="selectNoRacePreference">No racial or ethnic preference</button>
+            <button type="button" class="choice sm:col-span-2" :class="preferences.noRaceEthnicityPreference && 'choice-selected'" :aria-pressed="preferences.noRaceEthnicityPreference" @click="selectNoRacePreference">{{ openRaceEthnicityPreferenceLabel }}</button>
             <button v-for="option in raceEthnicityOptions" :key="option" type="button" class="choice" :class="preferences.raceEthnicities.includes(option) && 'choice-selected'" :aria-pressed="preferences.raceEthnicities.includes(option)" @click="toggleRaceEthnicity(option)">{{ option }}</button>
           </div>
           <div class="mt-5 flex gap-2 rounded-lg bg-[#F3E8DA] p-4 text-sm leading-6 text-[#4D2F39]"><Info class="mt-0.5 size-4 shrink-0" /><p>Identity is personal and nuanced. These broad options are only matching controls; they do not define how another person identifies.</p></div>

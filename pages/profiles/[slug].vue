@@ -243,6 +243,24 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
             </button>
           </section>
 
+          <button v-if="profile.relationshipStatus !== 'unmatched'" type="button"
+            class="profile-flip-card hidden w-full text-left lg:block" :class="activitiesFlipped && 'is-flipped'"
+            :aria-pressed="activitiesFlipped"
+            :aria-label="activitiesFlipped ? 'Show activities' : 'Show personal interests'"
+            @click="activitiesFlipped = !activitiesFlipped"><span class="profile-flip-inner"><span
+                class="profile-flip-face profile-flip-front"><span class="flex items-center justify-between gap-3"><span
+                    class="text-xl font-semibold">Activities I’d enjoy together</span>
+                </span><span class="mt-4 flex flex-wrap gap-2"><span v-for="activity in profile.activities"
+                    :key="activity" class="rounded-full bg-white/80 px-3 py-2 text-sm font-semibold text-[#8F1839]">{{
+                      activity
+                    }}</span></span></span><span class="profile-flip-face profile-flip-back"><span
+                  class="flex items-center justify-between gap-3"><span class="text-xl font-semibold">Personal interests</span>
+                </span><span v-if="profileInterests.length" class="mt-4 flex flex-wrap gap-2"><span
+                    v-for="interest in profileInterests" :key="interest"
+                    class="rounded-full bg-white/80 px-3 py-2 text-sm font-semibold text-[#4D2F39]">{{ interest
+                    }}</span></span><span v-else class="mt-3 block text-sm text-[#4D2F39]">They have not shared any
+                  personal interests yet.</span></span></span></button>
+
         </div>
 
         <div class="contents lg:block lg:space-y-5">
@@ -278,20 +296,19 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
                 </div>
                 <DailyInterestCounter class="mt-5" :count="todaysInterests.length" :limit="dailyInterestLimit" />
                 <button type="button"
-                  :disabled="sending || profile.isMatched || (profile.relationshipStatus === 'unmatched' && !profile.secondChanceAvailable) || profile.interestSent || (profile.relationshipStatus !== 'unmatched' && isTodaysChoice(profileSlug)) || atMatchLimit || (hasUsedDailyInterest && !(profile.relationshipStatus === 'unmatched' && isTodaysChoice(profileSlug)))"
+                  :disabled="sending || profile.isMatched || profile.relationshipStatus === 'queued' || (profile.relationshipStatus === 'unmatched' && !profile.secondChanceAvailable) || profile.interestSent || (profile.relationshipStatus !== 'unmatched' && isTodaysChoice(profileSlug)) || (hasUsedDailyInterest && !(profile.relationshipStatus === 'unmatched' && isTodaysChoice(profileSlug)))"
                   class="mt-5 inline-flex w-full min-w-0 items-center justify-center gap-2 whitespace-normal break-words rounded-lg bg-[#B4234A] px-3 py-3 text-center text-sm font-semibold text-white transition hover:bg-[#8F1839] disabled:cursor-not-allowed disabled:bg-[#D7A7B3] min-[360px]:px-5"
                   @click="showInterest(profileSlug, profile.name, profile.relationshipStatus === 'unmatched' && isTodaysChoice(profileSlug))">
-                  <HeartHandshake class="size-4" />{{ sending ? 'Sending…' : profile.isMatched ? `Already matched with
-                  ${profile.name}` : profile.interestSent || (profile.relationshipStatus !== 'unmatched' &&
+                  <HeartHandshake class="size-4" />{{ sending ? 'Sending…' : profile.isMatched ? `Already matched with ${profile.name}` : profile.relationshipStatus === 'queued' ? `Match queued with ${profile.name}` : profile.interestSent || (profile.relationshipStatus !== 'unmatched' &&
                     isTodaysChoice(profileSlug)) ? 'Interest already sent' : profile.relationshipStatus === 'unmatched' &&
                       profile.secondChanceAvailable ? `Show interest in ${profile.name} again` : profile.relationshipStatus
                         === 'unmatched' ? `Unmatched from ${profile.name}` :
-                    atMatchLimit ? `${activeMatchLimit}-match limit reached` :
                   isTodaysChoice(profileSlug) ? `Interest sent to ${profile.name}` : 'Show interest' }}
                 </button>
                 <p v-if="profile.isMatched" class="mt-3 rounded-lg bg-[#EAF2DE] p-3 text-xs leading-5 text-[#4D2F39]"
                   role="status">You and {{ profile.name }} have already matched. You can continue from Matches & plans.
                 </p>
+                <p v-else-if="profile.relationshipStatus === 'queued'" class="mt-3 rounded-lg bg-[#FFF1C7] p-3 text-xs leading-5 text-[#694C00]" role="status">You and {{ profile.name }} matched, but the match is queued until you both have an available space. You can manage it from Matches & plans.</p>
                 <div v-else-if="profile.relationshipStatus === 'unmatched' && !profile.interestSent"
                   class="mt-3 rounded-lg bg-[#F3E8DA] p-3 text-xs leading-5 text-[#4D2F39]" role="status">
                   <p>You and {{ profile.name }} are no longer matched.</p>
@@ -323,8 +340,8 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
                   <p v-else-if="profile.apologySent" class="mt-2 font-semibold text-[#6E8B52]">Your private note has
                     been
                     sent. You can now show interest again.</p>
-                  <p v-else-if="profile.contactSent" class="mt-2 font-semibold text-[#6E8B52]">Your message was sent.
-                    They may not necessarily respond, and you can now show interest in the, again.</p>
+                   <p v-else-if="profile.contactSent" class="mt-2 font-semibold text-[#6E8B52]">Your message was sent.
+                     They may not necessarily respond, and you can now show interest in them again.</p>
                   <p v-else-if="profile.secondChanceAvailable" class="mt-2 font-semibold text-[#6E8B52]">A second chance
                     is available. Either of you can send fresh interest; the other person still chooses whether to
                     accept.</p>
@@ -335,9 +352,7 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
                     }}. They can choose whether to reconnect.</template><template v-else>You have shown interest in {{
                     profile.name }}.</template></p>
                 <p v-else-if="atMatchLimit" class="mt-3 rounded-lg bg-[#FFF1C7] p-3 text-xs leading-5 text-[#694C00]"
-                  role="status">You
-                  already have {{ activeMatchLimit }} active matches. Complete or remove one before matching with
-                  someone new.
+                  role="status">You already have {{ activeMatchLimit }} active matches. You can still send interest; a mutual match will be placed in your visible queue until both people have space.
                 </p>
                 <p v-else-if="hasUsedDailyInterest"
                   class="mt-3 rounded-lg bg-[#FCE3E8] p-3 text-xs leading-5 text-[#6E4D58]" role="status"><template
@@ -430,7 +445,7 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
             </div>
           </section>
           <button v-if="profile.relationshipStatus !== 'unmatched'" type="button"
-            class="profile-flip-card order-6 block w-full text-left" :class="activitiesFlipped && 'is-flipped'"
+            class="profile-flip-card order-6 block w-full text-left lg:hidden" :class="activitiesFlipped && 'is-flipped'"
             :aria-pressed="activitiesFlipped"
             :aria-label="activitiesFlipped ? 'Show activities' : 'Show personal interests'"
             @click="activitiesFlipped = !activitiesFlipped"><span class="profile-flip-inner"><span
@@ -441,14 +456,13 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
                     :key="activity" class="rounded-full bg-white/80 px-3 py-2 text-sm font-semibold text-[#8F1839]">{{
                       activity
                     }}</span></span></span><span class="profile-flip-face profile-flip-back"><span
-                  class="flex items-center justify-between gap-3"><span class="text-xl font-semibold">Personal
-                    interests</span>
+                  class="flex items-center justify-between gap-3"><span class="text-xl font-semibold">Personal interests</span>
                   <!-- <span class="profile-flip-hint">Tap to see activities ↻</span> -->
                 </span><span v-if="profileInterests.length" class="mt-4 flex flex-wrap gap-2"><span
                     v-for="interest in profileInterests" :key="interest"
                     class="rounded-full bg-white/80 px-3 py-2 text-sm font-semibold text-[#4D2F39]">{{ interest
-                    }}</span></span><span v-else class="mt-3 block text-sm text-[#4D2F39]">They have not shared any personal interests yet.
-                  yet.</span></span></span></button>
+                    }}</span></span><span v-else class="mt-3 block text-sm text-[#4D2F39]">They have not shared any
+                  personal interests yet.</span></span></span></button>
           <section v-else class="order-6 rounded-lg bg-[#F3E8DA] p-5 sm:p-6">
             <h2 class="text-xl font-semibold">Past connection</h2>
             <p class="mt-3 text-sm leading-6 text-[#4D2F39]">

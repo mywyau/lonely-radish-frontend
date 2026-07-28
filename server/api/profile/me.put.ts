@@ -2,6 +2,7 @@ import { createError, readBody } from 'h3'
 import { db } from '~/server/repositories/db'
 import { requireUser } from '~/server/utils/requireUser'
 import { objectBody, stringArray, text } from '~/server/utils/productValidation'
+import { isRaceEthnicity, raceEthnicitySelfDescriptionLimit, usesRaceEthnicitySelfDescription } from '~/utils/raceEthnicity'
 import { sexualOrientationValues } from '~/utils/sexualOrientation'
 
 export default defineEventHandler(async (event) => {
@@ -13,8 +14,10 @@ export default defineEventHandler(async (event) => {
   const sexualOrientation = text(body.sexualOrientation, 'Sexual orientation', 30, true)
   if (!sexualOrientationValues.includes(sexualOrientation as typeof sexualOrientationValues[number])) throw createError({ statusCode: 400, statusMessage: 'Select a valid sexual orientation' })
   const raceEthnicity = text(body.raceEthnicity, 'Racial or ethnic identity', 100)
-  const raceEthnicityOptions = ['Asian', 'Black / African / Caribbean', 'Hispanic / Latino', 'Middle Eastern', 'North African', 'Native / Indigenous', 'Pacific Islander', 'White', 'Multiracial / multi-ethnic', 'Prefer not to say']
-  if (raceEthnicity && !raceEthnicityOptions.includes(raceEthnicity)) throw createError({ statusCode: 400, statusMessage: 'Select a valid racial or ethnic identity' })
+  if (raceEthnicity && !isRaceEthnicity(raceEthnicity)) throw createError({ statusCode: 400, statusMessage: 'Select a valid racial or ethnic identity' })
+  const raceEthnicitySelfDescription = raceEthnicity && usesRaceEthnicitySelfDescription(raceEthnicity)
+    ? text(body.raceEthnicitySelfDescription, 'Self-described racial or ethnic identity', raceEthnicitySelfDescriptionLimit, true)!
+    : null
   const slug = text(body.slug, 'Profile slug', 80, true)?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
   if (!slug) throw createError({ statusCode: 400, statusMessage: 'Profile slug must contain letters or numbers' })
   const pronouns = text(body.pronouns, 'Pronouns', 40)
@@ -46,16 +49,19 @@ export default defineEventHandler(async (event) => {
     await client.query('begin')
     const existingName = await client.query('select 1 from profiles where lower(trim(display_name))=lower(trim($1)) and user_id<>$2 limit 1', [displayName, sub])
     if (existingName.rowCount) throw createError({ statusCode: 409, statusMessage: 'That profile name is already in use' })
-    const { rows } = await client.query(`insert into profiles(user_id,slug,display_name,gender_identity,sexual_orientation,race_ethnicity,date_of_birth,pronouns,bio,neighbourhood,height_cm,weight_kg,drinking,smoking,daily_rhythm)
-      values($1,$2,$3,$4,$5,$6,$7::date,$8,$9,$10,$11,$12,$13,$14,$15) on conflict(user_id) do update set slug=excluded.slug,
+    const { rows } = await client.query(`insert into profiles(user_id,slug,display_name,gender_identity,sexual_orientation,race_ethnicity,race_ethnicity_self_description,date_of_birth,pronouns,bio,neighbourhood,height_cm,weight_kg,drinking,smoking,daily_rhythm)
+      values($1,$2,$3,$4,$5,$6,$7,$8::date,$9,$10,$11,$12,$13,$14,$15,$16) on conflict(user_id) do update set slug=excluded.slug,
       display_name=excluded.display_name,gender_identity=excluded.gender_identity,sexual_orientation=excluded.sexual_orientation,
-      race_ethnicity=excluded.race_ethnicity,date_of_birth=excluded.date_of_birth,pronouns=excluded.pronouns,
+      race_ethnicity=excluded.race_ethnicity,race_ethnicity_self_description=excluded.race_ethnicity_self_description,
+      date_of_birth=excluded.date_of_birth,pronouns=excluded.pronouns,
       bio=excluded.bio,neighbourhood=excluded.neighbourhood,height_cm=excluded.height_cm,weight_kg=excluded.weight_kg,
       drinking=excluded.drinking,smoking=excluded.smoking,daily_rhythm=excluded.daily_rhythm
       returning slug,display_name as "displayName",gender_identity as "genderIdentity",sexual_orientation as "sexualOrientation",
-      race_ethnicity as "raceEthnicity",date_of_birth as "dateOfBirth",pronouns,bio,
+      race_ethnicity as "raceEthnicity",race_ethnicity_self_description as "raceEthnicitySelfDescription",
+      date_of_birth as "dateOfBirth",pronouns,bio,
       neighbourhood,height_cm as "heightCm",weight_kg as "weightKg",drinking,smoking,daily_rhythm as "dailyRhythm",visibility`,
-      [sub, slug, displayName, genderIdentity, sexualOrientation, raceEthnicity, dateOfBirth, pronouns, bio, neighbourhood, heightCm, weightKg, drinking, smoking, dailyRhythm])
+      [sub, slug, displayName, genderIdentity, sexualOrientation, raceEthnicity, raceEthnicitySelfDescription,
+        dateOfBirth, pronouns, bio, neighbourhood, heightCm, weightKg, drinking, smoking, dailyRhythm])
     await client.query('delete from availability where user_id=$1', [sub])
     for (const [index, label] of availability.entries()) await client.query('insert into availability(user_id,label,position) values($1,$2,$3)', [sub,label,index+1])
     await client.query('commit')

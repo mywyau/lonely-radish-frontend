@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ArrowRight, CalendarDays, CheckCircle2, ChevronDown, Circle, MapPin, ShieldCheck, SlidersHorizontal, Sparkles, Trash2, UserRound } from "@lucide/vue";
+import { raceEthnicityOptions, raceEthnicitySelfDescriptionLimit, usesRaceEthnicitySelfDescription } from '~/utils/raceEthnicity';
 import { sexualOrientationOptions } from '~/utils/sexualOrientation';
 
 definePageMeta({
@@ -8,8 +9,7 @@ definePageMeta({
 });
 
 const { user } = useMeStateV2();
-const profile = reactive({ firstName: "", lastName: "", displayName: "", raceEthnicity: "", sexualOrientation: "" });
-const raceEthnicityOptions = ['Asian', 'Black / African / Caribbean', 'Hispanic / Latino', 'Middle Eastern', 'North African', 'Native / Indigenous', 'Pacific Islander', 'White', 'Multiracial / multi-ethnic', 'Prefer not to say'];
+const profile = reactive({ firstName: "", lastName: "", displayName: "", raceEthnicity: "", raceEthnicitySelfDescription: "", sexualOrientation: "" });
 
 const savingAccountDetails = ref(false);
 const accountDetailsSaved = ref(false);
@@ -140,6 +140,10 @@ async function saveProfileBasics() {
     profileBasicsError.value = 'Select your racial or ethnic identity.'
     return
   }
+  if (usesRaceEthnicitySelfDescription(profile.raceEthnicity) && !profile.raceEthnicitySelfDescription.trim()) {
+    profileBasicsError.value = 'Describe your racial or ethnic identity.'
+    return
+  }
   savingProfileBasics.value = true
   try {
     Object.assign(profile, await $fetch('/api/profile/basics', {
@@ -148,6 +152,7 @@ async function saveProfileBasics() {
       body: {
         displayName: profile.displayName,
         raceEthnicity: profile.raceEthnicity,
+        raceEthnicitySelfDescription: profile.raceEthnicitySelfDescription,
         sexualOrientation: profile.sexualOrientation,
       },
     }))
@@ -237,6 +242,7 @@ onMounted(async () => {
   if (profileResult.status === 'fulfilled') {
     const result = profileResult.value
     profile.raceEthnicity = result.profile?.raceEthnicity || '';
+    profile.raceEthnicitySelfDescription = result.profile?.raceEthnicitySelfDescription || '';
     profile.sexualOrientation = result.profile?.sexualOrientation || '';
     profile.displayName = result.profile?.displayName || '';
   } else {
@@ -400,6 +406,11 @@ onMounted(async () => {
                   <option value="" disabled>Select an option</option>
                   <option v-for="option in raceEthnicityOptions" :key="option" :value="option">{{ option }}</option>
                 </select>
+              </label>
+              <label v-if="usesRaceEthnicitySelfDescription(profile.raceEthnicity)" class="block text-sm font-medium sm:col-span-2">
+                How do you describe your background?
+                <input v-model="profile.raceEthnicitySelfDescription" class="field" type="text" :maxlength="raceEthnicitySelfDescriptionLimit" required placeholder="Use the words that feel right to you">
+                <span class="mt-1 block text-right text-xs font-normal text-[#6E4D58]">{{ profile.raceEthnicitySelfDescription.length }}/{{ raceEthnicitySelfDescriptionLimit }}</span>
               </label>
 
               <div class="flex flex-col items-start gap-2 sm:col-span-2 sm:flex-row sm:items-center">

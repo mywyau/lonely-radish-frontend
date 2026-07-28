@@ -61,7 +61,7 @@ export function useDailyInterest() {
   }
 
   async function showInterest(profileSlug: string, profileName: string, replaceTodaysInterest = false) {
-    if (!import.meta.client || (hasUsedDailyInterest.value && !replaceTodaysInterest) || atMatchLimit.value) return false
+    if (!import.meta.client || (hasUsedDailyInterest.value && !replaceTodaysInterest)) return false
     const interestAlreadyCountedToday = replaceTodaysInterest && isTodaysChoice(profileSlug)
     const remainingAfterSend = Math.max(0, dailyInterestLimit - todaysInterests.value.length - (interestAlreadyCountedToday ? 0 : 1))
     const confirmed = window.confirm(`Show interest in ${profileName}? This will use 1 of your 5 daily interests. You will have ${remainingAfterSend} ${remainingAfterSend === 1 ? 'interest' : 'interests'} remaining today.`)
@@ -70,10 +70,10 @@ export function useDailyInterest() {
     successMessage.value = null
     sending.value = true
     try {
-      const response = await $fetch<{ interest: DailyInterest; matched?: boolean }>('/api/interests', { method: 'POST', body: { profileSlug } })
+      const response = await $fetch<{ interest: DailyInterest; matched?: boolean; queued?: boolean }>('/api/interests', { method: 'POST', body: { profileSlug } })
       interests.value = interests.value.filter(interest => interest.profileSlug !== profileSlug)
       interests.value.push(normaliseInterest(response.interest))
-      if (response.matched) activeMatchCount.value += 1
+      if (response.matched && !response.queued) activeMatchCount.value += 1
     } catch (error) {
       const failure = error as { statusCode?: number; response?: { status?: number }; data?: { statusCode?: number; statusMessage?: string } }
       const status = failure.statusCode || failure.response?.status || failure.data?.statusCode

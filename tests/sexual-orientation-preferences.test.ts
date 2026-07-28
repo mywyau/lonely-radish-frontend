@@ -5,22 +5,20 @@ import {
   sexualOrientationPreferenceOptions,
 } from '../utils/sexualOrientation'
 
-describe('sexual orientation preference groups', () => {
-  it('offers three broad matching choices', () => {
+describe('sexual orientation settings', () => {
+  it('uses the same five choices for identity and matching', () => {
     expect(sexualOrientationPreferenceOptions.map(option => option.label))
-      .toEqual(['Heterosexual', 'Homosexual', 'Other'])
+      .toEqual(['Straight', 'Gay', 'Lesbian', 'Bisexual', 'Another orientation'])
   })
 
-  it('expands broad choices into the specific stored profile orientations', () => {
-    expect(expandSexualOrientationPreferences(['heterosexual'])).toEqual(['straight'])
-    expect(expandSexualOrientationPreferences(['homosexual'])).toEqual(['gay', 'lesbian'])
-    expect(expandSexualOrientationPreferences(['other'])).toEqual([
-      'bisexual', 'pansexual', 'asexual', 'queer', 'questioning', 'prefer_not_to_say',
-    ])
+  it('stores selected filters directly without broad-group translation', () => {
+    expect(expandSexualOrientationPreferences(['straight', 'gay', 'another_orientation']))
+      .toEqual(['straight', 'gay', 'another_orientation'])
+    expect(expandSexualOrientationPreferences(['heterosexual', 'other'])).toEqual([])
   })
 
-  it('groups existing detailed preferences for the simplified UI', () => {
+  it('returns only supported stored preferences to the UI', () => {
     expect(groupSexualOrientationPreferences(['straight', 'bisexual', 'queer']))
-      .toEqual(['heterosexual', 'other'])
+      .toEqual(['straight', 'bisexual'])
   })
 })
