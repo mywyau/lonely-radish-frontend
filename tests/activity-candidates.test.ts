@@ -43,5 +43,10 @@ describe('real activity candidates', () => {
       expect(preferences).toContain(`name: '${category}'`)
     }
     expect(read('docs/migrations/20260811_add_activity_discovery_categories.sql')).toContain("('Wellness','Yoga')")
+    const refinedIdeas = read('docs/migrations/20260826_refine_activity_date_ideas.sql')
+    for (const activity of ['Restaurants', 'Pilates classes', 'Tai chi', 'Sound baths', 'Walking tours', 'Community gardening']) {
+      expect(preferences).toContain(`'${activity}'`)
+      expect(refinedIdeas).toContain(`'${activity}'`)
+    }
   })
 })

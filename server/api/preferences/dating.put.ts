@@ -2,7 +2,7 @@ import { readBody } from 'h3'
 import { db } from '~/server/repositories/db'
 import { requireUser } from '~/server/utils/requireUser'
 import { boolean, objectBody, stringArray } from '~/server/utils/productValidation'
-import { sexualOrientationValues } from '~/utils/sexualOrientation'
+import { expandSexualOrientationPreferences, groupSexualOrientationPreferences, sexualOrientationPreferenceValues, sexualOrientationValues } from '~/utils/sexualOrientation'
 
 export default defineEventHandler(async (event) => {
   const { sub } = await requireUser(event)
@@ -13,10 +13,12 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'Select valid gender preferences' })
   }
   const openToEveryone = boolean(body.openToEveryone, 'Open to everyone')
-  const orientations = stringArray(body.orientations, 'Sexual orientation preferences', sexualOrientationValues.length)
-  if (orientations.some(orientation => !sexualOrientationValues.includes(orientation as typeof sexualOrientationValues[number]))) {
+  const requestedOrientations = stringArray(body.orientations, 'Sexual orientation preferences', sexualOrientationValues.length)
+  const validOrientationInputs = [...sexualOrientationPreferenceValues, ...sexualOrientationValues]
+  if (requestedOrientations.some(orientation => !validOrientationInputs.includes(orientation as typeof validOrientationInputs[number]))) {
     throw createError({ statusCode: 400, statusMessage: 'Select valid sexual orientation preferences' })
   }
+  const orientations = expandSexualOrientationPreferences(requestedOrientations)
   if (!orientations.length) throw createError({ statusCode: 400, statusMessage: 'Choose at least one sexual orientation you are open to dating' })
   const noOrientationPreference = false
   const raceEthnicities = stringArray(body.raceEthnicities, 'Ethnicity preferences', 20)
@@ -37,5 +39,5 @@ export default defineEventHandler(async (event) => {
       interested_orientations as orientations, no_orientation_preference as "noOrientationPreference",
       preferred_ethnicities as "raceEthnicities", no_ethnicity_preference as "noRaceEthnicityPreference"`,
     [sub, genders, openToEveryone, orientations, noOrientationPreference, raceEthnicities, noRaceEthnicityPreference])
-  return rows[0]
+  return { ...rows[0], orientations: groupSexualOrientationPreferences(rows[0].orientations || []) }
 })

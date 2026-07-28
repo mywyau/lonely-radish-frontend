@@ -52,14 +52,15 @@ onMounted(async () => {
 
 <template>
   <main class="min-h-screen bg-[#FBF7F1] px-5 py-10 text-[#2A1520] sm:px-8">
-    <section class="mx-auto max-w-5xl">
+    <section class="mx-auto max-w-6xl">
       <div class="max-w-2xl">
         <p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">Match settings</p>
         <h1 class="mt-2 text-4xl font-semibold">Match preferences</h1>
         <p class="mt-3 leading-6 text-[#6E4D58]">Manage each part separately, so it is easy to revisit what matters to you.</p>
       </div>
 
-      <form class="mt-8 space-y-5" @submit.prevent="savePreferences">
+      <div class="mt-8 grid items-start gap-6 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
+        <form class="space-y-5" @submit.prevent="savePreferences">
         <section id="location-and-age" class="scroll-mt-24 rounded-lg bg-white p-6 shadow-[0_12px_28px_rgba(180,35,74,0.08)]">
           <div class="flex items-start gap-3"><MapPin class="mt-1 size-5 text-[#B4234A]" /><div><h2 class="text-xl font-semibold">Location and age</h2><p class="mt-1 text-sm text-[#6E4D58]">Keep possible matches practical for you.</p></div></div>
           <div class="mt-6 rounded-lg bg-[#FBF7F1] p-4">
@@ -74,7 +75,7 @@ onMounted(async () => {
             <p v-if="locationMessage" class="mt-2 text-sm font-semibold text-[#52713A]" role="status">{{ locationMessage }}</p>
             <p v-if="locationError" class="mt-2 text-sm font-semibold text-[#8F1839]" role="alert">{{ locationError }}</p>
           </div>
-          <div class="mt-6 grid gap-6 sm:grid-cols-[0.65fr_1.35fr]">
+          <div class="mt-6 grid gap-6">
             <label class="text-sm font-medium">
               Maximum distance
               <span class="field-with-suffix">
@@ -99,9 +100,9 @@ onMounted(async () => {
         </section>
 
         <div class="flex flex-col items-start gap-3 sm:flex-row sm:items-center"><button type="submit" :disabled="preferences.minimumAge > preferences.maximumAge" class="w-full rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto">Save preferences</button><span v-if="saved" class="text-sm font-semibold text-[#6E8B52]">Preferences saved.</span></div>
-      </form>
+        </form>
 
-      <div class="mt-8 grid gap-4 sm:grid-cols-2">
+        <nav aria-label="Match preference sections" class="grid gap-4 sm:grid-cols-2">
         <NuxtLink to="/preferences/activities" class="group rounded-lg bg-[#FCE3E8] p-6 shadow-[0_10px_24px_rgba(180,35,74,0.08)] transition hover:-translate-y-0.5">
           <div class="flex items-center justify-between"><Sparkles class="size-6 text-[#B4234A]" /><ChevronRight class="size-5 transition group-hover:translate-x-1" /></div>
           <h2 class="mt-5 text-xl font-semibold">Activity interests</h2>
@@ -125,6 +126,7 @@ onMounted(async () => {
           <h2 class="mt-5 text-xl font-semibold">Timing and safety</h2>
           <p class="mt-2 text-sm leading-6 text-[#6E4D58]">Set the days and time ranges when you are usually free, and keep first meetings in public places.</p>
         </NuxtLink>
+        </nav>
       </div>
     </section>
   </main>

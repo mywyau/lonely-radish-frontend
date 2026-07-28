@@ -42,4 +42,14 @@ describe('account details saving', () => {
     expect(page).not.toContain('<section v-if="readiness"')
     expect(page).not.toContain('resolve({ force: true })')
   })
+
+  it('allows account and contact detail panels to collapse independently', () => {
+    const page = readPage('account/v2/index.vue')
+    expect(page).toContain('accountDetailsCollapsed')
+    expect(page).toContain('contactDetailsCollapsed')
+    expect(page).toContain('aria-controls="account-details-panel"')
+    expect(page).toContain('aria-controls="contact-details-panel"')
+    expect(page).toContain('id="account-details-panel" v-show="!accountDetailsCollapsed"')
+    expect(page).toContain('id="contact-details-panel" v-show="!contactDetailsCollapsed"')
+  })
 })

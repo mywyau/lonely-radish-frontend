@@ -41,7 +41,7 @@ describe('scalable discovery filtering', () => {
     const endpoint = read('server/api/preferences/general.put.ts')
     const distanceMigration = read('docs/migrations/20260804_increase_maximum_match_distance.sql')
     expect(onboarding).toContain("'/api/profile/location'")
-    expect(onboarding).toContain('type="range" min="1" max="500"')
+    expect(onboarding).toContain('type="number" min="1" max="500"')
     expect(preferences).toContain('UK postcode')
     expect(preferences).toContain('type="number" min="1" max="500"')
     expect(endpoint).toContain("'Maximum distance', 1, 500")

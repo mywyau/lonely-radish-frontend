@@ -103,30 +103,6 @@ onMounted(async () => {
       <div v-else class="mt-8 space-y-6">
         <section class="rounded-lg bg-white p-5 shadow-[0_12px_28px_rgba(180,35,74,0.08)] sm:p-7">
           <div class="flex items-start gap-3">
-            <UserRound class="mt-1 size-5 shrink-0 text-[#B4234A]" aria-hidden="true" />
-            <div>
-              <h2 class="text-xl font-semibold">About me</h2>
-              <p class="mt-1 text-sm leading-6 text-[#6E4D58]">Share what makes you you, what your life looks like, and the kind of connection you would enjoy.</p>
-            </div>
-          </div>
-
-          <form class="mt-6" @submit.prevent="saveBio">
-            <label for="profile-bio" class="text-sm font-semibold">Your introduction</label>
-            <textarea id="profile-bio" v-model="bio" required :maxlength="bioLimit" rows="8" class="field resize-y" placeholder="A little about you and the kind of person you would enjoy meeting…" />
-            <div class="mt-2 flex items-start justify-between gap-4">
-              <p class="text-xs leading-5 text-[#6E4D58]">This appears in the About me section of your public dating profile.</p>
-              <span class="shrink-0 text-xs text-[#6E4D58]">{{ bio.length }}/{{ bioLimit }}</span>
-            </div>
-            <div class="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
-              <button type="submit" :disabled="bioSaving || !bio.trim()" class="rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50">{{ bioSaving ? 'Saving…' : 'Save About me' }}</button>
-              <span v-if="bioSaved" class="text-sm font-semibold text-[#52713A]" role="status">About me saved.</span>
-            </div>
-            <p v-if="bioError" class="mt-3 text-sm font-semibold text-[#8F1839]" role="alert">{{ bioError }}</p>
-          </form>
-        </section>
-
-        <section class="rounded-lg bg-white p-5 shadow-[0_12px_28px_rgba(180,35,74,0.08)] sm:p-7">
-          <div class="flex items-start gap-3">
             <Heart class="mt-1 size-5 shrink-0 text-[#B4234A]" aria-hidden="true" />
             <div>
               <h2 class="text-xl font-semibold">Lifestyle and profile details</h2>
@@ -155,6 +131,30 @@ onMounted(async () => {
               <span v-if="lifestyleSaved" class="text-sm font-semibold text-[#52713A]" role="status">Lifestyle details saved.</span>
             </div>
             <p v-if="lifestyleError" class="text-sm font-semibold text-[#8F1839] sm:col-span-2" role="alert">{{ lifestyleError }}</p>
+          </form>
+        </section>
+
+        <section class="rounded-lg bg-white p-5 shadow-[0_12px_28px_rgba(180,35,74,0.08)] sm:p-7">
+          <div class="flex items-start gap-3">
+            <UserRound class="mt-1 size-5 shrink-0 text-[#B4234A]" aria-hidden="true" />
+            <div>
+              <h2 class="text-xl font-semibold">About me</h2>
+              <p class="mt-1 text-sm leading-6 text-[#6E4D58]">Share what makes you you, what your life looks like, and the kind of connection you would enjoy.</p>
+            </div>
+          </div>
+
+          <form class="mt-6" @submit.prevent="saveBio">
+            <label for="profile-bio" class="text-sm font-semibold">Your introduction</label>
+            <textarea id="profile-bio" v-model="bio" required :maxlength="bioLimit" rows="8" class="field resize-y" placeholder="A little about you and the kind of person you would enjoy meeting…" />
+            <div class="mt-2 flex items-start justify-between gap-4">
+              <p class="text-xs leading-5 text-[#6E4D58]">This appears in the About me section of your public dating profile.</p>
+              <span class="shrink-0 text-xs text-[#6E4D58]">{{ bio.length }}/{{ bioLimit }}</span>
+            </div>
+            <div class="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
+              <button type="submit" :disabled="bioSaving || !bio.trim()" class="rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50">{{ bioSaving ? 'Saving…' : 'Save About me' }}</button>
+              <span v-if="bioSaved" class="text-sm font-semibold text-[#52713A]" role="status">About me saved.</span>
+            </div>
+            <p v-if="bioError" class="mt-3 text-sm font-semibold text-[#8F1839]" role="alert">{{ bioError }}</p>
           </form>
         </section>
 

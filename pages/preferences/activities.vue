@@ -5,15 +5,15 @@ definePageMeta({ title: 'Activity Interests · Lonely Radish', middleware: 'logg
 
 const groups = [
   { name: 'Culture', options: ['Gallery walks', 'Museums', 'Theatre', 'Indie films', 'Live music', 'Comedy nights'] },
-  { name: 'Food and drink', options: ['Markets', 'Casual food spots', 'Cooking classes', 'Dessert crawl', 'Picnics', 'Supper clubs'] },
+  { name: 'Food and drink', options: ['Markets', 'Casual food spots', 'Cooking classes', 'Dessert crawl', 'Picnics', 'Restaurants'] },
   { name: 'Outdoors', options: ['Riverside walks', 'Hikes', 'Parks', 'Cycling', 'Street photography', 'Botanical gardens'] },
   { name: 'Sports', options: ['Park tennis', 'Climbing', 'Running clubs', 'Table tennis', 'Casual football', 'Swimming'] },
   { name: 'Gaming', options: ['Co-op games', 'Puzzle rooms', 'Party games', 'Strategy games', 'Cosy games', 'Board games'] },
   { name: 'Learning', options: ['Workshops', 'Talks', 'Language exchange', 'Bookshops', 'Craft classes', 'Trivia nights'] },
-  { name: 'Wellness', options: ['Yoga', 'Saunas', 'Meditation', 'Spa days', 'Wellness classes', 'Relaxed movement', 'Self-care activities'] },
+  { name: 'Wellness', options: ['Yoga', 'Saunas', 'Meditation', 'Spa days', 'Pilates classes', 'Tai chi', 'Sound baths'] },
   { name: 'Nightlife', options: ['Bars', 'Cocktails', 'Live DJs', 'Dancing', 'Late-night food', 'Pub quizzes', 'Evening events'] },
-  { name: 'Explore', options: ['Day trips', 'Sightseeing', 'Hidden spots', 'Neighbourhood wandering', 'Road trips', 'Trying somewhere new'] },
-  { name: 'Community', options: ['Volunteering', 'Community events', 'Charity activities', 'Environmental projects', 'Meetups', 'Local causes'] },
+  { name: 'Explore', options: ['Day trips', 'Sightseeing', 'Hidden spots', 'Walking tours', 'Road trips', 'Trying somewhere new'] },
+  { name: 'Community', options: ['Volunteering', 'Community events', 'Charity activities', 'Environmental projects', 'Community gardening', 'Local causes'] },
 ]
 const groupIcons: Record<string, any> = { Sports: Trophy, Gaming: Gamepad2, Wellness: HeartPulse, Nightlife: MoonStar, Explore: Compass, Community: HandHeart }
 type SelectedActivity = { name: string; category: string; custom: boolean }

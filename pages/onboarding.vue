@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ArrowLeft, ArrowRight, Brain, Check, Compass, Gamepad2, HandHeart, HeartHandshake, HeartPulse, ImagePlus, MoonStar, Sparkles, Trophy, UserRound, UsersRound } from '@lucide/vue'
-import { sexualOrientationOptions } from '~/utils/sexualOrientation'
+import { ArrowLeft, ArrowRight, Brain, Check, ChevronDown, Compass, Gamepad2, HandHeart, HeartHandshake, HeartPulse, ImagePlus, MoonStar, Sparkles, Trophy, UserRound, UsersRound } from '@lucide/vue'
+import { sexualOrientationOptions, sexualOrientationPreferenceOptions } from '~/utils/sexualOrientation'
 
 definePageMeta({ title: 'Set up your profile · Lonely Radish', middleware: 'logged-in' })
 
@@ -26,19 +26,20 @@ const onboardingLocation = reactive({ postcode: '', postcodeArea: '', label: '',
 let profileNameCheck = 0
 const activityGroups = [
   { name: 'Culture', options: ['Gallery walks', 'Museums', 'Theatre', 'Indie films', 'Live music', 'Comedy nights'] },
-  { name: 'Food and drink', options: ['Markets', 'Casual food spots', 'Cooking classes', 'Dessert crawl', 'Picnics', 'Supper clubs'] },
+  { name: 'Food and drink', options: ['Markets', 'Casual food spots', 'Cooking classes', 'Dessert crawl', 'Picnics', 'Restaurants'] },
   { name: 'Outdoors', options: ['Riverside walks', 'Hikes', 'Parks', 'Cycling', 'Street photography', 'Botanical gardens'] },
   { name: 'Sports', options: ['Park tennis', 'Climbing', 'Running clubs', 'Table tennis', 'Casual football', 'Swimming'] },
   { name: 'Gaming', options: ['Co-op games', 'Puzzle rooms', 'Party games', 'Strategy games', 'Cosy games', 'Board games'] },
   { name: 'Learning', options: ['Workshops', 'Talks', 'Language exchange', 'Bookshops', 'Craft classes', 'Trivia nights'] },
-  { name: 'Wellness', options: ['Yoga', 'Saunas', 'Meditation', 'Spa days', 'Wellness classes', 'Relaxed movement', 'Self-care activities'] },
+  { name: 'Wellness', options: ['Yoga', 'Saunas', 'Meditation', 'Spa days', 'Pilates classes', 'Tai chi', 'Sound baths'] },
   { name: 'Nightlife', options: ['Bars', 'Cocktails', 'Live DJs', 'Dancing', 'Late-night food', 'Pub quizzes', 'Evening events'] },
-  { name: 'Explore', options: ['Day trips', 'Sightseeing', 'Hidden spots', 'Neighbourhood wandering', 'Road trips', 'Trying somewhere new'] },
-  { name: 'Community', options: ['Volunteering', 'Community events', 'Charity activities', 'Environmental projects', 'Meetups', 'Local causes'] },
+  { name: 'Explore', options: ['Day trips', 'Sightseeing', 'Hidden spots', 'Walking tours', 'Road trips', 'Trying somewhere new'] },
+  { name: 'Community', options: ['Volunteering', 'Community events', 'Charity activities', 'Environmental projects', 'Community gardening', 'Local causes'] },
 ]
 const activityGroupIcons: Record<string, any> = { Sports: Trophy, Gaming: Gamepad2, Learning: Brain, Wellness: HeartPulse, Nightlife: MoonStar, Explore: Compass, Community: HandHeart }
 type SelectedActivity = { name: string; category: string; custom: boolean }
 const selectedActivities = ref<SelectedActivity[]>([])
+const openActivityGroups = ref<Set<string>>(new Set([activityGroups[0].name]))
 const customActivityInputs = reactive<Record<string, string>>(Object.fromEntries(activityGroups.map(group => [group.name, ''])))
 const activitySelectionLimit = ref(5)
 const activityLimitReached = computed(() => selectedActivities.value.length >= activitySelectionLimit.value)
@@ -107,11 +108,23 @@ function toggleGenderPreference(value: string) {
   toggle(preferences.genders, value)
 }
 function toggleOrientationPreference(value: string) {
-  toggle(preferences.orientations, value, sexualOrientationOptions.length)
+  toggle(preferences.orientations, value, sexualOrientationPreferenceOptions.length)
 }
 
 function activityIsSelected(name: string) {
   return selectedActivities.value.some(activity => activity.name === name)
+}
+function activityGroupId(name: string) {
+  return `onboarding-activity-group-${name.replaceAll(' ', '-').toLowerCase()}`
+}
+function toggleActivityGroup(name: string) {
+  const next = new Set(openActivityGroups.value)
+  if (next.has(name)) next.delete(name)
+  else next.add(name)
+  openActivityGroups.value = next
+}
+function selectedActivityCount(category: string) {
+  return selectedActivities.value.filter(activity => activity.category === category).length
 }
 function toggleActivity(name: string, category: string, custom = false) {
   const index = selectedActivities.value.findIndex(activity => activity.name === name)
@@ -159,6 +172,8 @@ async function load() {
     Object.assign(birthDate, { year, month, day })
   }
   selectedActivities.value = activityData.selected
+  const selectedGroups = selectedActivities.value.map(activity => activity.category)
+  openActivityGroups.value = new Set(selectedGroups.length ? selectedGroups : [activityGroups[0].name])
   activitySelectionLimit.value = activityData.selectionLimit || 5
   Object.assign(preferences, general, dating)
   Object.assign(onboardingLocation, savedLocation)
@@ -307,24 +322,38 @@ onMounted(() => { load().catch(() => { errorMessage.value = 'We could not load o
       </form>
 
       <form v-else-if="step === 3" class="onboarding-card" @submit.prevent="saveActivities">
-        <div class="step-title"><Sparkles class="size-5 text-[#B4234A]" /><div><h2>What would you enjoy doing?</h2><p>Choose up to {{ activitySelectionLimit }} interests. Each choice helps people find you through the broader categories in Discover.</p></div></div>
+        <div class="step-title"><Sparkles class="size-5 text-[#B4234A]" /><div><h2>What would you enjoy doing?</h2><p>Choose up to {{ activitySelectionLimit }} activities you would be interested in doing. Each choice helps people find you through the broader categories.</p></div></div>
+        <section v-if="selectedActivities.length" class="mt-5 rounded-lg bg-[#FCE3E8] p-4"><h3 class="font-semibold">Your interests ({{ selectedActivities.length }}/{{ activitySelectionLimit }})</h3><p v-if="activityLimitReached" class="mt-1 text-sm font-semibold text-[#8F1839]">You have selected the maximum of {{ activitySelectionLimit }} interests.</p><div class="mt-3 flex flex-wrap gap-2"><button v-for="activity in selectedActivities" :key="activity.name" type="button" class="rounded-full bg-white px-3 py-2 text-sm font-semibold text-[#8F1839]" @click="toggleActivity(activity.name, activity.category, activity.custom)">{{ activity.name }} ×</button></div></section>
         <div class="mt-6 space-y-4">
-          <section v-for="group in activityGroups" :key="group.name" class="activity-group">
-            <div class="flex items-center gap-2"><component :is="activityGroupIcons[group.name] || Sparkles" class="size-5 text-[#B4234A]" /><h3 class="font-semibold">{{ group.name }}</h3></div>
-            <div class="mt-3 flex flex-wrap gap-2"><button v-for="activity in group.options" :key="activity" type="button" class="choice" :class="activityIsSelected(activity) && 'selected'" :aria-pressed="activityIsSelected(activity)" :disabled="activityLimitReached && !activityIsSelected(activity)" @click="toggleActivity(activity, group.name)">{{ activity }}</button></div>
-            <div v-if="selectedActivities.some(activity => activity.custom && activity.category === group.name)" class="mt-3 flex flex-wrap gap-2"><button v-for="activity in selectedActivities.filter(activity => activity.custom && activity.category === group.name)" :key="activity.name" type="button" class="custom-choice" :aria-label="`Remove custom activity ${activity.name}`" @click="toggleActivity(activity.name, group.name, true)">{{ activity.name }} ×</button></div>
-            <label class="mt-4 block">Add your own {{ group.name.toLowerCase() }} activity <span class="font-normal text-[#6E4D58]">({{ customActivityCount(group.name) }}/3)</span></label>
-            <div class="mt-2 flex flex-col gap-2 sm:flex-row"><input v-model="customActivityInputs[group.name]" :maxlength="customActivityLimit" :disabled="activityLimitReached || customActivityCount(group.name) >= 3" class="min-w-0 flex-1" :placeholder="`Add something to ${group.name}`" @keydown.enter.prevent="addCustomActivity(group.name)"><button type="button" class="add-activity" :disabled="activityLimitReached || customActivityCount(group.name) >= 3 || !customActivityInputs[group.name].trim()" @click="addCustomActivity(group.name)">Add</button></div>
+          <section v-for="group in activityGroups" :key="group.name" class="activity-group overflow-hidden">
+            <h3>
+              <button type="button" class="flex w-full items-center gap-3 text-left" :aria-expanded="openActivityGroups.has(group.name)" :aria-controls="activityGroupId(group.name)" @click="toggleActivityGroup(group.name)">
+                <component :is="activityGroupIcons[group.name] || Sparkles" class="size-5 shrink-0 text-[#B4234A]" />
+                <span class="flex-1 font-semibold">{{ group.name }}</span>
+                <span v-if="selectedActivityCount(group.name)" class="rounded-full bg-[#FCE3E8] px-2.5 py-1 text-xs font-bold text-[#8F1839]">{{ selectedActivityCount(group.name) }} selected</span>
+                <ChevronDown class="size-5 shrink-0 text-[#6E4D58] transition-transform duration-200" :class="openActivityGroups.has(group.name) && 'rotate-180'" aria-hidden="true" />
+              </button>
+            </h3>
+            <div v-show="openActivityGroups.has(group.name)" :id="activityGroupId(group.name)" class="mt-4 border-t border-[#F3E8DA] pt-4">
+              <div class="flex flex-wrap gap-2"><button v-for="activity in group.options" :key="activity" type="button" class="choice" :class="activityIsSelected(activity) && 'selected'" :aria-pressed="activityIsSelected(activity)" :disabled="activityLimitReached && !activityIsSelected(activity)" @click="toggleActivity(activity, group.name)">{{ activity }}</button></div>
+              <div v-if="selectedActivities.some(activity => activity.custom && activity.category === group.name)" class="mt-3 flex flex-wrap gap-2"><button v-for="activity in selectedActivities.filter(activity => activity.custom && activity.category === group.name)" :key="activity.name" type="button" class="custom-choice" :aria-label="`Remove custom activity ${activity.name}`" @click="toggleActivity(activity.name, group.name, true)">{{ activity.name }} ×</button></div>
+              <label class="mt-4 block">Add your own {{ group.name.toLowerCase() }} activity <span class="font-normal text-[#6E4D58]">({{ customActivityCount(group.name) }}/3)</span></label>
+              <div class="mt-2 flex flex-col gap-2 sm:flex-row"><input v-model="customActivityInputs[group.name]" :maxlength="customActivityLimit" :disabled="activityLimitReached || customActivityCount(group.name) >= 3" class="min-w-0 flex-1" :placeholder="`Add something to ${group.name}`" @keydown.enter.prevent="addCustomActivity(group.name)"><button type="button" class="add-activity" :disabled="activityLimitReached || customActivityCount(group.name) >= 3 || !customActivityInputs[group.name].trim()" @click="addCustomActivity(group.name)">Add</button></div>
+            </div>
           </section>
         </div>
-        <section v-if="selectedActivities.length" class="mt-5 rounded-lg bg-[#FCE3E8] p-4"><h3 class="font-semibold">Your interests ({{ selectedActivities.length }}/{{ activitySelectionLimit }})</h3><p v-if="activityLimitReached" class="mt-1 text-sm font-semibold text-[#8F1839]">You have selected the maximum of {{ activitySelectionLimit }} interests.</p><div class="mt-3 flex flex-wrap gap-2"><button v-for="activity in selectedActivities" :key="activity.name" type="button" class="rounded-full bg-white px-3 py-2 text-sm font-semibold text-[#8F1839]" @click="toggleActivity(activity.name, activity.category, activity.custom)">{{ activity.name }} ×</button></div></section>
         <div class="actions"><button class="secondary" type="button" @click="step = 2"><ArrowLeft class="size-4" />Back</button><button :disabled="saving || !selectedActivities.length" class="primary" type="submit">{{ saving ? 'Saving…' : 'Continue' }}<ArrowRight class="size-4" /></button></div>
       </form>
 
       <form v-else-if="step === 4" class="onboarding-card" @submit.prevent="savePreferences">
         <div class="step-title"><HeartHandshake class="size-5 text-[#B4234A]" /><div><h2>Your match preferences</h2><p>Set a useful starting point. Every setting remains editable later.</p></div></div>
         <div class="mt-6 grid gap-5 sm:grid-cols-2">
-          <label>Maximum distance <span class="value">{{ preferences.distance }} km</span><input v-model.number="preferences.distance" type="range" min="1" max="500"></label>
+          <label>Maximum distance
+            <span class="field-with-suffix">
+              <input v-model.number="preferences.distance" class="field-with-suffix__input" type="number" min="1" max="500" required aria-describedby="onboarding-distance-unit">
+              <span id="onboarding-distance-unit" class="field-with-suffix__label">km</span>
+            </span>
+          </label>
           <div class="grid grid-cols-2 gap-3"><label>Minimum age <input v-model.number="preferences.minimumAge" type="number" min="18" max="100"></label><label>Maximum age <input v-model.number="preferences.maximumAge" type="number" min="18" max="100"></label></div>
         </div>
         <section class="mt-5 rounded-lg bg-[#FBF7F1] p-4">
@@ -332,7 +361,7 @@ onMounted(() => { load().catch(() => { errorMessage.value = 'We could not load o
           <p class="mt-2 text-xs font-normal leading-5 text-[#6E4D58]">Used to filter by your distance preference. We retain only an approximate point and postcode area, never your full postcode.</p>
           <p v-if="onboardingLocation.hasLocation" class="mt-2 text-sm font-semibold text-[#52713A]">Location set: {{ onboardingLocation.label }} · {{ onboardingLocation.postcodeArea }}</p>
         </section>
-        <fieldset><legend>Weekly availability</legend><p class="mt-1 text-sm font-normal leading-6 text-[#6E4D58]">Select the days you are generally free, then set the earliest and latest time that usually works. Matches can use this later when suggesting a date.</p><div class="mt-4 grid gap-3"><article v-for="day in availabilityDays" :key="day.weekday" class="availability-day" :class="day.enabled && 'enabled'"><div class="flex items-center justify-between gap-4"><label class="flex items-center gap-3"><input v-model="day.enabled" type="checkbox" class="size-4 accent-[#B4234A]">{{ day.name }}</label><span class="text-xs font-semibold text-[#6E4D58]">{{ day.enabled ? 'Available' : 'Not available' }}</span></div><div v-if="day.enabled" class="mt-4 grid grid-cols-2 gap-3"><label>From<input v-model="day.startTime" required type="time"></label><label>Until<input v-model="day.endTime" required type="time"></label></div></article></div><p class="mt-3 text-sm font-semibold text-[#6E4D58]">{{ selectedAvailabilityCount ? `${selectedAvailabilityCount} ${selectedAvailabilityCount === 1 ? 'day' : 'days'} selected` : 'No regular availability selected yet' }}</p></fieldset>
+        <fieldset><legend>Weekly availability</legend><p class="mt-1 text-sm font-normal leading-6 text-[#6E4D58]">Select the days you are generally free, then set the earliest and latest time that usually works. Matches can use this later when suggesting a date.</p><div class="mt-4 grid gap-3 md:grid-cols-2"><article v-for="day in availabilityDays" :key="day.weekday" class="availability-day" :class="day.enabled && 'enabled'"><div class="flex items-center justify-between gap-4"><label class="flex items-center gap-3"><input v-model="day.enabled" type="checkbox" class="size-4 accent-[#B4234A]">{{ day.name }}</label><span class="text-xs font-semibold text-[#6E4D58]">{{ day.enabled ? 'Available' : 'Not available' }}</span></div><div v-if="day.enabled" class="mt-4 grid grid-cols-2 gap-3"><label>From<input v-model="day.startTime" required type="time"></label><label>Until<input v-model="day.endTime" required type="time"></label></div></article></div><p class="mt-3 text-sm font-semibold text-[#6E4D58]">{{ selectedAvailabilityCount ? `${selectedAvailabilityCount} ${selectedAvailabilityCount === 1 ? 'day' : 'days'} selected` : 'No regular availability selected yet' }}</p></fieldset>
         <label class="check mt-5"><input v-model="preferences.publicOnly" type="checkbox"> Only suggest public places for first meetings</label>
         <div class="actions"><button class="secondary" type="button" @click="step = 3"><ArrowLeft class="size-4" />Back</button><button :disabled="saving || preferences.minimumAge > preferences.maximumAge || Boolean(invalidAvailabilityDay)" class="primary" type="submit">{{ saving ? 'Saving…' : 'Continue' }}<ArrowRight class="size-4" /></button></div>
       </form>
@@ -340,7 +369,7 @@ onMounted(() => { load().catch(() => { errorMessage.value = 'We could not load o
       <form v-else-if="step === 5" class="onboarding-card" @submit.prevent="saveDatingPreferences">
         <div class="step-title"><UsersRound class="size-5 text-[#B4234A]" /><div><h2>Who are you open to meeting?</h2><p>These private preferences shape who appears in your match pool and can be changed later.</p></div></div>
         <fieldset class="meeting-preferences"><legend>Gender preferences</legend><p class="mt-1 text-sm font-normal leading-6 text-[#6E4D58]">Choose everyone, or select one or more types of people you are open to dating.</p><div class="mt-4 grid gap-2 sm:grid-cols-2"><button type="button" class="meeting-choice sm:col-span-2" :class="preferences.openToEveryone && 'selected'" :aria-pressed="preferences.openToEveryone" @click="selectEveryone"><span class="choice-indicator" aria-hidden="true">{{ preferences.openToEveryone ? '✓' : '' }}</span><span>Everyone</span></button><button v-for="option in genderOptions" :key="option" type="button" class="meeting-choice" :class="preferences.genders.includes(option) && 'selected'" :aria-pressed="preferences.genders.includes(option)" @click="toggleGenderPreference(option)"><span class="choice-indicator" aria-hidden="true">{{ preferences.genders.includes(option) ? '✓' : '' }}</span><span>{{ option }}</span></button></div><p class="mt-3 text-xs font-semibold text-[#6E4D58]">{{ preferences.openToEveryone ? 'Everyone selected' : preferences.genders.length ? `${preferences.genders.length} selected` : 'Select at least one option' }}</p></fieldset>
-        <fieldset class="meeting-preferences"><legend>Sexual orientation preferences</legend><p class="mt-1 text-sm font-normal leading-6 text-[#6E4D58]">Choose one or more orientations you are open to dating, separately from gender.</p><div class="mt-4 grid gap-2 sm:grid-cols-2"><button v-for="option in sexualOrientationOptions" :key="option.value" type="button" class="meeting-choice" :class="preferences.orientations.includes(option.value) && 'selected'" :aria-pressed="preferences.orientations.includes(option.value)" @click="toggleOrientationPreference(option.value)"><span class="choice-indicator" aria-hidden="true">{{ preferences.orientations.includes(option.value) ? '✓' : '' }}</span><span>{{ option.label }}</span></button></div><p class="mt-3 text-xs font-semibold text-[#6E4D58]">{{ preferences.orientations.length ? `${preferences.orientations.length} selected` : 'Select at least one orientation' }}</p></fieldset>
+        <fieldset class="meeting-preferences"><legend>Sexual orientation preferences</legend><p class="mt-1 text-sm font-normal leading-6 text-[#6E4D58]">Choose one or more broad orientation groups you are open to dating, separately from gender.</p><div class="mt-4 grid gap-2 sm:grid-cols-3"><button v-for="option in sexualOrientationPreferenceOptions" :key="option.value" type="button" class="meeting-choice" :class="preferences.orientations.includes(option.value) && 'selected'" :aria-pressed="preferences.orientations.includes(option.value)" @click="toggleOrientationPreference(option.value)"><span class="choice-indicator" aria-hidden="true">{{ preferences.orientations.includes(option.value) ? '✓' : '' }}</span><span>{{ option.label }}</span></button></div><p class="mt-3 text-xs font-semibold text-[#6E4D58]">{{ preferences.orientations.length ? `${preferences.orientations.length} selected` : 'Select at least one orientation group' }}</p></fieldset>
         <fieldset class="meeting-preferences"><legend>Racial and ethnic preferences</legend><p class="mt-1 text-sm font-normal leading-6 text-[#6E4D58]">Optional. Choose communities you are interested in dating, or keep your match pool open.</p><div class="mt-4 grid gap-2 sm:grid-cols-2"><button type="button" class="meeting-choice sm:col-span-2" :class="preferences.noRaceEthnicityPreference && 'selected'" :aria-pressed="preferences.noRaceEthnicityPreference" @click="selectNoRacePreference"><span class="choice-indicator" aria-hidden="true">{{ preferences.noRaceEthnicityPreference ? '✓' : '' }}</span><span>No racial or ethnic preference</span></button><button v-for="option in raceEthnicityOptions" :key="option" type="button" class="meeting-choice" :class="preferences.raceEthnicities.includes(option) && 'selected'" :aria-pressed="preferences.raceEthnicities.includes(option)" @click="toggleRaceEthnicity(option)"><span class="choice-indicator" aria-hidden="true">{{ preferences.raceEthnicities.includes(option) ? '✓' : '' }}</span><span>{{ option }}</span></button></div><p class="mt-3 text-xs leading-5 text-[#6E4D58]">Identity is personal and nuanced. These broad options are matching controls only.</p></fieldset>
         <div class="actions"><button class="secondary" type="button" @click="step = 4"><ArrowLeft class="size-4" />Back</button><button :disabled="saving || (!preferences.openToEveryone && !preferences.genders.length) || !preferences.orientations.length" class="primary" type="submit">{{ saving ? 'Saving…' : 'Continue' }}<ArrowRight class="size-4" /></button></div>
       </form>
@@ -375,6 +404,9 @@ input:focus, textarea:focus, select:focus { border-color: #B4234A; box-shadow: 0
 .dob-grid label span { font-size: .75rem; color: #6E4D58; }
 input[type='range'] { margin-top: .8rem; width: 100%; accent-color: #B4234A; }
 .value { float: right; color: #8F1839; }
+.field-with-suffix { position: relative; display: block; }
+.field-with-suffix__input { padding-right: 3rem !important; }
+.field-with-suffix__label { position: absolute; right: .85rem; top: 50%; transform: translateY(-38%); color: #6E4D58; font-size: .875rem; font-weight: 600; pointer-events: none; }
 fieldset { margin-top: 1.5rem; }
 .choices { margin-top: .75rem; display: flex; flex-wrap: wrap; gap: .5rem; }
 .choice { border-radius: 9999px; background: #FBF7F1; padding: .6rem .85rem; color: #4D2F39; font-size: .875rem; font-weight: 600; }

@@ -50,8 +50,15 @@ const timeOfDayGreeting = computed(() => {
   return null
 })
 
-const greeting = computed(() => {
+const greetingFirstName = computed(() => {
   const firstName = user.value?.firstName?.trim()
+  return firstName
+    ? `${firstName.charAt(0).toLocaleUpperCase()}${firstName.slice(1)}`
+    : ''
+})
+
+const greeting = computed(() => {
+  const firstName = greetingFirstName.value
   if (timeOfDayGreeting.value === null) {
     return nighttimeGreetingIndex.value === 0
       ? `Nice to see you tonight${firstName ? `, ${firstName}` : ''}`

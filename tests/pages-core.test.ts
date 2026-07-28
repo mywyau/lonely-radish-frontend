@@ -30,6 +30,7 @@ describe("core page contracts", () => {
     expect(source).toContain("'Good evening'");
     expect(source).toContain("Nice to see you tonight");
     expect(source).toContain("Welcome back, night owl");
+    expect(source).toContain("firstName.charAt(0).toLocaleUpperCase()");
     expect(source).toContain("welcomeMessages");
     expect(source).toContain(
       "A shared interest could be the start of something lovely.",

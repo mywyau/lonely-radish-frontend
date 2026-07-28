@@ -13,12 +13,15 @@ describe('profile details editing', () => {
     expect(page).toContain('Lifestyle and profile details')
     expect(page).toContain("'/api/profile/lifestyle'")
     expect(page).toContain('to="/profile/preview"')
+    expect(page.indexOf('Lifestyle and profile details')).toBeLessThan(page.indexOf('id="profile-bio"'))
   })
 
   it('links from account settings instead of duplicating the lifestyle form', () => {
     const account = readPage('account/v2/index.vue')
     expect(account).toContain('to="/profile/details"')
     expect(account).toContain('About me & lifestyle')
+    expect(account.indexOf('to="/account/controls"')).toBeLessThan(account.indexOf('to="/profile/details"'))
+    expect(account.indexOf('to="/profile/details"')).toBeLessThan(account.indexOf('Discovery readiness'))
     expect(account).not.toContain('function saveLifestyle()')
     expect(account).not.toContain('@submit.prevent="saveLifestyle"')
   })

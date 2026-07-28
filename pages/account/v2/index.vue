@@ -17,6 +17,8 @@ const accountDetailsError = ref('');
 const savingProfileBasics = ref(false);
 const profileBasicsSaved = ref(false);
 const profileBasicsError = ref('');
+const accountDetailsCollapsed = ref(false);
+const contactDetailsCollapsed = ref(false);
 const showDeletePanel = ref(false);
 const showFinalDeleteConfirmation = ref(false);
 const deleteConfirmInput = ref("");
@@ -250,6 +252,15 @@ onMounted(async () => {
           <ArrowRight class="size-5 transition-transform group-hover:translate-x-1" aria-hidden="true" />
         </NuxtLink>
 
+        <NuxtLink to="/profile/details" class="group flex items-center gap-4 rounded-lg bg-white p-5 shadow-[0_12px_28px_rgba(180,35,74,0.08)] transition hover:-translate-y-0.5">
+          <span class="flex size-11 shrink-0 items-center justify-center rounded-full bg-[#FCE3E8] text-[#B4234A]"><UserRound class="size-5" aria-hidden="true" /></span>
+          <span class="min-w-0 flex-1">
+            <strong class="block text-lg font-semibold">About me & lifestyle</strong>
+            <span class="mt-1 block text-sm leading-5 text-[#6E4D58]">Edit your bio and profile details.</span>
+          </span>
+          <ArrowRight class="size-5 shrink-0 text-[#8F1839] transition-transform group-hover:translate-x-1" aria-hidden="true" />
+        </NuxtLink>
+
         <section class="rounded-lg bg-white p-6 shadow-[0_12px_28px_rgba(180,35,74,0.08)]">
           <div v-if="readinessLoading">
             <p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">Discovery readiness</p>
@@ -286,96 +297,116 @@ onMounted(async () => {
 
       <div class="space-y-5">
         <section class="rounded-lg bg-white p-6 shadow-[0_12px_28px_rgba(180,35,74,0.08)]">
-          <div class="flex items-start gap-3">
-            <UserRound class="mt-1 size-5 text-[#B4234A]" aria-hidden="true" />
+          <button
+            type="button"
+            class="flex w-full items-start justify-between gap-4 text-left"
+            :aria-expanded="!accountDetailsCollapsed"
+            aria-controls="account-details-panel"
+            @click="accountDetailsCollapsed = !accountDetailsCollapsed"
+          >
+            <span class="flex items-start gap-3">
+              <UserRound class="mt-1 size-5 shrink-0 text-[#B4234A]" aria-hidden="true" />
+              <span>
+                <span class="block text-xl font-semibold">Account details</span>
+                <span class="mt-1 block text-sm text-[#6E4D58]">
+                  Your private account name and public profile details.
+                </span>
+              </span>
+            </span>
+            <ChevronDown class="mt-1 size-5 shrink-0 text-[#8F1839] transition-transform" :class="!accountDetailsCollapsed && 'rotate-180'" aria-hidden="true" />
+          </button>
+
+          <div id="account-details-panel" v-show="!accountDetailsCollapsed">
+            <p class="mt-5 text-sm text-[#6E4D58]">
+              Your private account name is separate from the profile details shown to other members.
+            </p>
+
+            <form class="mt-6 grid gap-4 sm:grid-cols-2" novalidate @submit.prevent="saveAccountDetails">
+              <label class="block text-sm font-medium">
+                First name
+                <input v-model="profile.firstName" class="field" type="text" :maxlength="accountNameLimit" autocomplete="given-name" required placeholder="Your first name">
+              </label>
+
+              <label class="block text-sm font-medium">
+                Last name
+                <input v-model="profile.lastName" class="field" type="text" :maxlength="accountNameLimit" autocomplete="family-name" required placeholder="Your last name">
+              </label>
+
+              <div class="flex flex-col items-start gap-2 sm:col-span-2 sm:flex-row sm:items-center">
+                <button type="submit" :disabled="savingAccountDetails" class="rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#8F1839] disabled:cursor-not-allowed disabled:opacity-50">
+                  {{ savingAccountDetails ? 'Saving…' : 'Save account details' }}
+                </button>
+                <span v-if="accountDetailsSaved" class="text-sm font-medium text-[#52713A]" role="status">Account details saved.</span>
+              </div>
+              <p v-if="accountDetailsError" class="text-sm font-semibold text-[#8F1839] sm:col-span-2" role="alert">{{ accountDetailsError }}</p>
+            </form>
+
+            <div class="my-7 border-t border-[#E8D8C4]"></div>
             <div>
-              <h2 class="text-xl font-semibold">Account Details</h2>
-              <p class="mt-1 text-sm text-[#6E4D58]">
-                Your private account name is separate from the profile details shown to other members.
-              </p>
+              <h3 class="text-lg font-semibold">Public profile details</h3>
+              <p class="mt-1 text-sm leading-6 text-[#6E4D58]">These details help people understand who they may be meeting.</p>
             </div>
+
+            <form class="mt-5 grid gap-4 sm:grid-cols-2" novalidate @submit.prevent="saveProfileBasics">
+              <label class="block text-sm font-medium sm:col-span-2">
+                Profile name
+                <input v-model="profile.displayName" class="field" type="text" :maxlength="accountNameLimit" autocomplete="nickname" required placeholder="Name shown to other members">
+                <span class="mt-1 block text-xs font-normal text-[#6E4D58]">This is your unique public name. Changing it does not change your private first or last name.</span>
+              </label>
+
+              <label class="block text-sm font-medium sm:col-span-2">
+                Sexual orientation
+                <select v-model="profile.sexualOrientation" class="field" required>
+                  <option value="" disabled>Select an option</option>
+                  <option v-for="option in sexualOrientationOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
+                </select>
+              </label>
+
+              <label class="block text-sm font-medium sm:col-span-2">
+                Racial or ethnic identity
+                <select v-model="profile.raceEthnicity" class="field" required>
+                  <option value="" disabled>Select an option</option>
+                  <option v-for="option in raceEthnicityOptions" :key="option" :value="option">{{ option }}</option>
+                </select>
+              </label>
+
+              <div class="flex flex-col items-start gap-2 sm:col-span-2 sm:flex-row sm:items-center">
+                <button type="submit" :disabled="savingProfileBasics" class="rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#8F1839] disabled:cursor-not-allowed disabled:opacity-50">
+                  {{ savingProfileBasics ? 'Saving…' : 'Save profile' }}
+                </button>
+                <span v-if="profileBasicsSaved" class="text-sm font-medium text-[#52713A]" role="status">Profile saved.</span>
+              </div>
+              <p v-if="profileBasicsError" class="text-sm font-semibold text-[#8F1839] sm:col-span-2" role="alert">{{ profileBasicsError }}</p>
+            </form>
           </div>
-
-          <form class="mt-6 grid gap-4 sm:grid-cols-2" novalidate @submit.prevent="saveAccountDetails">
-            <label class="block text-sm font-medium">
-              First name
-              <input v-model="profile.firstName" class="field" type="text" :maxlength="accountNameLimit" autocomplete="given-name" required placeholder="Your first name">
-            </label>
-
-            <label class="block text-sm font-medium">
-              Last name
-              <input v-model="profile.lastName" class="field" type="text" :maxlength="accountNameLimit" autocomplete="family-name" required placeholder="Your last name">
-            </label>
-
-            <div class="flex flex-col items-start gap-2 sm:col-span-2 sm:flex-row sm:items-center">
-              <button type="submit" :disabled="savingAccountDetails" class="rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#8F1839] disabled:cursor-not-allowed disabled:opacity-50">
-                {{ savingAccountDetails ? 'Saving…' : 'Save account details' }}
-              </button>
-              <span v-if="accountDetailsSaved" class="text-sm font-medium text-[#52713A]" role="status">Account details saved.</span>
-            </div>
-            <p v-if="accountDetailsError" class="text-sm font-semibold text-[#8F1839] sm:col-span-2" role="alert">{{ accountDetailsError }}</p>
-          </form>
-
-          <div class="my-7 border-t border-[#E8D8C4]"></div>
-          <div>
-            <h3 class="text-lg font-semibold">Public profile details</h3>
-            <p class="mt-1 text-sm leading-6 text-[#6E4D58]">These details help people understand who they may be meeting.</p>
-          </div>
-
-          <form class="mt-5 grid gap-4 sm:grid-cols-2" novalidate @submit.prevent="saveProfileBasics">
-            <label class="block text-sm font-medium sm:col-span-2">
-              Profile name
-              <input v-model="profile.displayName" class="field" type="text" :maxlength="accountNameLimit" autocomplete="nickname" required placeholder="Name shown to other members">
-              <span class="mt-1 block text-xs font-normal text-[#6E4D58]">This is your unique public name. Changing it does not change your private first or last name.</span>
-            </label>
-
-            <label class="block text-sm font-medium sm:col-span-2">
-              Sexual orientation
-              <select v-model="profile.sexualOrientation" class="field" required>
-                <option value="" disabled>Select an option</option>
-                <option v-for="option in sexualOrientationOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
-              </select>
-            </label>
-
-            <label class="block text-sm font-medium sm:col-span-2">
-              Racial or ethnic identity
-              <select v-model="profile.raceEthnicity" class="field" required>
-                <option value="" disabled>Select an option</option>
-                <option v-for="option in raceEthnicityOptions" :key="option" :value="option">{{ option }}</option>
-              </select>
-            </label>
-
-            <div class="flex flex-col items-start gap-2 sm:col-span-2 sm:flex-row sm:items-center">
-              <button type="submit" :disabled="savingProfileBasics" class="rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#8F1839] disabled:cursor-not-allowed disabled:opacity-50">
-                {{ savingProfileBasics ? 'Saving…' : 'Save profile' }}
-              </button>
-              <span v-if="profileBasicsSaved" class="text-sm font-medium text-[#52713A]" role="status">Profile saved.</span>
-            </div>
-            <p v-if="profileBasicsError" class="text-sm font-semibold text-[#8F1839] sm:col-span-2" role="alert">{{ profileBasicsError }}</p>
-          </form>
         </section>
 
-        <NuxtLink to="/profile/details" class="group flex items-center gap-4 rounded-lg bg-white p-6 shadow-[0_12px_28px_rgba(180,35,74,0.08)] transition hover:-translate-y-0.5">
-          <span class="flex size-11 shrink-0 items-center justify-center rounded-full bg-[#FCE3E8] text-[#B4234A]"><UserRound class="size-5" aria-hidden="true" /></span>
-          <span class="min-w-0 flex-1">
-            <strong class="block text-xl font-semibold">About me & lifestyle</strong>
-            <span class="mt-1 block text-sm leading-6 text-[#6E4D58]">Edit your bio, height, weight, daily rhythm, drinking and smoking details.</span>
-          </span>
-          <ArrowRight class="size-5 shrink-0 text-[#8F1839] transition-transform group-hover:translate-x-1" aria-hidden="true" />
-        </NuxtLink>
-
         <section class="rounded-lg bg-white p-6 shadow-[0_12px_28px_rgba(180,35,74,0.08)]">
-          <h2 class="text-xl font-semibold">Contact details for matches</h2>
-          <p class="mt-2 text-sm leading-6 text-[#6E4D58]">These details are never shown in discovery and are only available to active matches when sharing is switched on.</p>
-          <p v-if="contactLoadError" class="mt-4 rounded-lg bg-[#FFF1C7] p-3 text-sm font-semibold text-[#694C00]" role="alert">{{ contactLoadError }}</p>
-          <form class="mt-5 grid gap-4 sm:grid-cols-2" novalidate @submit.prevent="saveContactDetails">
-            <label class="text-sm font-medium">Phone number <span class="font-normal text-[#6E4D58]">(optional)</span><input v-model="contact.phoneNumber" class="field" type="tel" :maxlength="phoneNumberLimit" autocomplete="tel" placeholder="+44 7700 900000"></label>
-            <label class="text-sm font-medium">Contact email <span class="font-normal text-[#6E4D58]">(optional)</span><input v-model="contact.contactEmail" class="field" type="email" :maxlength="contactEmailLimit" autocomplete="email" placeholder="you@example.com"></label>
-            <label class="text-sm font-medium sm:col-span-2">Social or contact handle <span class="font-normal text-[#6E4D58]">(optional)</span><input v-model="contact.socialHandle" class="field" type="text" :maxlength="socialHandleLimit" autocomplete="off" placeholder="@yourhandle or preferred contact app"><span class="mt-1 block text-right text-xs font-normal text-[#6E4D58]">{{ contact.socialHandle.length }}/{{ socialHandleLimit }}</span></label>
-            <label class="flex items-start gap-3 rounded-lg bg-[#F3E8DA] p-4 text-sm sm:col-span-2"><input v-model="contact.shareWithMatches" class="mt-1 size-4 accent-[#B4234A]" type="checkbox"><span><strong class="block">Share with active matches</strong><span class="mt-1 block leading-5 text-[#6E4D58]">Access ends if either person unmatches, rejects, or blocks the other.</span></span></label>
-            <div class="flex items-center gap-3 sm:col-span-2"><button type="submit" class="rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white disabled:opacity-50" :disabled="savingContact">{{ savingContact ? 'Saving…' : 'Save contact details' }}</button><span v-if="contactSaved" class="text-sm font-semibold text-[#6E8B52]" role="status">Contact details saved.</span></div>
-            <p v-if="contactError" class="text-sm font-semibold text-[#8F1839] sm:col-span-2" role="alert">{{ contactError }}</p>
-          </form>
+          <button
+            type="button"
+            class="flex w-full items-start justify-between gap-4 text-left"
+            :aria-expanded="!contactDetailsCollapsed"
+            aria-controls="contact-details-panel"
+            @click="contactDetailsCollapsed = !contactDetailsCollapsed"
+          >
+            <span>
+              <span class="block text-xl font-semibold">Contact details for matches</span>
+              <span class="mt-1 block text-sm leading-6 text-[#6E4D58]">Private contact options for active matches.</span>
+            </span>
+            <ChevronDown class="mt-1 size-5 shrink-0 text-[#8F1839] transition-transform" :class="!contactDetailsCollapsed && 'rotate-180'" aria-hidden="true" />
+          </button>
+          <div id="contact-details-panel" v-show="!contactDetailsCollapsed">
+            <p class="mt-5 text-sm leading-6 text-[#6E4D58]">These details are never shown in discovery and are only available to active matches when sharing is switched on.</p>
+            <p v-if="contactLoadError" class="mt-4 rounded-lg bg-[#FFF1C7] p-3 text-sm font-semibold text-[#694C00]" role="alert">{{ contactLoadError }}</p>
+            <form class="mt-5 grid gap-4 sm:grid-cols-2" novalidate @submit.prevent="saveContactDetails">
+              <label class="text-sm font-medium">Phone number <span class="font-normal text-[#6E4D58]">(optional)</span><input v-model="contact.phoneNumber" class="field" type="tel" :maxlength="phoneNumberLimit" autocomplete="tel" placeholder="+44 7700 900000"></label>
+              <label class="text-sm font-medium">Contact email <span class="font-normal text-[#6E4D58]">(optional)</span><input v-model="contact.contactEmail" class="field" type="email" :maxlength="contactEmailLimit" autocomplete="email" placeholder="you@example.com"></label>
+              <label class="text-sm font-medium sm:col-span-2">Social or contact handle <span class="font-normal text-[#6E4D58]">(optional)</span><input v-model="contact.socialHandle" class="field" type="text" :maxlength="socialHandleLimit" autocomplete="off" placeholder="@yourhandle or preferred contact app"><span class="mt-1 block text-right text-xs font-normal text-[#6E4D58]">{{ contact.socialHandle.length }}/{{ socialHandleLimit }}</span></label>
+              <label class="flex items-start gap-3 rounded-lg bg-[#F3E8DA] p-4 text-sm sm:col-span-2"><input v-model="contact.shareWithMatches" class="mt-1 size-4 accent-[#B4234A]" type="checkbox"><span><strong class="block">Share with active matches</strong><span class="mt-1 block leading-5 text-[#6E4D58]">Access ends if either person unmatches, rejects, or blocks the other.</span></span></label>
+              <div class="flex items-center gap-3 sm:col-span-2"><button type="submit" class="rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white disabled:opacity-50" :disabled="savingContact">{{ savingContact ? 'Saving…' : 'Save contact details' }}</button><span v-if="contactSaved" class="text-sm font-semibold text-[#6E8B52]" role="status">Contact details saved.</span></div>
+              <p v-if="contactError" class="text-sm font-semibold text-[#8F1839] sm:col-span-2" role="alert">{{ contactError }}</p>
+            </form>
+          </div>
         </section>
 
         <!-- <section class="grid gap-3 sm:grid-cols-2">

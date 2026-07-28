@@ -71,6 +71,7 @@ describe("auth and billing page contracts", () => {
     const account = readPage("account/v2/index.vue");
     const preferences = readPage("preferences/index.vue");
     const activityPreferences = readPage("preferences/activities.vue");
+    const schedulePreferences = readPage("preferences/schedule.vue");
     const datingPreferences = readPage("preferences/dating.vue");
     const photos = readPage("photos.vue");
     const nav = readFileSync(resolve(process.cwd(), "components/BlankNavBar.vue"), "utf8");
@@ -102,6 +103,8 @@ describe("auth and billing page contracts", () => {
     expect(preferences).toContain('id="maximum-age"');
     expect(preferences).toContain('preferences.minimumAge');
     expect(preferences).toContain('preferences.maximumAge');
+    expect(preferences).toContain('lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]');
+    expect(preferences).toContain('<nav aria-label="Match preference sections"');
     expect(preferences).not.toContain('preferences.neighbourhood');
     expect(preferences).toContain('to="/preferences/activities"');
     expect(preferences).toContain('to="/preferences/interests"');
@@ -113,6 +116,7 @@ describe("auth and billing page contracts", () => {
     expect(activityPreferences).toContain("const selectionLimit = ref(5)");
     expect(activityPreferences).toContain("allow up to 10 activity interests");
     expect(activityPreferences).toContain("add up to 3 of your own activities inside each category");
+    expect(schedulePreferences).toContain('class="mt-6 grid gap-3 md:grid-cols-2"');
     expect(activityPreferences).toContain("!limitReached.value");
     expect(activityPreferences).toContain("Save activity interests");
     expect(activityPreferences.indexOf('Your interests ({{ selected.length }}/{{ selectionLimit }})')).toBeLessThan(activityPreferences.indexOf('allow up to 10 activity interests'));

@@ -71,7 +71,7 @@ onMounted(async () => {
       <form class="mt-8 space-y-5" @submit.prevent="save">
         <section class="rounded-lg bg-white p-5 shadow-[0_12px_28px_rgba(180,35,74,0.08)] sm:p-6">
           <div class="flex items-start justify-between gap-4"><div class="flex items-start gap-3"><CalendarClock class="mt-1 size-5 text-[#B4234A]" /><div><h2 class="text-xl font-semibold">Weekly availability</h2><p class="mt-1 text-sm text-[#6E4D58]">Select a day, then set the earliest and latest time that usually works.</p></div></div><button type="button" class="shrink-0 text-sm font-semibold text-[#8F1839] underline underline-offset-4 disabled:opacity-40" :disabled="!selectedCount" @click="resetAvailability">Reset all</button></div>
-          <div class="mt-6 grid gap-3">
+          <div class="mt-6 grid gap-3 md:grid-cols-2">
             <article v-for="day in days" :key="day.weekday" class="rounded-lg border p-4" :class="day.enabled ? 'border-[#D7A7B3] bg-[#FCE3E8]/40' : 'border-[#E8D8C4] bg-[#FBF7F1]'">
               <div class="flex items-center justify-between gap-4"><label class="flex items-center gap-3 font-semibold"><input v-model="day.enabled" type="checkbox" class="size-4 accent-[#B4234A]">{{ day.name }}</label><span class="text-xs font-semibold text-[#6E4D58]">{{ day.enabled ? 'Available' : 'Not available' }}</span></div>
               <div v-if="day.enabled" class="mt-4 grid grid-cols-2 gap-3">

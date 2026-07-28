@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Heart, Info, UsersRound } from '@lucide/vue'
-import { sexualOrientationOptions } from '~/utils/sexualOrientation'
+import { sexualOrientationPreferenceOptions } from '~/utils/sexualOrientation'
 
 definePageMeta({ title: 'Dating Preferences · Lonely Radish', middleware: 'logged-in' })
 
@@ -43,11 +43,11 @@ onMounted(async () => { Object.assign(preferences, await $fetch('/api/preference
         </section>
 
         <section class="rounded-lg bg-white p-6 shadow-[0_12px_28px_rgba(180,35,74,0.08)]">
-          <div class="flex items-start gap-3"><Heart class="mt-1 size-5 text-[#B4234A]" /><div><h2 class="text-xl font-semibold">Sexual orientation preference</h2><p class="mt-1 text-sm text-[#6E4D58]">Choose one or more orientations you are open to dating, separately from gender.</p></div></div>
-          <div class="mt-5 grid gap-2 sm:grid-cols-2">
-            <button v-for="option in sexualOrientationOptions" :key="option.value" type="button" class="choice" :class="preferences.orientations.includes(option.value) && 'choice-selected'" :aria-pressed="preferences.orientations.includes(option.value)" @click="toggleOrientation(option.value)">{{ option.label }}</button>
+          <div class="flex items-start gap-3"><Heart class="mt-1 size-5 text-[#B4234A]" /><div><h2 class="text-xl font-semibold">Sexual orientation preference</h2><p class="mt-1 text-sm text-[#6E4D58]">Choose one or more broad orientation groups you are open to dating, separately from gender.</p></div></div>
+          <div class="mt-5 grid gap-2 sm:grid-cols-3">
+            <button v-for="option in sexualOrientationPreferenceOptions" :key="option.value" type="button" class="choice" :class="preferences.orientations.includes(option.value) && 'choice-selected'" :aria-pressed="preferences.orientations.includes(option.value)" @click="toggleOrientation(option.value)">{{ option.label }}</button>
           </div>
-          <p class="mt-3 text-xs font-semibold text-[#6E4D58]">{{ preferences.orientations.length ? `${preferences.orientations.length} selected` : 'Select at least one orientation' }}</p>
+          <p class="mt-3 text-xs font-semibold text-[#6E4D58]">{{ preferences.orientations.length ? `${preferences.orientations.length} selected` : 'Select at least one orientation group' }}</p>
         </section>
 
         <section class="rounded-lg bg-white p-6 shadow-[0_12px_28px_rgba(180,35,74,0.08)]">
