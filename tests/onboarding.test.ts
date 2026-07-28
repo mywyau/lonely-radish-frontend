@@ -45,6 +45,14 @@ describe('first-login onboarding', () => {
     expect(page).toContain("'Sound baths'")
     expect(page).toContain("'Walking tours'")
     expect(page).toContain("'Community gardening'")
+    for (const genre of ['Action & adventure games', 'Role-playing games (RPGs)', 'Shooter games',
+      'Strategy games', 'Simulation & management games', 'Cosy & indie games']) {
+      expect(page).toContain(`'${genre}'`)
+      expect(read('pages/preferences/activities.vue')).toContain(`'${genre}'`)
+      expect(read('docs/migrations/20260828_refine_gaming_categories.sql')).toContain(`('${genre}')`)
+    }
+    expect(page).not.toContain("'Board games'")
+    expect(read('pages/preferences/activities.vue')).not.toContain("'Puzzle rooms'")
     expect(page).not.toContain("'Supper clubs'")
     expect(page).not.toContain("'Wellness classes'")
     expect(page).not.toContain("'Relaxed movement'")

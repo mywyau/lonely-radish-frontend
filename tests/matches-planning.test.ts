@@ -66,10 +66,11 @@ describe('matches and date planning dashboard', () => {
   it('shows active and queued matches and confirms removal before notifying the other person', () => {
     expect(read('server/api/matches/index.get.ts')).toContain('limit 25')
     expect(read('pages/matches/index.vue')).toContain('You have {{ additionalMatches }} more')
-    expect(read('pages/matches/index.vue')).toContain("title: 'Queued matches'")
+    expect(read('pages/matches/index.vue')).toContain("title: 'Matches waiting'")
     expect(read('pages/matches/index.vue')).toContain('activateQueuedMatch(match)')
     expect(read('pages/matches/index.vue')).toContain('v-if="showSummaryCounts" class="mt-3 grid')
-    expect(read('pages/matches/index.vue')).toContain('<strong>{{ totalMatches }}</strong>')
+    expect(read('pages/matches/index.vue')).toContain('<strong>{{ activeMatchCount }}/{{ activeMatchLimit }}</strong><span>Matches</span>')
+    expect(read('pages/matches/index.vue')).toContain('<strong>{{ manualMatchCount }}/{{ manualMatchLimit }}</strong><span>Manual matches</span>')
     expect(read('pages/matches/index.vue')).toContain('<strong>{{ interestReceivedCount }}</strong>')
     expect(read('pages/matches/index.vue')).toContain("showSummaryCounts ? 'Hide counts' : 'Show counts'")
     expect(read('pages/matches/index.vue')).toContain('EyeOff v-if="showSummaryCounts"')

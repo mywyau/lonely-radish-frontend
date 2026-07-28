@@ -20,7 +20,7 @@ describe('sent interest feedback and history', () => {
     expect(api).toContain("queued: row.matchStatus === 'queued'")
     const page = read('pages/interests/sent.vue')
     expect(page).toContain("'/api/interests/sent'")
-    expect(page).toContain("interest.queued ? 'Match queued'")
+    expect(page).toContain("interest.queued ? 'Match waiting'")
     expect(page).toContain("interest.matched || interest.queued ? '/matches'")
     expect(page).toContain('DailyInterestCounter')
   })

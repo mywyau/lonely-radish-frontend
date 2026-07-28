@@ -36,6 +36,13 @@ describe("core page contracts", () => {
       "A shared interest could be the start of something lovely.",
     );
     expect(source).toContain("Skip the endless swiping. Say yes to a plan.");
+    expect(source).toContain("How Lonely Radish works");
+    expect(source).toContain("Find people through shared interests");
+    expect(source).toContain("Show interest selectively");
+    expect(source).toContain("Make a real plan together");
+    expect(source).toContain("Shared-interest discovery");
+    expect(source).toContain("In-app date planning");
+    expect(source).toContain("From match to meetup");
     expect(source).toContain("name: 'Theo'");
     expect(source).toContain("photo: '/images/theo-profile-triptych.png'");
     expect(source).not.toContain("name: 'Alex'");
@@ -49,6 +56,10 @@ describe("core page contracts", () => {
     const activities = readPage("activities/index.vue");
     const activityMatches = readPage("activities/[slug].vue");
     const profile = readPage("profiles/[slug].vue");
+    const profileActivityPanel = readFileSync(
+      resolve(process.cwd(), "components/ProfileActivityPanel.vue"),
+      "utf8",
+    );
     const plan = readPage("plans/[slug].vue");
     const matches = readPage("matches/index.vue");
     const nav = readFileSync(
@@ -73,7 +84,7 @@ describe("core page contracts", () => {
       "`${profile.value.name}'s Profile · Lonely Radish`",
     );
     expect(profile).toContain("About me");
-    expect(profile).toContain("Activities I’d enjoy together");
+    expect(profileActivityPanel).toContain("Activities I’d enjoy together");
     expect(profile).toContain("/images/maya-profile-triptych.png");
     expect(profile).toContain("/images/nina-profile-triptych.png");
     expect(profile).toContain("/images/alex-profile-triptych.png");
@@ -84,7 +95,8 @@ describe("core page contracts", () => {
     expect(profile).toContain("'Show interest'");
     expect(profile).toContain("Already matched with ${profile.name}");
     expect(profile).toContain("Unmatched from ${profile.name}");
-    expect(profile).toContain("activitiesFlipped && 'is-flipped'");
+    expect(profile).toContain(':flipped="activitiesFlipped"');
+    expect(profile).toContain("@toggle=\"activitiesFlipped = !activitiesFlipped\"");
     expect(profile).toContain(`profile.relationshipStatus !== 'unmatched'`);
     expect(profile).toContain("Past connection");
     expect(profile).toContain("route.query.connection !== 'past'");
@@ -92,7 +104,7 @@ describe("core page contracts", () => {
       "profile.contactDetails && profile.isMatched && profile.relationshipStatus !== 'unmatched'",
     );
     expect(profile).toContain("profileInterests");
-    expect(profile).toContain(".profile-flip-card:hover");
+    expect(profileActivityPanel).toContain(".profile-flip-card:hover");
     expect(profile).toContain("useDailyInterest()");
     expect(activityMatches).not.toContain("useDailyInterest()");
     expect(activityMatches).toContain(':to="`/profiles/${person.slug}`"');
@@ -122,6 +134,10 @@ describe("core page contracts", () => {
 
   it("provides a private preview of the signed-in users real profile", () => {
     const preview = readPage("profile/preview.vue");
+    const profileActivityPanel = readFileSync(
+      resolve(process.cwd(), "components/ProfileActivityPanel.vue"),
+      "utf8",
+    );
     const nav = readFileSync(
       resolve(process.cwd(), "components/BlankNavBar.vue"),
       "utf8",
@@ -131,22 +147,23 @@ describe("core page contracts", () => {
     expect(preview).toContain("Contact details and private matching");
     expect(preview).toContain("preferences are never included");
     expect(preview).toContain("gallerySlots");
-    expect(preview).toContain('class="min-w-0 max-w-full sm:hidden"');
+    expect(preview).toContain('class="order-1 min-w-0 max-w-full sm:hidden"');
     expect(preview).toContain("Tap to expand");
     expect(preview).toContain("overflow-x-auto overscroll-x-contain");
     expect(preview).toContain('aria-label="Expanded profile photo"');
     expect(preview).toContain("endPhotoSwipe");
-    expect(preview).toContain('class="mt-5 grid gap-5 lg:grid-cols-2"');
-    expect(preview).toContain("Activities I’d enjoy together");
-    expect(preview).toContain("activitiesFlipped && 'is-flipped'");
-    expect(preview).toContain("My personal interests");
-    expect(preview).toContain(".flip-card:hover");
+    expect(preview).toContain("lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]");
+    expect(preview).toContain("profileCardFlipped && 'is-flipped'");
+    expect(profileActivityPanel).toContain("Activities I’d enjoy together");
+    expect(preview).toContain(':flipped="activitiesFlipped"');
+    expect(profileActivityPanel).toContain("My personal interests");
+    expect(profileActivityPanel).toContain(".profile-flip-card:hover");
     expect(preview).toContain("prefers-reduced-motion: reduce");
     expect(preview).toContain(
       "Preview only — these controls are not active here.",
     );
     expect(preview).toContain("Report profile");
-    expect(preview).toContain("visible only to active matches");
+    expect(preview).toContain("Live visibility depends on your Schedule");
     expect(preview).not.toContain(
       "People see your selected interests when they discover you",
     );

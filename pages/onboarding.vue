@@ -30,7 +30,7 @@ const activityGroups = [
   { name: 'Food and drink', options: ['Markets', 'Casual food spots', 'Cooking classes', 'Dessert crawl', 'Picnics', 'Restaurants'] },
   { name: 'Outdoors', options: ['Riverside walks', 'Hikes', 'Parks', 'Cycling', 'Street photography', 'Botanical gardens'] },
   { name: 'Sports', options: ['Park tennis', 'Climbing', 'Running clubs', 'Table tennis', 'Casual football', 'Swimming'] },
-  { name: 'Gaming', options: ['Co-op games', 'Puzzle rooms', 'Party games', 'Strategy games', 'Cosy games', 'Board games'] },
+  { name: 'Gaming', options: ['Action & adventure games', 'Role-playing games (RPGs)', 'Shooter games', 'Strategy games', 'Simulation & management games', 'Cosy & indie games'] },
   { name: 'Learning', options: ['Workshops', 'Talks', 'Language exchange', 'Bookshops', 'Craft classes', 'Trivia nights'] },
   { name: 'Wellness', options: ['Yoga', 'Saunas', 'Meditation', 'Spa days', 'Pilates classes', 'Tai chi', 'Sound baths'] },
   { name: 'Nightlife', options: ['Bars', 'Cocktails', 'Live DJs', 'Dancing', 'Late-night food', 'Pub quizzes', 'Evening events'] },

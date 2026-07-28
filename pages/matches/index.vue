@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { BadgePercent, Bell, CalendarCheck, CalendarDays, ChevronRight, Clock3, Eye, EyeOff, HeartHandshake, MapPin, Sparkles, UsersRound, X } from '@lucide/vue'
+import { BadgePercent, Bell, CalendarCheck, CalendarDays, CheckCheck, ChevronDown, ChevronRight, Clock3, Eye, EyeOff, HeartHandshake, History, MapPin, ShieldCheck, Sparkles, UsersRound, X } from '@lucide/vue'
 
 definePageMeta({ title: 'Matches & Plans · Lonely Radish', middleware: 'logged-in' })
 
@@ -20,8 +20,12 @@ const matches = ref<MatchCard[]>([])
 const totalMatches = ref(0)
 const activeMatchLimit = ref(3)
 const activeMatchCount = ref(0)
+const manualMatchLimit = ref(1)
+const manualMatchCount = ref(0)
 const interestReceivedCount = ref(0)
 const notifications = ref<MatchNotification[]>([])
+const showAllMatchUpdates = ref(false)
+const markingAllUpdatesSeen = ref(false)
 const pendingReject = ref<MatchCard | null>(null)
 const rejecting = ref(false)
 const rejectError = ref('')
@@ -39,7 +43,7 @@ const previewMatch: MatchCard = {
 }
 
 const sectionDefinitions = [
-  { key: 'queued', title: 'Queued matches', description: 'You matched, but planning waits until both people have an available match space.', icon: Clock3, tone: 'bg-[#FFF1C7]' },
+  { key: 'queued', title: 'Matches waiting', description: 'You matched, but planning waits until both people have an available match space.', icon: Clock3, tone: 'bg-[#FFF1C7]' },
   { key: 'fresh', title: 'New matches', description: 'You both want to meet. Choose a date idea and start making a plan.', icon: HeartHandshake, tone: 'bg-[#FCE3E8]' },
   { key: 'planning', title: 'Planning', description: 'A proposal is in progress and needs a response or another detail.', icon: Clock3, tone: 'bg-[#F3E8DA]' },
   { key: 'confirmed', title: 'Confirmed dates', description: 'The activity, time, and public venue have been agreed.', icon: CalendarCheck, tone: 'bg-[#EAF2DE]' },
@@ -53,6 +57,18 @@ const counts = computed(() => ({ fresh: matches.value.filter(match => match.stag
   confirmed: matches.value.filter(match => match.stage === 'confirmed').length,
   queued: matches.value.filter(match => match.stage === 'queued').length }))
 const additionalMatches = computed(() => Math.max(0, totalMatches.value - matches.value.length))
+const visibleNotifications = computed(() => showAllMatchUpdates.value ? notifications.value : notifications.value.slice(0, 4))
+const hiddenNotificationCount = computed(() => Math.max(0, notifications.value.length - visibleNotifications.value.length))
+const notificationGroups = computed(() => {
+  const groups: Array<{ label: string; notifications: MatchNotification[] }> = []
+  for (const notification of visibleNotifications.value) {
+    const label = notificationDayLabel(notification.createdAt)
+    const current = groups.at(-1)
+    if (current?.label === label) current.notifications.push(notification)
+    else groups.push({ label, notifications: [notification] })
+  }
+  return groups
+})
 
 function actionLabel(match: MatchCard) {
   if (match.stage === 'queued') return 'Activate match'
@@ -65,7 +81,7 @@ function actionLabel(match: MatchCard) {
   return match.needsResponse ? 'Review proposal' : 'Edit proposal'
 }
 function statusLabel(match: MatchCard) {
-  if (match.stage === 'queued') return 'Queued'
+  if (match.stage === 'queued') return 'Waiting for space'
   if (match.yourMove) return 'Your move'
   if (match.stage === 'fresh') return 'Ready to plan'
   if (match.stage === 'planning') {
@@ -84,6 +100,7 @@ async function activateQueuedMatch(match: MatchCard) {
     await $fetch(`/api/matches/${match.id}/activate`, { method: 'POST' })
     match.stage = 'fresh'
     activeMatchCount.value += 1
+    if (match.yourMove) manualMatchCount.value += 1
   } catch (error: any) {
     activationError[match.id] = error?.data?.statusMessage || 'This match could not be activated yet.'
   } finally { activatingMatch.value = null }
@@ -91,6 +108,13 @@ async function activateQueuedMatch(match: MatchCard) {
 function notificationCopy(notification: MatchNotification) {
   const actor = notification.actorName || 'Your date'
   const copy: Record<string, string> = {
+    interest_received: `${notification.actorName || 'Someone new'} showed interest in meeting you.`,
+    new_match: `You and ${notification.actorName || 'someone new'} matched. You can start planning when you’re ready.`,
+    proposal_received: `${actor} sent you a date plan to review.`,
+    proposal_updated: `${actor} changed the details of your date plan.`,
+    date_confirmed: `Your date with ${actor} is confirmed.`,
+    proposal_declined: `${actor} declined the proposed date plan.`,
+    follow_up_ready: `${actor} completed their private post-date check-in.`,
     date_follow_up_closed: 'A post-date check-in is complete. The connection has now closed.',
     date_follow_up_changed: `${actor} changed their answer and would like to meet again.`,
     match_ended: `${notification.actorName || 'Someone'} ended your match.`,
@@ -101,13 +125,60 @@ function notificationCopy(notification: MatchNotification) {
     date_cancelled: `${actor} cancelled your date. You remain matched.`,
     match_apology: `${actor} sent you an apology through Past connections.`,
     match_contact: `${actor} sent you a private message through Past connections. No response is required.`,
-    match_queued: `You matched with ${actor}, and the match is waiting in your queue.`,
+    match_queued: `You matched with ${actor}. Planning can begin when you both have an available match space.`,
+    date_outcome_needed: 'Your private attendance check is ready after your date.',
+    no_show_reported: 'A date was reported as a no-show. Please review it within 48 hours.',
+    no_show_disputed: 'Your no-show report was disputed and will not trigger an automatic restriction.',
+    no_show_warning: 'A no-show was confirmed. Please cancel or reschedule plans you cannot attend.',
+    discovery_restricted: 'New discovery has been temporarily paused after repeated confirmed no-shows.',
+    moderation_warning: 'Your account received a community standards warning.',
+    account_suspended: 'Your account was suspended. Review your account for more information.',
+    account_restored: 'Your account access has been restored.',
   }
-  return copy[notification.kind] || 'You have a new match or date-plan update.'
+  return copy[notification.kind] || 'There is a new update to one of your matches or date plans.'
+}
+function notificationCategory(kind: string) {
+  if (kind === 'interest_received') return 'New interest'
+  if (['new_match','match_queued'].includes(kind)) return 'Match'
+  if (['proposal_received','proposal_updated','proposal_declined','date_confirmed'].includes(kind)) return 'Date plan'
+  if (['date_reminder_24h','date_reminder_2h','date_attendance_confirmed','date_reschedule_requested','date_cancelled'].includes(kind)) return 'Date reminder'
+  if (['follow_up_ready','date_follow_up_closed','date_follow_up_changed','date_outcome_needed'].includes(kind)) return 'Follow-up'
+  if (['match_ended','match_apology','match_contact'].includes(kind)) return 'Connection'
+  if (['no_show_reported','no_show_disputed','no_show_warning','discovery_restricted','moderation_warning','account_suspended','account_restored'].includes(kind)) return 'Safety'
+  return 'Update'
+}
+function notificationIcon(kind: string) {
+  if (['new_match','match_queued','interest_received','match_apology','match_contact'].includes(kind)) return HeartHandshake
+  if (['date_confirmed','date_attendance_confirmed'].includes(kind)) return CalendarCheck
+  if (['date_reminder_24h','date_reminder_2h','proposal_received','proposal_updated','proposal_declined','date_reschedule_requested','date_cancelled'].includes(kind)) return CalendarDays
+  if (['no_show_reported','no_show_disputed','no_show_warning','discovery_restricted','moderation_warning','account_suspended','account_restored'].includes(kind)) return ShieldCheck
+  return Bell
+}
+function notificationTone(kind: string) {
+  if (['date_confirmed','date_attendance_confirmed','account_restored'].includes(kind)) return 'update-icon-success'
+  if (['date_reminder_2h','date_reschedule_requested','date_cancelled','match_ended','no_show_reported','moderation_warning','account_suspended'].includes(kind)) return 'update-icon-alert'
+  if (['proposal_received','proposal_updated','proposal_declined','date_reminder_24h'].includes(kind)) return 'update-icon-plan'
+  return 'update-icon-match'
+}
+function notificationDayLabel(createdAt: string) {
+  const date = new Date(createdAt)
+  const today = new Date()
+  const startToday = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+  const startDate = new Date(date.getFullYear(), date.getMonth(), date.getDate())
+  const daysAgo = Math.round((startToday.getTime() - startDate.getTime()) / 86_400_000)
+  if (daysAgo === 0) return 'Today'
+  if (daysAgo === 1) return 'Yesterday'
+  return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: date.getFullYear() === today.getFullYear() ? undefined : 'numeric' })
+}
+function notificationTime(createdAt: string) {
+  return new Date(createdAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
 }
 function notificationUrl(notification: MatchNotification) {
+  if (notification.kind === 'interest_received') return '/interests/received'
+  if (notification.kind === 'account_suspended') return '/account/suspended'
+  if (['moderation_warning','account_restored'].includes(notification.kind)) return '/account/v2'
   if (['match_apology','match_contact'].includes(notification.kind)) return '/matches/past'
-  return notification.proposalId && ['follow_up_ready','date_follow_up_closed','date_follow_up_changed'].includes(notification.kind)
+  return notification.proposalId && ['follow_up_ready','date_follow_up_closed','date_follow_up_changed','date_outcome_needed','no_show_reported','no_show_disputed','no_show_warning','discovery_restricted'].includes(notification.kind)
     ? `/dates/${notification.proposalId}/follow-up` : '/matches'
 }
 function planUrl(match: MatchCard) {
@@ -141,10 +212,12 @@ function toggleSummaryCounts() {
 
 async function loadMatches() {
   if (import.meta.dev) previewRejected.value = Boolean(window.localStorage.getItem('lonely-radish-preview-rejected-match'))
-  const result = await $fetch<{ matches: MatchCard[]; totalMatches: number; activeMatchCount: number; interestReceivedCount: number; activeMatchLimit: number }>('/api/matches')
+  const result = await $fetch<{ matches: MatchCard[]; totalMatches: number; activeMatchCount: number; manualMatchCount: number; manualMatchLimit: number; interestReceivedCount: number; activeMatchLimit: number }>('/api/matches')
   matches.value = result.matches
   totalMatches.value = result.totalMatches
   activeMatchCount.value = result.activeMatchCount
+  manualMatchCount.value = result.manualMatchCount
+  manualMatchLimit.value = result.manualMatchLimit
   interestReceivedCount.value = result.interestReceivedCount
   activeMatchLimit.value = result.activeMatchLimit
   if (import.meta.dev && !previewRejected.value) {
@@ -158,6 +231,17 @@ async function loadNotifications() {
 async function dismissNotification(id: string) {
   await $fetch(`/api/notifications/${id}/read`, { method: 'POST' })
   notifications.value = notifications.value.filter(notification => notification.id !== id)
+}
+async function markAllUpdatesSeen() {
+  if (markingAllUpdatesSeen.value) return
+  markingAllUpdatesSeen.value = true
+  try {
+    await $fetch('/api/notifications/read-all', { method: 'POST' })
+    notifications.value = []
+    showAllMatchUpdates.value = false
+  } catch (error: any) {
+    errorMessage.value = error?.data?.statusMessage || 'Your updates could not be marked as seen.'
+  } finally { markingAllUpdatesSeen.value = false }
 }
 async function rejectMatch() {
   if (!pendingReject.value) return
@@ -194,23 +278,63 @@ onMounted(async () => {
 
       <div class="mt-6 flex justify-end"><button type="button" class="inline-flex items-center gap-1.5 text-sm font-semibold text-[#8F1839] hover:underline" :aria-pressed="!showSummaryCounts" @click="toggleSummaryCounts"><EyeOff v-if="showSummaryCounts" class="size-4" aria-hidden="true" /><Eye v-else class="size-4" aria-hidden="true" />{{ showSummaryCounts ? 'Hide counts' : 'Show counts' }}</button></div>
       <div v-if="showSummaryCounts" class="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-6 sm:gap-4">
-        <NuxtLink to="/interests/received" class="summary-card summary-interested col-span-2 sm:col-span-1"><HeartHandshake class="summary-icon" /><strong>{{ interestReceivedCount }}</strong><span>People interested in you</span></NuxtLink>
-        <div class="summary-card summary-total"><UsersRound class="summary-icon" /><strong>{{ totalMatches }}</strong><span>Total matches</span></div>
-        <div class="summary-card bg-[#FFF1C7]"><Clock3 class="summary-icon" /><strong>{{ counts.queued }}</strong><span>Queued</span></div>
+        <NuxtLink to="/interests/received" class="summary-card summary-interested col-span-2 sm:col-span-1"><HeartHandshake class="summary-icon" /><strong>{{ interestReceivedCount }}</strong><span>Interested</span></NuxtLink>
+        <div class="summary-card summary-total"><UsersRound class="summary-icon" /><strong>{{ activeMatchCount }}/{{ activeMatchLimit }}</strong><span>Matches</span></div>
+        <div class="summary-card summary-manual"><HeartHandshake class="summary-icon" /><strong>{{ manualMatchCount }}/{{ manualMatchLimit }}</strong><span>Manual matches</span></div>
         <div class="summary-card summary-new"><Sparkles class="summary-icon" /><strong>{{ counts.fresh }}</strong><span>New</span></div>
         <div class="summary-card summary-planning"><Clock3 class="summary-icon" /><strong>{{ counts.planning }}</strong><span>Planning</span></div>
         <div class="summary-card summary-confirmed"><CalendarCheck class="summary-icon" /><strong>{{ counts.confirmed }}</strong><span>Confirmed</span></div>
       </div>
       <p v-if="showSummaryCounts" class="mt-3 text-center text-xs text-[#6E4D58]">Your plan allows up to {{ activeMatchLimit }} active matches across matching, planning, and confirmed dates.<span v-if="activeMatchLimit === 3"> <NuxtLink to="/upgrade" class="font-semibold text-[#8F1839] hover:underline">Paid plans allow 5.</NuxtLink></span></p>
 
-      <div v-if="notifications.length" class="mt-6 grid gap-2">
-        <div v-for="notification in notifications" :key="notification.id" class="flex items-start gap-3 rounded-lg bg-white p-4 text-sm shadow-[0_8px_20px_rgba(180,35,74,0.07)]">
-          <Bell class="mt-0.5 size-4 shrink-0 text-[#B4234A]" />
-          <p class="min-w-0 flex-1 text-[#4D2F39]">{{ notificationCopy(notification) }}</p>
-          <NuxtLink v-if="notification.kind !== 'match_ended'" :to="notificationUrl(notification)" class="shrink-0 font-semibold text-[#8F1839]">Review</NuxtLink>
-          <button type="button" class="shrink-0 text-[#6E4D58]" aria-label="Dismiss notification" @click="dismissNotification(notification.id)"><X class="size-4" /></button>
+      <section v-if="notifications.length" class="updates-panel mt-7" aria-labelledby="match-updates-title">
+        <div class="flex flex-col gap-4 border-b border-[#E8D8C4] px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+          <div class="flex items-start gap-3">
+            <span class="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#FCE3E8] text-[#B4234A]"><Bell class="size-4.5" aria-hidden="true" /></span>
+            <div>
+              <div class="flex flex-wrap items-center gap-2"><h2 id="match-updates-title" class="font-semibold">Recent updates</h2><span class="rounded-full bg-[#B4234A] px-2 py-0.5 text-[10px] font-extrabold text-white">{{ notifications.length }}</span></div>
+              <p class="mt-1 text-xs text-[#6E4D58]">Newest first. Showing the updates that still need your attention.</p>
+            </div>
+          </div>
+          <div class="flex flex-wrap items-center gap-3 text-xs font-semibold">
+            <button type="button" class="inline-flex items-center gap-1.5 text-[#6E4D58] hover:text-[#8F1839]" :disabled="markingAllUpdatesSeen" @click="markAllUpdatesSeen"><CheckCheck class="size-4" />{{ markingAllUpdatesSeen ? 'Marking…' : 'Mark all seen' }}</button>
+            <NuxtLink to="/notifications" class="inline-flex items-center gap-1.5 text-[#8F1839] hover:underline"><History class="size-4" />Full history</NuxtLink>
+          </div>
         </div>
-      </div>
+
+        <div class="px-4 py-2 sm:px-5">
+          <section v-for="group in notificationGroups" :key="group.label" class="update-group">
+            <h3 class="update-day">{{ group.label }}</h3>
+            <ol class="update-timeline">
+              <li v-for="notification in group.notifications" :key="notification.id" class="update-item">
+                <span class="update-icon" :class="notificationTone(notification.kind)">
+                  <component :is="notificationIcon(notification.kind)" class="size-4" aria-hidden="true" />
+                </span>
+                <div class="min-w-0 flex-1 pb-4">
+                  <div class="flex items-start justify-between gap-3">
+                    <div class="min-w-0">
+                      <p class="text-[10px] font-extrabold uppercase tracking-wider text-[#8F1839]">{{ notificationCategory(notification.kind) }}</p>
+                      <p class="mt-1 text-sm leading-6 text-[#4D2F39]">{{ notificationCopy(notification) }}</p>
+                    </div>
+                    <time :datetime="notification.createdAt" class="shrink-0 text-[11px] font-semibold text-[#8A6A74]">{{ notificationTime(notification.createdAt) }}</time>
+                  </div>
+                  <div class="mt-2 flex flex-wrap items-center gap-3 text-xs">
+                    <NuxtLink v-if="notification.kind !== 'match_ended'" :to="notificationUrl(notification)" class="font-bold text-[#8F1839]" @click="dismissNotification(notification.id)">Review update</NuxtLink>
+                    <button type="button" class="inline-flex items-center gap-1 text-[#6E4D58] hover:text-[#8F1839]" :aria-label="`Mark ${notificationCategory(notification.kind).toLowerCase()} update as seen`" @click="dismissNotification(notification.id)"><X class="size-3.5" />Mark seen</button>
+                  </div>
+                </div>
+              </li>
+            </ol>
+          </section>
+        </div>
+
+        <button v-if="hiddenNotificationCount" type="button" class="flex w-full items-center justify-center gap-1.5 border-t border-[#E8D8C4] px-4 py-3 text-xs font-bold text-[#8F1839]" @click="showAllMatchUpdates = true">
+          Show {{ hiddenNotificationCount }} older {{ hiddenNotificationCount === 1 ? 'update' : 'updates' }} <ChevronDown class="size-4" />
+        </button>
+        <button v-else-if="showAllMatchUpdates && notifications.length > 4" type="button" class="flex w-full items-center justify-center gap-1.5 border-t border-[#E8D8C4] px-4 py-3 text-xs font-bold text-[#8F1839]" @click="showAllMatchUpdates = false">
+          Show recent only <ChevronDown class="size-4 rotate-180" />
+        </button>
+      </section>
 
       <p v-if="additionalMatches" class="mt-6 rounded-lg bg-[#FFF1C7] px-4 py-3 text-sm font-semibold text-[#694C00]">You have {{ additionalMatches }} more {{ additionalMatches === 1 ? 'match' : 'matches' }} waiting. Finish planning or remove a match to see who is next.</p>
 
@@ -286,7 +410,19 @@ onMounted(async () => {
 .summary-card span { color: #6E4D58; font-size: .75rem; font-weight: 650; }
 .summary-interested { background: #FCE3E8; }
 .summary-total { background: #F3E8DA; }
+.summary-manual { background: #F8E8EE; }
 .summary-new { background: #FFF1C7; }
 .summary-planning { background: #E8E4F4; }
 .summary-confirmed { background: #EAF2DE; }
+.updates-panel { overflow: hidden; border: 1px solid rgba(180,35,74,.12); border-radius: .75rem; background: rgba(255,255,255,.78); box-shadow: 0 10px 26px rgba(180,35,74,.07); }
+.update-group + .update-group { border-top: 1px solid #E8D8C4; }
+.update-day { padding: .8rem 0 .45rem; color: #6E4D58; font-size: .68rem; font-weight: 850; letter-spacing: .08em; text-transform: uppercase; }
+.update-timeline { position: relative; }
+.update-timeline::before { position: absolute; bottom: 1.4rem; left: 1rem; top: 1.2rem; width: 1px; background: #E4D4C3; content: ''; }
+.update-item { position: relative; display: flex; gap: .8rem; }
+.update-icon { z-index: 1; display: inline-flex; height: 2rem; width: 2rem; flex-shrink: 0; align-items: center; justify-content: center; border: 3px solid rgba(255,255,255,.95); border-radius: 999px; }
+.update-icon-match { background: #FCE3E8; color: #B4234A; }
+.update-icon-plan { background: #FFF1C7; color: #806000; }
+.update-icon-success { background: #EAF2DE; color: #52713A; }
+.update-icon-alert { background: #F3E8DA; color: #8F1839; }
 </style>

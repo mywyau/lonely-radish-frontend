@@ -10,9 +10,9 @@ const activityName = computed(() => discoveryCategory(slug.value)?.name || 'This
 const activityExists = computed(() => Boolean(discoveryCategory(slug.value)))
 
 const fallbackPeople = [
-  { slug: 'maya', name: 'Maya', age: 31, place: 'London', detail: 'Design books, Sunday markets, and finding small exhibitions.', activityTags: ['Markets', 'Gallery walks'], reason: 'Selected interests', tone: 'bg-[#FCE3E8]' },
-  { slug: 'nina', name: 'Nina', age: 29, place: 'London', detail: 'City walks, independent venues, and relaxed food spots.', activityTags: ['Casual food spots', 'Markets'], reason: 'Selected interests', tone: 'bg-[#EAF2DE]' },
-  { slug: 'alex', name: 'Alex', age: 34, place: 'London', detail: 'Trying something new, good conversation, and low-key first plans.', activityTags: ['Board games', 'Climbing'], reason: 'Selected interests', tone: 'bg-[#F3E8DA]' },
+  { slug: 'maya', name: 'Maya', age: 31, place: 'London', matchedActivityTags: ['Gallery walks'], otherActivityTags: ['Markets', 'Live music'], tone: 'bg-[#FCE3E8]' },
+  { slug: 'nina', name: 'Nina', age: 29, place: 'London', matchedActivityTags: ['Indie films'], otherActivityTags: ['City walks', 'Casual food spots'], tone: 'bg-[#EAF2DE]' },
+  { slug: 'alex', name: 'Alex', age: 34, place: 'London', matchedActivityTags: ['Book markets'], otherActivityTags: ['Board games', 'Climbing'], tone: 'bg-[#F3E8DA]' },
 ]
 const databasePeople = ref<any[]>([])
 const candidatesLoaded = ref(false)
@@ -20,13 +20,13 @@ const candidatesError = ref('')
 const nextCursor = ref<string | null>(null)
 const hasMore = ref(false)
 const loadingMore = ref(false)
-const appliedFilters = ref<{ minimumAge: number; maximumAge: number; distance: number; genderLabel: string; orientationLabel: string; racialPreferencesApplied: boolean } | null>(null)
+const appliedFilters = ref<{ minimumAge: number; maximumAge: number; distance: number; genderLabel: string; orientationLabel: string; racialPreferencesApplied: boolean; searchLocation: string | null } | null>(null)
 
 async function loadCandidates(loadMore = false) {
   if (loadMore) loadingMore.value = true
   candidatesError.value = ''
   try {
-    const result = await $fetch<{ people: any[]; nextCursor: string | null; hasMore: boolean; filters: { minimumAge: number; maximumAge: number; distance: number; genderLabel: string; orientationLabel: string; racialPreferencesApplied: boolean } }>(`/api/activities/${slug.value}/people`, {
+    const result = await $fetch<{ people: any[]; nextCursor: string | null; hasMore: boolean; filters: { minimumAge: number; maximumAge: number; distance: number; genderLabel: string; orientationLabel: string; racialPreferencesApplied: boolean; searchLocation: string | null } }>(`/api/activities/${slug.value}/people`, {
       query: loadMore && nextCursor.value ? { cursor: nextCursor.value } : undefined,
     })
     databasePeople.value = loadMore ? [...databasePeople.value, ...result.people] : result.people
@@ -64,6 +64,8 @@ onMounted(async () => {
       <section v-if="appliedFilters" class="mt-5 rounded-lg border border-[#E8D8C4] bg-white p-4 shadow-[0_8px_20px_rgba(180,35,74,0.05)]" aria-label="Applied discovery filters">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div class="flex flex-wrap gap-2 text-xs font-semibold text-[#4D2F39]">
+            <span class="inline-flex items-center gap-1.5 rounded-full bg-[#EAF2DE] px-3 py-2"><MapPin class="size-3.5" />{{ appliedFilters.searchLocation ? `Using ${appliedFilters.searchLocation}` : 'Location not set' }}</span>
+            <span class="rounded-full bg-[#EAF2DE] px-3 py-2">Within {{ appliedFilters.distance }} km</span>
             <span class="rounded-full bg-[#F3E8DA] px-3 py-2">Ages {{ appliedFilters.minimumAge }}–{{ appliedFilters.maximumAge }}</span>
             <span class="rounded-full bg-[#FCE3E8] px-3 py-2">{{ appliedFilters.genderLabel }}</span>
             <span class="rounded-full bg-[#FCE3E8] px-3 py-2">{{ appliedFilters.orientationLabel }}</span>
@@ -94,7 +96,16 @@ onMounted(async () => {
                   <span class="hidden items-center gap-1 text-xs font-semibold text-[#6E4D58] sm:inline-flex"><MapPin class="size-3.5" />{{ person.place }}</span>
                 </div>
                 <p class="mt-1 inline-flex items-center gap-1 text-sm text-[#6E4D58] sm:hidden"><MapPin class="size-3.5" />{{ person.place }}</p>
-                <p v-if="person.activityTags?.length" class="mt-3 line-clamp-2 text-sm leading-6 text-[#4D2F39]">{{ person.activityTags.slice(0, 3).join(', ') }}</p>
+                <div v-if="person.matchedActivityTags?.length" class="mt-3">
+                  <p class="text-[10px] font-extrabold uppercase tracking-wider text-[#8F1839]">Interested in {{ activityName }}</p>
+                  <div class="mt-1.5 flex flex-wrap gap-1.5"><span v-for="activity in person.matchedActivityTags" :key="`matched-${activity}`"
+                    class="rounded-full bg-white/85 px-2.5 py-1.5 text-xs font-bold text-[#8F1839]">{{ activity }}</span></div>
+                </div>
+                <div v-if="person.otherActivityTags?.length" class="mt-3">
+                  <p class="text-[10px] font-extrabold uppercase tracking-wider text-[#6E4D58]">Also interested in</p>
+                  <div class="mt-1.5 flex flex-wrap gap-1.5"><span v-for="activity in person.otherActivityTags" :key="`other-${activity}`"
+                    class="rounded-full border border-white/70 bg-white/45 px-2.5 py-1.5 text-xs font-semibold text-[#4D2F39]">{{ activity }}</span></div>
+                </div>
               </div>
             </div>
           </NuxtLink>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { CalendarDays, ChevronLeft, ChevronRight, Expand, Eye, HeartHandshake, ImagePlus, MapPin, ShieldCheck, UserRound, X } from '@lucide/vue';
+import { CalendarDays, ChevronDown, ChevronLeft, ChevronRight, Expand, Eye, HeartHandshake, ImagePlus, MapPin, RefreshCw, ShieldCheck, UserRound, X } from '@lucide/vue';
 import { profileDetails } from '~/utils/profileDetails';
 
 definePageMeta({ title: 'Profile Preview · Lonely Radish', middleware: 'logged-in' })
@@ -17,6 +17,9 @@ const loading = ref(true)
 const errorMessage = ref('')
 const data = ref<PreviewData | null>(null)
 const activitiesFlipped = ref(false)
+const profileCardFlipped = ref(false)
+const profileDetailsCollapsed = ref(true)
+const bioExpanded = ref(false)
 const activePhotoIndex = ref(0)
 const photoViewerOpen = ref(false)
 const photoSwipeStartX = ref<number | null>(null)
@@ -39,9 +42,14 @@ const gallerySlots = computed(() => [
   ...Array.from({ length: Math.max(0, 6 - galleryPhotos.value.length) }, (_, index) => ({ id: `empty-${index}`, url: '', empty: true, position: galleryPhotos.value.length + index + 1 })),
 ])
 const activePhoto = computed(() => galleryPhotos.value[activePhotoIndex.value] || null)
+const bioNeedsExpansion = computed(() => (data.value?.profile?.bio?.length || 0) > 420)
 
 function selectPhoto(index: number) {
   activePhotoIndex.value = index
+}
+function openPhoto(index: number) {
+  activePhotoIndex.value = index
+  photoViewerOpen.value = true
 }
 function changePhoto(direction: -1 | 1) {
   const count = galleryPhotos.value.length
@@ -97,113 +105,148 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleGalleryKeydown
       <p v-else-if="errorMessage" class="rounded-lg bg-[#FCE3E8] p-5 text-sm font-semibold text-[#8F1839]" role="alert">
         {{ errorMessage }}</p>
       <template v-else-if="data?.profile">
-        <div class="grid gap-5 lg:grid-cols-[1.05fr_.95fr] lg:items-start">
-          <section v-if="activePhoto" aria-label="Your profile photos" class="min-w-0 max-w-full sm:hidden">
-            <button type="button" class="profile-photo relative block aspect-[4/3] w-full max-w-full overflow-hidden rounded-lg"
-              :aria-label="`Expand ${activePhoto.altText || 'your profile photo'}`" @click="photoViewerOpen = true">
-              <img :src="activePhoto.url" :alt="activePhoto.altText || `Your profile photo ${activePhotoIndex + 1}`"
-                class="h-full w-full object-cover">
-              <span class="absolute bottom-3 right-3 inline-flex items-center gap-1.5 rounded-full bg-[#2A1520]/80 px-3 py-2 text-xs font-semibold text-white">
-                <Expand class="size-3.5" aria-hidden="true" />Tap to expand
-              </span>
-              <span class="absolute left-3 top-3 rounded-full bg-[#2A1520]/75 px-2.5 py-1 text-xs font-semibold text-white">{{ activePhotoIndex + 1 }} / {{ galleryPhotos.length }}</span>
-            </button>
-            <div v-if="galleryPhotos.length > 1" class="mt-2 flex min-w-0 max-w-full gap-2 overflow-x-auto overscroll-x-contain pb-1" aria-label="Choose a profile photo">
-              <button v-for="(photo, index) in galleryPhotos" :key="`${photo.id}-mobile`" type="button"
-                class="profile-photo size-16 shrink-0 overflow-hidden rounded-lg border-2"
-                :class="index === activePhotoIndex ? 'border-[#B4234A]' : 'border-transparent opacity-70'"
-                :aria-label="`View profile photo ${index + 1}`" :aria-pressed="index === activePhotoIndex"
-                @click="selectPhoto(index)">
-                <img :src="photo.url" alt="" class="h-full w-full object-cover">
+        <div class="flex min-w-0 flex-col gap-5 lg:grid lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:items-start">
+          <div class="contents lg:block lg:space-y-5">
+            <section v-if="activePhoto" aria-label="Your profile photos" class="order-1 min-w-0 max-w-full sm:hidden">
+              <button type="button"
+                class="profile-photo relative block aspect-[4/3] w-full max-w-full overflow-hidden rounded-lg"
+                :aria-label="`Expand ${activePhoto.altText || 'your profile photo'}`"
+                @click="openPhoto(activePhotoIndex)">
+                <img :src="activePhoto.url" :alt="activePhoto.altText || `Your profile photo ${activePhotoIndex + 1}`"
+                  class="h-full w-full object-cover">
+                <span class="absolute bottom-3 right-3 inline-flex items-center gap-1.5 rounded-full bg-[#2A1520]/80 px-3 py-2 text-xs font-semibold text-white">
+                  <Expand class="size-3.5" aria-hidden="true" />Tap to expand
+                </span>
+                <span class="absolute left-3 top-3 rounded-full bg-[#2A1520]/75 px-2.5 py-1 text-xs font-semibold text-white">{{ activePhotoIndex + 1 }} / {{ galleryPhotos.length }}</span>
               </button>
-            </div>
-          </section>
-          <section aria-label="Your profile photos"
-            class="hidden grid-cols-3 gap-2 overflow-hidden rounded-lg sm:grid">
-            <div v-for="(photo, index) in gallerySlots" :key="photo.id"
-              class="relative aspect-square overflow-hidden bg-[#F3E8DA]"
-              :class="[index === 0 && 'col-span-2 row-span-2', photo.empty && 'border-2 border-dashed border-[#CDB9A8]']">
-              <img v-if="!photo.empty" :src="photo.url" :alt="photo.altText || `Your profile photo ${index + 1}`"
-                class="h-full w-full object-cover">
-              <div v-else class="flex h-full items-center justify-center"><span
-                  class="rounded-full bg-white/75 px-3 py-1.5 text-xs font-semibold text-[#8A6A74]">Photo
-                  {{ photo.position }}</span></div>
-            </div>
-          </section>
-          <aside class="rounded-lg bg-white p-5 shadow-[0_12px_28px_rgba(180,35,74,.08)] sm:p-6 lg:sticky lg:top-24">
-            <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-              <h2 class="text-3xl font-semibold">{{ data.profile.displayName }}<template v-if="age !== null">, {{ age
-                  }}</template>
-              </h2><span v-if="data.profile.pronouns" class="text-sm text-[#6E4D58]">{{ data.profile.pronouns }}</span>
-            </div>
-            <p v-if="data.profile.neighbourhood" class="mt-2 inline-flex items-center gap-1 text-sm text-[#6E4D58]">
-              <MapPin class="size-4" />{{ data.profile.neighbourhood }}
-            </p>
-            <div class="mt-5 rounded-lg bg-[#F3E8DA] p-4 text-sm leading-6 text-[#4D2F39]">
-              <p class="font-semibold">Profile preview</p>
-              <p class="mt-1 text-xs">Example actions are shown below to make this feel like a live profile, but they are disabled in your own preview.</p>
-            </div>
-            <div class="mt-5" aria-label="Example profile actions">
-              <button type="button" aria-disabled="true" class="inline-flex w-full cursor-default items-center justify-center gap-2 rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white"><HeartHandshake class="size-4" />Show interest</button>
-              <p class="mt-3 flex items-start gap-2 text-xs leading-5 text-[#6E4D58]"><ShieldCheck class="mt-0.5 size-3.5 shrink-0" />Only share contact details when you feel comfortable. Meet in a public place first.</p>
-              <div class="mt-4 flex gap-4 border-t border-[#E8D8C4] pt-4 text-xs font-semibold text-[#8F1839]"><span>Report profile</span><span>Block user</span></div>
-              <p class="mt-2 text-[11px] text-[#6E4D58]">Preview only — these controls are not active here.</p>
-            </div>
-          </aside>
-        </div>
+              <div v-if="galleryPhotos.length > 1"
+                class="mt-2 flex min-w-0 max-w-full gap-2 overflow-x-auto overscroll-x-contain pb-1"
+                aria-label="Choose a profile photo">
+                <button v-for="(photo, index) in galleryPhotos" :key="`${photo.id}-mobile`" type="button"
+                  class="profile-photo size-16 shrink-0 overflow-hidden rounded-lg border-2"
+                  :class="index === activePhotoIndex ? 'border-[#B4234A]' : 'border-transparent opacity-70'"
+                  :aria-label="`View profile photo ${index + 1}`" :aria-pressed="index === activePhotoIndex"
+                  @click="selectPhoto(index)">
+                  <img :src="photo.url" alt="" class="h-full w-full object-cover">
+                </button>
+              </div>
+            </section>
 
-        <div class="mt-5 grid gap-5 lg:grid-cols-2">
-          <section class="rounded-lg bg-white p-5 shadow-[0_10px_24px_rgba(180,35,74,.08)] sm:p-6">
-            <div class="flex items-center gap-2">
-              <UserRound class="size-5 text-[#B4234A]" />
-              <h3 class="text-xl font-semibold">About me</h3>
+            <section aria-label="Your profile photos"
+              class="order-1 hidden grid-cols-3 gap-2 overflow-hidden rounded-lg sm:grid">
+              <button v-for="(photo, index) in gallerySlots" :key="photo.id" type="button"
+                class="profile-photo group aspect-square text-left disabled:cursor-default"
+                :class="[index === 0 && 'col-span-2 row-span-2', photo.empty && 'profile-photo-empty']"
+                :disabled="photo.empty"
+                :aria-label="photo.empty ? `Empty photo slot ${photo.position}` : `Expand ${photo.altText || `your profile photo ${index + 1}`}`"
+                @click="!photo.empty && openPhoto(index)">
+                <img v-if="!photo.empty" :src="photo.url" :alt="photo.altText || `Your profile photo ${index + 1}`"
+                  class="h-full w-full object-cover">
+                <span v-if="!photo.empty"
+                  class="absolute bottom-3 right-3 inline-flex items-center gap-1.5 rounded-full bg-[#2A1520]/80 px-3 py-2 text-xs font-semibold text-white opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
+                  <Expand class="size-3.5" aria-hidden="true" />Expand
+                </span>
+                <span v-else class="flex h-full w-full items-center justify-center" aria-hidden="true"><span
+                    class="rounded-full bg-white/70 px-2.5 py-1 text-xs font-semibold text-[#8A6A74]">Photo {{ photo.position }}</span></span>
+              </button>
+            </section>
+
+            <ProfileActivityPanel class="hidden lg:block" :activities="data.activities"
+              :personal-interests="data.personalInterests" :flipped="activitiesFlipped" preview
+              @toggle="activitiesFlipped = !activitiesFlipped" />
+          </div>
+
+          <div class="contents lg:block lg:space-y-5">
+            <div class="profile-summary-flip order-2 min-w-0 max-w-full" :class="profileCardFlipped && 'is-flipped'">
+              <div class="profile-summary-inner">
+                <aside
+                  class="profile-summary-face profile-summary-front min-w-0 max-w-full rounded-lg bg-white p-4 shadow-[0_12px_28px_rgba(180,35,74,0.08)] min-[360px]:p-5 sm:p-6"
+                  :aria-hidden="profileCardFlipped" :inert="profileCardFlipped || undefined">
+                  <div class="flex flex-wrap items-start justify-between gap-3">
+                    <div class="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1">
+                      <h2 class="text-3xl font-semibold">{{ data.profile.displayName }}<template v-if="age !== null">, {{ age }}</template></h2>
+                      <span v-if="data.profile.pronouns" class="text-sm text-[#6E4D58]">{{ data.profile.pronouns }}</span>
+                    </div>
+                    <button type="button"
+                      class="inline-flex shrink-0 items-center gap-2 rounded-full bg-[#FCE3E8] px-3 py-2 text-xs font-semibold text-[#8F1839]"
+                      aria-label="View About me" @click="profileCardFlipped = true">
+                      <UserRound class="size-3.5" aria-hidden="true" />
+                      <RefreshCw class="size-3.5" aria-hidden="true" />
+                    </button>
+                  </div>
+                  <p v-if="data.profile.neighbourhood" class="mt-2 inline-flex items-center gap-1 text-sm text-[#6E4D58]">
+                    <MapPin class="size-4" />{{ data.profile.neighbourhood }}
+                  </p>
+                  <div class="mt-5 rounded-lg bg-[#F3E8DA] p-4 text-sm leading-6 text-[#4D2F39]">
+                    <p class="font-semibold">Profile preview</p>
+                    <p class="mt-1 text-xs">The actions below match a live profile but are disabled in your own preview.</p>
+                  </div>
+                  <button type="button" disabled
+                    class="mt-5 inline-flex w-full cursor-default items-center justify-center gap-2 rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white">
+                    <HeartHandshake class="size-4" />Show interest
+                  </button>
+                  <p class="mt-3 flex items-start gap-2 text-xs leading-5 text-[#6E4D58]">
+                    <ShieldCheck class="mt-0.5 size-3.5 shrink-0" />Only share contact details when you feel comfortable. Meet in a public place first.
+                  </p>
+                  <div class="mt-4 flex gap-4 border-t border-[#E8D8C4] pt-4 text-xs font-semibold text-[#8F1839]">
+                    <span>Report profile</span><span>Block user</span>
+                  </div>
+                  <p class="mt-2 text-[11px] text-[#6E4D58]">Preview only — these controls are not active here.</p>
+                  <div v-if="lifestyleDetails.length" class="mt-5 border-t border-[#E8D8C4] pt-5">
+                    <button type="button" class="flex w-full items-center justify-between gap-3 text-left"
+                      :aria-expanded="!profileDetailsCollapsed" aria-controls="preview-profile-details"
+                      @click="profileDetailsCollapsed = !profileDetailsCollapsed">
+                      <h3 class="text-sm font-semibold text-[#4D2F39]">Profile details</h3>
+                      <ChevronDown class="size-4 text-[#8F1839] transition-transform"
+                        :class="!profileDetailsCollapsed && 'rotate-180'" aria-hidden="true" />
+                    </button>
+                    <dl id="preview-profile-details" v-show="!profileDetailsCollapsed"
+                      class="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+                      <div v-for="detail in lifestyleDetails" :key="detail.label" class="rounded-lg bg-[#F3E8DA] p-3">
+                        <dt class="text-xs font-bold uppercase tracking-wide text-[#6E4D58]">{{ detail.label }}</dt>
+                        <dd class="mt-1 text-sm font-semibold text-[#2A1520]">{{ detail.value }}</dd>
+                      </div>
+                    </dl>
+                  </div>
+                </aside>
+                <section
+                  class="profile-summary-face profile-summary-back min-w-0 max-w-full rounded-lg bg-white p-5 shadow-[0_12px_28px_rgba(180,35,74,0.08)] sm:p-6"
+                  :aria-hidden="!profileCardFlipped" :inert="!profileCardFlipped || undefined">
+                  <div class="flex items-start justify-between gap-4">
+                    <div class="flex items-center gap-2">
+                      <UserRound class="size-5 shrink-0 text-[#B4234A]" aria-hidden="true" />
+                      <h3 class="text-xl font-semibold">About me</h3>
+                    </div>
+                    <button type="button"
+                      class="inline-flex shrink-0 items-center gap-2 rounded-full bg-[#F3E8DA] px-3 py-2 text-xs font-semibold text-[#8F1839]"
+                      @click="profileCardFlipped = false">
+                      <RefreshCw class="size-3.5" aria-hidden="true" />Back
+                    </button>
+                  </div>
+                  <p class="mt-5 whitespace-pre-line break-words leading-7 text-[#4D2F39]"
+                    :class="bioNeedsExpansion && !bioExpanded && 'line-clamp-6'">{{ data.profile.bio || 'Add a short bio to introduce yourself.' }}</p>
+                  <button v-if="bioNeedsExpansion" type="button"
+                    class="mt-4 text-sm font-semibold text-[#8F1839] hover:underline" :aria-expanded="bioExpanded"
+                    @click="bioExpanded = !bioExpanded">{{ bioExpanded ? 'Show less' : 'Read more' }}</button>
+                </section>
+              </div>
             </div>
-            <p class="mt-4 leading-7 text-[#4D2F39]">{{ data.profile.bio || 'Add a short bio to introduce yourself.' }}
-            </p>
-            <div v-if="lifestyleDetails.length" class="mt-5 border-t border-[#E8D8C4] pt-5">
-              <h4 class="text-sm font-semibold text-[#4D2F39]">Profile details</h4>
-              <dl class="mt-3 grid gap-2 sm:grid-cols-2">
-                <div v-for="detail in lifestyleDetails" :key="detail.label" class="rounded-lg bg-[#F3E8DA] p-3">
-                  <dt class="text-xs font-bold uppercase tracking-wide text-[#6E4D58]">{{ detail.label }}</dt>
-                  <dd class="mt-1 text-sm font-semibold text-[#2A1520]">{{ detail.value }}</dd>
-                </div>
-              </dl>
-            </div>
-          </section>
-          <section v-if="data.availability?.length"
-            class="rounded-lg bg-white p-5 shadow-[0_10px_24px_rgba(180,35,74,.08)] sm:p-6">
-            <div class="flex items-center gap-2">
-              <CalendarDays class="size-5 text-[#B4234A]" />
-              <h3 class="text-xl font-semibold">Usually free</h3>
-            </div>
-            <div class="mt-4 flex flex-wrap gap-2"><span v-for="time in data.availability" :key="time"
-                class="rounded-full bg-[#F3E8DA] px-3 py-2 text-sm font-semibold text-[#4D2F39]">{{ time }}</span></div>
-            <p class="mt-4 rounded-lg bg-[#F3E8DA] p-3 text-xs leading-5 text-[#6E4D58]">This schedule is shown in your private preview. On live profiles it is visible only to active matches, unless you enable “Show availability before matching” in Schedule &amp; Safety.</p>
-          </section>
-          <button type="button" class="flip-card text-left" :class="activitiesFlipped && 'is-flipped'"
-            :aria-pressed="activitiesFlipped"
-            :aria-label="activitiesFlipped ? 'Show detailed activities' : 'Show personal interests'"
-            @click="activitiesFlipped = !activitiesFlipped">
-            <span class="flip-card-inner">
-              <span class="flip-face flip-front"><span class="flex items-center justify-between gap-3"><span
-                    class="text-xl font-semibold">Activities I’d enjoy together</span>
-                    <!-- <span class="flip-hint">Tap to see interests ↻</span> -->
-                  </span><span v-if="data.activities.length" class="mt-4 flex flex-wrap gap-2"><span
-                    v-for="activity in data.activities" :key="activity"
-                    class="rounded-full bg-white/80 px-3 py-2 text-sm font-semibold text-[#8F1839]">{{ activity
-                    }}</span></span><span v-else class="mt-2 block text-sm text-[#6E4D58]">No activities selected
-                  yet.</span></span>
-              <span class="flip-face flip-back"><span class="flex items-center justify-between gap-3"><span
-                    class="text-xl font-semibold">My personal interests</span>
-                  <!-- <span class="flip-hint">Tap to see activities ↻</span> -->
-                </span><span v-if="data.personalInterests?.length" class="mt-4 flex flex-wrap gap-2"><span
-                    v-for="interest in data.personalInterests" :key="interest"
-                    class="rounded-full bg-white/85 px-3 py-2 text-sm font-semibold text-[#4D2F39]">{{ interest
-                    }}</span></span><span v-else class="mt-2 block text-sm text-[#4D2F39]">Your personal interests will
-                  appear
-                  here after you add them in Personal interests.</span><span class="mt-4 block text-xs leading-5 text-[#4D2F39]">These are written by you and do not change your discovery or matching preferences.</span></span>
-            </span>
-          </button>
+
+            <section v-if="data.availability?.length"
+              class="order-4 rounded-lg bg-white p-5 shadow-[0_10px_24px_rgba(180,35,74,0.08)] sm:p-6">
+              <div class="flex items-center gap-2">
+                <CalendarDays class="size-5 text-[#B4234A]" />
+                <h3 class="text-xl font-semibold">Usually free</h3>
+              </div>
+              <div class="mt-4 flex flex-wrap gap-2"><span v-for="time in data.availability" :key="time"
+                  class="rounded-full bg-[#F3E8DA] px-3 py-2 text-sm font-semibold text-[#4D2F39]">{{ time }}</span></div>
+              <p class="mt-4 rounded-lg bg-[#F3E8DA] p-3 text-xs leading-5 text-[#6E4D58]">Live visibility depends on your Schedule &amp; Safety setting and whether the viewer is an active match.</p>
+            </section>
+
+            <ProfileActivityPanel class="order-6 block lg:hidden" :activities="data.activities"
+              :personal-interests="data.personalInterests" :flipped="activitiesFlipped" preview
+              @toggle="activitiesFlipped = !activitiesFlipped" />
+          </div>
         </div>
       </template>
       <div v-else class="rounded-lg bg-white p-8 text-center">
@@ -243,7 +286,48 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleGalleryKeydown
   background: #F3E8DA;
 }
 
-.flip-card {
+.profile-photo:focus-visible {
+  z-index: 1;
+  outline: 3px solid #B4234A;
+  outline-offset: -3px;
+}
+
+.profile-photo-empty {
+  border: 2px dashed #CDB9A8;
+  background: rgba(243, 232, 218, .5);
+}
+
+.profile-summary-flip {
+  perspective: 1200px;
+}
+
+.profile-summary-inner {
+  display: grid;
+  min-width: 0;
+  transform-style: preserve-3d;
+  transition: transform .55s cubic-bezier(.2, .7, .2, 1);
+}
+
+.profile-summary-flip.is-flipped .profile-summary-inner {
+  transform: rotateY(180deg);
+}
+
+.profile-summary-face {
+  grid-area: 1 / 1;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.profile-summary-back {
+  transform: rotateY(180deg);
+}
+
+.profile-summary-flip:not(.is-flipped) .profile-summary-back,
+.profile-summary-flip.is-flipped .profile-summary-front {
+  pointer-events: none;
+}
+
+.profile-flip-card {
   min-height: 13rem;
   border-radius: .5rem;
   outline: none;
@@ -251,17 +335,17 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleGalleryKeydown
   transition: filter .2s ease, transform .2s ease;
 }
 
-.flip-card:hover,
-.flip-card:focus-visible {
+.profile-flip-card:hover,
+.profile-flip-card:focus-visible {
   filter: brightness(1.035) drop-shadow(0 12px 18px rgba(180, 35, 74, .16));
   transform: translateY(-2px);
 }
 
-.flip-card:focus-visible {
+.profile-flip-card:focus-visible {
   box-shadow: 0 0 0 3px rgba(180, 35, 74, .3);
 }
 
-.flip-card-inner {
+.profile-flip-inner {
   position: relative;
   display: block;
   min-height: 13rem;
@@ -269,11 +353,11 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleGalleryKeydown
   transition: transform .55s cubic-bezier(.2, .7, .2, 1);
 }
 
-.flip-card.is-flipped .flip-card-inner {
+.profile-flip-card.is-flipped .profile-flip-inner {
   transform: rotateY(180deg);
 }
 
-.flip-face {
+.profile-flip-face {
   position: absolute;
   inset: 0;
   display: block;
@@ -284,31 +368,25 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleGalleryKeydown
   -webkit-backface-visibility: hidden;
 }
 
-.flip-front {
+.profile-flip-front {
   background: #FCE3E8;
 }
 
-.flip-back {
+.profile-flip-back {
   background: #EAF2DE;
   transform: rotateY(180deg);
 }
 
-.flip-hint {
-  flex-shrink: 0;
-  color: #8F1839;
-  font-size: .7rem;
-  font-weight: 700;
-}
-
 @media (prefers-reduced-motion: reduce) {
 
-  .flip-card,
-  .flip-card-inner {
+  .profile-flip-card,
+  .profile-flip-inner,
+  .profile-summary-inner {
     transition: none;
   }
 
-  .flip-card:hover,
-  .flip-card:focus-visible {
+  .profile-flip-card:hover,
+  .profile-flip-card:focus-visible {
     transform: none;
   }
 }

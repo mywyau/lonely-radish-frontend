@@ -129,6 +129,33 @@ const principles = [
   'Public places first, with safety reminders and confirmations on meetups.',
 ]
 
+const howItWorks = [
+  {
+    number: '01',
+    title: 'Find people through shared interests',
+    description: 'Set your preferences, distance and usual availability, then browse people through date activities you would genuinely enjoy.',
+    icon: Sparkles,
+  },
+  {
+    number: '02',
+    title: 'Show interest selectively',
+    description: 'Send interest when somebody feels right. Mutual interest can match automatically, or the recipient can choose to create a match.',
+    icon: HeartHandshake,
+  },
+  {
+    number: '03',
+    title: 'Make a real plan together',
+    description: 'Suggest an activity, a time that fits their availability and a public venue. Either person can review the details or suggest a change.',
+    icon: CalendarDays,
+  },
+  {
+    number: '04',
+    title: 'Meet with more clarity',
+    description: 'Use reminders and attendance confirmations, keep contact details private unless you choose to share them, and decide if you would meet again.',
+    icon: ShieldCheck,
+  },
+]
+
 async function refreshCurrentUsers() {
   if (!sessionCookie.value && import.meta.client) {
     sessionCookie.value = crypto.randomUUID()
@@ -259,14 +286,48 @@ onBeforeUnmount(() => {
       </div>
     </section>
 
+    <section class="border-y border-[#B4234A]/10 bg-white/55 px-5 py-12 sm:px-8 sm:py-16">
+      <div class="mx-auto max-w-6xl">
+        <div class="max-w-2xl">
+          <p class="section-kicker">How Lonely Radish works</p>
+          <h2 class="section-heading">Less swiping. More intention.</h2>
+          <p class="mt-4 leading-7 text-[#6E4D58]">
+            The app helps you move from discovering somebody compatible to agreeing a simple, public date—all in one place.
+          </p>
+        </div>
+
+        <ol class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <li v-for="step in howItWorks" :key="step.number" class="how-card">
+            <div class="flex items-center justify-between gap-3">
+              <span class="how-number">{{ step.number }}</span>
+              <component :is="step.icon" class="size-6 text-[#B4234A]" aria-hidden="true" />
+            </div>
+            <h3 class="mt-5 text-lg font-semibold">{{ step.title }}</h3>
+            <p class="mt-2 text-sm leading-6 text-[#6E4D58]">{{ step.description }}</p>
+          </li>
+        </ol>
+
+        <div class="mt-7 flex flex-wrap gap-2" aria-label="Lonely Radish features">
+          <span class="feature-pill">Shared-interest discovery</span>
+          <span class="feature-pill">Selective matches</span>
+          <span class="feature-pill">In-app date planning</span>
+          <span class="feature-pill">Date-friendly offers</span>
+          <span class="feature-pill">Safety and reporting tools</span>
+        </div>
+      </div>
+    </section>
+
     <section class="bg-[#2A1520] px-5 py-12 text-white sm:px-8">
       <div class="mx-auto max-w-6xl">
         <div class="mb-7 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div>
-            <!-- <p class="section-kicker text-[#F7B7C4]">How it works</p> -->
+            <p class="section-kicker text-[#F7B7C4]">From match to meetup</p>
             <h2 class="section-heading max-w-2xl text-white">
               Match. Make a plan. Meet.
             </h2>
+            <p class="mt-4 max-w-2xl leading-7 text-white/70">
+              Every match has a shared planning space, so the next step is clear without needing a long conversation first.
+            </p>
           </div>
           <NuxtLink to="/contact" class="text-sm font-semibold text-[#F7B7C4] hover:text-white">
             Give feedback
@@ -451,6 +512,30 @@ onBeforeUnmount(() => {
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.07);
   padding: 1.25rem;
+}
+
+.how-card {
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 1.25rem;
+  box-shadow: 0 10px 24px rgba(180, 35, 74, 0.07);
+}
+
+.how-number {
+  font-size: 0.75rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  color: #8f1839;
+}
+
+.feature-pill {
+  border: 1px solid rgba(180, 35, 74, 0.16);
+  border-radius: 999px;
+  background: #fbf7f1;
+  padding: 0.5rem 0.75rem;
+  color: #6e4d58;
+  font-size: 0.75rem;
+  font-weight: 750;
 }
 
 .foundation-card {

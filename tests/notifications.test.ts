@@ -30,6 +30,18 @@ describe('notification centre', () => {
     expect(read('pages/notifications.vue')).toContain('sent you a private message')
   })
 
+  it('presents match updates as an ordered, collapsible timeline', () => {
+    const page = read('pages/matches/index.vue')
+    expect(page).toContain('Recent updates')
+    expect(page).toContain('Newest first.')
+    expect(page).toContain('notificationGroups')
+    expect(page).toContain('notificationDayLabel')
+    expect(page).toContain('Show {{ hiddenNotificationCount }} older')
+    expect(page).toContain('Full history')
+    expect(page).toContain("'/api/notifications/read-all'")
+    expect(page).not.toContain('You have a new match or date-plan update.')
+  })
+
   it('only deletes notifications owned by the signed-in recipient', () => {
     const remove = read('server/api/notifications/[id].delete.ts')
     expect(remove).toContain('recipient_id=$2')

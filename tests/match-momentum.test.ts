@@ -26,6 +26,15 @@ describe('match momentum', () => {
     expect(read('pages/matches/index.vue')).not.toContain('opening-note')
   })
 
+  it('shows separate total and manual match capacity counters', () => {
+    const endpoint = read('server/api/matches/index.get.ts')
+    const page = read('pages/matches/index.vue')
+    expect(endpoint).toContain('action_required_by=$1 and action_completed_at is null')
+    expect(endpoint).toContain('manualMatchLimit: 1')
+    expect(page).toContain('{{ activeMatchCount }}/{{ activeMatchLimit }}')
+    expect(page).toContain('{{ manualMatchCount }}/{{ manualMatchLimit }}')
+  })
+
   it('allows received interests to remain visible and be passed on', () => {
     const page = read('pages/interests/received.vue')
     expect(page).toContain('You can still view profiles, pass, and send interests.')
@@ -58,7 +67,7 @@ describe('match momentum', () => {
     expect(discovery).toContain("m.status in ('active','queued')")
     expect(navigation).toContain("status in ('active','queued')")
     expect(emails).toContain("match_queued: 'matches'")
-    expect(page).toContain("title: 'Queued matches'")
+    expect(page).toContain("title: 'Matches waiting'")
     expect(page).toContain('activateQueuedMatch(match)')
     expect(migration).toContain("'active','queued','unmatched','blocked'")
     expect(migration).toContain("'match_queued'")

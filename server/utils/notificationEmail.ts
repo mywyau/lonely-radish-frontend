@@ -3,7 +3,7 @@ import { db } from '~/server/repositories/db'
 const subjects: Record<string, string> = {
   interest_received: 'Someone is interested in meeting you',
   new_match: 'You have a new match',
-  match_queued: 'A new match is waiting in your queue',
+  match_queued: 'You have a new match',
   proposal_received: 'A new date plan is waiting',
   proposal_updated: 'Your date plan was updated',
   date_confirmed: 'Your date is confirmed',

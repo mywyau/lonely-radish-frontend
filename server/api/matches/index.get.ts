@@ -7,7 +7,7 @@ import { getActiveMatchLimit } from '~/server/utils/planLimits'
 export default defineEventHandler(async (event) => {
   setHeader(event, 'Cache-Control', 'private, no-store')
   const { sub } = await requireUser(event)
-  const [{ rows }, receivedInterest, activeCount, activeMatchLimit] = await Promise.all([
+  const [{ rows }, receivedInterest, activeCount, manualCount, activeMatchLimit] = await Promise.all([
     db.query(`select m.id,m.status,p.slug,p.display_name as name,p.neighbourhood as place,
     count(*) over()::int as "totalMatches",
     photo.storage_key as "photoStorageKey",photo.public_url as "legacyPhotoUrl",m.matched_at as "matchedAt",
@@ -53,6 +53,8 @@ export default defineEventHandler(async (event) => {
               or (di.sender_id is distinct from ended.ended_by and man.message_type='contact')))))`, [sub]),
     db.query(`select count(*)::int as count from matches where status='active'
       and (user_one_id=$1 or user_two_id=$1)`, [sub]),
+    db.query(`select count(*)::int as count from matches where status='active'
+      and action_required_by=$1 and action_completed_at is null`, [sub]),
     getActiveMatchLimit(sub),
   ])
 
@@ -73,5 +75,6 @@ export default defineEventHandler(async (event) => {
   }))
   return { matches, totalMatches: rows[0]?.totalMatches || 0,
     activeMatchCount: activeCount.rows[0]?.count || 0,
+    manualMatchCount: manualCount.rows[0]?.count || 0, manualMatchLimit: 1,
     interestReceivedCount: receivedInterest.rows[0]?.count || 0, activeMatchLimit }
 })
