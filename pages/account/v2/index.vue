@@ -13,7 +13,9 @@ const raceEthnicityOptions = ['Asian', 'Black / African / Caribbean', 'Hispanic 
 
 const savingAccountDetails = ref(false);
 const accountDetailsSaved = ref(false);
+const accountDetailsDirty = ref(false);
 const accountDetailsError = ref('');
+const accountIdentityLoading = ref(true);
 const savingProfileBasics = ref(false);
 const profileBasicsSaved = ref(false);
 const profileBasicsError = ref('');
@@ -104,14 +106,23 @@ async function saveAccountDetails() {
     const updated = await $fetch<{ firstName: string | null; lastName: string | null }>("/api/account/v2/profile", {
       method: "POST", body: { firstName: profile.firstName, lastName: profile.lastName }, timeout: requestTimeoutMs,
     })
+    profile.firstName = updated.firstName || ''
+    profile.lastName = updated.lastName || ''
     if (user.value) {
       user.value.firstName = updated.firstName;
       user.value.lastName = updated.lastName;
     }
+    accountDetailsDirty.value = false
     accountDetailsSaved.value = true;
   } catch (error: any) {
     accountDetailsError.value = requestMessage(error, 'Account details could not be saved.');
   } finally { savingAccountDetails.value = false }
+}
+
+function markAccountDetailsChanged() {
+  accountDetailsDirty.value = true
+  accountDetailsSaved.value = false
+  accountDetailsError.value = ''
 }
 
 async function saveProfileBasics() {
@@ -194,16 +205,29 @@ async function saveContactDetails() {
 }
 
 onMounted(async () => {
-  profile.firstName = user.value?.firstName || "";
-  profile.lastName = user.value?.lastName || "";
-
+  const identityRequest = $fetch<{ firstName: string | null; lastName: string | null }>('/api/meV2', { timeout: requestTimeoutMs })
   const contactRequest = $fetch('/api/profile/contact', { timeout: requestTimeoutMs })
   const profileRequest = $fetch<any>('/api/profile/me', { timeout: requestTimeoutMs })
-  const [contactResult, profileResult] = await Promise.allSettled([
-    contactRequest,
-    profileRequest,
-    loadReadiness(),
-  ])
+  const readinessRequest = loadReadiness()
+  const supportingResults = Promise.allSettled([contactRequest, profileRequest, readinessRequest])
+
+  try {
+    const identity = await identityRequest
+    profile.firstName = identity.firstName || ''
+    profile.lastName = identity.lastName || ''
+    if (user.value) {
+      user.value.firstName = identity.firstName
+      user.value.lastName = identity.lastName
+    }
+  } catch (error: any) {
+    profile.firstName = user.value?.firstName || ''
+    profile.lastName = user.value?.lastName || ''
+    accountLoadError.value = requestMessage(error, 'Your account name could not be loaded. Refresh the page and try again.')
+  } finally {
+    accountIdentityLoading.value = false
+  }
+
+  const [contactResult, profileResult] = await supportingResults
 
   if (contactResult.status === 'fulfilled') {
     Object.assign(contact, contactResult.value)
@@ -231,7 +255,14 @@ onMounted(async () => {
         </div>
 
         <div class="rounded-lg bg-white p-6 shadow-[0_12px_28px_rgba(180,35,74,0.08)]">
-          <div class="flex items-center gap-4">
+          <div v-if="accountIdentityLoading" class="flex items-center gap-4" role="status">
+            <div class="size-14 animate-pulse rounded-full bg-[#FCE3E8]" aria-hidden="true"></div>
+            <div>
+              <p class="text-sm text-[#6E4D58]">Profile</p>
+              <p class="mt-2 font-semibold text-[#6E4D58]">Loading account details…</p>
+            </div>
+          </div>
+          <div v-else class="flex items-center gap-4">
             <div class="flex size-14 items-center justify-center rounded-full bg-[#FCE3E8] text-xl font-semibold text-[#B4234A]">
               {{ profile.firstName.charAt(0).toUpperCase() || '?' }}
             </div>
@@ -324,20 +355,21 @@ onMounted(async () => {
             <form class="mt-6 grid gap-4 sm:grid-cols-2" novalidate @submit.prevent="saveAccountDetails">
               <label class="block text-sm font-medium">
                 First name
-                <input v-model="profile.firstName" class="field" type="text" :maxlength="accountNameLimit" autocomplete="given-name" required placeholder="Your first name">
+                <input v-model="profile.firstName" class="field" type="text" :maxlength="accountNameLimit" autocomplete="given-name" required placeholder="Your first name" :disabled="accountIdentityLoading" @input="markAccountDetailsChanged">
               </label>
 
               <label class="block text-sm font-medium">
                 Last name
-                <input v-model="profile.lastName" class="field" type="text" :maxlength="accountNameLimit" autocomplete="family-name" required placeholder="Your last name">
+                <input v-model="profile.lastName" class="field" type="text" :maxlength="accountNameLimit" autocomplete="family-name" required placeholder="Your last name" :disabled="accountIdentityLoading" @input="markAccountDetailsChanged">
               </label>
 
               <div class="flex flex-col items-start gap-2 sm:col-span-2 sm:flex-row sm:items-center">
-                <button type="submit" :disabled="savingAccountDetails" class="rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#8F1839] disabled:cursor-not-allowed disabled:opacity-50">
+                <button type="submit" :disabled="savingAccountDetails || accountIdentityLoading" class="rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#8F1839] disabled:cursor-not-allowed disabled:opacity-50">
                   {{ savingAccountDetails ? 'Saving…' : 'Save account details' }}
                 </button>
-                <span v-if="accountDetailsSaved" class="text-sm font-medium text-[#52713A]" role="status">Account details saved.</span>
               </div>
+              <p v-if="accountDetailsDirty && !accountDetailsError" class="rounded-lg bg-[#FFF1C7] p-3 text-sm font-semibold text-[#694C00] sm:col-span-2" role="status">You have unsaved account detail changes.</p>
+              <p v-if="accountDetailsSaved" class="rounded-lg bg-[#EAF2DE] p-3 text-sm font-semibold text-[#52713A] sm:col-span-2" role="status">Account details saved successfully.</p>
               <p v-if="accountDetailsError" class="text-sm font-semibold text-[#8F1839] sm:col-span-2" role="alert">{{ accountDetailsError }}</p>
             </form>
 

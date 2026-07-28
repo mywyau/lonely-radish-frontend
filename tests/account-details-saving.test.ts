@@ -12,8 +12,15 @@ describe('account details saving', () => {
     expect(page).toContain('@submit.prevent="saveProfileBasics"')
     expect(page).toContain('/api/account/v2/profile')
     expect(page).toContain("'/api/profile/basics'")
+    expect(page).toContain("'/api/meV2', { timeout: requestTimeoutMs }")
+    expect(page).toContain('const identity = await identityRequest')
+    expect(page).toContain('finally {\n    accountIdentityLoading.value = false')
+    expect(page).toContain('accountIdentityLoading')
     expect(page).not.toContain('Promise.all([')
     expect(page.match(/v-model="profile.firstName"/g)).toHaveLength(1)
+    expect(page).toContain('You have unsaved account detail changes.')
+    expect(page).toContain('Account details saved successfully.')
+    expect(page).toContain('@input="markAccountDetailsChanged"')
   })
 
   it('updates public basics atomically for the authenticated profile', () => {
