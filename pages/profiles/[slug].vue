@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { CalendarDays, ChevronLeft, ChevronRight, Expand, HeartHandshake, Mail, MapPin, Phone, ShieldCheck, Sparkles, UserRound, X } from '@lucide/vue'
+import { CalendarDays, ChevronDown, ChevronLeft, ChevronRight, Expand, HeartHandshake, Mail, MapPin, Phone, RefreshCw, ShieldCheck, Sparkles, UserRound, X } from '@lucide/vue'
 import { profileDetails } from '~/utils/profileDetails'
 
 definePageMeta({ middleware: 'logged-in' })
@@ -52,6 +52,9 @@ const contactMessage = ref('')
 const contactSending = ref(false)
 const contactError = ref('')
 const activitiesFlipped = ref(false)
+const bioExpanded = ref(false)
+const profileDetailsCollapsed = ref(true)
+const profileCardFlipped = ref(false)
 const activePhotoIndex = ref(0)
 const photoViewerOpen = ref(false)
 const photoSwipeStartX = ref<number | null>(null)
@@ -84,6 +87,7 @@ const profileInterests = computed(() => profile.value?.personalInterests?.length
   ? profile.value.personalInterests
   : profile.value?.isDemo ? profile.value.interests || [] : [])
 const lifestyleDetails = computed(() => profile.value ? profileDetails(profile.value) : [])
+const bioNeedsExpansion = computed(() => (profile.value?.bio?.length || 0) > 420)
 
 async function sendApology() {
   if (!profile.value?.matchId || !apologyMessage.value.trim()) return
@@ -163,6 +167,9 @@ onMounted(async () => {
 onBeforeUnmount(() => window.removeEventListener('keydown', handleGalleryKeydown))
 watch(profileSlug, () => {
   activePhotoIndex.value = 0
+  bioExpanded.value = false
+  profileDetailsCollapsed.value = true
+  profileCardFlipped.value = false
   photoViewerOpen.value = false
 })
 useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lonely Radish` : !profileLoaded.value ? 'Loading Profile · Lonely Radish' : 'Profile Not Found · Lonely Radish' }))
@@ -184,196 +191,272 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
     </section>
 
     <section v-else-if="profile" class="mx-auto max-w-5xl">
-      <div class="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-5 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:items-start">
-        <section v-if="activePhoto" aria-label="Profile photos" class="min-w-0 max-w-full sm:hidden">
-          <button type="button" class="profile-photo relative block aspect-[4/3] w-full max-w-full overflow-hidden rounded-lg"
-            :aria-label="`Expand ${activePhoto.alt || `${profile.name} profile photo`}`"
-            @click="openPhoto(activePhotoIndex)">
-            <img :src="activePhoto.src" :alt="activePhoto.alt || `${profile.name} profile photo`"
-              :class="activePhoto.panel ? ['triptych', `triptych-${activePhoto.panel}`] : 'h-full w-full object-cover'">
-            <span class="absolute bottom-3 right-3 inline-flex items-center gap-1.5 rounded-full bg-[#2A1520]/80 px-3 py-2 text-xs font-semibold text-white">
-              <Expand class="size-3.5" aria-hidden="true" />Tap to expand
-            </span>
-            <span class="absolute left-3 top-3 rounded-full bg-[#2A1520]/75 px-2.5 py-1 text-xs font-semibold text-white">{{ activePhotoIndex + 1 }} / {{ galleryPhotos.length }}</span>
-          </button>
-          <div v-if="galleryPhotos.length > 1" class="mt-2 flex min-w-0 max-w-full gap-2 overflow-x-auto overscroll-x-contain pb-1" aria-label="Choose a profile photo">
-            <button v-for="(photo, index) in galleryPhotos" :key="`${photo.src}-${photo.panel}-mobile`" type="button"
-              class="profile-photo size-16 shrink-0 overflow-hidden rounded-lg border-2"
-              :class="index === activePhotoIndex ? 'border-[#B4234A]' : 'border-transparent opacity-70'"
-              :aria-label="`View profile photo ${index + 1}`" :aria-pressed="index === activePhotoIndex"
-              @click="selectPhoto(index)">
-              <img :src="photo.src" alt="" :class="photo.panel ? ['triptych', `triptych-${photo.panel}`] : 'h-full w-full object-cover'">
+      <div class="flex min-w-0 flex-col gap-5 lg:grid lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:items-start">
+        <div class="contents lg:block lg:space-y-5">
+          <section v-if="activePhoto" aria-label="Profile photos" class="order-1 min-w-0 max-w-full sm:hidden">
+            <button type="button"
+              class="profile-photo relative block aspect-[4/3] w-full max-w-full overflow-hidden rounded-lg"
+              :aria-label="`Expand ${activePhoto.alt || `${profile.name} profile photo`}`"
+              @click="openPhoto(activePhotoIndex)">
+              <img :src="activePhoto.src" :alt="activePhoto.alt || `${profile.name} profile photo`"
+                :class="activePhoto.panel ? ['triptych', `triptych-${activePhoto.panel}`] : 'h-full w-full object-cover'">
+              <span
+                class="absolute bottom-3 right-3 inline-flex items-center gap-1.5 rounded-full bg-[#2A1520]/80 px-3 py-2 text-xs font-semibold text-white">
+                <Expand class="size-3.5" aria-hidden="true" />Tap to expand
+              </span>
+              <span
+                class="absolute left-3 top-3 rounded-full bg-[#2A1520]/75 px-2.5 py-1 text-xs font-semibold text-white">{{
+                activePhotoIndex + 1 }} / {{ galleryPhotos.length }}</span>
             </button>
-          </div>
-        </section>
+            <div v-if="galleryPhotos.length > 1"
+              class="mt-2 flex min-w-0 max-w-full gap-2 overflow-x-auto overscroll-x-contain pb-1"
+              aria-label="Choose a profile photo">
+              <button v-for="(photo, index) in galleryPhotos" :key="`${photo.src}-${photo.panel}-mobile`" type="button"
+                class="profile-photo size-16 shrink-0 overflow-hidden rounded-lg border-2"
+                :class="index === activePhotoIndex ? 'border-[#B4234A]' : 'border-transparent opacity-70'"
+                :aria-label="`View profile photo ${index + 1}`" :aria-pressed="index === activePhotoIndex"
+                @click="selectPhoto(index)">
+                <img :src="photo.src" alt=""
+                  :class="photo.panel ? ['triptych', `triptych-${photo.panel}`] : 'h-full w-full object-cover'">
+              </button>
+            </div>
+          </section>
 
-        <section aria-label="Profile photos" class="hidden grid-cols-3 gap-2 overflow-hidden rounded-lg sm:grid">
-          <button v-for="(photo, index) in gallerySlots"
-            :key="photo.empty ? `empty-${photo.slot}` : `${photo.src}-${photo.panel}`"
-            type="button"
-            class="profile-photo group aspect-square text-left disabled:cursor-default"
-            :class="[index === 0 && 'col-span-2 row-span-2', photo.empty && 'profile-photo-empty']"
-            :disabled="photo.empty"
-            :aria-label="photo.empty ? `Empty photo slot ${photo.slot}` : `Expand ${photo.alt || `${profile.name} profile photo ${index + 1}`}`"
-            @click="!photo.empty && openPhoto(index)">
-            <img v-if="!photo.empty" :src="photo.src" :alt="photo.alt || `${profile.name} profile photo`"
-              :class="photo.panel ? ['triptych', `triptych-${photo.panel}`] : 'h-full w-full object-cover'">
-            <span v-if="!photo.empty" class="absolute bottom-3 right-3 inline-flex items-center gap-1.5 rounded-full bg-[#2A1520]/80 px-3 py-2 text-xs font-semibold text-white opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
-              <Expand class="size-3.5" aria-hidden="true" /> Expand
-            </span>
-            <div v-else class="flex h-full w-full items-center justify-center"
-              aria-hidden="true"><span class="rounded-full bg-white/70 px-2.5 py-1 text-xs font-semibold text-[#8A6A74]">Photo {{ photo.slot }}</span></div>
-          </button>
-        </section>
+          <section aria-label="Profile photos"
+            class="order-1 hidden grid-cols-3 gap-2 overflow-hidden rounded-lg sm:grid">
+            <button v-for="(photo, index) in gallerySlots"
+              :key="photo.empty ? `empty-${photo.slot}` : `${photo.src}-${photo.panel}`" type="button"
+              class="profile-photo group aspect-square text-left disabled:cursor-default"
+              :class="[index === 0 && 'col-span-2 row-span-2', photo.empty && 'profile-photo-empty']"
+              :disabled="photo.empty"
+              :aria-label="photo.empty ? `Empty photo slot ${photo.slot}` : `Expand ${photo.alt || `${profile.name} profile photo ${index + 1}`}`"
+              @click="!photo.empty && openPhoto(index)">
+              <img v-if="!photo.empty" :src="photo.src" :alt="photo.alt || `${profile.name} profile photo`"
+                :class="photo.panel ? ['triptych', `triptych-${photo.panel}`] : 'h-full w-full object-cover'">
+              <span v-if="!photo.empty"
+                class="absolute bottom-3 right-3 inline-flex items-center gap-1.5 rounded-full bg-[#2A1520]/80 px-3 py-2 text-xs font-semibold text-white opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
+                <Expand class="size-3.5" aria-hidden="true" /> Expand
+              </span>
+              <div v-else class="flex h-full w-full items-center justify-center" aria-hidden="true"><span
+                  class="rounded-full bg-white/70 px-2.5 py-1 text-xs font-semibold text-[#8A6A74]">Photo {{ photo.slot
+                  }}</span></div>
+            </button>
+          </section>
 
-        <aside class="min-w-0 max-w-full rounded-lg bg-white p-4 shadow-[0_12px_28px_rgba(180,35,74,0.08)] min-[360px]:p-5 sm:p-6 lg:sticky lg:top-24">
-          <p v-if="profile.isDemo"
-            class="mb-3 inline-flex rounded-full bg-[#FFF1C7] px-3 py-1 text-xs font-bold text-[#694C00]">Demo profile
-          </p>
-          <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-            <h1 class="text-3xl font-semibold">{{ profile.name }}, {{ profile.age }}</h1><span
-              class="text-sm text-[#6E4D58]">{{ profile.pronouns }}</span>
-          </div>
-          <p v-if="profile.place"
-            class="mt-2 inline-flex items-center gap-1 text-sm text-[#6E4D58]">
-            <MapPin class="size-4" /><span>{{ profile.place }}</span>
-          </p>
-          <div v-if="profile.matchReason" class="mt-5 rounded-lg bg-[#EAF2DE] p-4">
-            <p class="inline-flex items-center gap-2 text-sm font-semibold">
-              <Sparkles class="size-4 text-[#6E8B52]" />Strong activity overlap
-            </p>
-            <p class="mt-1 text-xs leading-5 text-[#4D2F39]">{{ profile.matchReason }}</p>
-          </div>
-          <DailyInterestCounter class="mt-5" :count="todaysInterests.length" :limit="dailyInterestLimit" />
-          <button type="button"
-            :disabled="sending || profile.isMatched || (profile.relationshipStatus === 'unmatched' && !profile.secondChanceAvailable) || profile.interestSent || (profile.relationshipStatus !== 'unmatched' && isTodaysChoice(profileSlug)) || atMatchLimit || (hasUsedDailyInterest && !(profile.relationshipStatus === 'unmatched' && isTodaysChoice(profileSlug)))"
-            class="mt-5 inline-flex w-full min-w-0 items-center justify-center gap-2 whitespace-normal break-words rounded-lg bg-[#B4234A] px-3 py-3 text-center text-sm font-semibold text-white transition hover:bg-[#8F1839] disabled:cursor-not-allowed disabled:bg-[#D7A7B3] min-[360px]:px-5"
-            @click="showInterest(profileSlug, profile.name, profile.relationshipStatus === 'unmatched' && isTodaysChoice(profileSlug))">
-            <HeartHandshake class="size-4" />{{ sending ? 'Sending…' : profile.isMatched ? `Already matched with ${profile.name}` : profile.interestSent || (profile.relationshipStatus !== 'unmatched' && isTodaysChoice(profileSlug)) ? 'Interest already sent' : profile.relationshipStatus === 'unmatched' && profile.secondChanceAvailable ? `Show interest in ${profile.name} again` : profile.relationshipStatus === 'unmatched' ? `Unmatched from ${profile.name}` :
-              atMatchLimit ? `${activeMatchLimit}-match limit reached` :
-                isTodaysChoice(profileSlug) ? `Interest sent to ${profile.name}` : 'Show interest' }}
-          </button>
-          <p v-if="profile.isMatched" class="mt-3 rounded-lg bg-[#EAF2DE] p-3 text-xs leading-5 text-[#4D2F39]"
-            role="status">You and {{ profile.name }} have already matched. You can continue from Matches & plans.</p>
-          <div v-else-if="profile.relationshipStatus === 'unmatched' && !profile.interestSent"
-            class="mt-3 rounded-lg bg-[#F3E8DA] p-3 text-xs leading-5 text-[#4D2F39]" role="status">
-            <p>You and {{ profile.name }} are no longer matched.</p>
-            <form v-if="profile.endedByMe && !profile.apologySent" class="mt-3" @submit.prevent="sendApology"><label
-                class="font-semibold">Send a private message for this ended match<textarea v-model="apologyMessage" maxlength="500"
-                  rows="3" class="mt-1 w-full rounded-lg border border-[#D8C8B6] bg-white p-3 font-normal"
-                  placeholder="Keep it brief, respectful, and without pressure." /><span class="mt-1 block text-right font-normal text-[#6E4D58]">{{ apologyMessage.length }}/500</span></label><button type="submit"
-                :disabled="apologySending || !apologyMessage.trim()"
-                class="mt-2 rounded-lg bg-[#8F1839] px-3 py-2 font-semibold text-white disabled:opacity-50">{{
-                  apologySending ? 'Sending…' : 'Send message' }}</button>
-              <p v-if="apologyError" class="mt-2 font-semibold text-[#8F1839]" role="alert">{{ apologyError }}</p>
-            </form>
-            <form v-else-if="profile.wasUnmatched && !profile.contactSent" class="mt-3" @submit.prevent="sendContact"><label
-                class="font-semibold">Send a private message<textarea v-model="contactMessage" maxlength="500"
-                  rows="3" class="mt-1 w-full rounded-lg border border-[#D8C8B6] bg-white p-3 font-normal"
-                  placeholder="Say what you would like them to know, without pressure." /><span class="mt-1 block text-right font-normal text-[#6E4D58]">{{ contactMessage.length }}/500</span></label><p class="mt-1 text-[#6E4D58]">They can read this privately and do not need to respond. You need to send a message to be able to show interest in them again.</p><button type="submit"
-                :disabled="contactSending || !contactMessage.trim()"
-                class="mt-2 rounded-lg bg-[#8F1839] px-3 py-2 font-semibold text-white disabled:opacity-50">{{
-                  contactSending ? 'Sending…' : 'Send message' }}</button>
-              <p v-if="contactError" class="mt-2 font-semibold text-[#8F1839]" role="alert">{{ contactError }}</p>
-            </form>
-            <p v-else-if="profile.apologySent" class="mt-2 font-semibold text-[#6E8B52]">Your private note has been
-              sent. You can now show interest again.</p>
-              <p v-else-if="profile.contactSent" class="mt-2 font-semibold text-[#6E8B52]">Your message was sent. They may not necessarily respond, and you can now show interest in the, again.</p>
-            <p v-else-if="profile.secondChanceAvailable" class="mt-2 font-semibold text-[#6E8B52]">A second chance is available. Either of you can send fresh interest; the other person still chooses whether to accept.</p>
-          </div>
-          <p v-else-if="profile.interestSent || (profile.relationshipStatus !== 'unmatched' && isTodaysChoice(profileSlug))" class="mt-3 rounded-lg bg-[#EAF2DE] p-3 text-xs leading-5 text-[#4D2F39]"
-            role="status"><template v-if="profile.relationshipStatus === 'unmatched'">You have re-offered interest to {{ profile.name }}. They can choose whether to reconnect.</template><template v-else>You have shown interest in {{ profile.name }}.</template></p>
-          <p v-else-if="atMatchLimit" class="mt-3 rounded-lg bg-[#FFF1C7] p-3 text-xs leading-5 text-[#694C00]"
-            role="status">You already have {{ activeMatchLimit }} active matches. Complete or remove one before matching with someone new.
-          </p>
-          <p v-else-if="hasUsedDailyInterest" class="mt-3 rounded-lg bg-[#FCE3E8] p-3 text-xs leading-5 text-[#6E4D58]"
-            role="status"><template v-if="isTodaysChoice(profileSlug)">You sent interest to {{ profile.name }}
-              today.</template><template v-else>You have sent your 5 interests for today.</template> You can send more
-            tomorrow.</p>
-          <p v-else class="mt-3 text-xs leading-5 text-[#6E4D58]">Choose thoughtfully — you can show interest in up to 5
-            people
-            each day.</p>
-          <p v-if="successMessage" class="mt-3 rounded-lg bg-[#EAF2DE] p-3 text-xs font-semibold text-[#4D2F39]"
-            role="status">{{
-              successMessage }} <NuxtLink to="/interests/sent" class="text-[#8F1839] underline">View sent interests
-            </NuxtLink>
-          </p>
-          <p v-if="errorMessage" class="mt-3 text-xs font-semibold text-[#8F1839]" role="alert">{{ errorMessage }}</p>
-          <p class="mt-3 flex items-start gap-2 text-xs leading-5 text-[#6E4D58]">
-            <ShieldCheck class="mt-0.5 size-3.5 shrink-0" />Only share contact details when you feel comfortable. Meet
-            in a public
-            place first.
-          </p>
-          <ProfileSafetyActions :profile-slug="profileSlug" :profile-name="profile.name" />
-        </aside>
-      </div>
+        </div>
 
-      <div class="mt-5 grid gap-5 lg:grid-cols-2">
-        <section class="rounded-lg bg-white p-5 shadow-[0_10px_24px_rgba(180,35,74,0.08)] sm:p-6">
-          <div class="flex items-center gap-2">
-            <UserRound class="size-5 text-[#B4234A]" />
-            <h2 class="text-xl font-semibold">About me</h2>
+        <div class="contents lg:block lg:space-y-5">
+          <div class="profile-summary-flip order-2 min-w-0 max-w-full" :class="profileCardFlipped && 'is-flipped'">
+            <div class="profile-summary-inner">
+              <aside
+                class="profile-summary-face profile-summary-front min-w-0 max-w-full rounded-lg bg-white p-4 shadow-[0_12px_28px_rgba(180,35,74,0.08)] min-[360px]:p-5 sm:p-6"
+                :aria-hidden="profileCardFlipped" :inert="profileCardFlipped || undefined">
+                <p v-if="profile.isDemo"
+                  class="mb-3 inline-flex rounded-full bg-[#FFF1C7] px-3 py-1 text-xs font-bold text-[#694C00]">Demo
+                  profile
+                </p>
+                <div class="flex flex-wrap items-start justify-between gap-3">
+                  <div class="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1">
+                    <h1 class="text-3xl font-semibold">{{ profile.name }}, {{ profile.age }}</h1><span
+                      class="text-sm text-[#6E4D58]">{{ profile.pronouns }}</span>
+                  </div>
+                  <button type="button"
+                    class="inline-flex shrink-0 items-center gap-2 rounded-full bg-[#FCE3E8] px-3 py-2 text-xs font-semibold text-[#8F1839]"
+                    aria-label="View About me" @click="profileCardFlipped = true">
+                    <UserRound class="size-3.5" aria-hidden="true" />
+                    <RefreshCw class="size-3.5" aria-hidden="true" />
+                  </button>
+                </div>
+                <p v-if="profile.place" class="mt-2 inline-flex items-center gap-1 text-sm text-[#6E4D58]">
+                  <MapPin class="size-4" /><span>{{ profile.place }}</span>
+                </p>
+                <div v-if="profile.matchReason" class="mt-5 rounded-lg bg-[#EAF2DE] p-4">
+                  <p class="inline-flex items-center gap-2 text-sm font-semibold">
+                    <Sparkles class="size-4 text-[#6E8B52]" />Strong activity overlap
+                  </p>
+                  <p class="mt-1 text-xs leading-5 text-[#4D2F39]">{{ profile.matchReason }}</p>
+                </div>
+                <DailyInterestCounter class="mt-5" :count="todaysInterests.length" :limit="dailyInterestLimit" />
+                <button type="button"
+                  :disabled="sending || profile.isMatched || (profile.relationshipStatus === 'unmatched' && !profile.secondChanceAvailable) || profile.interestSent || (profile.relationshipStatus !== 'unmatched' && isTodaysChoice(profileSlug)) || atMatchLimit || (hasUsedDailyInterest && !(profile.relationshipStatus === 'unmatched' && isTodaysChoice(profileSlug)))"
+                  class="mt-5 inline-flex w-full min-w-0 items-center justify-center gap-2 whitespace-normal break-words rounded-lg bg-[#B4234A] px-3 py-3 text-center text-sm font-semibold text-white transition hover:bg-[#8F1839] disabled:cursor-not-allowed disabled:bg-[#D7A7B3] min-[360px]:px-5"
+                  @click="showInterest(profileSlug, profile.name, profile.relationshipStatus === 'unmatched' && isTodaysChoice(profileSlug))">
+                  <HeartHandshake class="size-4" />{{ sending ? 'Sending…' : profile.isMatched ? `Already matched with
+                  ${profile.name}` : profile.interestSent || (profile.relationshipStatus !== 'unmatched' &&
+                    isTodaysChoice(profileSlug)) ? 'Interest already sent' : profile.relationshipStatus === 'unmatched' &&
+                      profile.secondChanceAvailable ? `Show interest in ${profile.name} again` : profile.relationshipStatus
+                        === 'unmatched' ? `Unmatched from ${profile.name}` :
+                    atMatchLimit ? `${activeMatchLimit}-match limit reached` :
+                  isTodaysChoice(profileSlug) ? `Interest sent to ${profile.name}` : 'Show interest' }}
+                </button>
+                <p v-if="profile.isMatched" class="mt-3 rounded-lg bg-[#EAF2DE] p-3 text-xs leading-5 text-[#4D2F39]"
+                  role="status">You and {{ profile.name }} have already matched. You can continue from Matches & plans.
+                </p>
+                <div v-else-if="profile.relationshipStatus === 'unmatched' && !profile.interestSent"
+                  class="mt-3 rounded-lg bg-[#F3E8DA] p-3 text-xs leading-5 text-[#4D2F39]" role="status">
+                  <p>You and {{ profile.name }} are no longer matched.</p>
+                  <form v-if="profile.endedByMe && !profile.apologySent" class="mt-3" @submit.prevent="sendApology">
+                    <label class="font-semibold">Send a private message for this ended match<textarea
+                        v-model="apologyMessage" maxlength="500" rows="3"
+                        class="mt-1 w-full rounded-lg border border-[#D8C8B6] bg-white p-3 font-normal"
+                        placeholder="Keep it brief, respectful, and without pressure." /><span
+                        class="mt-1 block text-right font-normal text-[#6E4D58]">{{ apologyMessage.length
+                        }}/500</span></label><button type="submit" :disabled="apologySending || !apologyMessage.trim()"
+                      class="mt-2 rounded-lg bg-[#8F1839] px-3 py-2 font-semibold text-white disabled:opacity-50">{{
+                        apologySending ? 'Sending…' : 'Send message' }}</button>
+                    <p v-if="apologyError" class="mt-2 font-semibold text-[#8F1839]" role="alert">{{ apologyError }}</p>
+                  </form>
+                  <form v-else-if="profile.wasUnmatched && !profile.contactSent" class="mt-3"
+                    @submit.prevent="sendContact"><label class="font-semibold">Send a private message<textarea
+                        v-model="contactMessage" maxlength="500" rows="3"
+                        class="mt-1 w-full rounded-lg border border-[#D8C8B6] bg-white p-3 font-normal"
+                        placeholder="Say what you would like them to know, without pressure." /><span
+                        class="mt-1 block text-right font-normal text-[#6E4D58]">{{ contactMessage.length
+                        }}/500</span></label>
+                    <p class="mt-1 text-[#6E4D58]">They can read this privately and do not need to respond. You need to
+                      send a message to be able to show interest in them again.</p><button type="submit"
+                      :disabled="contactSending || !contactMessage.trim()"
+                      class="mt-2 rounded-lg bg-[#8F1839] px-3 py-2 font-semibold text-white disabled:opacity-50">{{
+                        contactSending ? 'Sending…' : 'Send message' }}</button>
+                    <p v-if="contactError" class="mt-2 font-semibold text-[#8F1839]" role="alert">{{ contactError }}</p>
+                  </form>
+                  <p v-else-if="profile.apologySent" class="mt-2 font-semibold text-[#6E8B52]">Your private note has
+                    been
+                    sent. You can now show interest again.</p>
+                  <p v-else-if="profile.contactSent" class="mt-2 font-semibold text-[#6E8B52]">Your message was sent.
+                    They may not necessarily respond, and you can now show interest in the, again.</p>
+                  <p v-else-if="profile.secondChanceAvailable" class="mt-2 font-semibold text-[#6E8B52]">A second chance
+                    is available. Either of you can send fresh interest; the other person still chooses whether to
+                    accept.</p>
+                </div>
+                <p v-else-if="profile.interestSent || (profile.relationshipStatus !== 'unmatched' && isTodaysChoice(profileSlug))"
+                  class="mt-3 rounded-lg bg-[#EAF2DE] p-3 text-xs leading-5 text-[#4D2F39]" role="status"><template
+                    v-if="profile.relationshipStatus === 'unmatched'">You have re-offered interest to {{ profile.name
+                    }}. They can choose whether to reconnect.</template><template v-else>You have shown interest in {{
+                    profile.name }}.</template></p>
+                <p v-else-if="atMatchLimit" class="mt-3 rounded-lg bg-[#FFF1C7] p-3 text-xs leading-5 text-[#694C00]"
+                  role="status">You
+                  already have {{ activeMatchLimit }} active matches. Complete or remove one before matching with
+                  someone new.
+                </p>
+                <p v-else-if="hasUsedDailyInterest"
+                  class="mt-3 rounded-lg bg-[#FCE3E8] p-3 text-xs leading-5 text-[#6E4D58]" role="status"><template
+                    v-if="isTodaysChoice(profileSlug)">You sent interest to {{ profile.name }}
+                    today.</template><template v-else>You have sent your 5 interests for today.</template> You can send
+                  more
+                  tomorrow.</p>
+                <p v-else class="mt-3 text-xs leading-5 text-[#6E4D58]">Choose thoughtfully — you can show interest in
+                  up to 5
+                  people
+                  each day.</p>
+                <p v-if="successMessage" class="mt-3 rounded-lg bg-[#EAF2DE] p-3 text-xs font-semibold text-[#4D2F39]"
+                  role="status">{{
+                    successMessage }} <NuxtLink to="/interests/sent" class="text-[#8F1839] underline">View sent interests
+                  </NuxtLink>
+                </p>
+                <p v-if="errorMessage" class="mt-3 text-xs font-semibold text-[#8F1839]" role="alert">{{ errorMessage }}
+                </p>
+                <p class="mt-3 flex items-start gap-2 text-xs leading-5 text-[#6E4D58]">
+                  <ShieldCheck class="mt-0.5 size-3.5 shrink-0" />Only share contact details when you feel comfortable.
+                  Meet
+                  in a public
+                  place first.
+                </p>
+                <ProfileSafetyActions :profile-slug="profileSlug" :profile-name="profile.name" />
+                <div v-if="lifestyleDetails.length" class="mt-5 border-t border-[#E8D8C4] pt-5">
+                  <button type="button" class="flex w-full items-center justify-between gap-3 text-left"
+                    :aria-expanded="!profileDetailsCollapsed" aria-controls="viewed-profile-details"
+                    @click="profileDetailsCollapsed = !profileDetailsCollapsed">
+                    <h2 class="text-sm font-semibold text-[#4D2F39]">Profile details</h2>
+                    <ChevronDown class="size-4 text-[#8F1839] transition-transform"
+                      :class="!profileDetailsCollapsed && 'rotate-180'" aria-hidden="true" />
+                  </button>
+                  <dl id="viewed-profile-details" v-show="!profileDetailsCollapsed"
+                    class="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+                    <div v-for="detail in lifestyleDetails" :key="detail.label" class="rounded-lg bg-[#F3E8DA] p-3">
+                      <dt class="text-xs font-bold uppercase tracking-wide text-[#6E4D58]">{{ detail.label }}</dt>
+                      <dd class="mt-1 text-sm font-semibold text-[#2A1520]">{{ detail.value }}</dd>
+                    </div>
+                  </dl>
+                </div>
+              </aside>
+              <section
+                class="profile-summary-face profile-summary-back min-w-0 max-w-full rounded-lg bg-white p-5 shadow-[0_12px_28px_rgba(180,35,74,0.08)] sm:p-6"
+                :aria-hidden="!profileCardFlipped" :inert="!profileCardFlipped || undefined">
+                <div class="flex items-start justify-between gap-4">
+                  <div class="flex items-center gap-2">
+                    <UserRound class="size-5 shrink-0 text-[#B4234A]" aria-hidden="true" />
+                    <h2 class="text-xl font-semibold">About me</h2>
+                  </div>
+                  <button type="button"
+                    class="inline-flex shrink-0 items-center gap-2 rounded-full bg-[#F3E8DA] px-3 py-2 text-xs font-semibold text-[#8F1839]"
+                    @click="profileCardFlipped = false">
+                    <RefreshCw class="size-3.5" aria-hidden="true" /> Back
+                  </button>
+                </div>
+                <p class="mt-5 whitespace-pre-line break-words leading-7 text-[#4D2F39]"
+                  :class="bioNeedsExpansion && !bioExpanded && 'line-clamp-6'">{{ profile.bio }}</p>
+                <button v-if="bioNeedsExpansion" type="button"
+                  class="mt-4 text-sm font-semibold text-[#8F1839] hover:underline" :aria-expanded="bioExpanded"
+                  @click="bioExpanded = !bioExpanded">
+                  {{ bioExpanded ? 'Show less' : 'Read more' }}
+                </button>
+              </section>
+            </div>
           </div>
-          <p class="mt-4 leading-7 text-[#4D2F39]">{{ profile.bio }}</p>
-          <div v-if="lifestyleDetails.length" class="mt-5 border-t border-[#E8D8C4] pt-5">
-            <h3 class="text-sm font-semibold text-[#4D2F39]">Profile details</h3>
-            <dl class="mt-3 grid gap-2 sm:grid-cols-2">
-              <div v-for="detail in lifestyleDetails" :key="detail.label" class="rounded-lg bg-[#F3E8DA] p-3">
-                <dt class="text-xs font-bold uppercase tracking-wide text-[#6E4D58]">{{ detail.label }}</dt>
-                <dd class="mt-1 text-sm font-semibold text-[#2A1520]">{{ detail.value }}</dd>
-              </div>
-            </dl>
-          </div>
-        </section>
-        <section v-if="profile.availability?.length && (profile.isMatched || profile.availabilityVisibleBeforeMatch)"
-          class="rounded-lg bg-white p-5 shadow-[0_10px_24px_rgba(180,35,74,0.08)] sm:p-6">
-          <div class="flex items-center gap-2">
-            <CalendarDays class="size-5 text-[#B4234A]" />
-            <h2 class="text-xl font-semibold">Usually free</h2>
-          </div>
-          <div class="mt-4 flex flex-wrap gap-2"><span v-for="time in profile.availability" :key="time"
-              class="rounded-full bg-[#F3E8DA] px-3 py-2 text-sm font-semibold text-[#4D2F39]">{{ time }}</span></div>
-        </section>
-        <section v-if="profile.contactDetails && profile.isMatched && profile.relationshipStatus !== 'unmatched'"
-          class="rounded-lg bg-white p-5 shadow-[0_10px_24px_rgba(180,35,74,0.08)] sm:p-6">
-          <h2 class="text-xl font-semibold">Contact details</h2>
-          <p class="mt-2 text-xs leading-5 text-[#6E4D58]">Shared with you because you are an active match.</p>
-          <div class="mt-4 space-y-3 text-sm"><a v-if="profile.contactDetails.phoneNumber"
-              :href="`tel:${profile.contactDetails.phoneNumber}`"
-              class="flex items-center gap-2 font-semibold text-[#8F1839]">
-              <Phone class="size-4" />{{ profile.contactDetails.phoneNumber }}
-            </a><a v-if="profile.contactDetails.contactEmail" :href="`mailto:${profile.contactDetails.contactEmail}`"
-              class="flex items-center gap-2 break-all font-semibold text-[#8F1839]">
-              <Mail class="size-4 shrink-0" />{{ profile.contactDetails.contactEmail }}
-            </a>
-            <p v-if="profile.contactDetails.socialHandle" class="font-semibold text-[#4D2F39]">{{
-              profile.contactDetails.socialHandle }}</p>
-          </div>
-        </section>
-        <button v-if="profile.relationshipStatus !== 'unmatched'" type="button" class="profile-flip-card text-left" :class="activitiesFlipped && 'is-flipped'"
-          :aria-pressed="activitiesFlipped" :aria-label="activitiesFlipped ? 'Show activities' : 'Show personal interests'"
-          @click="activitiesFlipped = !activitiesFlipped"><span class="profile-flip-inner"><span
-              class="profile-flip-face profile-flip-front"><span class="flex items-center justify-between gap-3"><span
-                  class="text-xl font-semibold">Activities I’d enjoy together</span>
+          <section v-if="profile.availability?.length && (profile.isMatched || profile.availabilityVisibleBeforeMatch)"
+            class="order-4 rounded-lg bg-white p-5 shadow-[0_10px_24px_rgba(180,35,74,0.08)] sm:p-6">
+            <div class="flex items-center gap-2">
+              <CalendarDays class="size-5 text-[#B4234A]" />
+              <h2 class="text-xl font-semibold">Usually free</h2>
+            </div>
+            <div class="mt-4 flex flex-wrap gap-2"><span v-for="time in profile.availability" :key="time"
+                class="rounded-full bg-[#F3E8DA] px-3 py-2 text-sm font-semibold text-[#4D2F39]">{{ time }}</span></div>
+          </section>
+          <section v-if="profile.contactDetails && profile.isMatched && profile.relationshipStatus !== 'unmatched'"
+            class="order-5 rounded-lg bg-white p-5 shadow-[0_10px_24px_rgba(180,35,74,0.08)] sm:p-6">
+            <h2 class="text-xl font-semibold">Contact details</h2>
+            <p class="mt-2 text-xs leading-5 text-[#6E4D58]">Shared with you because you are an active match.</p>
+            <div class="mt-4 space-y-3 text-sm"><a v-if="profile.contactDetails.phoneNumber"
+                :href="`tel:${profile.contactDetails.phoneNumber}`"
+                class="flex items-center gap-2 font-semibold text-[#8F1839]">
+                <Phone class="size-4" />{{ profile.contactDetails.phoneNumber }}
+              </a><a v-if="profile.contactDetails.contactEmail" :href="`mailto:${profile.contactDetails.contactEmail}`"
+                class="flex items-center gap-2 break-all font-semibold text-[#8F1839]">
+                <Mail class="size-4 shrink-0" />{{ profile.contactDetails.contactEmail }}
+              </a>
+              <p v-if="profile.contactDetails.socialHandle" class="font-semibold text-[#4D2F39]">{{
+                profile.contactDetails.socialHandle }}</p>
+            </div>
+          </section>
+          <button v-if="profile.relationshipStatus !== 'unmatched'" type="button"
+            class="profile-flip-card order-6 block w-full text-left" :class="activitiesFlipped && 'is-flipped'"
+            :aria-pressed="activitiesFlipped"
+            :aria-label="activitiesFlipped ? 'Show activities' : 'Show personal interests'"
+            @click="activitiesFlipped = !activitiesFlipped"><span class="profile-flip-inner"><span
+                class="profile-flip-face profile-flip-front"><span class="flex items-center justify-between gap-3"><span
+                    class="text-xl font-semibold">Activities I’d enjoy together</span>
                   <!-- <span class="profile-flip-hint">Tap to see interests ↻</span> -->
-                </span><span class="mt-4 flex flex-wrap gap-2"><span
-                  v-for="activity in profile.activities" :key="activity"
-                  class="rounded-full bg-white/80 px-3 py-2 text-sm font-semibold text-[#8F1839]">{{ activity
-                  }}</span></span></span><span class="profile-flip-face profile-flip-back"><span
-                class="flex items-center justify-between gap-3"><span class="text-xl font-semibold">Personal interests</span>
-                <!-- <span class="profile-flip-hint">Tap to see activities ↻</span> -->
-              </span><span v-if="profileInterests.length" class="mt-4 flex flex-wrap gap-2"><span
-                  v-for="interest in profileInterests" :key="interest"
-                  class="rounded-full bg-white/80 px-3 py-2 text-sm font-semibold text-[#4D2F39]">{{ interest
-                  }}</span></span><span v-else class="mt-3 block text-sm text-[#4D2F39]">No personal interests shared
-                yet.</span></span></span></button>
-        <section v-else class="rounded-lg bg-[#F3E8DA] p-5 sm:p-6">
-          <h2 class="text-xl font-semibold">Past connection</h2>
-          <p class="mt-3 text-sm leading-6 text-[#4D2F39]">
-            You and {{ profile.name }} are no longer matched. Their activities, interests, availability and contact
-            details are no longer available from this connection.
-          </p>
-        </section>
+                </span><span class="mt-4 flex flex-wrap gap-2"><span v-for="activity in profile.activities"
+                    :key="activity" class="rounded-full bg-white/80 px-3 py-2 text-sm font-semibold text-[#8F1839]">{{
+                      activity
+                    }}</span></span></span><span class="profile-flip-face profile-flip-back"><span
+                  class="flex items-center justify-between gap-3"><span class="text-xl font-semibold">Personal
+                    interests</span>
+                  <!-- <span class="profile-flip-hint">Tap to see activities ↻</span> -->
+                </span><span v-if="profileInterests.length" class="mt-4 flex flex-wrap gap-2"><span
+                    v-for="interest in profileInterests" :key="interest"
+                    class="rounded-full bg-white/80 px-3 py-2 text-sm font-semibold text-[#4D2F39]">{{ interest
+                    }}</span></span><span v-else class="mt-3 block text-sm text-[#4D2F39]">They have not shared any personal interests yet.
+                  yet.</span></span></span></button>
+          <section v-else class="order-6 rounded-lg bg-[#F3E8DA] p-5 sm:p-6">
+            <h2 class="text-xl font-semibold">Past connection</h2>
+            <p class="mt-3 text-sm leading-6 text-[#4D2F39]">
+              You and {{ profile.name }} are no longer matched. Their activities, interests, availability and contact
+              details are no longer available from this connection.
+            </p>
+          </section>
+        </div>
       </div>
     </section>
 
@@ -387,20 +470,32 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
     </section>
 
     <Teleport to="body">
-      <div v-if="photoViewerOpen && activePhoto" class="fixed inset-0 z-[100] flex items-center justify-center bg-[#160B10]/95 p-4"
-        role="dialog" aria-modal="true" aria-label="Expanded profile photo" @click.self="photoViewerOpen = false">
-        <button type="button" class="absolute right-4 top-[max(1rem,env(safe-area-inset-top))] z-10 rounded-full bg-white/20 p-3 text-white"
-          aria-label="Close expanded photo" @click.stop="photoViewerOpen = false"><X class="size-6" /></button>
-        <button v-if="galleryPhotos.length > 1" type="button" class="absolute left-3 z-10 rounded-full bg-white/20 p-3 text-white"
-          aria-label="Previous photo" @click="changePhoto(-1)"><ChevronLeft class="size-7" /></button>
-        <div class="profile-photo h-[78vh] w-[calc(100vw-2rem)] max-w-3xl touch-pan-y overflow-hidden rounded-lg bg-black"
+      <div v-if="photoViewerOpen && activePhoto"
+        class="fixed inset-0 z-[100] flex items-center justify-center bg-[#160B10]/95 p-4" role="dialog"
+        aria-modal="true" aria-label="Expanded profile photo" @click.self="photoViewerOpen = false">
+        <button type="button"
+          class="absolute right-4 top-[max(1rem,env(safe-area-inset-top))] z-10 rounded-full bg-white/20 p-3 text-white"
+          aria-label="Close expanded photo" @click.stop="photoViewerOpen = false">
+          <X class="size-6" />
+        </button>
+        <button v-if="galleryPhotos.length > 1" type="button"
+          class="absolute left-3 z-10 rounded-full bg-white/20 p-3 text-white" aria-label="Previous photo"
+          @click="changePhoto(-1)">
+          <ChevronLeft class="size-7" />
+        </button>
+        <div
+          class="profile-photo h-[78vh] w-[calc(100vw-2rem)] max-w-3xl touch-pan-y overflow-hidden rounded-lg bg-black"
           @touchstart.passive="startPhotoSwipe" @touchend.passive="endPhotoSwipe">
           <img :src="activePhoto.src" :alt="activePhoto.alt || `${profile.name} profile photo`"
             :class="activePhoto.panel ? ['triptych', `triptych-${activePhoto.panel}`] : 'h-full w-full object-contain'">
         </div>
-        <button v-if="galleryPhotos.length > 1" type="button" class="absolute right-3 z-10 rounded-full bg-white/20 p-3 text-white"
-          aria-label="Next photo" @click="changePhoto(1)"><ChevronRight class="size-7" /></button>
-        <p class="absolute bottom-4 rounded-full bg-black/60 px-3 py-1.5 text-sm font-semibold text-white">{{ activePhotoIndex + 1 }} / {{ galleryPhotos.length }}</p>
+        <button v-if="galleryPhotos.length > 1" type="button"
+          class="absolute right-3 z-10 rounded-full bg-white/20 p-3 text-white" aria-label="Next photo"
+          @click="changePhoto(1)">
+          <ChevronRight class="size-7" />
+        </button>
+        <p class="absolute bottom-4 rounded-full bg-black/60 px-3 py-1.5 text-sm font-semibold text-white">{{
+          activePhotoIndex + 1 }} / {{ galleryPhotos.length }}</p>
       </div>
     </Teleport>
   </main>
@@ -422,6 +517,36 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
 .profile-photo-empty {
   border: 2px dashed #CDB9A8;
   background: rgba(243, 232, 218, .5);
+}
+
+.profile-summary-flip {
+  perspective: 1200px;
+}
+
+.profile-summary-inner {
+  display: grid;
+  min-width: 0;
+  transform-style: preserve-3d;
+  transition: transform .55s cubic-bezier(.2, .7, .2, 1);
+}
+
+.profile-summary-flip.is-flipped .profile-summary-inner {
+  transform: rotateY(180deg);
+}
+
+.profile-summary-face {
+  grid-area: 1 / 1;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.profile-summary-back {
+  transform: rotateY(180deg);
+}
+
+.profile-summary-flip:not(.is-flipped) .profile-summary-back,
+.profile-summary-flip.is-flipped .profile-summary-front {
+  pointer-events: none;
 }
 
 .triptych {
@@ -503,7 +628,8 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
 @media (prefers-reduced-motion: reduce) {
 
   .profile-flip-card,
-  .profile-flip-inner {
+  .profile-flip-inner,
+  .profile-summary-inner {
     transition: none;
   }
 
