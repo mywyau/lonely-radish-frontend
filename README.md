@@ -303,6 +303,13 @@ The app is configured for Vercel.
 7. Deploy and verify `/api/health`, sign-in, onboarding, photo upload, and a
    Stripe test-mode checkout before accepting real users.
 
+Production startup is fail-closed. Missing database, Auth0, Redis, Supabase,
+Stripe, QStash, Resend, postcode-geocoding, offer-code, or account-deletion
+credentials stop the Nitro application rather than enabling local mocks.
+`/api/health` returns HTTP `503` until PostgreSQL is reachable and the latest
+required migration has been recorded. It reports only configuration state and
+never returns credential values.
+
 Vercel Preview deployments should use isolated preview/development providers.
 Do not let preview builds mutate the production database.
 

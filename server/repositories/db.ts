@@ -24,6 +24,10 @@ function createMockDb() {
   }
 }
 
+if (!process.env.DATABASE_URL && process.env.NODE_ENV === "production") {
+  throw new Error("[startup] DATABASE_URL is required in production")
+}
+
 export const db = process.env.DATABASE_URL
   ? new Pool({
       connectionString: process.env.DATABASE_URL,

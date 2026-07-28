@@ -15,6 +15,10 @@ type SortedSetEntry = {
 const url = process.env.UPSTASH_REDIS_REST_URL
 const token = process.env.UPSTASH_REDIS_REST_TOKEN
 
+if ((!url || !token) && process.env.NODE_ENV === "production") {
+  throw new Error("[startup] Upstash Redis credentials are required in production")
+}
+
 const values = new Map<string, unknown>()
 const hashes = new Map<string, Map<string, unknown>>()
 const sets = new Map<string, Set<string>>()

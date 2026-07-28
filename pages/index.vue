@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import {
+  BadgePercent,
   CalendarDays,
   CheckCircle2,
   HeartHandshake,
   MessageCircle,
   ShieldCheck,
   Sparkles,
+  Store,
+  TicketCheck,
 } from '@lucide/vue'
 
 useSeoMeta({
@@ -349,26 +352,72 @@ onBeforeUnmount(() => {
       </div>
     </section>
 
-    <section class="mx-auto grid max-w-6xl gap-5 px-5 py-12 sm:px-8 md:grid-cols-2">
-      <article class="foundation-card">
-        <ShieldCheck class="size-7 text-[#6E8B52]" aria-hidden="true" />
-        <h2 class="mt-4 text-2xl font-semibold">
-          Meet somewhere safe and public.
-        </h2>
-        <p class="mt-3 text-sm leading-6 text-[#6E4D58]">
-          First meet-ups should feel simple and comfortable. Pick a public place, choose an activity with clear expectations, and keep it easy to leave or extend.
-        </p>
-      </article>
+    <section class="offer-section px-5 py-12 sm:px-8 sm:py-16">
+      <div class="mx-auto max-w-6xl">
+        <div class="max-w-3xl">
+          <p class="section-kicker">Date-friendly offers</p>
+          <h2 class="section-heading">Turn a confirmed date into a better local experience.</h2>
+          <p class="mt-4 max-w-2xl leading-7 text-[#6E4D58]">
+            Lonely Radish connects real date plans with offers from approved local businesses—giving couples a useful saving and venues a genuine reason to welcome them.
+          </p>
+        </div>
 
-      <article class="foundation-card">
-        <HeartHandshake class="size-7 text-[#B4234A]" aria-hidden="true" />
-        <h2 class="mt-4 text-2xl font-semibold">
-          Keep it cool, keep it chill.
-        </h2>
-        <p class="mt-3 text-sm leading-6 text-[#6E4D58]">
-          Come as you are, do something you will both enjoy, and see if there is a reason to meet again.
+        <div class="mt-8 grid gap-5 lg:grid-cols-2">
+          <article class="offer-audience-card offer-audience-daters">
+            <div class="offer-card-heading">
+              <span class="offer-icon offer-icon-daters"><HeartHandshake class="size-6" aria-hidden="true" /></span>
+              <div>
+                <p class="offer-card-kicker">For people dating</p>
+                <h3 class="text-2xl font-semibold">Add an offer once the date is confirmed.</h3>
+              </div>
+            </div>
+            <ol class="mt-6 grid gap-4">
+              <li class="offer-step">
+                <BadgePercent class="size-5 shrink-0 text-[#B4234A]" aria-hidden="true" />
+                <span><strong>Choose together.</strong> Browse approved offers and attach one that suits your confirmed plan.</span>
+              </li>
+              <li class="offer-step">
+                <TicketCheck class="size-5 shrink-0 text-[#B4234A]" aria-hidden="true" />
+                <span><strong>Keep the code private.</strong> The person claiming receives a secure, expiring code to show at the venue.</span>
+              </li>
+              <li class="offer-step">
+                <CheckCircle2 class="size-5 shrink-0 text-[#B4234A]" aria-hidden="true" />
+                <span><strong>Use it for that date.</strong> Each offer can be redeemed once for each confirmed couple date, subject to its terms.</span>
+              </li>
+            </ol>
+            <NuxtLink to="/offers" class="offer-link">Explore date offers <span aria-hidden="true">→</span></NuxtLink>
+          </article>
+
+          <article class="offer-audience-card offer-audience-business">
+            <div class="offer-card-heading">
+              <span class="offer-icon offer-icon-business"><Store class="size-6" aria-hidden="true" /></span>
+              <div>
+                <p class="offer-card-kicker offer-card-kicker-business">For business owners</p>
+                <h3 class="text-2xl font-semibold">Reach couples who already have a plan.</h3>
+              </div>
+            </div>
+            <ol class="mt-6 grid gap-4">
+              <li class="offer-step">
+                <BadgePercent class="size-5 shrink-0 text-[#52713A]" aria-hidden="true" />
+                <span><strong>Create a campaign.</strong> Set the saving, terms and the single, selected or all locations where it applies.</span>
+              </li>
+              <li class="offer-step">
+                <ShieldCheck class="size-5 shrink-0 text-[#52713A]" aria-hidden="true" />
+                <span><strong>Publish after review.</strong> Approved offers become discoverable while you remain free to pause them.</span>
+              </li>
+              <li class="offer-step">
+                <TicketCheck class="size-5 shrink-0 text-[#52713A]" aria-hidden="true" />
+                <span><strong>Redeem with confidence.</strong> Validate the date’s code at the venue and follow redemptions from your dashboard.</span>
+              </li>
+            </ol>
+            <NuxtLink to="/business" class="offer-link offer-link-business">Offer something date-friendly <span aria-hidden="true">→</span></NuxtLink>
+          </article>
+        </div>
+
+        <p class="mt-5 rounded-lg border border-[#E8D8C4] bg-white/65 px-4 py-3 text-sm leading-6 text-[#6E4D58]">
+          Offers are optional and never required to plan a date. Full terms are shown before use, and only participating, approved venues can redeem a valid code.
         </p>
-      </article>
+      </div>
     </section>
   </main>
 </template>
@@ -414,8 +463,7 @@ onBeforeUnmount(() => {
   background: rgba(255, 255, 255, 0.68);
 }
 
-.metric-card,
-.foundation-card {
+.metric-card {
   /* border: 1px solid rgba(180, 35, 74, 0.14); */
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.76);
@@ -538,9 +586,21 @@ onBeforeUnmount(() => {
   font-weight: 750;
 }
 
-.foundation-card {
-  padding: 1.4rem;
-}
+.offer-section { border-top: 1px solid rgba(180,35,74,.1); background: linear-gradient(180deg, rgba(252,227,232,.32), rgba(234,242,222,.35)); }
+.offer-audience-card { border-radius: .75rem; padding: 1.5rem; box-shadow: 0 12px 28px rgba(42,21,32,.08); }
+.offer-audience-daters { background: #F7D7DE; }
+.offer-audience-business { background: #DDEACB; }
+.offer-card-heading { display: flex; align-items: flex-start; gap: .9rem; }
+.offer-icon { display: inline-flex; height: 3rem; width: 3rem; flex-shrink: 0; align-items: center; justify-content: center; border-radius: .75rem; color: white; }
+.offer-icon-daters { background: #B4234A; }
+.offer-icon-business { background: #52713A; }
+.offer-card-kicker { margin-bottom: .25rem; color: #8F1839; font-size: .7rem; font-weight: 850; letter-spacing: .08em; text-transform: uppercase; }
+.offer-card-kicker-business { color: #526B3C; }
+.offer-step { display: flex; align-items: flex-start; gap: .75rem; color: #4D2F39; font-size: .875rem; line-height: 1.55; }
+.offer-link { display: inline-flex; align-items: center; gap: .45rem; margin-top: 1.5rem; border-radius: 999px; background: #B4234A; padding: .75rem 1rem; color: white; font-size: .875rem; font-weight: 750; transition: transform .15s ease, background-color .15s ease; }
+.offer-link:hover { background: #8F1839; transform: translateY(-1px); }
+.offer-link-business { background: #52713A; }
+.offer-link-business:hover { background: #3F6229; }
 
 @media (max-width: 640px) {
   .hero-shell {

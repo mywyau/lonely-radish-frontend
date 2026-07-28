@@ -113,14 +113,14 @@ const emit = defineEmits<{ toggle: [] }>()
 
 .profile-flip-front {
   background:
-    radial-gradient(circle at 100% 0, rgba(255, 255, 255, .9) 0, rgba(255, 255, 255, 0) 36%),
-    linear-gradient(145deg, #FCE3E8, #F8D7E0);
+    radial-gradient(circle at 100% 0, rgba(215, 167, 179, .7) 0, rgba(215, 167, 179, 0) 40%),
+    linear-gradient(145deg, #F7CAD4 0%, #EDB1C0 100%);
 }
 
 .profile-flip-back {
   background:
-    radial-gradient(circle at 100% 0, rgba(255, 255, 255, .85) 0, rgba(255, 255, 255, 0) 36%),
-    linear-gradient(145deg, #EAF2DE, #DFEBCD);
+    radial-gradient(circle at 100% 0, rgba(159, 183, 127, .65) 0, rgba(159, 183, 127, 0) 40%),
+    linear-gradient(145deg, #DCE9C8 0%, #C4D7A6 100%);
   transform: rotateY(180deg);
 }
 
