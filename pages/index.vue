@@ -120,29 +120,29 @@ const principles = [
   'Public places first, with safety reminders and confirmations on meetups.',
 ]
 
-const howItWorks = [
+const intentionRules = [
   {
-    number: '01',
-    title: 'Find people through shared interests',
-    description: 'Set your preferences, distance and usual availability, then look for other people interested in similar activities.',
+    label: 'A daily limit',
+    title: 'Interest is deliberately selective',
+    description: 'You can show interest in up to five people each day, so each choice stays meaningful instead of becoming endless swiping.',
     icon: Sparkles,
   },
   {
-    number: '02',
-    title: 'Show interest selectively',
-    description: 'Send interest when somebody feels right. Mutual interest will match automatically, or the recipient can choose to create a match.',
+    label: 'A smaller match list',
+    title: 'Plans come before collecting matches',
+    description: 'Active matches are limited by your plan. Finish a plan or close a connection before filling your match list again.',
     icon: HeartHandshake,
   },
   {
-    number: '03',
-    title: 'Make a real plan together',
-    description: 'Suggest an activity, a time that fits their availability and a public venue. Either person can review the details or suggest a change.',
+    label: 'Agreement matters',
+    title: 'Date changes need a clear response',
+    description: 'A date is only confirmed once both people accept it. A proposed reschedule does not replace the agreed plan until it is accepted.',
     icon: CalendarDays,
   },
   {
-    number: '04',
-    title: 'Meet with more clarity',
-    description: 'Use reminders and attendance confirmations, keep contact details private unless you choose to share them, and decide if you would meet again.',
+    label: 'Follow through',
+    title: 'Cancel clearly rather than disappearing',
+    description: 'Confirm attendance, reschedule early or cancel explicitly. Blocking, reporting and private post-date follow-up remain available when needed.',
     icon: ShieldCheck,
   },
 ]
@@ -242,23 +242,23 @@ onMounted(() => {
     <section class="border-y border-[#B4234A]/10 bg-white/55 px-5 py-12 sm:px-8 sm:py-16">
       <div class="mx-auto max-w-6xl">
         <div class="max-w-2xl">
-          <p class="section-kicker">How Lonely Radish works</p>
+          <p class="section-kicker">The rules behind the app</p>
           <h2 class="section-heading">Less swiping. More intention.</h2>
           <p class="mt-4 leading-7 text-[#6E4D58]">
-            The app helps you move from discovering somebody compatible to agreeing a simple, public date all in one place.
+            Intention comes from the boundaries built into Lonely Radish—not just the wording. These rules keep attention on a few genuine possibilities and clearer real-world plans.
           </p>
         </div>
 
-        <ol class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <li v-for="step in howItWorks" :key="step.number" class="how-card">
+        <ul class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <li v-for="rule in intentionRules" :key="rule.label" class="how-card">
             <div class="flex items-center justify-between gap-3">
-              <span class="how-number">{{ step.number }}</span>
-              <component :is="step.icon" class="size-6 text-[#B4234A]" aria-hidden="true" />
+              <span class="how-number">{{ rule.label }}</span>
+              <component :is="rule.icon" class="size-6 text-[#B4234A]" aria-hidden="true" />
             </div>
-            <h3 class="mt-5 text-lg font-semibold">{{ step.title }}</h3>
-            <p class="mt-2 text-sm leading-6 text-[#6E4D58]">{{ step.description }}</p>
+            <h3 class="mt-5 text-lg font-semibold">{{ rule.title }}</h3>
+            <p class="mt-2 text-sm leading-6 text-[#6E4D58]">{{ rule.description }}</p>
           </li>
-        </ol>
+        </ul>
 
         <div class="mt-7 flex flex-wrap gap-2" aria-label="Lonely Radish features">
           <span class="feature-pill">Shared-interest discovery</span>
@@ -267,6 +267,9 @@ onMounted(() => {
           <span class="feature-pill">Date-friendly offers</span>
           <span class="feature-pill">Safety and reporting tools</span>
         </div>
+        <NuxtLink to="/faq" class="mt-7 inline-flex items-center gap-2 rounded-lg bg-[#2A1520] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#4D2F39]">
+          Read how the app works in detail <span aria-hidden="true">→</span>
+        </NuxtLink>
       </div>
     </section>
 

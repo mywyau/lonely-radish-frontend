@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { CalendarDays, Check, ChevronDown, MapPin, MessageCircle, ShieldCheck, Sparkles } from '@lucide/vue'
+import { CalendarDays, Check, ChevronDown, MapPin, MessageCircle, RefreshCw, ShieldCheck, Sparkles, XCircle } from '@lucide/vue'
 import { trackProductEvent } from '~/utils/productAnalytics'
 
 definePageMeta({ middleware: 'logged-in' })
@@ -16,6 +16,8 @@ const matchAvailability = ref<AvailabilityWindow[]>([])
 const availabilityTimezone = ref('Europe/London')
 const proposalId = ref<string | null>(null)
 const proposalStatus = ref<string | null>(null)
+type ConfirmedPlan = { id: string; activity: string; venue: string; venueDetails?: string | null; confirmedTime?: string | null }
+const currentConfirmed = ref<ConfirmedPlan | null>(null)
 const canRespond = ref(false)
 const reproposing = ref(false)
 const proposalSnapshot = ref<{ activity: string; inviteMessage: string; venue: string; venueDetails: string; times: Array<{ label: string; value: string; id?: string }>; selectedTimes: string[] } | null>(null)
@@ -52,6 +54,8 @@ const smallChangeOpen = ref(false)
 const confirmed = ref(false)
 const sending = ref(false)
 const sendError = ref('')
+const planAction = ref<'reschedule' | 'cancel' | null>(null)
+const showCancelConfirmation = ref(false)
 const structuredAvailability = computed(() => matchAvailability.value.filter(window =>
   Number.isInteger(window.weekday) && /^\d{2}:\d{2}/.test(window.startTime || '') && /^\d{2}:\d{2}/.test(window.endTime || '')))
 function minutes(time: string) {
@@ -71,7 +75,13 @@ function fitsMatchAvailability(date: Date) {
   } catch { return false }
 }
 const times = ref<TimeOption[]>([])
-const canEditProposal = computed(() => !canRespond.value || reproposing.value)
+const isReplacement = computed(() => Boolean(currentConfirmed.value && proposalId.value !== currentConfirmed.value.id))
+const canEditProposal = computed(() => !proposalId.value || proposalStatus.value === 'draft' || reproposing.value)
+const confirmedTimeLabel = computed(() => currentConfirmed.value?.confirmedTime
+  ? new Date(currentConfirmed.value.confirmedTime).toLocaleDateString('en-GB', {
+      weekday: 'long', day: 'numeric', month: 'long', hour: 'numeric', minute: '2-digit',
+    })
+  : 'Time unavailable')
 function resetCustomTimeSelection() {
   customTimeError.value = ''
   chosenCustomTimeLabel.value = ''
@@ -175,10 +185,58 @@ async function respond(status: 'accepted' | 'declined', timeId?: string) {
     if (status === 'accepted') {
       confirmed.value = true
       trackProductEvent('Date Confirmed')
+      await loadPlanning()
     }
     else await navigateTo('/matches')
   } catch (error: any) { sendError.value = error?.data?.statusMessage || 'We could not save your response.' }
   finally { sending.value = false }
+}
+async function requestReschedule() {
+  if (!currentConfirmed.value?.id || planAction.value) return
+  planAction.value = 'reschedule'
+  sendError.value = ''
+  try {
+    await $fetch(`/api/proposals/${currentConfirmed.value.id}/attendance`, {
+      method: 'POST', body: { action: 'reschedule' },
+    })
+    trackProductEvent('Date Reschedule Started')
+    await loadPlanning()
+  } catch (error: any) {
+    sendError.value = error?.data?.statusMessage || 'A new date proposal could not be started.'
+  } finally {
+    planAction.value = null
+  }
+}
+async function cancelConfirmedDate() {
+  if (!currentConfirmed.value?.id || planAction.value) return
+  planAction.value = 'cancel'
+  sendError.value = ''
+  try {
+    await $fetch(`/api/proposals/${currentConfirmed.value.id}/attendance`, {
+      method: 'POST', body: { action: 'cancel' },
+    })
+    trackProductEvent('Date Cancelled')
+    showCancelConfirmation.value = false
+    await navigateTo('/matches?date=cancelled')
+  } catch (error: any) {
+    sendError.value = error?.data?.statusMessage || 'The date could not be cancelled.'
+  } finally {
+    planAction.value = null
+  }
+}
+async function discardRescheduleDraft() {
+  if (!proposalId.value || !isReplacement.value || proposalStatus.value !== 'draft' || planAction.value) return
+  if (!window.confirm(`Discard this reschedule draft? Your existing date with ${personName.value} will stay confirmed.`)) return
+  planAction.value = 'reschedule'
+  sendError.value = ''
+  try {
+    await $fetch(`/api/proposals/${proposalId.value}/discard`, { method: 'POST' })
+    await loadPlanning()
+  } catch (error: any) {
+    sendError.value = error?.data?.statusMessage || 'The reschedule draft could not be discarded.'
+  } finally {
+    planAction.value = null
+  }
 }
 async function suggestChanges() {
   if (!proposalId.value || !suggestedVenue.value.trim() || !suggestedTime.value) return
@@ -210,6 +268,7 @@ async function loadPlanning() {
   allowDemoPlan.value = false
   databasePerson.value = null
   databaseActivities.value = []
+  currentConfirmed.value = null
   const minimum = new Date(Date.now() + 15 * 60 * 1000)
   const pad = (value: number) => String(value).padStart(2, '0')
   earliestCustomTime.value = `${minimum.getFullYear()}-${pad(minimum.getMonth() + 1)}-${pad(minimum.getDate())}T${pad(minimum.getHours())}:${pad(minimum.getMinutes())}`
@@ -219,6 +278,7 @@ async function loadPlanning() {
     databaseActivities.value = response.activities
     matchAvailability.value = response.availability || []
     availabilityTimezone.value = response.availabilityTimezone || 'Europe/London'
+    currentConfirmed.value = response.currentConfirmed || null
     if (response.proposal && route.query.new !== '1') {
       proposalId.value = response.proposal.id
       proposalStatus.value = response.proposal.status
@@ -264,8 +324,33 @@ useHead(() => ({ title: `Plan a Date with ${personName.value} · Lonely Radish` 
 
       <div class="mt-5 grid gap-5">
         <section v-if="matchAvailability.length" class="rounded-lg bg-[#F3E8DA] p-5 sm:p-6"><div class="flex items-center gap-2"><CalendarDays class="size-5 text-[#B4234A]" /><h2 class="text-xl font-semibold">When {{ personName }} is usually free</h2></div><p class="mt-2 text-sm text-[#6E4D58]">Suggested and custom times must fit their shared schedule, with at least an hour available.</p><div class="mt-4 flex flex-wrap gap-2"><span v-for="window in matchAvailability" :key="window.label" class="rounded-full bg-white px-3 py-2 text-sm font-semibold text-[#4D2F39]">{{ window.label }}</span></div></section>
+        <section v-if="currentConfirmed" class="rounded-lg border border-[#B8CCA0] bg-[#EAF2DE] p-5 sm:p-6">
+          <div class="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p class="text-xs font-extrabold uppercase tracking-widest text-[#52713A]">{{ isReplacement ? 'Current date — still confirmed' : 'Confirmed date' }}</p>
+              <h2 class="mt-1 text-xl font-semibold">{{ currentConfirmed.activity }}</h2>
+            </div>
+            <span class="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-bold text-[#52713A]"><Check class="size-3.5" />Confirmed</span>
+          </div>
+          <dl class="mt-4 grid gap-3 rounded-lg bg-white/70 p-4 text-sm sm:grid-cols-2">
+            <div><dt class="text-[#6E4D58]">Date and time</dt><dd class="font-semibold">{{ confirmedTimeLabel }}</dd></div>
+            <div><dt class="text-[#6E4D58]">Public venue</dt><dd class="font-semibold">{{ currentConfirmed.venue }}</dd><dd v-if="currentConfirmed.venueDetails" class="mt-1 whitespace-pre-wrap text-[#4D2F39]">{{ currentConfirmed.venueDetails }}</dd></div>
+          </dl>
+          <p v-if="isReplacement" class="mt-4 text-sm leading-6 text-[#4D2F39]">This remains the agreed plan until {{ personName }} accepts the new proposal. Sending or declining a replacement does not silently change it.</p>
+          <div class="mt-5 flex flex-col gap-2 sm:flex-row">
+            <button v-if="proposalStatus === 'accepted'" type="button" class="inline-flex items-center justify-center gap-2 rounded-lg bg-[#4D2F39] px-4 py-3 text-sm font-semibold text-white disabled:opacity-40" :disabled="Boolean(planAction)" @click="requestReschedule"><RefreshCw class="size-4" />{{ planAction === 'reschedule' ? 'Starting…' : 'Propose a different date' }}</button>
+            <button v-if="isReplacement && proposalStatus === 'draft'" type="button" class="inline-flex items-center justify-center gap-2 rounded-lg bg-white/70 px-4 py-3 text-sm font-semibold text-[#4D2F39] disabled:opacity-40" :disabled="Boolean(planAction)" @click="discardRescheduleDraft">Keep current date and discard draft</button>
+            <button type="button" class="inline-flex items-center justify-center gap-2 rounded-lg border border-[#B4234A]/35 bg-white/70 px-4 py-3 text-sm font-semibold text-[#8F1839] disabled:opacity-40" :disabled="Boolean(planAction)" @click="showCancelConfirmation = true"><XCircle class="size-4" />Cancel this date</button>
+          </div>
+          <p v-if="proposalStatus === 'accepted'" class="mt-3 text-xs leading-5 text-[#6E4D58]">Need to change the details? Propose a replacement so both people can clearly agree the new plan.</p>
+        </section>
+        <section v-if="proposalStatus === 'pending' && !canRespond" class="rounded-lg bg-[#FFF1C7] p-5 sm:p-6" role="status">
+          <p class="text-xs font-extrabold uppercase tracking-widest text-[#694C00]">{{ isReplacement ? 'Reschedule proposed' : 'Proposal sent' }}</p>
+          <h2 class="mt-1 text-xl font-semibold">Waiting for {{ personName }}’s response</h2>
+          <p class="mt-2 text-sm leading-6 text-[#694C00]">{{ isReplacement ? 'Your original date remains confirmed while they review the new time and venue.' : 'You will see the plan here as soon as they accept it or suggest a change.' }}</p>
+        </section>
         <section v-if="canRespond && !reproposing" class="rounded-lg bg-[#EAF2DE] p-5 sm:p-6">
-          <h2 class="text-xl font-semibold">{{ personName }} suggested this date</h2>
+          <h2 class="text-xl font-semibold">{{ isReplacement ? `${personName} proposed a different date` : `${personName} suggested this date` }}</h2>
           <p class="mt-2 text-sm text-[#4D2F39]">Review the final proposal. You can accept it as shown, or suggest a simple time or venue change.</p>
           <dl class="mt-5 grid gap-3 rounded-lg bg-white/75 p-4 text-sm">
             <div><dt class="text-[#6E4D58]">Activity</dt><dd class="font-semibold">{{ activity }}</dd></div>
@@ -301,6 +386,18 @@ useHead(() => ({ title: `Plan a Date with ${personName.value} · Lonely Radish` 
       </div>
       </template>
     </section>
+    <div v-if="showCancelConfirmation && currentConfirmed" class="fixed inset-0 z-50 flex items-center justify-center bg-[#2A1520]/55 p-5" role="presentation" @click.self="showCancelConfirmation = false">
+      <section role="alertdialog" aria-modal="true" aria-labelledby="cancel-date-title" class="w-full max-w-md rounded-xl bg-white p-6 shadow-2xl">
+        <h2 id="cancel-date-title" class="text-2xl font-semibold">Cancel your date with {{ personName }}?</h2>
+        <p class="mt-3 text-sm leading-6 text-[#6E4D58]">The confirmed date will be cancelled and {{ personName }} will be notified immediately. You will remain matched and can make another plan later.</p>
+        <p class="mt-3 rounded-lg bg-[#FFF1C7] p-3 text-xs font-semibold text-[#694C00]">This is different from proposing another time. If you still want to meet, choose “Keep date” and use the reschedule option instead.</p>
+        <p v-if="sendError" class="mt-3 text-sm font-semibold text-[#8F1839]" role="alert">{{ sendError }}</p>
+        <div class="mt-5 flex flex-col gap-2 sm:flex-row-reverse">
+          <button type="button" class="rounded-lg bg-[#B4234A] px-4 py-3 text-sm font-semibold text-white disabled:opacity-40" :disabled="Boolean(planAction)" @click="cancelConfirmedDate">{{ planAction === 'cancel' ? 'Cancelling…' : 'Yes, cancel date' }}</button>
+          <button type="button" class="rounded-lg bg-[#F3E8DA] px-4 py-3 text-sm font-semibold text-[#4D2F39]" :disabled="Boolean(planAction)" @click="showCancelConfirmation = false">Keep date</button>
+        </div>
+      </section>
+    </div>
   </main>
 </template>
 

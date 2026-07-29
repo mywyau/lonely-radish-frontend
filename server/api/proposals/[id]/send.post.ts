@@ -12,11 +12,13 @@ export default defineEventHandler(async (event) => {
       where dp.id=$1 and dp.inviter_id=$2 and dp.status='draft'
         and exists(select 1 from matches m where m.id=dp.match_id and m.status='active')
         and exists(select 1 from proposal_times pt where pt.proposal_id=dp.id and pt.proposed_at>now())
-      returning dp.id,dp.match_id as "matchId",dp.invitee_id as "inviteeId",dp.status`, [id,sub])
+      returning dp.id,dp.match_id as "matchId",dp.invitee_id as "inviteeId",dp.status,
+        dp.replaces_proposal_id as "replacesProposalId"`, [id,sub])
     const proposal = rows[0]
     if (!proposal) throw createError({ statusCode: 409, statusMessage: 'Save a complete draft with a future time before sending' })
     await client.query(`insert into notifications(recipient_id,actor_id,match_id,proposal_id,kind)
-      values($1,$2,$3,$4,'proposal_received')`, [proposal.inviteeId,sub,proposal.matchId,id])
+      values($1,$2,$3,$4,$5)`, [proposal.inviteeId,sub,proposal.matchId,id,
+      proposal.replacesProposalId ? 'date_reschedule_requested' : 'proposal_received'])
     await client.query('commit')
     return { id: proposal.id, status: proposal.status }
   } catch (error) {

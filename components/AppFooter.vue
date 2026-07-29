@@ -20,6 +20,10 @@
           Contact
         </NuxtLink>
 
+        <NuxtLink to="/faq" class="hover:underline">
+          FAQ
+        </NuxtLink>
+
         <NuxtLink to="/privacy-notice" class="hover:underline">
           Privacy Notice
         </NuxtLink>

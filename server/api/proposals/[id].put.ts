@@ -20,7 +20,7 @@ export default defineEventHandler(async (event) => {
     await client.query('begin')
     const existing = await client.query(`select id,status,inviter_id as "inviterId",invitee_id as "inviteeId",
       match_id as "matchId",activity_label as activity,invite_note as "inviteNote",venue_details as "venueDetails"
-      from date_proposals where id=$1 and status in ('draft','pending','accepted')
+      from date_proposals where id=$1 and status in ('draft','pending')
         and ($2=inviter_id or $2=invitee_id) for update`, [id,sub])
     const current = existing.rows[0]
     if (!current) throw createError({ statusCode: 404, statusMessage: 'Date proposal not found' })

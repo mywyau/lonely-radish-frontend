@@ -13,7 +13,9 @@ export default defineEventHandler(async (event) => {
     photo.storage_key as "photoStorageKey",photo.public_url as "legacyPhotoUrl",m.matched_at as "matchedAt",
     proposal.id as "proposalId",proposal.status as "proposalStatus",proposal.activity_label as activity,
     proposal.venue,proposal.inviter_id as "inviterId",proposal.invitee_id as "inviteeId",
+    proposal.replaces_proposal_id as "replacesProposalId",
     proposal.confirmed_at as "confirmedAt",selected.proposed_at as "confirmedTime",
+    replaced_selected.proposed_at as "currentConfirmedTime",
     attached_offer.id as "offerClaimId",attached_offer.offer_id as "attachedOfferId",
     attached_offer.offer_title as "attachedOfferTitle",
     m.action_required_by=$1 and m.action_completed_at is null as "yourMove",
@@ -27,8 +29,11 @@ export default defineEventHandler(async (event) => {
     left join lateral (select coalesce(thumbnail_storage_key,storage_key) as storage_key,public_url
       from profile_photos where user_id=p.user_id order by position limit 1) photo on true
     left join lateral (select dp.* from date_proposals dp where dp.match_id=m.id
-      and (dp.status<>'draft' or dp.inviter_id=$1) order by dp.created_at desc limit 1) proposal on true
+      and (dp.status<>'draft' or dp.inviter_id=$1)
+      order by (dp.status in ('draft','pending','accepted')) desc,dp.created_at desc limit 1) proposal on true
     left join proposal_times selected on selected.id=proposal.selected_time_id
+    left join date_proposals replaced on replaced.id=proposal.replaces_proposal_id and replaced.status='accepted'
+    left join proposal_times replaced_selected on replaced_selected.id=replaced.selected_time_id
     left join lateral (select c.id,c.offer_id,c.offer_title from business_offer_claims c
       where c.proposal_id=proposal.id and c.status<>'revoked'
       order by c.claimed_at desc limit 1) attached_offer on true
@@ -73,7 +78,8 @@ export default defineEventHandler(async (event) => {
       photoStorageKey: undefined, legacyPhotoUrl: undefined, theirMeetAgain: undefined, photoUrl, stage,
       dateHasPassed, bothFollowedUp, followUpResult, hasFollowedUp: Boolean(row.myFollowUpAt),
       attendanceConfirmed: row.myAttendance === 'confirmed', otherAttendanceConfirmed: row.theirAttendance === 'confirmed',
-      isInviter: row.inviterId === sub, needsResponse: proposalStatus === 'pending' && row.inviteeId === sub }
+      isInviter: row.inviterId === sub, isReschedule: Boolean(row.replacesProposalId),
+      needsResponse: proposalStatus === 'pending' && row.inviteeId === sub }
   })
   return { matches, totalMatches: rows[0]?.totalMatches || 0,
     activeMatchCount: activeCount.rows[0]?.count || 0,

@@ -36,10 +36,10 @@ describe("core page contracts", () => {
       "A shared interest could be the start of something lovely.",
     );
     expect(source).toContain("Skip the endless swiping. Say yes to a plan.");
-    expect(source).toContain("How Lonely Radish works");
-    expect(source).toContain("Find people through shared interests");
-    expect(source).toContain("Show interest selectively");
-    expect(source).toContain("Make a real plan together");
+    expect(source).toContain("The rules behind the app");
+    expect(source).toContain("Interest is deliberately selective");
+    expect(source).toContain("Plans come before collecting matches");
+    expect(source).toContain("Date changes need a clear response");
     expect(source).toContain("Shared-interest discovery");
     expect(source).toContain("In-app date planning");
     expect(source).toContain("From match to meetup");

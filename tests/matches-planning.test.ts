@@ -9,7 +9,8 @@ describe('matches and date planning dashboard', () => {
     const page = read('pages/matches/index.vue')
     expect(page).toContain("'/api/matches'")
     expect(page).toContain("return 'Start planning'")
-    expect(page).toContain("return 'Edit date details'")
+    expect(page).toContain("return 'View date plan'")
+    expect(page).toContain("return 'View reschedule'")
     expect(page).toContain("'Review proposal'")
     expect(page).toContain("'Edit proposal'")
     expect(page).toContain("return 'Plan another date'")
@@ -21,7 +22,7 @@ describe('matches and date planning dashboard', () => {
     expect(matchesApi).toContain("row.status === 'queued' ? 'queued'")
   })
 
-  it('allows a proposal to be confirmed and material details to be edited', () => {
+  it('allows a proposal to be confirmed and pending details to be revised', () => {
     expect(read('server/api/proposals/[id]/respond.post.ts')).toContain("['accepted', 'declined']")
     expect(read('server/api/proposals/[id].put.ts')).toContain("senderEditingDraft ? 'draft' : 'pending'")
     expect(read('pages/plans/[slug].vue')).toContain('Save as draft')
