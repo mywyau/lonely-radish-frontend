@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { CalendarDays, ChevronDown, ChevronLeft, ChevronRight, Expand, Eye, HeartHandshake, ImagePlus, MapPin, RefreshCw, ShieldCheck, UserRound, X } from '@lucide/vue';
+import { AtSign, CalendarDays, ChevronDown, ChevronLeft, ChevronRight, Expand, Eye, HeartHandshake, ImagePlus, Mail, MapPin, Phone, RefreshCw, ShieldCheck, UserRound, X } from '@lucide/vue';
 import { profileDetails } from '~/utils/profileDetails';
 
 definePageMeta({ title: 'Profile Preview · Lonely Radish', middleware: 'logged-in' })
@@ -11,6 +11,7 @@ type PreviewData = {
   interestCategories: string[]
   personalInterests: string[]
   availability: string[]
+  contactDetails: { phoneNumber?: string | null; contactEmail?: string | null; socialHandle?: string | null; shareWithMatches: boolean } | null
 }
 
 const loading = ref(true)
@@ -43,6 +44,8 @@ const gallerySlots = computed(() => [
 ])
 const activePhoto = computed(() => galleryPhotos.value[activePhotoIndex.value] || null)
 const bioNeedsExpansion = computed(() => (data.value?.profile?.bio?.length || 0) > 420)
+const hasContactDetails = computed(() => Boolean(data.value?.contactDetails
+  && (data.value.contactDetails.phoneNumber || data.value.contactDetails.contactEmail || data.value.contactDetails.socialHandle)))
 
 function selectPhoto(index: number) {
   activePhotoIndex.value = index
@@ -95,8 +98,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleGalleryKeydown
             <Eye class="size-4" />Private preview
           </p>
           <h1 class="mt-2 text-3xl font-semibold sm:text-4xl">See your profile as others do.</h1>
-          <p class="mt-2 text-sm text-[#6E4D58]">This page is visible only to you. Contact details and private matching
-            preferences are never included.</p>
+          <p class="mt-2 text-sm text-[#6E4D58]">This page is visible only to you. Saved contact details are previewed below, but other people see them only when you enable sharing and they are an active match. Private matching preferences are never included.</p>
         </div>
         <div class="flex gap-2">
           <NuxtLink to="/account/v2" class="rounded-lg bg-[#F3E8DA] px-4 py-2.5 text-sm font-semibold text-[#8F1839]">
@@ -246,6 +248,21 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleGalleryKeydown
               <div class="mt-4 flex flex-wrap gap-2"><span v-for="time in data.availability" :key="time"
                   class="rounded-full bg-[#F3E8DA] px-3 py-2 text-sm font-semibold text-[#4D2F39]">{{ time }}</span></div>
               <p class="mt-4 rounded-lg bg-[#F3E8DA] p-3 text-xs leading-5 text-[#6E4D58]">Live visibility depends on your Schedule &amp; Safety setting and whether the viewer is an active match.</p>
+            </section>
+
+            <section v-if="hasContactDetails && data.contactDetails"
+              class="order-5 rounded-lg bg-white p-5 shadow-[0_10px_24px_rgba(180,35,74,0.08)] sm:p-6">
+              <div class="flex flex-wrap items-start justify-between gap-3">
+                <div><h3 class="text-xl font-semibold">Contact details</h3><p class="mt-2 text-xs leading-5 text-[#6E4D58]">This is how your saved details appear to an active match when sharing is enabled.</p></div>
+                <span class="rounded-full px-3 py-1.5 text-xs font-bold" :class="data.contactDetails.shareWithMatches ? 'bg-[#EAF2DE] text-[#52713A]' : 'bg-[#F3E8DA] text-[#6E4D58]'">{{ data.contactDetails.shareWithMatches ? 'Shared with active matches' : 'Currently hidden' }}</span>
+              </div>
+              <div class="mt-4 space-y-3 text-sm">
+                <p v-if="data.contactDetails.phoneNumber" class="flex items-center gap-2 font-semibold text-[#8F1839]"><Phone class="size-4 shrink-0" aria-hidden="true" />{{ data.contactDetails.phoneNumber }}</p>
+                <p v-if="data.contactDetails.contactEmail" class="flex items-center gap-2 break-all font-semibold text-[#8F1839]"><Mail class="size-4 shrink-0" aria-hidden="true" />{{ data.contactDetails.contactEmail }}</p>
+                <p v-if="data.contactDetails.socialHandle" class="flex items-center gap-2 font-semibold text-[#4D2F39]"><AtSign class="size-4 shrink-0 text-[#8F1839]" aria-hidden="true" /><span class="break-all">{{ data.contactDetails.socialHandle }}</span></p>
+              </div>
+              <p v-if="!data.contactDetails.shareWithMatches" class="mt-4 rounded-lg bg-[#FFF1C7] p-3 text-xs leading-5 text-[#694C00]">These details are saved but are not visible to matches. Enable “Share with active matches” in your account when you are comfortable.</p>
+              <NuxtLink to="/account/v2" class="mt-4 inline-flex text-sm font-semibold text-[#8F1839] hover:underline">Manage contact sharing →</NuxtLink>
             </section>
 
             <ProfileActivityPanel class="order-6 block lg:hidden" :activities="data.activities"

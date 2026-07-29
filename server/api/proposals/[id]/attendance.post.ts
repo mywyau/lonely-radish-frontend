@@ -40,8 +40,9 @@ export default defineEventHandler(async (event) => {
         return { action, status: existing.rows[0].status, proposalId: existing.rows[0].id }
       }
       const replacement = await client.query(`insert into date_proposals(
-        match_id,inviter_id,invitee_id,activity_label,invite_note,venue,venue_details,status,replaces_proposal_id)
-        select match_id,$2,$3,activity_label,null,venue,venue_details,'draft',id
+        match_id,inviter_id,invitee_id,activity_label,invite_note,venue,venue_address,venue_postcode,
+        venue_details,status,replaces_proposal_id)
+        select match_id,$2,$3,activity_label,null,venue,venue_address,venue_postcode,venue_details,'draft',id
         from date_proposals where id=$1 returning id`, [id,sub,otherUserId])
       await client.query('commit')
       return { action, status: 'draft', proposalId: replacement.rows[0].id }

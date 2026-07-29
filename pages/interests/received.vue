@@ -69,6 +69,11 @@ async function declineInterest(person: ReceivedInterest) {
 <template>
   <main class="min-h-screen bg-[#FBF7F1] px-5 py-10 text-[#2A1520] sm:px-8"><section class="mx-auto max-w-3xl">
     <p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">Your activity</p><h1 class="mt-2 text-4xl font-semibold">Interested</h1><p class="mt-3 max-w-2xl leading-6 text-[#6E4D58]">Review who would like to meet you. You decide whether to create a match and begin planning.</p>
+    <section class="mt-5 rounded-lg bg-[#F3E8DA] p-4 text-sm leading-6 text-[#4D2F39]" aria-labelledby="manual-match-rules">
+      <h2 id="manual-match-rules" class="font-semibold">How manual matching works</h2>
+      <p class="mt-1">Accepting an incoming interest creates a manual match. You can have one active manual match awaiting your move: start a date proposal or close it before accepting another. Mutual matches form automatically and do not use this slot.</p>
+      <p class="mt-2 text-xs text-[#6E4D58]">If either person has reached their active limit, the accepted match waits safely until both people have space. Free accounts have 3 active spaces; paid plans have 5.</p>
+    </section>
     <p v-if="successMessage" class="mt-5 rounded-lg bg-[#EAF2DE] p-4 text-sm font-semibold text-[#4D2F39]" role="status">{{ successMessage }} <NuxtLink to="/matches" class="text-[#8F1839] underline">View matches</NuxtLink></p>
     <p v-if="yourMoveMatch" class="mt-5 rounded-lg bg-[#FFF1C7] p-4 text-sm leading-6 text-[#694C00]" role="status"><strong>Your move with {{ yourMoveMatch.name }}.</strong> Start planning or close that match before accepting another interest. You can still view profiles, pass, and send interests. <NuxtLink to="/matches" class="font-semibold underline">View match</NuxtLink></p>
     <div v-if="errorMessage" class="mt-5 rounded-lg bg-[#FCE3E8] p-4 text-sm font-semibold text-[#8F1839]" role="alert"><p>{{ errorMessage }}</p><button v-if="!loading && !interests.length" type="button" class="mt-3 rounded-lg bg-white px-4 py-2" @click="loadReceivedInterests">Try again</button></div>

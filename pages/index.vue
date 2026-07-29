@@ -89,27 +89,27 @@ const featuredMatches = [
 
 const dateFlow = [
   {
-    kicker: 'New match',
-    title: 'You and Maya matched',
-    description: 'You both like gallery walks.',
-    detail: 'Gallery walks · 2 km away',
-    action: 'Start planning',
+    kicker: 'Intentional match',
+    title: 'Choose each other for a reason',
+    description: 'Match through mutual interest, or deliberately accept someone who wants to meet you.',
+    detail: 'Shared activities · Manageable match spaces',
+    action: 'View match',
     icon: HeartHandshake,
   },
   {
-    kicker: 'Date proposal',
-    title: 'Gallery walk',
-    description: 'Choose a time and send details for a public venue. Suggest a small change if needed.',
-    detail: 'Sat, 2:00 pm · Barbican Centre',
-    action: 'Review plan',
+    kicker: 'Mutually agreed plan',
+    title: 'Make the details clear',
+    description: 'Choose a shared or custom activity, future time and structured public meeting place. Both people approve changes.',
+    detail: 'Gallery walk · Sat, 2:00 pm · Public venue',
+    action: 'Agree plan',
     icon: CalendarDays,
   },
   {
-    kicker: 'Plan confirmed',
-    title: 'You’re all set',
-    description: 'Reschedule simply, or optionally share contact details once matched.',
-    detail: 'Public venue · Contact sharing off',
-    action: 'View date',
+    kicker: 'Clear follow-through',
+    title: 'Meet with fewer unknowns',
+    description: 'Use reminders and attendance confirmation, reschedule or cancel clearly, then complete a private follow-up.',
+    detail: 'Reminders on · Contact sharing optional',
+    action: 'Meet',
     icon: MessageCircle,
   },
 ]
@@ -130,7 +130,7 @@ const intentionRules = [
   {
     label: 'A smaller match list',
     title: 'Plans come before collecting matches',
-    description: 'Active matches are limited by your plan. Finish a plan or close a connection before filling your match list again.',
+    description: 'Free accounts can have 3 active matches and paid plans can have 5. Extra matches wait safely until both people have space.',
     icon: HeartHandshake,
   },
   {
@@ -260,6 +260,12 @@ onMounted(() => {
           </li>
         </ul>
 
+        <div class="mt-6 rounded-lg border border-[#B4234A]/15 bg-[#FCE3E8]/55 p-4 text-sm leading-6 text-[#4D2F39]">
+          <strong>Manual matching has a separate one-at-a-time rule.</strong>
+          When you accept someone’s interest, start planning or close that new match before manually accepting another. Mutual matches still form automatically.
+          <NuxtLink to="/faq#discovery-and-matching" class="ml-1 font-semibold text-[#8F1839] hover:underline">Read the matching rules</NuxtLink>
+        </div>
+
         <div class="mt-7 flex flex-wrap gap-2" aria-label="Lonely Radish features">
           <span class="feature-pill">Shared-interest discovery</span>
           <span class="feature-pill">Selective matches</span>
@@ -268,7 +274,7 @@ onMounted(() => {
           <span class="feature-pill">Safety and reporting tools</span>
         </div>
         <NuxtLink to="/faq" class="mt-7 inline-flex items-center gap-2 rounded-lg bg-[#2A1520] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#4D2F39]">
-          Read how the app works in detail <span aria-hidden="true">→</span>
+          Read more <span aria-hidden="true">→</span>
         </NuxtLink>
       </div>
     </section>
@@ -279,10 +285,10 @@ onMounted(() => {
           <div>
             <p class="section-kicker text-[#F7B7C4]">From match to meetup</p>
             <h2 class="section-heading max-w-2xl text-white">
-              Match. Make a plan. Meet.
+              Match intentionally. Agree a plan. Meet.
             </h2>
             <p class="mt-4 max-w-2xl leading-7 text-white/70">
-              Every match has a shared planning space, so the next step is clear without needing a long conversation first.
+              Lonely Radish keeps the journey focused: a considered match, a public plan both people approve, and clear follow-through before and after meeting.
             </p>
           </div>
           <NuxtLink to="/contact" class="text-sm font-semibold text-[#F7B7C4] hover:text-white">

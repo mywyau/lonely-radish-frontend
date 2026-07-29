@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { CalendarDays, ChevronDown, ChevronLeft, ChevronRight, Expand, HeartHandshake, Mail, MapPin, Phone, RefreshCw, ShieldCheck, Sparkles, UserRound, X } from '@lucide/vue'
+import { AtSign, CalendarDays, ChevronDown, ChevronLeft, ChevronRight, Expand, HeartHandshake, Mail, MapPin, Phone, RefreshCw, ShieldCheck, Sparkles, UserRound, X } from '@lucide/vue'
 import { profileDetails } from '~/utils/profileDetails'
 
 definePageMeta({ middleware: 'logged-in' })
@@ -427,7 +427,7 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
           <section v-if="profile.contactDetails && profile.isMatched && profile.relationshipStatus !== 'unmatched'"
             class="order-5 rounded-lg bg-white p-5 shadow-[0_10px_24px_rgba(180,35,74,0.08)] sm:p-6">
             <h2 class="text-xl font-semibold">Contact details</h2>
-            <p class="mt-2 text-xs leading-5 text-[#6E4D58]">Shared with you because you are an active match. And they want to share</p>
+            <p class="mt-2 text-xs leading-5 text-[#6E4D58]">Shared with you because you are an active match and they chose to share these details.</p>
             <div class="mt-4 space-y-3 text-sm"><a v-if="profile.contactDetails.phoneNumber"
                 :href="`tel:${profile.contactDetails.phoneNumber}`"
                 class="flex items-center gap-2 font-semibold text-[#8F1839]">
@@ -436,8 +436,10 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
                 class="flex items-center gap-2 break-all font-semibold text-[#8F1839]">
                 <Mail class="size-4 shrink-0" />{{ profile.contactDetails.contactEmail }}
               </a>
-              <p v-if="profile.contactDetails.socialHandle" class="font-semibold text-[#4D2F39]">{{
-                profile.contactDetails.socialHandle }}</p>
+              <p v-if="profile.contactDetails.socialHandle" class="flex items-center gap-2 font-semibold text-[#4D2F39]">
+                <AtSign class="size-4 shrink-0 text-[#8F1839]" aria-hidden="true" />
+                <span class="break-all">{{ profile.contactDetails.socialHandle }}</span>
+              </p>
             </div>
           </section>
           <ProfileActivityPanel v-if="profile.relationshipStatus !== 'unmatched'"

@@ -43,8 +43,20 @@ const sections = [
         answer: 'If you have both already shown interest, the match can form automatically. Otherwise, the recipient can review the interest and choose whether to accept it.',
       },
       {
-        question: 'Why is there an active match limit?',
-        answer: 'A smaller active list keeps attention on conversations and plans that can realistically move forward. The exact limit depends on your plan, and additional matches can wait until space becomes available.',
+        question: 'How do active match limits work?',
+        answer: 'Free accounts can have up to three active matches and paid plans can have up to five. New matches, plans in progress and confirmed dates all count. Waiting matches do not use an active space until they are activated.',
+      },
+      {
+        question: 'What is a manual match?',
+        answer: 'A manual match is created when somebody sends you interest and you choose “Accept and match.” It is different from a mutual match, which forms automatically after both people independently show interest.',
+      },
+      {
+        question: 'Why can I have only one manual match awaiting my move?',
+        answer: 'After manually accepting an interest, start a date proposal or close that match before manually accepting another. This is a one-at-a-time action rule, not a lifetime or daily matching allowance. Mutual matches do not use this manual-action slot.',
+      },
+      {
+        question: 'What happens when a match is waiting?',
+        answer: 'If either person has filled their active match spaces, the new match stays visible in Matches waiting. It is not lost and does not count as active. Planning can begin when both people have space and the waiting match is activated.',
       },
       {
         question: 'Can I remove a match?',

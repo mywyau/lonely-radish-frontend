@@ -103,6 +103,11 @@ function statusLabel(match: MatchCard) {
     weekday: 'short', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit',
   }) : 'Date confirmed'
 }
+function statusBadgeClass(match: MatchCard) {
+  return match.yourMove
+    ? 'bg-[#FFF1C7] text-[#694C00] ring-1 ring-inset ring-[#D7A928]/45'
+    : 'bg-white/70'
+}
 async function activateQueuedMatch(match: MatchCard) {
   if (activatingMatch.value) return
   activatingMatch.value = match.id
@@ -292,14 +297,23 @@ onMounted(async () => {
 
       <div class="mt-6 flex justify-end"><button type="button" class="inline-flex items-center gap-1.5 text-sm font-semibold text-[#8F1839] hover:underline" :aria-pressed="!showSummaryCounts" @click="toggleSummaryCounts"><EyeOff v-if="showSummaryCounts" class="size-4" aria-hidden="true" /><Eye v-else class="size-4" aria-hidden="true" />{{ showSummaryCounts ? 'Hide counts' : 'Show counts' }}</button></div>
       <div v-if="showSummaryCounts" class="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-6 sm:gap-4">
-        <NuxtLink to="/interests/received" class="summary-card summary-interested col-span-2 sm:col-span-1"><HeartHandshake class="summary-icon" /><strong>{{ interestReceivedCount }}</strong><span>Interested</span></NuxtLink>
+        <NuxtLink to="/interests/received" class="summary-card summary-interested col-span-2 sm:col-span-1 hover:brightness-90"><HeartHandshake class="summary-icon" /><strong>{{ interestReceivedCount }}</strong><span>Interested</span></NuxtLink>
         <div class="summary-card summary-total"><UsersRound class="summary-icon" /><strong>{{ activeMatchCount }}/{{ activeMatchLimit }}</strong><span>Matches</span></div>
         <div class="summary-card summary-manual"><HeartHandshake class="summary-icon" /><strong>{{ manualMatchCount }}/{{ manualMatchLimit }}</strong><span>Manual matches</span></div>
         <div class="summary-card summary-new"><Sparkles class="summary-icon" /><strong>{{ counts.fresh }}</strong><span>New</span></div>
         <div class="summary-card summary-planning"><Clock3 class="summary-icon" /><strong>{{ counts.planning }}</strong><span>Planning</span></div>
         <div class="summary-card summary-confirmed"><CalendarCheck class="summary-icon" /><strong>{{ counts.confirmed }}</strong><span>Confirmed</span></div>
       </div>
-      <p v-if="showSummaryCounts" class="mt-3 text-center text-xs text-[#6E4D58]">Your plan allows up to {{ activeMatchLimit }} active matches across matching, planning, and confirmed dates.<span v-if="activeMatchLimit === 3"> <NuxtLink to="/upgrade" class="font-semibold text-[#8F1839] hover:underline">Paid plans allow 5.</NuxtLink></span></p>
+      <div v-if="showSummaryCounts" class="mt-4 grid gap-3 text-xs leading-5 sm:grid-cols-2">
+        <section class="rounded-lg bg-white/70 p-4">
+          <h2 class="font-bold text-[#4D2F39]">Active match spaces</h2>
+          <p class="mt-1 text-[#6E4D58]">New, planning and confirmed matches use one of your {{ activeMatchLimit }} spaces. Waiting matches do not count until activated.<span v-if="activeMatchLimit === 3"> <NuxtLink to="/upgrade" class="font-semibold text-[#8F1839] hover:underline">Paid plans allow 5 active matches.</NuxtLink></span></p>
+        </section>
+        <section class="rounded-lg bg-white/70 p-4">
+          <h2 class="font-bold text-[#4D2F39]">Manual matching: {{ manualMatchCount }}/{{ manualMatchLimit }} awaiting your move</h2>
+          <p class="mt-1 text-[#6E4D58]">When you accept an incoming interest, start planning or close that match before manually accepting another. Automatic mutual matches do not use this slot.</p>
+        </section>
+      </div>
 
       <section v-if="notifications.length" class="updates-panel mt-7" aria-labelledby="match-updates-title">
         <div class="flex flex-col gap-4 border-b border-[#E8D8C4] px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
@@ -374,7 +388,7 @@ onMounted(async () => {
                   <div v-else class="flex size-14 shrink-0 items-center justify-center rounded-full bg-white/75 text-lg font-semibold text-[#B4234A]">{{ match.name.charAt(0) }}</div>
                   <div class="min-w-0"><h3 class="text-lg font-semibold">{{ match.name }}</h3><p v-if="match.activity" class="mt-1 inline-flex items-center gap-1 text-sm font-semibold text-[#8F1839]"><Sparkles class="size-3.5" />{{ match.activity }}</p><p v-if="match.venue || match.place" class="mt-1 flex items-center gap-1 truncate text-xs text-[#6E4D58]"><MapPin class="size-3.5 shrink-0" />{{ match.venue || match.place }}</p></div>
                 </div>
-                <span class="inline-flex w-fit items-center gap-1 rounded-full bg-white/70 px-3 py-2 text-xs font-semibold"><component :is="section.icon" class="size-3.5" />{{ statusLabel(match) }}</span>
+                <span class="inline-flex w-fit items-center gap-1 rounded-full px-3 py-2 text-xs font-semibold" :class="statusBadgeClass(match)"><component :is="section.icon" class="size-3.5" />{{ statusLabel(match) }}</span>
               </div>
               <div class="mt-5 flex flex-col gap-2 min-[380px]:flex-row">
                 <button v-if="match.stage === 'queued'" type="button" class="group inline-flex items-center justify-center gap-2 rounded-lg bg-[#B4234A] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#8F1839] disabled:opacity-50" :disabled="activatingMatch === match.id" @click="activateQueuedMatch(match)">{{ activatingMatch === match.id ? 'Checking space…' : actionLabel(match) }}<ChevronRight class="size-4 transition group-hover:translate-x-1" /></button>

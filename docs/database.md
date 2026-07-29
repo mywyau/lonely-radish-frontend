@@ -58,3 +58,4 @@ Keep `DATABASE_URL` out of client runtime configuration and never prefix it with
 - `20260723_prevent_duplicate_interests.sql`: one permanent outgoing interest per pair.
 - `20260723_add_match_end_history.sql`: match-ending actor, reason, timestamp, and past-connections history support.
 - `20260828_explicit_date_rescheduling.sql`: linked replacement proposals that preserve the confirmed date until a reschedule is accepted.
+- `20260829_structured_meeting_locations.sql`: public venue addresses and normalized UK postcodes for clearer meetup details.

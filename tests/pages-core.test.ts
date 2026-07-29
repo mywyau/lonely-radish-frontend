@@ -117,7 +117,7 @@ describe("core page contracts", () => {
     expect(matches).toContain("View {{ match.name }}’s profile");
     expect(plan).toContain("Plan a date with {{ personName }}");
     expect(plan).toContain("Suggest a date and time");
-    expect(plan).toContain("Enter a public venue");
+    expect(plan).toContain("Add a clear public meeting place");
     expect(plan).not.toContain("Keep logistics simple");
     expect(plan).toContain("Short reply");
     expect(plan).not.toContain("Add preset");
@@ -144,7 +144,7 @@ describe("core page contracts", () => {
     );
     expect(preview).toContain("middleware: 'logged-in'");
     expect(preview).toContain("'/api/profile/me'");
-    expect(preview).toContain("Contact details and private matching");
+    expect(preview).toContain("Saved contact details are previewed below");
     expect(preview).toContain("preferences are never included");
     expect(preview).toContain("gallerySlots");
     expect(preview).toContain('class="order-1 min-w-0 max-w-full sm:hidden"');

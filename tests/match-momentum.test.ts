@@ -22,10 +22,14 @@ describe('match momentum', () => {
   })
 
   it('clears the required action through planning or closing the match', () => {
+    const page = read('pages/matches/index.vue')
     expect(read('server/api/proposals/index.post.ts')).toContain('set action_completed_at=now()')
     expect(read('server/api/matches/[id].delete.ts')).toContain("status='unmatched'")
-    expect(read('pages/matches/index.vue')).toContain("if (match.yourMove) return 'Your move'")
-    expect(read('pages/matches/index.vue')).not.toContain('opening-note')
+    expect(page).toContain("if (match.yourMove) return 'Your move'")
+    expect(page).toContain("match.yourMove")
+    expect(page).toContain("bg-[#FFF1C7] text-[#694C00]")
+    expect(page).toContain(':class="statusBadgeClass(match)"')
+    expect(page).not.toContain('opening-note')
   })
 
   it('shows separate total and manual match capacity counters', () => {
@@ -35,11 +39,15 @@ describe('match momentum', () => {
     expect(endpoint).toContain('manualMatchLimit: 1')
     expect(page).toContain('{{ activeMatchCount }}/{{ activeMatchLimit }}')
     expect(page).toContain('{{ manualMatchCount }}/{{ manualMatchLimit }}')
+    expect(page).toContain('Manual matching: {{ manualMatchCount }}/{{ manualMatchLimit }} awaiting your move')
+    expect(page).toContain('Automatic mutual matches do not use this slot')
   })
 
   it('allows received interests to remain visible and be passed on', () => {
     const page = read('pages/interests/received.vue')
     expect(page).toContain('You can still view profiles, pass, and send interests.')
+    expect(page).toContain('How manual matching works')
+    expect(page).toContain('Free accounts have 3 active spaces; paid plans have 5')
     expect(page).toContain('declineInterest(person)')
     expect(read('server/api/interests/[id].delete.ts')).toContain('declined_at=now()')
   })

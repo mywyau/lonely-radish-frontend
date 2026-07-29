@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { CalendarDays, Check, ChevronDown, MapPin, MessageCircle, RefreshCw, ShieldCheck, Sparkles, XCircle } from '@lucide/vue'
+import { CalendarDays, Check, ChevronDown, Copy, ExternalLink, MapPin, MessageCircle, RefreshCw, ShieldCheck, Sparkles, XCircle } from '@lucide/vue'
 import { trackProductEvent } from '~/utils/productAnalytics'
+import { isUkPostcode, normalizeUkPostcode } from '~/utils/ukPostcode'
 
 definePageMeta({ middleware: 'logged-in' })
 
@@ -16,11 +17,11 @@ const matchAvailability = ref<AvailabilityWindow[]>([])
 const availabilityTimezone = ref('Europe/London')
 const proposalId = ref<string | null>(null)
 const proposalStatus = ref<string | null>(null)
-type ConfirmedPlan = { id: string; activity: string; venue: string; venueDetails?: string | null; confirmedTime?: string | null }
+type ConfirmedPlan = { id: string; activity: string; venue: string; venueAddress?: string | null; venuePostcode?: string | null; meetingPoint?: string | null; venueDetails?: string | null; confirmedTime?: string | null }
 const currentConfirmed = ref<ConfirmedPlan | null>(null)
 const canRespond = ref(false)
 const reproposing = ref(false)
-const proposalSnapshot = ref<{ activity: string; inviteMessage: string; venue: string; venueDetails: string; times: Array<{ label: string; value: string; id?: string }>; selectedTimes: string[] } | null>(null)
+const proposalSnapshot = ref<{ activity: string; inviteMessage: string; venue: string; venueAddress: string; venuePostcode: string; venueDetails: string; publicVenueConfirmed: boolean; times: Array<{ label: string; value: string; id?: string }>; selectedTimes: string[] } | null>(null)
 const names: Record<string, string> = { maya: 'Maya', nina: 'Nina', alex: 'Alex' }
 const activityLabels: Record<string, string> = { 'gallery-wander': 'Gallery wander', 'indie-film': 'Indie film', 'climbing-taster': 'Climbing taster' }
 const interestsByPerson: Record<string, string[]> = {
@@ -34,15 +35,25 @@ const activities = computed(() => databaseActivities.value.length ? databaseActi
   : allowDemoPlan.value ? (interestsByPerson[String(route.params.slug)] || []) : [])
 const initialActivity = computed(() => activityLabels[String(route.query.activity)] || activities.value[0] || '')
 const activity = ref(initialActivity.value)
+const customActivity = ref('')
+const activityLimit = 100
 const inviteMessage = ref('')
 const inviteMessageLimit = 240
 const venueLimit = 200
+const venueAddressLimit = 300
+const venuePostcodeLimit = 12
 const venueDetailsLimit = 300
 const selectedTimes = ref<string[]>([])
 const venue = ref('')
+const venueAddress = ref('')
+const venuePostcode = ref('')
 const venueDetails = ref('')
+const publicVenueConfirmed = ref(false)
 const suggestedVenue = ref('')
+const suggestedVenueAddress = ref('')
+const suggestedVenuePostcode = ref('')
 const suggestedVenueDetails = ref('')
+const suggestedPublicVenueConfirmed = ref(false)
 const suggestedTime = ref('')
 const suggestedMessage = ref('')
 const customTime = ref('')
@@ -56,6 +67,7 @@ const sending = ref(false)
 const sendError = ref('')
 const planAction = ref<'reschedule' | 'cancel' | null>(null)
 const showCancelConfirmation = ref(false)
+const copyStatus = ref('')
 const structuredAvailability = computed(() => matchAvailability.value.filter(window =>
   Number.isInteger(window.weekday) && /^\d{2}:\d{2}/.test(window.startTime || '') && /^\d{2}:\d{2}/.test(window.endTime || '')))
 function minutes(time: string) {
@@ -82,6 +94,40 @@ const confirmedTimeLabel = computed(() => currentConfirmed.value?.confirmedTime
       weekday: 'long', day: 'numeric', month: 'long', hour: 'numeric', minute: '2-digit',
     })
   : 'Time unavailable')
+const customActivitySelected = computed(() => Boolean(activity.value) && !activities.value.includes(activity.value))
+const proposalLocationComplete = computed(() => Boolean(venue.value.trim() && venueAddress.value.trim()
+  && isUkPostcode(venuePostcode.value) && publicVenueConfirmed.value))
+const suggestedLocationComplete = computed(() => Boolean(suggestedVenue.value.trim() && suggestedVenueAddress.value.trim()
+  && isUkPostcode(suggestedVenuePostcode.value) && suggestedPublicVenueConfirmed.value))
+function chooseListedActivity(option: string) {
+  activity.value = option
+  customActivity.value = ''
+  sendError.value = ''
+}
+function updateCustomActivity() {
+  activity.value = customActivity.value.trim().replace(/\s+/g, ' ')
+  sendError.value = ''
+}
+function normalizeProposalPostcode() {
+  venuePostcode.value = normalizeUkPostcode(venuePostcode.value)
+}
+function normalizeSuggestedPostcode() {
+  suggestedVenuePostcode.value = normalizeUkPostcode(suggestedVenuePostcode.value)
+}
+function meetingAddress(name: string, address?: string | null, postcode?: string | null) {
+  return [name, address, postcode].filter(Boolean).join(', ')
+}
+function mapSearchUrl(name: string, address?: string | null, postcode?: string | null) {
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(meetingAddress(name, address, postcode))}`
+}
+async function copyMeetingAddress(name: string, address?: string | null, postcode?: string | null) {
+  try {
+    await navigator.clipboard.writeText(meetingAddress(name, address, postcode))
+    copyStatus.value = 'Address copied'
+  } catch {
+    copyStatus.value = 'Could not copy the address'
+  }
+}
 function resetCustomTimeSelection() {
   customTimeError.value = ''
   chosenCustomTimeLabel.value = ''
@@ -111,22 +157,32 @@ function chooseCustomTime() {
   sendError.value = ''
 }
 function beginReproposal() {
-  proposalSnapshot.value = { activity: activity.value, inviteMessage: inviteMessage.value, venue: venue.value, venueDetails: venueDetails.value,
+  proposalSnapshot.value = { activity: activity.value, inviteMessage: inviteMessage.value, venue: venue.value,
+    venueAddress: venueAddress.value, venuePostcode: venuePostcode.value, venueDetails: venueDetails.value,
+    publicVenueConfirmed: publicVenueConfirmed.value,
     times: times.value.map(time => ({ ...time })), selectedTimes: [...selectedTimes.value] }
   reproposing.value = true
   activity.value = activities.value[0] || ''
+  customActivity.value = ''
   inviteMessage.value = ''
   venue.value = ''
+  venueAddress.value = ''
+  venuePostcode.value = ''
   venueDetails.value = ''
+  publicVenueConfirmed.value = false
   times.value = []
   selectedTimes.value = []
 }
 function cancelReproposal() {
   if (proposalSnapshot.value) {
     activity.value = proposalSnapshot.value.activity
+    customActivity.value = activities.value.includes(activity.value) ? '' : activity.value
     inviteMessage.value = proposalSnapshot.value.inviteMessage
     venue.value = proposalSnapshot.value.venue
+    venueAddress.value = proposalSnapshot.value.venueAddress
+    venuePostcode.value = proposalSnapshot.value.venuePostcode
     venueDetails.value = proposalSnapshot.value.venueDetails
+    publicVenueConfirmed.value = proposalSnapshot.value.publicVenueConfirmed
     times.value = proposalSnapshot.value.times
     selectedTimes.value = proposalSnapshot.value.selectedTimes
   }
@@ -140,7 +196,9 @@ async function saveProposalDraft() {
   try {
     const endpoint = proposalId.value ? `/api/proposals/${proposalId.value}` : '/api/proposals'
     const body = { profileSlug: String(route.params.slug), activity: activity.value,
-      inviteNote: inviteMessage.value, venue: venue.value, venueDetails: venueDetails.value,
+      inviteNote: inviteMessage.value, venue: venue.value, venueAddress: venueAddress.value,
+      venuePostcode: normalizeUkPostcode(venuePostcode.value), meetingPoint: venueDetails.value,
+      publicVenueConfirmed: publicVenueConfirmed.value,
       times: selectedTimes.value, fullReproposal: reproposing.value }
     const response = await $fetch<{ id: string; status: string }>(endpoint, { method: proposalId.value ? 'PUT' : 'POST', body })
     proposalId.value = response.id
@@ -239,7 +297,7 @@ async function discardRescheduleDraft() {
   }
 }
 async function suggestChanges() {
-  if (!proposalId.value || !suggestedVenue.value.trim() || !suggestedTime.value) return
+  if (!proposalId.value || !suggestedLocationComplete.value || !suggestedTime.value) return
   suggestingChanges.value = true; sendError.value = ''
   try {
     const proposedTime = new Date(suggestedTime.value)
@@ -250,11 +308,17 @@ async function suggestChanges() {
     }
     const response = await $fetch<any>(`/api/proposals/${proposalId.value}`, { method: 'PUT', body: {
       activity: activity.value, inviteNote: suggestedMessage.value, venue: suggestedVenue.value.trim(),
-      venueDetails: suggestedVenueDetails.value.trim(), times: [proposedTime.toISOString()],
+      venueAddress: suggestedVenueAddress.value.trim(),
+      venuePostcode: normalizeUkPostcode(suggestedVenuePostcode.value),
+      meetingPoint: suggestedVenueDetails.value.trim(),
+      publicVenueConfirmed: suggestedPublicVenueConfirmed.value, times: [proposedTime.toISOString()],
     } })
     inviteMessage.value = response.inviteNote || ''
     venue.value = response.venue
+    venueAddress.value = response.venueAddress
+    venuePostcode.value = response.venuePostcode
     venueDetails.value = response.venueDetails || ''
+    publicVenueConfirmed.value = true
     times.value = response.times.map((value: string) => ({ value, label: new Date(value).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' }) }))
     selectedTimes.value = response.times
     proposalStatus.value = 'pending'; canRespond.value = false; confirmed.value = true
@@ -285,18 +349,30 @@ async function loadPlanning() {
       confirmed.value = ['pending','accepted'].includes(response.proposal.status)
       canRespond.value = response.proposal.status === 'pending' && response.proposal.inviteeId === response.viewerId
       activity.value = response.proposal.activity
+      customActivity.value = activities.value.includes(activity.value) ? '' : activity.value
       inviteMessage.value = response.proposal.inviteNote || ''
       venue.value = response.proposal.venue
+      venueAddress.value = response.proposal.venueAddress || ''
+      venuePostcode.value = response.proposal.venuePostcode || ''
       venueDetails.value = response.proposal.venueDetails || ''
+      publicVenueConfirmed.value = Boolean(response.proposal.publicVenueConfirmed)
       suggestedVenue.value = response.proposal.venue
+      suggestedVenueAddress.value = response.proposal.venueAddress || ''
+      suggestedVenuePostcode.value = response.proposal.venuePostcode || ''
       suggestedVenueDetails.value = response.proposal.venueDetails || ''
+      suggestedPublicVenueConfirmed.value = false
       times.value = response.proposal.times.map((time: any) => ({ value: new Date(time.proposedAt).toISOString(), id: time.id,
         label: new Date(time.proposedAt).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' }) }))
       selectedTimes.value = times.value.map(time => time.value)
     } else {
       times.value = []
       selectedTimes.value = []
+      venueAddress.value = ''
+      venuePostcode.value = ''
+      venueDetails.value = ''
+      publicVenueConfirmed.value = false
       if (!databaseActivities.value.includes(activity.value)) activity.value = databaseActivities.value[0] || ''
+      customActivity.value = ''
     }
   } catch (error: any) {
     const status = error?.statusCode || error?.response?.status || error?.data?.statusCode
@@ -334,8 +410,19 @@ useHead(() => ({ title: `Plan a Date with ${personName.value} · Lonely Radish` 
           </div>
           <dl class="mt-4 grid gap-3 rounded-lg bg-white/70 p-4 text-sm sm:grid-cols-2">
             <div><dt class="text-[#6E4D58]">Date and time</dt><dd class="font-semibold">{{ confirmedTimeLabel }}</dd></div>
-            <div><dt class="text-[#6E4D58]">Public venue</dt><dd class="font-semibold">{{ currentConfirmed.venue }}</dd><dd v-if="currentConfirmed.venueDetails" class="mt-1 whitespace-pre-wrap text-[#4D2F39]">{{ currentConfirmed.venueDetails }}</dd></div>
+            <div>
+              <dt class="text-[#6E4D58]">Public venue</dt>
+              <dd class="font-semibold">{{ currentConfirmed.venue }}</dd>
+              <dd v-if="currentConfirmed.venueAddress" class="mt-1 text-[#4D2F39]">{{ currentConfirmed.venueAddress }}</dd>
+              <dd v-if="currentConfirmed.venuePostcode" class="font-semibold text-[#4D2F39]">{{ currentConfirmed.venuePostcode }}</dd>
+              <dd v-if="currentConfirmed.meetingPoint || currentConfirmed.venueDetails" class="mt-2 whitespace-pre-wrap text-[#4D2F39]"><span class="font-semibold">Meet:</span> {{ currentConfirmed.meetingPoint || currentConfirmed.venueDetails }}</dd>
+              <div v-if="currentConfirmed.venueAddress || currentConfirmed.venuePostcode" class="mt-3 flex flex-wrap gap-3 text-xs font-semibold">
+                <a :href="mapSearchUrl(currentConfirmed.venue, currentConfirmed.venueAddress, currentConfirmed.venuePostcode)" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-[#8F1839] hover:underline"><ExternalLink class="size-3.5" />View on map</a>
+                <button type="button" class="inline-flex items-center gap-1 text-[#8F1839] hover:underline" @click="copyMeetingAddress(currentConfirmed.venue, currentConfirmed.venueAddress, currentConfirmed.venuePostcode)"><Copy class="size-3.5" />Copy address</button>
+              </div>
+            </div>
           </dl>
+          <p v-if="copyStatus" class="mt-3 text-xs font-semibold text-[#52713A]" role="status">{{ copyStatus }}</p>
           <p v-if="isReplacement" class="mt-4 text-sm leading-6 text-[#4D2F39]">This remains the agreed plan until {{ personName }} accepts the new proposal. Sending or declining a replacement does not silently change it.</p>
           <div class="mt-5 flex flex-col gap-2 sm:flex-row">
             <button v-if="proposalStatus === 'accepted'" type="button" class="inline-flex items-center justify-center gap-2 rounded-lg bg-[#4D2F39] px-4 py-3 text-sm font-semibold text-white disabled:opacity-40" :disabled="Boolean(planAction)" @click="requestReschedule"><RefreshCw class="size-4" />{{ planAction === 'reschedule' ? 'Starting…' : 'Propose a different date' }}</button>
@@ -356,8 +443,12 @@ useHead(() => ({ title: `Plan a Date with ${personName.value} · Lonely Radish` 
             <div><dt class="text-[#6E4D58]">Activity</dt><dd class="font-semibold">{{ activity }}</dd></div>
             <div v-if="inviteMessage"><dt class="text-[#6E4D58]">Their note</dt><dd class="whitespace-pre-wrap">{{ inviteMessage }}</dd></div>
             <div><dt class="text-[#6E4D58]">Proposed time</dt><dd class="font-semibold">{{ times[0]?.label || 'Time unavailable' }}</dd></div>
-            <div><dt class="text-[#6E4D58]">Venue</dt><dd class="font-semibold">{{ venue }}</dd><dd v-if="venueDetails" class="mt-1 whitespace-pre-wrap text-[#4D2F39]">{{ venueDetails }}</dd></div>
+            <div>
+              <dt class="text-[#6E4D58]">Venue</dt><dd class="font-semibold">{{ venue }}</dd><dd v-if="venueAddress" class="mt-1">{{ venueAddress }}</dd><dd v-if="venuePostcode" class="font-semibold">{{ venuePostcode }}</dd><dd v-if="venueDetails" class="mt-2 whitespace-pre-wrap text-[#4D2F39]"><span class="font-semibold">Meet:</span> {{ venueDetails }}</dd>
+              <div v-if="venueAddress || venuePostcode" class="mt-3 flex flex-wrap gap-3 text-xs font-semibold"><a :href="mapSearchUrl(venue, venueAddress, venuePostcode)" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-[#8F1839] hover:underline"><ExternalLink class="size-3.5" />View on map</a><button type="button" class="inline-flex items-center gap-1 text-[#8F1839] hover:underline" @click="copyMeetingAddress(venue, venueAddress, venuePostcode)"><Copy class="size-3.5" />Copy address</button></div>
+            </div>
           </dl>
+          <p v-if="copyStatus" class="mt-3 text-xs font-semibold text-[#52713A]" role="status">{{ copyStatus }}</p>
           <div class="mt-5 grid gap-2 sm:grid-cols-3">
             <button type="button" class="rounded-lg bg-[#B4234A] px-4 py-3 text-sm font-semibold text-white disabled:opacity-40" :disabled="sending || suggestingChanges || !times[0]?.id" @click="respond('accepted', times[0]?.id)">{{ sending ? 'Accepting…' : 'Accept proposal' }}</button>
             <button type="button" class="rounded-lg border border-[#B4234A]/40 bg-white/75 px-4 py-3 text-sm font-semibold text-[#8F1839] disabled:opacity-40" :disabled="sending || suggestingChanges" @click="respond('declined')">Decline</button>
@@ -366,21 +457,71 @@ useHead(() => ({ title: `Plan a Date with ${personName.value} · Lonely Radish` 
           <div class="mt-6 border-t border-[#C9D8B5] pt-5">
             <button type="button" class="group flex w-full items-center justify-between gap-3 text-left font-semibold text-[#4D2F39]" :aria-expanded="smallChangeOpen" aria-controls="small-change-form" @click="smallChangeOpen = !smallChangeOpen"><span class="underline-offset-4 group-hover:underline">Suggest a small change</span><ChevronDown class="size-5 shrink-0 transition-transform" :class="smallChangeOpen && 'rotate-180'" aria-hidden="true" /></button>
             <form v-show="smallChangeOpen" id="small-change-form" class="mt-3" @submit.prevent="suggestChanges">
-              <div class="grid gap-3 sm:grid-cols-2"><label class="text-sm font-semibold">New date and time<input v-model="suggestedTime" type="datetime-local" :min="earliestCustomTime" class="field" required></label><label class="text-sm font-semibold">Public venue<input v-model="suggestedVenue" type="text" :maxlength="venueLimit" class="field" required placeholder="Venue name and area"><span class="mt-1 block text-right text-xs font-normal text-[#6E4D58]">{{ suggestedVenue.length }}/{{ venueLimit }}</span></label></div>
-              <label class="mt-3 block text-sm font-semibold">Address or meeting details <span class="font-normal text-[#6E4D58]">(optional)</span><textarea v-model="suggestedVenueDetails" :maxlength="venueDetailsLimit" rows="2" class="field resize-none" placeholder="For example, Silk Street entrance, beside the box office"></textarea><span class="mt-1 block text-right text-xs font-normal text-[#6E4D58]">{{ suggestedVenueDetails.length }}/{{ venueDetailsLimit }}</span></label>
+              <div class="grid gap-3 sm:grid-cols-2"><label class="text-sm font-semibold">New date and time<input v-model="suggestedTime" type="datetime-local" :min="earliestCustomTime" class="field" required></label><label class="text-sm font-semibold">Public venue name<input v-model="suggestedVenue" type="text" :maxlength="venueLimit" class="field" required placeholder="For example, Barbican Centre"><span class="mt-1 block text-right text-xs font-normal text-[#6E4D58]">{{ suggestedVenue.length }}/{{ venueLimit }}</span></label></div>
+              <div class="mt-3 grid gap-3 sm:grid-cols-[1fr_10rem]">
+                <label class="text-sm font-semibold">Public address<input v-model="suggestedVenueAddress" type="text" :maxlength="venueAddressLimit" class="field" required placeholder="For example, Silk Street, London"><span class="mt-1 block text-right text-xs font-normal text-[#6E4D58]">{{ suggestedVenueAddress.length }}/{{ venueAddressLimit }}</span></label>
+                <label class="text-sm font-semibold">UK postcode<input v-model="suggestedVenuePostcode" type="text" :maxlength="venuePostcodeLimit" class="field uppercase" required placeholder="EC2Y 8DS" autocomplete="postal-code" @blur="normalizeSuggestedPostcode"><span v-if="suggestedVenuePostcode && !isUkPostcode(suggestedVenuePostcode)" class="mt-1 block text-xs font-normal text-[#8F1839]">Enter a valid UK postcode.</span></label>
+              </div>
+              <label class="mt-3 block text-sm font-semibold">Exact meeting point <span class="font-normal text-[#6E4D58]">(optional)</span><textarea v-model="suggestedVenueDetails" :maxlength="venueDetailsLimit" rows="2" class="field resize-none" placeholder="For example, beside the box office at the Silk Street entrance"></textarea><span class="mt-1 block text-right text-xs font-normal text-[#6E4D58]">{{ suggestedVenueDetails.length }}/{{ venueDetailsLimit }}</span></label>
+              <label class="mt-3 flex items-start gap-3 rounded-lg bg-white/75 p-3 text-sm font-semibold"><input v-model="suggestedPublicVenueConfirmed" type="checkbox" class="mt-1 size-4 accent-[#B4234A]"><span>I confirm this is a public meeting place, not a private home address.</span></label>
               <label class="mt-3 block text-sm font-semibold">Short reply <span class="font-normal text-[#6E4D58]">(optional)</span><textarea v-model="suggestedMessage" :maxlength="inviteMessageLimit" rows="2" class="field resize-none" placeholder="For example: A little later would work better for me."></textarea><span class="mt-1 block text-right text-xs font-normal text-[#6E4D58]">{{ suggestedMessage.length }}/{{ inviteMessageLimit }}</span></label>
-              <button type="submit" class="mt-4 rounded-lg bg-[#4D2F39] px-5 py-3 text-sm font-semibold text-white disabled:opacity-40" :disabled="!suggestedTime || !suggestedVenue.trim() || suggestingChanges">{{ suggestingChanges ? 'Sending changes…' : 'Send suggested changes' }}</button>
+              <button type="submit" class="mt-4 rounded-lg bg-[#4D2F39] px-5 py-3 text-sm font-semibold text-white disabled:opacity-40" :disabled="!suggestedTime || !suggestedLocationComplete || suggestingChanges">{{ suggestingChanges ? 'Sending changes…' : 'Send suggested changes' }}</button>
             </form>
           </div>
           <p v-if="sendError" class="mt-3 text-sm font-semibold text-[#8F1839]" role="alert">{{ sendError }}</p>
         </section>
-        <section v-if="canEditProposal" class="plan-card"><div class="flex items-center gap-2"><Sparkles class="size-5 text-[#B4234A]" /><h2 class="text-xl font-semibold">1. Choose from {{ personName }}’s interests</h2></div><p class="mt-2 text-sm text-[#6E4D58]">Pick something they have already said they would enjoy.</p><div class="mt-4 grid gap-2 sm:grid-cols-2"><button v-for="option in activities" :key="option" type="button" class="choice" :class="activity === option && 'choice-selected'" @click="activity = option">{{ option }}</button></div></section>
+        <section v-if="canEditProposal" class="plan-card">
+          <div class="flex items-center gap-2"><Sparkles class="size-5 text-[#B4234A]" /><h2 class="text-xl font-semibold">1. Choose an activity</h2></div>
+          <p class="mt-2 text-sm text-[#6E4D58]">Choose one of {{ personName }}’s interests, or suggest another activity you think you would both enjoy.</p>
+          <div v-if="activities.length" class="mt-4 grid gap-2 sm:grid-cols-2">
+            <button v-for="option in activities" :key="option" type="button" class="choice" :class="activity === option && 'choice-selected'" @click="chooseListedActivity(option)">{{ option }}</button>
+          </div>
+          <div class="mt-5 border-t border-[#E8D8C4] pt-5">
+            <label for="custom-activity" class="text-sm font-semibold">Suggest a different activity</label>
+            <p class="mt-1 text-xs leading-5 text-[#6E4D58]">Enter a short, specific idea. {{ personName }} will be able to review it before accepting the plan.</p>
+            <input id="custom-activity" v-model="customActivity" type="text" :maxlength="activityLimit" class="field" placeholder="For example, pottery painting or a food market" autocomplete="off" @input="updateCustomActivity">
+            <div class="mt-1 flex items-center justify-between gap-3">
+              <p v-if="customActivitySelected" class="text-xs font-semibold text-[#52713A]" role="status">Custom activity selected: {{ activity }}</p>
+              <span v-else class="text-xs text-[#6E4D58]">Typing here selects your custom idea.</span>
+              <span class="shrink-0 text-xs text-[#6E4D58]">{{ customActivity.length }}/{{ activityLimit }}</span>
+            </div>
+          </div>
+        </section>
         <section v-if="canEditProposal" class="plan-card"><div class="flex items-center gap-2"><MessageCircle class="size-5 text-[#B4234A]" /><h2 class="text-xl font-semibold">2. Add a short invite note</h2></div><p class="mt-2 text-sm text-[#6E4D58]">A little context is enough — there will be time to talk when you meet.</p><textarea v-model="inviteMessage" :maxlength="inviteMessageLimit" rows="4" class="mt-4 w-full resize-none rounded-lg border border-[#E8D8C4] bg-[#FBF7F1] px-4 py-3 text-sm outline-none transition focus:border-[#B4234A] focus:ring-2 focus:ring-[#F7B7C4]" :placeholder="`For example: I’d love to try this with you — the weekend afternoon could work well for me.`"></textarea><p class="mt-2 text-right text-xs text-[#6E4D58]">{{ inviteMessage.length }}/{{ inviteMessageLimit }}</p></section>
         <section v-if="canEditProposal" class="plan-card"><div class="flex items-center gap-2"><CalendarDays class="size-5 text-[#B4234A]" /><h2 class="text-xl font-semibold">3. Suggest a date and time</h2></div><p class="mt-2 text-sm text-[#6E4D58]">{{ structuredAvailability.length ? `Choose a time within ${personName}’s shared schedule.` : 'Choose the time you would like to propose.' }}</p><div class="mt-4"><label class="text-sm font-semibold">Proposed date and time<input v-model="customTime" type="datetime-local" :min="earliestCustomTime" class="field" @input="resetCustomTimeSelection"></label><p class="mt-2 text-xs text-[#6E4D58]">{{ structuredAvailability.length ? `The time must leave at least one hour within ${personName}’s usual availability.` : 'Select both a date and a time, then apply it to the proposal.' }}</p><p v-if="customTimeError" class="mt-2 text-sm font-semibold text-[#8F1839]" role="alert">{{ customTimeError }}</p><p v-if="chosenCustomTimeLabel" class="mt-2 text-sm font-semibold text-[#52713A]" role="status">Selected: {{ chosenCustomTimeLabel }}</p><button type="button" class="mt-3 rounded-lg bg-[#4D2F39] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-40" :disabled="!customTime" @click="chooseCustomTime">Use this time</button></div></section>
-        <section v-if="canEditProposal" class="plan-card"><div class="flex items-center gap-2"><MapPin class="size-5 text-[#B4234A]" /><h2 class="text-xl font-semibold">4. Enter a public venue</h2></div><label class="mt-4 block text-sm font-semibold">Venue name and area<input v-model="venue" type="text" :maxlength="venueLimit" class="field" placeholder="For example, Barbican Centre, EC2Y" autocomplete="off"><span class="mt-1 block text-right text-xs font-normal text-[#6E4D58]">{{ venue.length }}/{{ venueLimit }}</span></label><label class="mt-4 block text-sm font-semibold">Address or meeting details <span class="font-normal text-[#6E4D58]">(optional)</span><textarea v-model="venueDetails" :maxlength="venueDetailsLimit" rows="3" class="field resize-none" placeholder="For example, Silk Street entrance, beside the box office"></textarea><span class="mt-1 block text-right text-xs font-normal text-[#6E4D58]">{{ venueDetails.length }}/{{ venueDetailsLimit }}</span></label><p class="mt-4 flex gap-2 text-xs leading-5 text-[#6E4D58]"><ShieldCheck class="mt-0.5 size-3.5 shrink-0" />Choose a recognisable public place. You can add an address, entrance or meeting point without sharing a private location.</p></section>
+        <section v-if="canEditProposal" class="plan-card">
+          <div class="flex items-center gap-2"><MapPin class="size-5 text-[#B4234A]" /><h2 class="text-xl font-semibold">4. Add a clear public meeting place</h2></div>
+          <p class="mt-2 text-sm leading-6 text-[#6E4D58]">Add enough detail for both people to find the same public place without sharing a private address.</p>
+          <label class="mt-4 block text-sm font-semibold">Venue name<input v-model="venue" type="text" :maxlength="venueLimit" class="field" placeholder="For example, Barbican Centre" autocomplete="organization"><span class="mt-1 block text-right text-xs font-normal text-[#6E4D58]">{{ venue.length }}/{{ venueLimit }}</span></label>
+          <div class="mt-4 grid gap-3 sm:grid-cols-[1fr_10rem]">
+            <label class="text-sm font-semibold">Public address<input v-model="venueAddress" type="text" :maxlength="venueAddressLimit" class="field" placeholder="For example, Silk Street, London" autocomplete="street-address"><span class="mt-1 block text-right text-xs font-normal text-[#6E4D58]">{{ venueAddress.length }}/{{ venueAddressLimit }}</span></label>
+            <label class="text-sm font-semibold">UK postcode<input v-model="venuePostcode" type="text" :maxlength="venuePostcodeLimit" class="field uppercase" placeholder="EC2Y 8DS" autocomplete="postal-code" @blur="normalizeProposalPostcode"><span v-if="venuePostcode && !isUkPostcode(venuePostcode)" class="mt-1 block text-xs font-normal text-[#8F1839]">Enter a valid UK postcode.</span></label>
+          </div>
+          <label class="mt-4 block text-sm font-semibold">Exact meeting point <span class="font-normal text-[#6E4D58]">(optional)</span><textarea v-model="venueDetails" :maxlength="venueDetailsLimit" rows="3" class="field resize-none" placeholder="For example, beside the box office at the Silk Street entrance"></textarea><span class="mt-1 block text-right text-xs font-normal text-[#6E4D58]">{{ venueDetails.length }}/{{ venueDetailsLimit }}</span></label>
+          <label class="mt-4 flex items-start gap-3 rounded-lg bg-[#F3E8DA] p-4 text-sm font-semibold"><input v-model="publicVenueConfirmed" type="checkbox" class="mt-1 size-4 accent-[#B4234A]"><span>I confirm this is a public meeting place, not a private home address.</span></label>
+          <p class="mt-4 flex gap-2 text-xs leading-5 text-[#6E4D58]"><ShieldCheck class="mt-0.5 size-3.5 shrink-0" />Do not include a flat number, private home, phone number or personal contact details. Parks, stations and markets are fine when the postcode and meeting point are clear.</p>
+        </section>
 
         <template v-if="canEditProposal">
-        <section class="rounded-lg bg-[#EAF2DE] p-5 sm:p-6"><div class="flex flex-wrap items-center justify-between gap-2"><div><p class="text-xs font-extrabold uppercase tracking-widest text-[#6E4D58]">Proposal preview</p><h2 class="mt-1 text-xl font-semibold">{{ reproposing ? 'Your new proposal' : 'Your proposed date' }}</h2></div><span v-if="proposalStatus === 'draft'" class="rounded-full bg-white px-3 py-1 text-xs font-bold text-[#8F1839]">Private draft</span></div><p class="mt-2 text-xs text-[#4D2F39]">This is how the key details will appear to {{ personName }}.</p><dl class="mt-4 grid gap-3 text-sm"><div><dt class="text-[#6E4D58]">Idea</dt><dd class="font-semibold">{{ activity || 'Choose an idea' }}</dd></div><div v-if="inviteMessage"><dt class="text-[#6E4D58]">Invite note</dt><dd class="whitespace-pre-wrap font-semibold">{{ inviteMessage }}</dd></div><div><dt class="text-[#6E4D58]">Time</dt><dd class="font-semibold">{{ selectedTimes.map(timeLabel).join(' · ') || 'Choose a time' }}</dd></div><div><dt class="text-[#6E4D58]">Venue</dt><dd class="font-semibold">{{ venue || 'Choose a venue' }}</dd><dd v-if="venueDetails" class="mt-1 whitespace-pre-wrap text-[#4D2F39]">{{ venueDetails }}</dd></div></dl><p v-if="proposalStatus === 'draft'" class="mt-4 text-xs leading-5 text-[#4D2F39]">{{ personName }} cannot see this proposal until you confirm and send it.</p><div class="mt-5 flex flex-col gap-2 sm:flex-row"><button v-if="proposalStatus !== 'accepted' && !reproposing" type="button" class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-white px-5 py-3 text-sm font-semibold text-[#8F1839] disabled:opacity-40 sm:w-auto" :disabled="!activity || selectedTimes.length !== 1 || !venue || sending || (canRespond && !reproposing)" @click="saveProposalDraft">{{ sending ? 'Saving…' : proposalId ? 'Save as draft' : 'Save draft' }}</button><button type="button" class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white disabled:opacity-40 sm:w-auto" :disabled="!activity || selectedTimes.length !== 1 || !venue || sending || (canRespond && !reproposing)" @click="confirmAndSend"><Check class="size-4" />{{ sending ? 'Sending…' : reproposing ? `Send new proposal to ${personName}` : proposalStatus === 'accepted' ? 'Send date changes' : `Confirm and send to ${personName}` }}</button><button v-if="reproposing" type="button" class="px-4 py-3 text-sm font-semibold text-[#8F1839]" :disabled="sending" @click="cancelReproposal">Cancel</button></div><p v-if="proposalStatus === 'accepted'" class="mt-3 text-xs text-[#4D2F39]">Changing confirmed details will ask {{ personName }} to approve the updated plan.</p><p v-else-if="proposalStatus === 'pending' && !reproposing" class="mt-3 text-xs text-[#4D2F39]">This proposal has been sent. Saving edits will return it to a private draft until you confirm and send again.</p><p v-if="sendError" class="mt-3 text-sm font-semibold text-[#8F1839]" role="alert">{{ sendError }}</p></section>
+        <section class="rounded-lg bg-[#EAF2DE] p-5 sm:p-6">
+          <div class="flex flex-wrap items-center justify-between gap-2"><div><p class="text-xs font-extrabold uppercase tracking-widest text-[#6E4D58]">Proposal preview</p><h2 class="mt-1 text-xl font-semibold">{{ reproposing ? 'Your new proposal' : 'Your proposed date' }}</h2></div><span v-if="proposalStatus === 'draft'" class="rounded-full bg-white px-3 py-1 text-xs font-bold text-[#8F1839]">Private draft</span></div>
+          <p class="mt-2 text-xs text-[#4D2F39]">This is how the key details will appear to {{ personName }}.</p>
+          <dl class="mt-4 grid gap-3 text-sm">
+            <div><dt class="text-[#6E4D58]">Idea</dt><dd class="font-semibold">{{ activity || 'Choose an idea' }}</dd></div>
+            <div v-if="inviteMessage"><dt class="text-[#6E4D58]">Invite note</dt><dd class="whitespace-pre-wrap font-semibold">{{ inviteMessage }}</dd></div>
+            <div><dt class="text-[#6E4D58]">Time</dt><dd class="font-semibold">{{ selectedTimes.map(timeLabel).join(' · ') || 'Choose a time' }}</dd></div>
+            <div><dt class="text-[#6E4D58]">Venue</dt><dd class="font-semibold">{{ venue || 'Choose a venue' }}</dd><dd v-if="venueAddress" class="mt-1">{{ venueAddress }}</dd><dd v-if="venuePostcode" class="font-semibold">{{ normalizeUkPostcode(venuePostcode) }}</dd><dd v-if="venueDetails" class="mt-2 whitespace-pre-wrap text-[#4D2F39]"><span class="font-semibold">Meet:</span> {{ venueDetails }}</dd><a v-if="venueAddress && isUkPostcode(venuePostcode)" :href="mapSearchUrl(venue, venueAddress, venuePostcode)" target="_blank" rel="noopener noreferrer" class="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-[#8F1839] hover:underline"><ExternalLink class="size-3.5" />Check map location</a></div>
+          </dl>
+          <p v-if="proposalStatus === 'draft'" class="mt-4 text-xs leading-5 text-[#4D2F39]">{{ personName }} cannot see this proposal until you confirm and send it.</p>
+          <div class="mt-5 flex flex-col gap-2 sm:flex-row">
+            <button v-if="proposalStatus !== 'accepted' && !reproposing" type="button" class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-white px-5 py-3 text-sm font-semibold text-[#8F1839] disabled:opacity-40 sm:w-auto" :disabled="!activity || selectedTimes.length !== 1 || !proposalLocationComplete || sending || (canRespond && !reproposing)" @click="saveProposalDraft">{{ sending ? 'Saving…' : proposalId ? 'Save as draft' : 'Save draft' }}</button>
+            <button type="button" class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white disabled:opacity-40 sm:w-auto" :disabled="!activity || selectedTimes.length !== 1 || !proposalLocationComplete || sending || (canRespond && !reproposing)" @click="confirmAndSend"><Check class="size-4" />{{ sending ? 'Sending…' : reproposing ? `Send new proposal to ${personName}` : proposalStatus === 'accepted' ? 'Send date changes' : `Confirm and send to ${personName}` }}</button>
+            <button v-if="reproposing" type="button" class="px-4 py-3 text-sm font-semibold text-[#8F1839]" :disabled="sending" @click="cancelReproposal">Cancel</button>
+          </div>
+          <p v-if="proposalStatus === 'accepted'" class="mt-3 text-xs text-[#4D2F39]">Changing confirmed details will ask {{ personName }} to approve the updated plan.</p>
+          <p v-else-if="proposalStatus === 'pending' && !reproposing" class="mt-3 text-xs text-[#4D2F39]">This proposal has been sent. Saving edits will return it to a private draft until you confirm and send again.</p>
+          <p v-if="sendError" class="mt-3 text-sm font-semibold text-[#8F1839]" role="alert">{{ sendError }}</p>
+        </section>
 
         </template>
       </div>

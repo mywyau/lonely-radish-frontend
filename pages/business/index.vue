@@ -15,7 +15,7 @@ const form = reactive({
 const planLabel = computed(() => business.value?.plan === 'featured' ? 'Featured' :
   business.value?.plan === 'standard' ? 'Standard' : 'Free')
 const offerLimit = computed(() => business.value?.plan === 'featured' ? 10 : business.value?.plan === 'standard' ? 5 : 1)
-const heroTitle = computed(() => business.value?.name || 'Bring more dates through your door.')
+const heroTitle = computed(() => business.value?.name || 'Help bring more people together at your venue.')
 const heroDescription = computed(() => business.value
   ? 'Manage your venue, offers and business subscription.'
   : 'Create date-friendly offers for couples already deciding where to meet.')
