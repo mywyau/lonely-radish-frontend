@@ -363,10 +363,6 @@ onMounted(() => {
             <NuxtLink to="/business" class="offer-link offer-link-business">Offer something date-friendly <span aria-hidden="true">→</span></NuxtLink>
           </article>
         </div>
-
-        <p class="mt-5 rounded-lg border border-[#E8D8C4] bg-white/65 px-4 py-3 text-sm leading-6 text-[#6E4D58]">
-          Offers are optional and never required to plan a date. Full terms are shown before use, and only participating, approved venues can redeem a valid code.
-        </p>
       </div>
     </section>
   </main>
