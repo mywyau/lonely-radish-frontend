@@ -32,7 +32,9 @@ export const db = process.env.DATABASE_URL
   ? new Pool({
       connectionString: process.env.DATABASE_URL,
       ssl: { rejectUnauthorized: false },
-      max: 8,
+      // Serverless instances scale horizontally. Keep each local pool small so
+      // bursts do not exhaust Supabase's shared transaction-pooler clients.
+      max: 2,
       idleTimeoutMillis: 10000,
       connectionTimeoutMillis: 2000,
     })

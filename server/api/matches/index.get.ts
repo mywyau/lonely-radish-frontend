@@ -1,7 +1,7 @@
 import { setHeader } from 'h3'
 import { db } from '~/server/repositories/db'
 import { requireUser } from '~/server/utils/requireUser'
-import { signedPhotoUrl } from '~/server/utils/supabaseStorage'
+import { signedPhotoUrls } from '~/server/utils/supabaseStorage'
 import { getActiveMatchLimit } from '~/server/utils/planLimits'
 
 export default defineEventHandler(async (event) => {
@@ -24,7 +24,8 @@ export default defineEventHandler(async (event) => {
       from proposal_times pt where pt.proposal_id=proposal.id),'[]'::json) as times
     from matches m
     join profiles p on p.user_id=case when m.user_one_id=$1 then m.user_two_id else m.user_one_id end
-    left join lateral (select storage_key,public_url from profile_photos where user_id=p.user_id order by position limit 1) photo on true
+    left join lateral (select coalesce(thumbnail_storage_key,storage_key) as storage_key,public_url
+      from profile_photos where user_id=p.user_id order by position limit 1) photo on true
     left join lateral (select dp.* from date_proposals dp where dp.match_id=m.id
       and (dp.status<>'draft' or dp.inviter_id=$1) order by dp.created_at desc limit 1) proposal on true
     left join proposal_times selected on selected.id=proposal.selected_time_id
@@ -58,11 +59,12 @@ export default defineEventHandler(async (event) => {
     getActiveMatchLimit(sub),
   ])
 
-  const matches = await Promise.all(rows.map(async row => {
+  const photoUrls = await signedPhotoUrls(rows.map(row => row.photoStorageKey).filter(Boolean))
+  const matches = rows.map(row => {
     const proposalStatus = row.proposalStatus as string | null
     const stage = row.status === 'queued' ? 'queued' : proposalStatus === 'accepted' ? 'confirmed'
       : ['draft','pending'].includes(proposalStatus || '') ? 'planning' : 'fresh'
-    const photoUrl = row.photoStorageKey ? await signedPhotoUrl(row.photoStorageKey) : row.legacyPhotoUrl || null
+    const photoUrl = row.photoStorageKey ? photoUrls.get(row.photoStorageKey) : row.legacyPhotoUrl || null
     const dateHasPassed = Boolean(row.confirmedTime && new Date(row.confirmedTime) <= new Date())
     const bothFollowedUp = Boolean(row.myFollowUpAt && row.theirFollowUpAt)
     const followUpResult = !bothFollowedUp ? null : row.myMeetAgain === true && row.theirMeetAgain === true ? 'mutual' : 'closed'
@@ -72,7 +74,7 @@ export default defineEventHandler(async (event) => {
       dateHasPassed, bothFollowedUp, followUpResult, hasFollowedUp: Boolean(row.myFollowUpAt),
       attendanceConfirmed: row.myAttendance === 'confirmed', otherAttendanceConfirmed: row.theirAttendance === 'confirmed',
       isInviter: row.inviterId === sub, needsResponse: proposalStatus === 'pending' && row.inviteeId === sub }
-  }))
+  })
   return { matches, totalMatches: rows[0]?.totalMatches || 0,
     activeMatchCount: activeCount.rows[0]?.count || 0,
     manualMatchCount: manualCount.rows[0]?.count || 0, manualMatchLimit: 1,

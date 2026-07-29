@@ -149,8 +149,8 @@ See [docs/database.md](docs/database.md) for the schema and security model.
 
 Create a private bucket named exactly `profile-photos` with:
 
-- a `5 MB` file-size limit;
-- `image/jpeg`, `image/png`, and `image/webp` MIME types;
+- a `1 MB` file-size limit;
+- the `image/webp` MIME type;
 - public access disabled.
 
 Configure:
@@ -162,7 +162,9 @@ NUXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
 NUXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-publishable-key
 ```
 
-The secret key must remain server-side. Photo bytes are uploaded with signed
+The secret key must remain server-side. JPEG, PNG, and WebP source photos up to
+20 MB are resized in the browser, stripped of metadata, and converted into a
+full WebP image plus a smaller thumbnail. Both are uploaded with signed
 tokens; PostgreSQL stores only object keys and metadata. See
 [docs/supabase-storage.md](docs/supabase-storage.md).
 

@@ -15,13 +15,20 @@ describe('private profile photo storage', () => {
   })
 
   it('validates, verifies, signs, reorders, and deletes uploaded photos', () => {
-    expect(read('server/api/profile/photos/upload-url.post.ts')).toContain('5 * 1024 * 1024')
+    const uploadUrl = read('server/api/profile/photos/upload-url.post.ts')
+    expect(uploadUrl).toContain('MAX_PHOTO_BYTES = 1024 * 1024')
+    expect(uploadUrl).toContain('MAX_THUMBNAIL_BYTES = 200 * 1024')
+    expect(uploadUrl).toContain("contentType !== 'image/webp'")
     expect(read('server/api/profile/photos/confirm.post.ts')).toContain('.info(storageKey)')
-    expect(read('server/api/profile/photos/confirm.post.ts')).toContain('object.contentType || object.metadata?.mimetype')
+    expect(read('server/api/profile/photos/confirm.post.ts')).toContain("photo.contentType !== 'image/webp'")
+    expect(read('server/api/profile/photos/confirm.post.ts')).toContain('thumbnail_storage_key')
     expect(read('server/api/profile/photos.put.ts')).toContain('Photo list changed; refresh before reordering')
-    expect(read('server/api/profile/photos/[id].delete.ts')).toContain('.remove([storageKey])')
+    expect(read('server/api/profile/photos/[id].delete.ts')).toContain('thumbnail_storage_key')
     expect(read('server/api/profiles/[slug].get.ts')).toContain('signedPhotoUrl')
     const page = read('pages/photos.vue')
+    expect(page).toContain('optimizeProfilePhoto')
+    expect(page).toContain("cacheControl: '31536000'")
+    expect(page).toContain('Photos are resized and converted to WebP before upload.')
     expect(page).toContain('Display position')
     expect(page).toContain('dropPhoto(index, $event)')
     expect(page).toContain('Earlier')
@@ -37,12 +44,27 @@ describe('private profile photo storage', () => {
     expect(profilePage).toContain('gallerySlots')
     expect(profilePage).toContain('Empty photo slot')
     expect(profilePage).toContain('profile-photo-empty')
-    expect(profilePage).toContain('profile-flip-card hidden w-full text-left lg:block')
-    expect(profilePage.indexOf('profile-flip-card hidden w-full text-left lg:block'))
+    expect(profilePage).toContain('class="hidden lg:block"')
+    expect(profilePage.indexOf('class="hidden lg:block"'))
       .toBeLessThan(profilePage.indexOf('profile-summary-flip order-2'))
     expect(profilePage).toContain('function openPhoto(index: number)')
     expect(profilePage).toContain('@click="!photo.empty && openPhoto(index)"')
     expect(profilePage).toContain('aria-label="Close expanded photo"')
     expect(profilePage).toContain("if (event.key === 'ArrowLeft') changePhoto(-1)")
+  })
+
+  it('uses thumbnails in collection views while preserving full profile photos', () => {
+    for (const path of [
+      'server/api/activities/[slug]/people.get.ts',
+      'server/api/blocks/index.get.ts',
+      'server/api/interests/received.get.ts',
+      'server/api/interests/sent.get.ts',
+      'server/api/matches/index.get.ts',
+      'server/api/matches/past.get.ts',
+    ]) {
+      expect(read(path)).toContain('coalesce(thumbnail_storage_key,storage_key)')
+    }
+    expect(read('server/api/profiles/[slug].get.ts')).not.toContain('coalesce(thumbnail_storage_key,storage_key)')
+    expect(read('docs/migrations/20260829_add_profile_photo_thumbnails.sql')).toContain('thumbnail_storage_key')
   })
 })

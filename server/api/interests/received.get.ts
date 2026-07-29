@@ -1,7 +1,7 @@
 import { setHeader } from 'h3'
 import { db } from '~/server/repositories/db'
 import { requireUser } from '~/server/utils/requireUser'
-import { signedPhotoUrl } from '~/server/utils/supabaseStorage'
+import { signedPhotoUrls } from '~/server/utils/supabaseStorage'
 import { getActiveMatchLimit } from '~/server/utils/planLimits'
 
 export default defineEventHandler(async (event) => {
@@ -16,7 +16,8 @@ export default defineEventHandler(async (event) => {
     join profiles p on p.user_id=di.sender_id and p.visibility='active'
     join users u on u.id=di.sender_id and (u.account_status='active' or
       (u.account_status='paused' and u.paused_until is not null and u.paused_until<=now()))
-    left join lateral (select storage_key,public_url from profile_photos where user_id=p.user_id order by position limit 1) photo on true
+    left join lateral (select coalesce(thumbnail_storage_key,storage_key) as storage_key,public_url
+      from profile_photos where user_id=p.user_id order by position limit 1) photo on true
     left join lateral (select m.status,m.ended_at from matches m where
       (m.user_one_id=$1 and m.user_two_id=di.sender_id) or (m.user_two_id=$1 and m.user_one_id=di.sender_id)
       order by m.matched_at desc limit 1) matched on true
@@ -39,11 +40,12 @@ export default defineEventHandler(async (event) => {
       where m.status='active' and m.action_required_by=$1 and m.action_completed_at is null
       order by m.matched_at limit 1`, [sub]),
   ])
-  const interests = await Promise.all(rows.map(async row => ({
+  const photoUrls = await signedPhotoUrls(rows.map(row => row.photoStorageKey).filter(Boolean))
+  const interests = rows.map(row => ({
     id: row.id, slug: row.slug, name: row.name, age: row.age, place: row.place || 'Nearby',
     createdAt: row.createdAt, activityTags: row.activityTags.slice(0, 5), matchStatus: row.matchStatus || null,
-    photoUrl: row.photoStorageKey ? await signedPhotoUrl(row.photoStorageKey) : row.legacyPhotoUrl || null,
-  })))
+    photoUrl: row.photoStorageKey ? photoUrls.get(row.photoStorageKey) : row.legacyPhotoUrl || null,
+  }))
   return { interests, activeMatchCount: active.rows[0]?.count || 0, activeMatchLimit,
     yourMoveMatch: pendingAction.rows[0] || null }
 })

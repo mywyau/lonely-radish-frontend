@@ -6,8 +6,8 @@
 2. Go to **Storage** and select **New bucket**.
 3. Name it exactly `profile-photos`.
 4. Leave **Public bucket** disabled.
-5. Set the file-size limit to `5 MB`.
-6. Restrict allowed MIME types to `image/jpeg`, `image/png`, and `image/webp`.
+5. Set the file-size limit to `1 MB`.
+6. Restrict allowed MIME types to `image/webp`.
 
 No browser-facing Storage RLS policies are required for this implementation. The Auth0-authenticated Nuxt server creates signed upload and viewing URLs, verifies ownership, and performs deletion using the service-role key. Signed upload tokens do not expose that key.
 
@@ -28,11 +28,12 @@ Add the same variables in the production hosting environment and redeploy. The `
 
 ## How uploads work
 
-1. The authenticated browser sends file type and size to the Nuxt server.
-2. The server enforces the six-photo and 5 MB limits and creates a user-scoped signed upload token.
-3. The browser uploads directly to the private bucket.
-4. The server verifies the stored object before inserting its key into `profile_photos`.
-5. Profile APIs exchange stored keys for one-hour signed viewing URLs.
-6. Deletes remove the Storage object through the Storage API before deleting its database record.
+1. The browser accepts a JPEG, PNG, or WebP source image up to 20 MB.
+2. It corrects orientation, resizes the image, strips metadata, and creates a full WebP image plus a smaller WebP thumbnail.
+3. The server enforces the six-photo limit and creates user-scoped signed upload tokens for both objects.
+4. The browser uploads both objects directly to the private bucket. Full images are capped at 1 MB and thumbnails at 200 KB.
+5. The server verifies both stored objects before inserting their keys into `profile_photos`.
+6. Collection APIs batch-sign thumbnail URLs, while full profile APIs batch-sign the full images. Existing rows without thumbnails continue to use their full image.
+7. Deletes remove both Storage objects through the Storage API before deleting their database record.
 
 Storage objects must be deleted through the Storage API rather than by manually deleting rows from `storage.objects`.

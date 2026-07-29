@@ -1,7 +1,7 @@
 import { setHeader } from 'h3'
 import { db } from '~/server/repositories/db'
 import { requireUser } from '~/server/utils/requireUser'
-import { signedPhotoUrl } from '~/server/utils/supabaseStorage'
+import { signedPhotoUrls } from '~/server/utils/supabaseStorage'
 
 export default defineEventHandler(async (event) => {
   setHeader(event, 'Cache-Control', 'private, no-store')
@@ -19,9 +19,10 @@ export default defineEventHandler(async (event) => {
       left join activities a on a.id=pa.activity_id where pa.user_id=$1 order by pa.position`, [sub]),
     db.query(`select label from profile_interests where user_id=$1 order by position`, [sub]),
   ])
-  return { profile: profile.rows[0] ?? null, photos: await Promise.all(photos.rows.map(async photo => ({
-    ...photo, url: photo.storageKey ? await signedPhotoUrl(photo.storageKey) : photo.url,
-  }))), availability: availability.rows.map(row => row.label), activities: activities.rows.map(row => row.name),
+  const photoUrls = await signedPhotoUrls(photos.rows.map(photo => photo.storageKey).filter(Boolean))
+  return { profile: profile.rows[0] ?? null, photos: photos.rows.map(photo => ({
+    ...photo, url: photo.storageKey ? photoUrls.get(photo.storageKey) : photo.url,
+  })), availability: availability.rows.map(row => row.label), activities: activities.rows.map(row => row.name),
     personalInterests: personalInterests.rows.map(row => row.label),
     interestCategories: [...new Set(activities.rows.map(row => ({ 'Food and drink': 'Casual', Gaming: 'Games', Learning: 'Learn & create' }[row.category as string] || row.category)).filter(Boolean))] }
 })

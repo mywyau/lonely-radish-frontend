@@ -19,3 +19,15 @@ export async function signedPhotoUrl(storageKey: string, expiresIn = 3600) {
   if (error) throw createError({ statusCode: 502, statusMessage: 'Could not load profile photo' })
   return data.signedUrl
 }
+
+export async function signedPhotoUrls(storageKeys: string[], expiresIn = 3600) {
+  const uniqueKeys = [...new Set(storageKeys.filter(Boolean))]
+  if (!uniqueKeys.length) return new Map<string, string>()
+
+  const { data, error } = await storageAdmin().storage.from(PROFILE_PHOTO_BUCKET)
+    .createSignedUrls(uniqueKeys, expiresIn)
+  if (error || !data || data.some(item => item.error || !item.signedUrl)) {
+    throw createError({ statusCode: 502, statusMessage: 'Could not load profile photos' })
+  }
+  return new Map(data.map(item => [item.path, item.signedUrl!]))
+}

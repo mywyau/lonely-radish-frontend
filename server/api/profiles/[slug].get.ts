@@ -1,7 +1,7 @@
 import { createError, getRouterParam, setHeader } from 'h3'
 import { db } from '~/server/repositories/db'
 import { requireUser } from '~/server/utils/requireUser'
-import { signedPhotoUrl } from '~/server/utils/supabaseStorage'
+import { signedPhotoUrls } from '~/server/utils/supabaseStorage'
 
 export default defineEventHandler(async (event) => {
   setHeader(event, 'Cache-Control', 'private, no-store')
@@ -52,9 +52,10 @@ export default defineEventHandler(async (event) => {
         from profile_contact_details where user_id=$1 and share_with_matches=true`, [profile.userId])
       : Promise.resolve({ rows: [] }),
   ])
-  return { ...profile, photos: await Promise.all(photos.rows.map(async photo => ({ ...photo,
-    src: photo.storageKey ? await signedPhotoUrl(photo.storageKey) : photo.src, storageKey: undefined,
-  }))), activities: activities.rows.map(row => row.name),
+  const photoUrls = await signedPhotoUrls(photos.rows.map(photo => photo.storageKey).filter(Boolean))
+  return { ...profile, photos: photos.rows.map(photo => ({ ...photo,
+    src: photo.storageKey ? photoUrls.get(photo.storageKey) : photo.src, storageKey: undefined,
+  })), activities: activities.rows.map(row => row.name),
     personalInterests: personalInterests.rows.map(row => row.label),
     interestCategories: [...new Set(activities.rows.map(row => ({ 'Food and drink': 'Casual', Gaming: 'Games', Learning: 'Learn & create' }[row.category as string] || row.category)).filter(Boolean))],
     availability: availability.rows.map(row => row.label),

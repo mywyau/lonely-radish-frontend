@@ -18,19 +18,7 @@ useSeoMeta({
   ogDescription: 'Find someone nearby, pick an activity, and meet around something you both enjoy.',
 })
 
-const { data: stats } = await useFetch('/api/total-users-stats', {
-  server: true,
-  lazy: true,
-})
-
-const currentUsers = ref<number | null>(null)
-const sessionCookie = useCookie<string>('online_session_id', {
-  maxAge: 60 * 60 * 24 * 365,
-  sameSite: 'lax',
-})
-
 const { isLoggedIn, user, resolve: resolveMeState } = useMeStateV2()
-let currentUsersInterval: ReturnType<typeof setInterval> | undefined
 const localHour = ref<number | null>(null)
 const welcomeMessageIndex = ref(0)
 const nighttimeGreetingIndex = ref(0)
@@ -159,21 +147,6 @@ const howItWorks = [
   },
 ]
 
-async function refreshCurrentUsers() {
-  if (!sessionCookie.value && import.meta.client) {
-    sessionCookie.value = crypto.randomUUID()
-  }
-
-  const data = await $fetch<{ currentUsers: number }>('/api/current-users', {
-    method: 'POST',
-    body: {
-      sessionId: sessionCookie.value,
-    },
-  })
-
-  currentUsers.value = data.currentUsers
-}
-
 function startOnboarding() {
   return navigateTo('/activities')
 }
@@ -183,17 +156,6 @@ onMounted(() => {
   welcomeMessageIndex.value = Math.floor(Math.random() * welcomeMessages.length)
   nighttimeGreetingIndex.value = Math.floor(Math.random() * 2)
   void resolveMeState()
-  void refreshCurrentUsers()
-
-  currentUsersInterval = setInterval(() => {
-    void refreshCurrentUsers()
-  }, 30_000)
-})
-
-onBeforeUnmount(() => {
-  if (currentUsersInterval) {
-    clearInterval(currentUsersInterval)
-  }
 })
 </script>
 
@@ -237,18 +199,6 @@ onBeforeUnmount(() => {
         </div>
       </div>
     </section>
-
-    <!-- <section class="mx-auto grid max-w-4xl gap-4 px-5 py-6 sm:grid-cols-2 sm:px-8">
-      <article class="metric-card">
-        <span class="metric-value">{{ currentUsers ?? '-' }}</span>
-        <span class="metric-label">People browsing now</span>
-      </article>
-
-      <article class="metric-card">
-        <span class="metric-value">{{ stats?.totalUsers ?? '-' }}</span>
-        <span class="metric-label">Early members</span>
-      </article>
-    </section> -->
 
     <section class="mx-auto grid max-w-6xl gap-8 px-5 py-10 sm:px-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-start">
       <div>
@@ -461,33 +411,6 @@ onBeforeUnmount(() => {
 
 .secondary-action:hover {
   background: rgba(255, 255, 255, 0.68);
-}
-
-.metric-card {
-  /* border: 1px solid rgba(180, 35, 74, 0.14); */
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.76);
-  /* box-shadow: 0 12px 28px rgba(180, 35, 74, 0.08); */
-}
-
-.metric-card {
-  display: flex;
-  min-height: 7rem;
-  flex-direction: column;
-  justify-content: center;
-  padding: 1.25rem;
-}
-
-.metric-value {
-  font-size: clamp(2rem, 6vw, 3.25rem);
-  font-weight: 750;
-  line-height: 1;
-}
-
-.metric-label {
-  margin-top: 0.55rem;
-  color: #6e4d58;
-  font-size: 0.9rem;
 }
 
 .section-kicker {

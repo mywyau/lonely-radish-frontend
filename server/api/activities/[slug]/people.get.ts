@@ -1,7 +1,7 @@
 import { createError, getQuery, getRouterParam, setHeader } from 'h3'
 import { db } from '~/server/repositories/db'
 import { requireUser } from '~/server/utils/requireUser'
-import { signedPhotoUrl } from '~/server/utils/supabaseStorage'
+import { signedPhotoUrls } from '~/server/utils/supabaseStorage'
 import { discoveryCategory } from '~/utils/activityDiscovery'
 import { discoveryDistanceSelect, viewerDiscoveryJoins, viewerDiscoveryWhere } from '~/server/utils/discoveryFilters'
 import { decodeCursor, pageRows } from '~/server/utils/cursorPagination'
@@ -24,7 +24,8 @@ export default defineEventHandler(async (event) => {
     ${discoveryDistanceSelect}
     from profiles p join users u on u.id=p.user_id
     ${viewerDiscoveryJoins}
-    left join lateral (select storage_key,public_url from profile_photos where user_id=p.user_id order by position limit 1) photo on true
+    left join lateral (select coalesce(thumbnail_storage_key,storage_key) as storage_key,public_url
+      from profile_photos where user_id=p.user_id order by position limit 1) photo on true
     join lateral (select array_agg(coalesce(a.name,pa.custom_label) order by pa.position) as "activityTags"
       from profile_activities pa left join activities a on a.id=pa.activity_id
       where pa.user_id=p.user_id and ((a.is_active=true and a.category=any($1::text[])) or
@@ -52,7 +53,8 @@ export default defineEventHandler(async (event) => {
   ])
 
   const page = pageRows(candidates.rows, pageSize, row => ({ sortAt: row.sortAt, tieBreaker: row.slug }))
-  const people = await Promise.all(page.items.map(async person => {
+  const photoUrls = await signedPhotoUrls(page.items.map(person => person.photoStorageKey).filter(Boolean))
+  const people = page.items.map(person => {
     const matchedActivityTags = (person.activityTags || []).filter(Boolean)
     const otherActivityTags = (person.allActivityTags || [])
       .filter((activity: string) => activity && !matchedActivityTags.includes(activity))
@@ -63,9 +65,9 @@ export default defineEventHandler(async (event) => {
       otherActivityTags: otherActivityTags.slice(0, 3),
       activityTags: [...matchedActivityTags, ...otherActivityTags].slice(0, 6),
       photoUrl: person.photoStorageKey
-        ? await signedPhotoUrl(person.photoStorageKey) : person.legacyPhotoUrl || null,
+        ? photoUrls.get(person.photoStorageKey) : person.legacyPhotoUrl || null,
     }
-  }))
+  })
   const preferences = preferenceResult.rows[0] ?? { minimumAge: 18, maximumAge: 100, distance: 10,
     openToEveryone: true, genders: [], noOrientationPreference: true, orientations: [], noRacePreference: true,
     locationLabel: null, postcodeArea: null }

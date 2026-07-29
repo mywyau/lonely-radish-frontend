@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Camera, ChevronLeft, ChevronRight, Eye, GripVertical, ImagePlus, ShieldCheck, Star, Trash2, UploadCloud } from '@lucide/vue'
 import { createClient } from '@supabase/supabase-js'
+import { MAX_SOURCE_PHOTO_BYTES, optimizeProfilePhoto } from '~/utils/profilePhotoOptimization'
 
 definePageMeta({
   title: 'Profile Photos · Lonely Radish',
@@ -21,6 +22,7 @@ const primaryPhotoId = ref<string | null>(null)
 const saved = ref(false)
 const orderChanged = ref(false)
 const uploading = ref(false)
+const uploadStatus = ref('')
 const errorMessage = ref('')
 const draggingPhotoId = ref<string | null>(null)
 const config = useRuntimeConfig()
@@ -35,33 +37,71 @@ function openFilePicker() {
 
 async function onFilesSelected(event: Event) {
   const input = event.target as HTMLInputElement
-  const files = Array.from(input.files ?? [])
-    .filter(file => ['image/jpeg', 'image/png', 'image/webp'].includes(file.type) && file.size <= 5 * 1024 * 1024)
-    .slice(0, photoSlots.value)
+  const selectedFiles = Array.from(input.files ?? [])
   input.value = ''
-  if (!files.length) { errorMessage.value = 'Choose JPEG, PNG, or WebP photos up to 5 MB each.'; return }
+  if (!selectedFiles.length) return
+  if (selectedFiles.some(file => !['image/jpeg', 'image/png', 'image/webp'].includes(file.type)
+    || file.size < 1 || file.size > MAX_SOURCE_PHOTO_BYTES)) {
+    errorMessage.value = 'Choose JPEG, PNG, or WebP photos up to 20 MB each.'
+    return
+  }
+  const files = selectedFiles.slice(0, photoSlots.value)
+  if (!files.length) { errorMessage.value = 'You already have six profile photos.'; return }
   if (!config.public.supabaseUrl || !config.public.supabasePublishableKey) { errorMessage.value = 'Photo storage is not configured.'; return }
   uploading.value = true
   errorMessage.value = ''
   const supabase = createClient(String(config.public.supabaseUrl), String(config.public.supabasePublishableKey))
   try {
-    for (const file of files) {
-      const signed = await $fetch<{ path: string; token: string }>('/api/profile/photos/upload-url', {
-        method: 'POST', body: { contentType: file.type, size: file.size, fileName: file.name },
+    for (const [index, file] of files.entries()) {
+      uploadStatus.value = `Optimising photo ${index + 1} of ${files.length}…`
+      const optimized = await optimizeProfilePhoto(file)
+      const signed = await $fetch<{
+        photo: { path: string; token: string }
+        thumbnail: { path: string; token: string }
+      }>('/api/profile/photos/upload-url', {
+        method: 'POST',
+        body: {
+          contentType: optimized.full.type,
+          size: optimized.full.size,
+          thumbnailSize: optimized.thumbnail.size,
+        },
       })
-      const { error } = await supabase.storage.from('profile-photos').uploadToSignedUrl(signed.path, signed.token, file, {
-        contentType: file.type, cacheControl: '3600',
-      })
-      if (error) throw error
-      const photo = await $fetch<any>('/api/profile/photos/confirm', { method: 'POST',
-        body: { storageKey: signed.path, altText: `${file.name} profile photo` } })
-      photos.value.push({ ...photo, name: file.name, size: file.size })
+      uploadStatus.value = `Uploading photo ${index + 1} of ${files.length}…`
+      try {
+        const bucket = supabase.storage.from('profile-photos')
+        const [photoUpload, thumbnailUpload] = await Promise.all([
+          bucket.uploadToSignedUrl(signed.photo.path, signed.photo.token, optimized.full, {
+            contentType: 'image/webp', cacheControl: '31536000',
+          }),
+          bucket.uploadToSignedUrl(signed.thumbnail.path, signed.thumbnail.token, optimized.thumbnail, {
+            contentType: 'image/webp', cacheControl: '31536000',
+          }),
+        ])
+        if (photoUpload.error) throw photoUpload.error
+        if (thumbnailUpload.error) throw thumbnailUpload.error
+        const photo = await $fetch<any>('/api/profile/photos/confirm', {
+          method: 'POST',
+          body: {
+            storageKey: signed.photo.path,
+            thumbnailStorageKey: signed.thumbnail.path,
+            altText: `${file.name} profile photo`,
+          },
+        })
+        photos.value.push({ ...photo, name: file.name, size: optimized.full.size })
+      } catch (error) {
+        await $fetch('/api/profile/photos/discard', {
+          method: 'POST',
+          body: { storageKey: signed.photo.path, thumbnailStorageKey: signed.thumbnail.path },
+        }).catch(() => undefined)
+        throw error
+      }
     }
     primaryPhotoId.value ||= photos.value[0]?.id ?? null
   } catch (error: any) {
     errorMessage.value = error?.data?.statusMessage || error?.message || 'A photo could not be uploaded.'
   } finally {
     uploading.value = false
+    uploadStatus.value = ''
   }
 }
 
@@ -147,9 +187,9 @@ onMounted(async () => {
         </div>
 
         <section class="rounded-lg bg-white p-5 shadow-[0_12px_28px_rgba(180,35,74,0.08)]">
-          <div class="flex items-start gap-3"><ImagePlus class="mt-1 size-5 shrink-0 text-[#B4234A]" aria-hidden="true" /><div><h2 class="text-xl font-semibold">Upload photos</h2><p class="mt-1 text-sm text-[#6E4D58]">Choose up to six JPEG, PNG, or WebP images, up to 5 MB each.</p></div></div>
-          <button type="button" :disabled="uploading || photoSlots === 0" class="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#B4234A] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#8F1839] disabled:opacity-50" @click="openFilePicker"><UploadCloud class="size-4" aria-hidden="true" />{{ uploading ? 'Uploading…' : 'Add photos' }}</button>
-          <input ref="fileInput" accept="image/*" class="sr-only" multiple type="file" @change="onFilesSelected">
+          <div class="flex items-start gap-3"><ImagePlus class="mt-1 size-5 shrink-0 text-[#B4234A]" aria-hidden="true" /><div><h2 class="text-xl font-semibold">Upload photos</h2><p class="mt-1 text-sm text-[#6E4D58]">Choose up to six JPEG, PNG, or WebP images, up to 20 MB each. Photos are resized and converted to WebP before upload.</p></div></div>
+          <button type="button" :disabled="uploading || photoSlots === 0" class="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#B4234A] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#8F1839] disabled:opacity-50" @click="openFilePicker"><UploadCloud class="size-4" aria-hidden="true" />{{ uploading ? (uploadStatus || 'Preparing photos…') : 'Add photos' }}</button>
+          <input ref="fileInput" accept="image/jpeg,image/png,image/webp" class="sr-only" multiple type="file" @change="onFilesSelected">
           <div class="mt-4 rounded-lg border border-dashed border-[#D8C8B6] bg-[#FBF7F1] p-4 text-center"><p class="text-sm font-semibold text-[#4D2F39]">{{ photos.length }} / 6 photos selected</p><p class="mt-1 text-sm text-[#6E4D58]">{{ photoSlots }} slots remaining</p></div>
         </section>
       </aside>
