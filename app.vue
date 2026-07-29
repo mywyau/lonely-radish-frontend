@@ -12,6 +12,9 @@ const runtimeConfig = useRuntimeConfig()
 const baseUrl = (runtimeConfig.public.siteUrl || 'http://localhost:3000').replace(/\/$/, '')
 
 useHead({
+  titleTemplate: (titleChunk) => titleChunk
+    ? `${titleChunk} · Lonely Radish`
+    : 'Lonely Radish · Coffee-date dating',
   link: [
     {
       rel: 'canonical',

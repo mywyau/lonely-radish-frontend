@@ -85,6 +85,10 @@ if (!process.env.STRIPE_SECRET_KEY && process.env.NODE_ENV === "production") {
 
 export const stripe = process.env.STRIPE_SECRET_KEY
   ? new Stripe(process.env.STRIPE_SECRET_KEY, {
+      // The production integration is intentionally pinned until its Stripe
+      // Workbench upgrade has been tested. Stripe's SDK types only describe
+      // the latest API version, so this mismatch is explicitly documented.
+      // @ts-expect-error Stripe types intentionally exclude older API versions.
       apiVersion: "2023-10-16",
     })
-  : createMockStripe();
+  : createMockStripe() as unknown as Stripe;

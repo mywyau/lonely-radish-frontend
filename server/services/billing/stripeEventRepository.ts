@@ -3,6 +3,9 @@ import { db } from "~/server/repositories/db";
 
 type InsertStripeEventResult = {
   inserted: boolean;
+  stripeSubscriptionId: string | null;
+  stripeCustomerId: string | null;
+  userId: string | null;
 };
 
 function extractStripeSubscriptionId(stripeEvent: Stripe.Event): string | null {
@@ -107,5 +110,8 @@ export async function insertStripeEvent(
 
   return {
     inserted: result.rowCount === 1,
+    stripeSubscriptionId,
+    stripeCustomerId,
+    userId,
   };
 }

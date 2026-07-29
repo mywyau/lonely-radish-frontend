@@ -1,6 +1,7 @@
 import { Receiver } from "@upstash/qstash";
 import { redactIdentifier } from "~/server/utils/logging/redact";
 import { createError, defineEventHandler, getHeader, readRawBody } from "h3";
+import type { H3Event } from "h3";
 
 import { db } from "~/server/repositories/db";
 import { stripe } from "~/server/services/billing/stripeClient";
@@ -55,7 +56,7 @@ function getWorkerUrl(): string {
 }
 
 async function verifyQStashRequest(
-  event: Parameters<typeof defineEventHandler>[0],
+  event: H3Event,
   rawBody: string,
 ): Promise<void> {
   const signature = getHeader(event, "upstash-signature");

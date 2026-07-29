@@ -139,8 +139,11 @@ function extractSubscriptionIdFromCheckoutSession(
 }
 
 function extractSubscriptionIdFromInvoice(invoice: Stripe.Invoice): string | null {
-  if (typeof invoice.subscription === "string") {
-    return invoice.subscription;
+  const legacySubscription = (invoice as Stripe.Invoice & {
+    subscription?: string | Stripe.Subscription | null
+  }).subscription
+  if (typeof legacySubscription === "string") {
+    return legacySubscription;
   }
 
   const parent = invoice.parent as

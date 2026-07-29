@@ -265,7 +265,7 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
                       class="text-sm text-[#6E4D58]">{{ profile.pronouns }}</span>
                   </div>
                   <button type="button"
-                    class="inline-flex shrink-0 items-center gap-2 rounded-full bg-[#FCE3E8] px-3 py-2 text-xs font-semibold text-[#8F1839]"
+                    class="inline-flex shrink-0 items-center gap-2 rounded-full bg-[#FCE3E8] px-3 py-2 text-xs font-semibold text-[#8F1839 hover:brightness-90"
                     aria-label="View About me" @click="profileCardFlipped = true">
                     <UserRound class="size-3.5" aria-hidden="true" />
                     <RefreshCw class="size-3.5" aria-hidden="true" />
@@ -390,7 +390,7 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
                     <h2 class="text-xl font-semibold">About me</h2>
                   </div>
                   <button type="button"
-                    class="inline-flex shrink-0 items-center gap-2 rounded-full bg-[#F3E8DA] px-3 py-2 text-xs font-semibold text-[#8F1839]"
+                    class="inline-flex shrink-0 items-center gap-2 rounded-full bg-[#F3E8DA] px-3 py-2 text-xs font-semibold text-[#8F1839] hover:brightness-90"
                     @click="profileCardFlipped = false">
                     <RefreshCw class="size-3.5" aria-hidden="true" /> Back
                   </button>

@@ -62,11 +62,6 @@ export default defineNuxtConfig({
       htmlAttrs: {
         lang: "en",
       },
-      titleTemplate: (titleChunk) => {
-        return titleChunk
-          ? `${titleChunk} · Lonely Radish`
-          : "Lonely Radish · Coffee-date dating";
-      },
       meta: [
         {
           name: "description",

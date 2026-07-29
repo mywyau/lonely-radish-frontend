@@ -1,8 +1,9 @@
 import { useRuntimeConfig } from "#imports";
 import { Client } from "@upstash/qstash";
+import type { H3Event } from "h3";
 
 export async function enqueueStripeEventJob(
-  event: Parameters<typeof defineEventHandler>[0],
+  event: H3Event,
   job: {
     eventId: string;
     stripeSubscriptionId?: string | null;
