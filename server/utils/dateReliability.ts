@@ -1,6 +1,6 @@
-import type { PoolClient } from 'pg'
+import type { DatabaseClient } from '~/server/repositories/db'
 
-export async function confirmNoShowCase(client: PoolClient, caseId: number) {
+export async function confirmNoShowCase(client: DatabaseClient, caseId: number) {
   const result = await client.query(`select id,accused_user_id as "accusedUserId",reporter_id as "reporterId",proposal_id as "proposalId"
     from date_no_show_cases where id=$1 and status='pending' for update`, [caseId])
   const noShowCase = result.rows[0]

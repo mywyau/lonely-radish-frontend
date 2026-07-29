@@ -1,6 +1,6 @@
-import type { PoolClient } from 'pg'
+import type { DatabaseClient } from '~/server/repositories/db'
 
-export async function blockUser(client: PoolClient, blockerId: string, blockedId: string) {
+export async function blockUser(client: DatabaseClient, blockerId: string, blockedId: string) {
   const pair = [blockerId, blockedId].sort().join(':')
   await client.query('select pg_advisory_xact_lock(hashtext($1))', [pair])
   await client.query(`insert into blocks(blocker_id,blocked_id) values($1,$2)

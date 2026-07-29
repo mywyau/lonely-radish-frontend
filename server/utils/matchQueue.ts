@@ -1,6 +1,6 @@
-import type { PoolClient } from 'pg'
+import type { DatabaseClient } from '~/server/repositories/db'
 
-export async function activateMatchOrQueue(client: PoolClient, matchId: string) {
+export async function activateMatchOrQueue(client: DatabaseClient, matchId: string) {
   await client.query('savepoint activate_queued_match')
   try {
     await client.query(`update matches set status='active',matched_at=now() where id=$1`, [matchId])

@@ -4,7 +4,7 @@ import type { Entitlement } from "~/types/auth/entitlements";
 export async function getUserEntitlement(
   userId: string,
 ): Promise<Entitlement | null> {
-  const { rows } = await db.query(
+  const { rows } = await db.query<Entitlement>(
     `
     SELECT
       plan,
