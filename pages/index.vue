@@ -124,13 +124,13 @@ const howItWorks = [
   {
     number: '01',
     title: 'Find people through shared interests',
-    description: 'Set your preferences, distance and usual availability, then browse people through date activities you would genuinely enjoy.',
+    description: 'Set your preferences, distance and usual availability, then look for other people interested in similar activities.',
     icon: Sparkles,
   },
   {
     number: '02',
     title: 'Show interest selectively',
-    description: 'Send interest when somebody feels right. Mutual interest can match automatically, or the recipient can choose to create a match.',
+    description: 'Send interest when somebody feels right. Mutual interest will match automatically, or the recipient can choose to create a match.',
     icon: HeartHandshake,
   },
   {
@@ -245,7 +245,7 @@ onMounted(() => {
           <p class="section-kicker">How Lonely Radish works</p>
           <h2 class="section-heading">Less swiping. More intention.</h2>
           <p class="mt-4 leading-7 text-[#6E4D58]">
-            The app helps you move from discovering somebody compatible to agreeing a simple, public date—all in one place.
+            The app helps you move from discovering somebody compatible to agreeing a simple, public date all in one place.
           </p>
         </div>
 
@@ -308,7 +308,7 @@ onMounted(() => {
           <p class="section-kicker">Date-friendly offers</p>
           <h2 class="section-heading">Turn a confirmed date into a better local experience.</h2>
           <p class="mt-4 max-w-2xl leading-7 text-[#6E4D58]">
-            Lonely Radish connects real date plans with offers from approved local businesses—giving couples a useful saving and venues a genuine reason to welcome them.
+            Lonely Radish connects real date plans with offers from approved local businesses giving couples a useful saving and venues a genuine reason to welcome them.
           </p>
         </div>
 
