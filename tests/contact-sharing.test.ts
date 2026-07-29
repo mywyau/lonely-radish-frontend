@@ -35,6 +35,6 @@ describe('match-only contact details', () => {
   it('keeps the three demo profiles available and clearly labelled', () => {
     const page = read('pages/profiles/[slug].vue')
     expect(page.match(/isDemo: true/g)).toHaveLength(3)
-    expect(page).toContain('Demo profile')
+    expect(page).toMatch(/Demo\s+profile/)
   })
 })

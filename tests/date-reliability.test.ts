@@ -26,7 +26,7 @@ describe('private date reliability', () => {
     expect(reliability).toContain("now()+interval '7 days'")
     expect(reliability).toContain("confirmed_no_show_count+1=2")
     expect(read('server/api/activities/[slug]/people.get.ts')).toContain('u.discovery_restricted_until<=now()')
-    expect(read('server/api/interests/index.post.ts')).toContain('New discovery is temporarily paused')
+    expect(read('server/services/interests/InterestService.ts')).toContain('New discovery is temporarily paused')
   })
 
   it('uses the existing signed reminder worker for prompts and expired cases', () => {

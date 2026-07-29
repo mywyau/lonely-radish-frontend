@@ -1,6 +1,6 @@
 type Environment = Record<string, string | undefined>
 
-export const latestRequiredMigration = '20260829_add_profile_photo_thumbnails.sql'
+export const latestRequiredMigration = '20260831_add_transactional_outbox.sql'
 
 const placeholderPrefixes = [
   'your-',

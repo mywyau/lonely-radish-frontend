@@ -5,6 +5,8 @@ export function objectBody(value: unknown): Record<string, unknown> {
   return value as Record<string, unknown>
 }
 
+export function text(value: unknown, name: string, max: number, required: true): string
+export function text(value: unknown, name: string, max: number, required?: false): string | null
 export function text(value: unknown, name: string, max: number, required = false) {
   if (value == null || value === '') {
     if (required) badRequest(`${name} is required`)

@@ -45,7 +45,7 @@ describe("auth and billing page contracts", () => {
     expect(upgrade).toContain("upgrade('quarterly')");
     expect(upgrade).toContain('Three-month plan');
     expect(upgrade).toContain('Your current plan:')
-    expect(upgrade).toContain('Current plan')
+    expect(upgrade).toMatch(/Current\s+plan/)
     expect(upgrade).toContain("currentPlan === 'free'")
     expect(upgrade).toContain("isCurrentPlan('monthly')")
     expect(upgrade).toContain('onMounted(() => resolve())')

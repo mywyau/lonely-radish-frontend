@@ -234,8 +234,8 @@ APP_BASE_URL=http://localhost:3000
 
 ### QStash
 
-QStash delivers production Stripe jobs, notification emails, date reminders,
-and account-deletion work:
+QStash delivers production Stripe jobs, transactional outbox events,
+notification emails, date reminders, and account-deletion work:
 
 ```env
 QSTASH_TOKEN=...
@@ -247,9 +247,37 @@ QSTASH_NEXT_SIGNING_KEY=...
 QStash cannot deliver to localhost. The signed processing routes are:
 
 - `POST /api/stripe/v2/process-event-v2`
+- `POST /api/outbox/process`
 - `POST /api/email/process`
 - `POST /api/reminders/process`
 - `POST /api/account/v2/worker-delete`
+
+Match and interest writes commit their outbox events in the same PostgreSQL
+transaction and then ask QStash to process them immediately. The outbox worker
+safely leases events across multiple instances, retries temporary failures, and
+queues the existing notification-email delivery records. Full batches enqueue
+another worker invocation so bursts drain without a fixed polling bottleneck.
+
+Create a recurring QStash recovery schedule that sends `POST` requests to
+`https://your-app.example/api/outbox/process` every 15 minutes. It normally
+finds nothing, but recovers durable events if the immediate QStash enqueue was
+unavailable. Create a separate schedule for
+`https://your-app.example/api/email/process` if notification email delivery is
+enabled.
+
+Local development processes newly committed events inline. Signed QStash
+verification is disabled locally, so pending work can also be recovered
+manually:
+
+```bash
+curl -X POST http://localhost:3000/api/outbox/process
+curl -X POST http://localhost:3000/api/email/process
+```
+
+`GET /api/health` reports delayed or dead-lettered outbox work without taking
+the main application offline. Events are retried five times with increasing
+delays; inspect the `outbox_events.last_error` value before retrying a
+dead-lettered event.
 
 See [docs/account-deletion.md](docs/account-deletion.md) before enabling account
 deletion in production.

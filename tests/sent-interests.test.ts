@@ -26,7 +26,7 @@ describe('sent interest feedback and history', () => {
   })
 
   it('prevents sending interest to the same person twice', () => {
-    const api = read('server/api/interests/index.post.ts')
+    const api = read('server/services/interests/InterestService.ts')
     expect(api).toContain('You have already sent interest to this person')
     expect(read('server/api/profiles/[slug].get.ts')).toContain('as "interestSent"')
     expect(read('pages/profiles/[slug].vue')).toContain('Interest already sent')

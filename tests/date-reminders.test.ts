@@ -37,7 +37,7 @@ describe('confirmed date reminders and attendance', () => {
     expect(page).toContain("updateAttendance(match, 'confirm')")
     expect(page).toContain("updateAttendance(match, 'reschedule')")
     expect(page).toContain("updateAttendance(match, 'cancel')")
-    expect(read('pages/plans/[slug].vue')).toContain('Choose another date and time')
+    expect(read('pages/plans/[slug].vue')).toContain('New date and time')
   })
 
   it('sends the new updates through existing email preferences', () => {

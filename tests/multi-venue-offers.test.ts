@@ -73,7 +73,7 @@ describe("multi-venue offer campaigns", () => {
     expect(page).toContain("One location");
     expect(page).toContain("Selected locations");
     expect(page).toContain("All locations");
-    expect(page).toContain("Includes future approved branches automatically");
+    expect(page).toMatch(/Includes\s+future approved branches automatically\./);
     expect(read("components/BusinessNavBar.vue")).toContain("/business/venues");
   });
 });

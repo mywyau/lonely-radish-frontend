@@ -6,17 +6,19 @@ const read = (path: string) => readFileSync(resolve(process.cwd(), path), 'utf8'
 
 describe('match momentum', () => {
   it('marks a one-sided accepted interest as the recipient’s move', () => {
-    const accept = read('server/api/interests/[id]/accept.post.ts')
-    expect(accept).toContain('action_required_by=$2')
-    expect(accept).toContain('action_required_by=$1 and action_completed_at is null')
-    expect(accept).toContain('Take action on your current new match before accepting another interest')
+    const repository = read('server/repositories/matches.ts')
+    const service = read('server/services/matches/MatchService.ts')
+    expect(repository).toContain('action_required_by=$2')
+    expect(repository).toContain('action_required_by=$1 and action_completed_at is null')
+    expect(service).toContain('Take action on your current new match before accepting another interest')
   })
 
   it('keeps reciprocal interests automatic and free of a required action', () => {
-    const send = read('server/api/interests/index.post.ts')
-    expect(send).toContain('if (reverse.rows[0])')
-    expect(send).toContain('action_required_by=null')
-    expect(send).toContain('matched = true')
+    const service = read('server/services/interests/InterestService.ts')
+    const repository = read('server/repositories/interests.ts')
+    expect(service).toContain('hasReverseInterest')
+    expect(repository).toContain('action_required_by=null')
+    expect(service).toContain('matched = true')
   })
 
   it('clears the required action through planning or closing the match', () => {
@@ -49,8 +51,8 @@ describe('match momentum', () => {
   })
 
   it('preserves capacity-limited matches in a visible queue', () => {
-    const send = read('server/api/interests/index.post.ts')
-    const accept = read('server/api/interests/[id]/accept.post.ts')
+    const interestRepository = read('server/repositories/interests.ts')
+    const matchRepository = read('server/repositories/matches.ts')
     const queue = read('server/utils/matchQueue.ts')
     const activate = read('server/api/matches/[id]/activate.post.ts')
     const discovery = read('server/api/activities/[slug]/people.get.ts')
@@ -58,8 +60,8 @@ describe('match momentum', () => {
     const emails = read('server/utils/notificationEmail.ts')
     const page = read('pages/matches/index.vue')
     const migration = read('docs/migrations/20260827_add_queued_matches.sql')
-    expect(send).toContain("values($1,$2,'queued')")
-    expect(accept).toContain("values($1,$2,'queued',$3)")
+    expect(interestRepository).toContain("values($1,$2,'queued')")
+    expect(matchRepository).toContain("values($1,$2,'queued',$3)")
     expect(queue).toContain('savepoint activate_queued_match')
     expect(queue).toContain("set status='active',matched_at=now()")
     expect(activate).toContain("status='queued'")

@@ -19,7 +19,9 @@ describe('notification centre', () => {
   })
 
   it('creates notifications throughout the match lifecycle', () => {
-    expect(read('server/api/interests/index.post.ts')).toContain("'new_match'")
+    expect(read('server/services/interests/InterestService.ts')).toContain("'new_match'")
+    expect(read('server/services/interests/InterestService.ts')).toContain("'interest.sent'")
+    expect(read('server/services/outbox/OutboxProcessor.ts')).toContain('insert into notifications')
     expect(read('server/api/proposals/[id]/send.post.ts')).toContain("'proposal_received'")
     expect(read('server/api/proposals/[id].put.ts')).toContain("'proposal_updated'")
     expect(read('server/api/proposals/[id]/respond.post.ts')).toContain("'date_confirmed'")

@@ -30,7 +30,10 @@ async function acceptInterest() {
   if (!pending.value) return
   accepting.value = true; errorMessage.value = ''
   try {
-    const result = await $fetch<{ name: string; matchId: string; queued: boolean }>(`/api/interests/${pending.value.id}/accept`, { method: 'POST' })
+    const result = await $fetch<{ name: string; matchId: string; queued: boolean }>(`/api/interests/${pending.value.id}/accept`, {
+      method: 'POST',
+      headers: { 'Idempotency-Key': crypto.randomUUID() },
+    })
     interests.value = interests.value.map(item => item.id === pending.value?.id ? { ...item, matchStatus: result.queued ? 'queued' : 'active' } : item)
     successMessage.value = result.queued
       ? `You matched with ${result.name}. Planning can begin when you both have space.`

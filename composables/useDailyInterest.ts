@@ -70,7 +70,11 @@ export function useDailyInterest() {
     successMessage.value = null
     sending.value = true
     try {
-      const response = await $fetch<{ interest: DailyInterest; matched?: boolean; queued?: boolean }>('/api/interests', { method: 'POST', body: { profileSlug } })
+      const response = await $fetch<{ interest: DailyInterest; matched?: boolean; queued?: boolean }>('/api/interests', {
+        method: 'POST',
+        headers: { 'Idempotency-Key': crypto.randomUUID() },
+        body: { profileSlug },
+      })
       interests.value = interests.value.filter(interest => interest.profileSlug !== profileSlug)
       interests.value.push(normaliseInterest(response.interest))
       if (response.matched && !response.queued) activeMatchCount.value += 1
