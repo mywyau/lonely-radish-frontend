@@ -349,7 +349,7 @@ onMounted(() => {
             <ol class="mt-6 grid gap-4">
               <li class="offer-step">
                 <BadgePercent class="size-5 shrink-0 text-[#52713A]" aria-hidden="true" />
-                <span><strong>Create a campaign.</strong> Set the saving, terms and the single, selected or all locations where it applies.</span>
+                <span><strong>Create a campaign.</strong> Set the saving, terms and the venues where it applies.</span>
               </li>
               <li class="offer-step">
                 <ShieldCheck class="size-5 shrink-0 text-[#52713A]" aria-hidden="true" />
