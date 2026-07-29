@@ -16,6 +16,7 @@ type MatchNotification = { id: string; kind: string; actorName?: string; proposa
 
 const loading = ref(true)
 const errorMessage = ref('')
+const updatesError = ref('')
 const matches = ref<MatchCard[]>([])
 const totalMatches = ref(0)
 const activeMatchLimit = ref(3)
@@ -258,13 +259,22 @@ async function rejectMatch() {
   finally { rejecting.value = false }
 }
 
-onMounted(async () => {
+async function loadDashboard() {
+  loading.value = true
+  errorMessage.value = ''
+  updatesError.value = ''
   showSummaryCounts.value = window.localStorage.getItem('lonely-radish-show-match-counts') !== 'false'
-  try {
-    await Promise.all([loadMatches(), loadNotifications()])
+  const [matchResult, notificationResult] = await Promise.allSettled([loadMatches(), loadNotifications()])
+  if (matchResult.status === 'rejected') {
+    const error: any = matchResult.reason
+    errorMessage.value = error?.data?.statusMessage || 'Your matches could not be loaded.'
   }
-  catch (error: any) { errorMessage.value = error?.data?.statusMessage || 'Your matches could not be loaded.' }
-  finally { loading.value = false }
+  if (notificationResult.status === 'rejected') updatesError.value = 'Match updates could not be loaded.'
+  loading.value = false
+}
+
+onMounted(async () => {
+  await loadDashboard()
 })
 </script>
 
@@ -339,9 +349,15 @@ onMounted(async () => {
       <p v-if="additionalMatches" class="mt-6 rounded-lg bg-[#FFF1C7] px-4 py-3 text-sm font-semibold text-[#694C00]">You have {{ additionalMatches }} more {{ additionalMatches === 1 ? 'match' : 'matches' }} waiting. Finish planning or remove a match to see who is next.</p>
 
       <div v-if="loading" class="mt-9 rounded-lg bg-white p-8 text-center text-sm text-[#6E4D58]">Loading your matches and plans…</div>
-      <p v-else-if="errorMessage" class="mt-9 rounded-lg bg-[#FCE3E8] p-5 text-sm font-semibold text-[#8F1839]" role="alert">{{ errorMessage }}</p>
+      <section v-else-if="errorMessage" class="mt-9 rounded-lg bg-[#FCE3E8] p-5 text-sm font-semibold text-[#8F1839]" role="alert">
+        <p>{{ errorMessage }}</p>
+        <button type="button" class="mt-3 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-[#8F1839]" @click="loadDashboard">Try again</button>
+      </section>
 
       <div v-else class="mt-9 grid gap-8">
+        <div v-if="updatesError" class="rounded-lg bg-[#FFF1C7] p-4 text-sm font-semibold text-[#694C00]" role="alert">
+          {{ updatesError }} <button type="button" class="underline" @click="loadDashboard">Try again</button>
+        </div>
         <section v-for="section in sections" :key="section.title">
           <div class="flex items-center gap-2"><component :is="section.icon" class="size-5 text-[#B4234A]" /><h2 class="text-2xl font-semibold">{{ section.title }}</h2><span class="rounded-full bg-white px-2.5 py-1 text-xs font-bold text-[#8F1839]">{{ section.items.length }}</span></div>
           <p class="mt-1 text-sm leading-6 text-[#6E4D58]">{{ section.description }}</p>

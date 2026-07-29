@@ -224,12 +224,12 @@ definePageMeta({
                 Analytics or advertising cookies
               </td>
               <td class="py-2 pr-4">
-                We do not currently use advertising cookies. If we introduce optional
-                analytics or advertising cookies in future, we will ask for consent where
-                required.
+                We do not use advertising cookies. We use aggregate page-view and product-journey
+                analytics to understand whether core flows work. Analytics events exclude profile
+                names, account IDs, report references, free text, and dating preferences.
               </td>
               <td class="py-2 pr-4">
-                Not currently used
+                Aggregate usage analytics
               </td>
             </tr>
           </tbody>

@@ -27,4 +27,28 @@ describe("useMeStateV2 authenticated state", () => {
     expect(entitlement.value?.plan).toBe("free");
     expect($fetch).toHaveBeenCalledWith("/api/meV2");
   });
+
+  it("treats only a 401 response as logged out", async () => {
+    Object.defineProperty(process, "server", { value: false, configurable: true });
+    vi.stubGlobal("$fetch", vi.fn().mockRejectedValue({ response: { status: 401 } }));
+    const { state, isLoggedOut, isUnavailable, resolve } = useMeStateV2();
+
+    await resolve();
+
+    expect(state.value.status).toBe("logged-out");
+    expect(isLoggedOut.value).toBe(true);
+    expect(isUnavailable.value).toBe(false);
+  });
+
+  it("does not turn a temporary backend failure into a logout", async () => {
+    Object.defineProperty(process, "server", { value: false, configurable: true });
+    vi.stubGlobal("$fetch", vi.fn().mockRejectedValue({ response: { status: 503 } }));
+    const { state, isLoggedOut, isUnavailable, resolve } = useMeStateV2();
+
+    await resolve();
+
+    expect(state.value.status).toBe("unavailable");
+    expect(isLoggedOut.value).toBe(false);
+    expect(isUnavailable.value).toBe(true);
+  });
 });

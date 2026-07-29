@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { MapPin, Sparkles, UsersRound } from '@lucide/vue'
 import { discoveryCategory } from '~/utils/activityDiscovery'
+import { trackProductEvent } from '~/utils/productAnalytics'
 
 definePageMeta({ middleware: 'logged-in' })
 
@@ -34,7 +35,11 @@ async function loadCandidates(loadMore = false) {
     hasMore.value = result.hasMore
     appliedFilters.value = result.filters
     candidatesLoaded.value = true
-  } catch (error: any) { candidatesError.value = error?.data?.statusMessage || 'People could not be loaded.' }
+    if (!loadMore) trackProductEvent('Discovery Loaded', { category: slug.value, resultCount: result.people.length })
+  } catch (error: any) {
+    candidatesError.value = error?.data?.statusMessage || 'People could not be loaded.'
+    if (!loadMore) trackProductEvent('Discovery Failed', { category: slug.value })
+  }
   finally { loadingMore.value = false }
 }
 
@@ -76,6 +81,13 @@ onMounted(async () => {
       </section>
 
       <div v-if="!candidatesLoaded && !candidatesError" class="mt-8 rounded-lg bg-white p-8 text-center text-sm text-[#6E4D58]" aria-live="polite">Loading matching profiles…</div>
+
+      <section v-else-if="candidatesError && !databasePeople.length" class="mt-8 rounded-lg bg-white p-8 text-center shadow-[0_10px_24px_rgba(180,35,74,0.08)]" role="alert">
+        <UsersRound class="mx-auto size-8 text-[#B4234A]" />
+        <h2 class="mt-4 text-xl font-semibold">We could not load people right now</h2>
+        <p class="mt-2 text-sm leading-6 text-[#6E4D58]">{{ candidatesError }} This is not the same as having no matches.</p>
+        <button type="button" class="mt-5 rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white" @click="loadCandidates()">Try again</button>
+      </section>
 
       <div v-else-if="visiblePeople.length" class="mt-8">
         <div class="flex flex-wrap items-center justify-between gap-3">

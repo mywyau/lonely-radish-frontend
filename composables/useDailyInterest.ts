@@ -1,3 +1,5 @@
+import { trackProductEvent } from '~/utils/productAnalytics'
+
 export type DailyInterest = {
   profileSlug: string
   profileName: string
@@ -78,6 +80,11 @@ export function useDailyInterest() {
       interests.value = interests.value.filter(interest => interest.profileSlug !== profileSlug)
       interests.value.push(normaliseInterest(response.interest))
       if (response.matched && !response.queued) activeMatchCount.value += 1
+      trackProductEvent('Interest Sent', {
+        matchedImmediately: Boolean(response.matched),
+        queued: Boolean(response.queued),
+        remainingToday: remainingAfterSend,
+      })
     } catch (error) {
       const failure = error as { statusCode?: number; response?: { status?: number }; data?: { statusCode?: number; statusMessage?: string } }
       const status = failure.statusCode || failure.response?.status || failure.data?.statusCode

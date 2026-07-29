@@ -72,11 +72,16 @@ function handleGalleryKeydown(event: KeyboardEvent) {
   if (event.key === 'ArrowLeft') changePhoto(-1)
   if (event.key === 'ArrowRight') changePhoto(1)
 }
-onMounted(async () => {
-  window.addEventListener('keydown', handleGalleryKeydown)
+async function loadPreview() {
+  loading.value = true
+  errorMessage.value = ''
   try { data.value = await $fetch<PreviewData>('/api/profile/me') }
   catch (error: any) { errorMessage.value = error?.data?.statusMessage || 'Your profile preview could not be loaded.' }
   finally { loading.value = false }
+}
+onMounted(async () => {
+  window.addEventListener('keydown', handleGalleryKeydown)
+  await loadPreview()
 })
 onBeforeUnmount(() => window.removeEventListener('keydown', handleGalleryKeydown))
 </script>
@@ -102,8 +107,8 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleGalleryKeydown
       </div>
 
       <div v-if="loading" class="rounded-lg bg-white p-8 text-center text-[#6E4D58]">Loading your preview…</div>
-      <p v-else-if="errorMessage" class="rounded-lg bg-[#FCE3E8] p-5 text-sm font-semibold text-[#8F1839]" role="alert">
-        {{ errorMessage }}</p>
+      <div v-else-if="errorMessage" class="rounded-lg bg-[#FCE3E8] p-5 text-sm font-semibold text-[#8F1839]" role="alert">
+        <p>{{ errorMessage }}</p><button type="button" class="mt-3 rounded-lg bg-white px-4 py-2" @click="loadPreview">Try again</button></div>
       <template v-else-if="data?.profile">
         <div class="flex min-w-0 flex-col gap-5 lg:grid lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:items-start">
           <div class="contents lg:block lg:space-y-5">

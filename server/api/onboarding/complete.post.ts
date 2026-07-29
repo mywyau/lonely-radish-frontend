@@ -8,12 +8,14 @@ export default defineEventHandler(async (event) => {
     where u.id=$1 and nullif(trim(u.first_name),'') is not null and nullif(trim(u.last_name),'') is not null
       and exists (select 1 from profiles p where p.user_id=u.id and p.gender_identity is not null
         and p.sexual_orientation is not null and p.race_ethnicity is not null and p.date_of_birth is not null
-        and nullif(trim(p.bio),'') is not null)
+        and nullif(trim(p.bio),'') is not null and p.location is not null)
+      and exists (select 1 from profile_photos pp where pp.user_id=u.id)
       and exists (select 1 from profile_activities pa where pa.user_id=u.id)
       and exists (select 1 from match_preferences mp where mp.user_id=u.id and mp.dating_preferences_set=true
         and (mp.open_to_everyone=true or cardinality(mp.interested_genders)>0)
         and mp.no_orientation_preference=false and cardinality(mp.interested_orientations)>0)
     returning onboarding_completed_at as "completedAt"`, [sub])
-  if (!rows[0]) throw createError({ statusCode: 409, statusMessage: 'Please finish every onboarding step' })
+  if (!rows[0]) throw createError({ statusCode: 409,
+    statusMessage: 'Please finish every onboarding step, including your location and at least one profile photo' })
   return { complete: true, completedAt: rows[0].completedAt }
 })

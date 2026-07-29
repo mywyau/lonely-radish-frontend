@@ -2,6 +2,7 @@
 import { ArrowLeft, ArrowRight, Brain, Check, ChevronDown, Compass, Gamepad2, HandHeart, HeartHandshake, HeartPulse, ImagePlus, MoonStar, Sparkles, Trophy, UserRound, UsersRound } from '@lucide/vue'
 import { openRaceEthnicityPreferenceLabel, raceEthnicityOptions, raceEthnicitySelfDescriptionLimit, usesRaceEthnicitySelfDescription } from '~/utils/raceEthnicity'
 import { sexualOrientationOptions, sexualOrientationPreferenceOptions } from '~/utils/sexualOrientation'
+import { trackProductEvent } from '~/utils/productAnalytics'
 
 definePageMeta({ title: 'Set up your profile · Lonely Radish', middleware: 'logged-in' })
 
@@ -236,6 +237,11 @@ async function saveActivities() {
 
 async function savePreferences() {
   errorMessage.value = ''; saving.value = true
+  if (!onboardingLocation.hasLocation && !onboardingLocation.postcode.trim()) {
+    errorMessage.value = 'Add your UK postcode so distance matching is accurate.'
+    saving.value = false
+    return
+  }
   if (invalidAvailabilityDay.value) {
     errorMessage.value = `${invalidAvailabilityDay.value.name} end time must be after its start time.`
     saving.value = false
@@ -278,6 +284,7 @@ async function finish() {
   errorMessage.value = ''; saving.value = true
   try {
     await $fetch('/api/onboarding/complete', { method: 'POST' })
+    trackProductEvent('Onboarding Completed', { photoCount: photoCount.value })
     const redirect = typeof route.query.redirect === 'string' && route.query.redirect.startsWith('/') && !route.query.redirect.startsWith('//')
       ? route.query.redirect : '/'
     await router.push(redirect === '/onboarding' ? '/' : redirect)
@@ -363,7 +370,7 @@ onMounted(() => { load().catch(() => { errorMessage.value = 'We could not load o
           <div class="grid grid-cols-2 gap-3"><label>Minimum age <input v-model.number="preferences.minimumAge" type="number" min="18" max="100"></label><label>Maximum age <input v-model.number="preferences.maximumAge" type="number" min="18" max="100"></label></div>
         </div>
         <section class="mt-5 rounded-lg bg-[#FBF7F1] p-4">
-          <label>UK postcode <input v-model="onboardingLocation.postcode" maxlength="16" autocomplete="postal-code" :placeholder="onboardingLocation.hasLocation ? 'Enter a new postcode to update it' : 'For example, SW1A 1AA'"></label>
+          <label>UK postcode <input v-model="onboardingLocation.postcode" maxlength="16" autocomplete="postal-code" :required="!onboardingLocation.hasLocation" :placeholder="onboardingLocation.hasLocation ? 'Enter a new postcode to update it' : 'For example, SW1A 1AA'"></label>
           <p class="mt-2 text-xs font-normal leading-5 text-[#6E4D58]">Used to filter by your distance preference. We retain only an approximate point and postcode area, never your full postcode.</p>
           <p v-if="onboardingLocation.hasLocation" class="mt-2 text-sm font-semibold text-[#52713A]">Location set: {{ onboardingLocation.label }} · {{ onboardingLocation.postcodeArea }}</p>
         </section>
@@ -381,12 +388,12 @@ onMounted(() => { load().catch(() => { errorMessage.value = 'We could not load o
       </form>
 
       <section v-else class="onboarding-card">
-        <div class="step-title"><ImagePlus class="size-5 text-[#B4234A]" /><div><h2>Add a profile photo</h2><p>Add up to six photos now, or skip this step and add them later from Profile photos.</p></div></div>
+        <div class="step-title"><ImagePlus class="size-5 text-[#B4234A]" /><div><h2>Add a profile photo</h2><p>Add at least one clear photo before your profile enters discovery. You can add up to six.</p></div></div>
         <div class="mt-6 rounded-lg bg-[#FBF7F1] p-5 text-sm leading-6 text-[#6E4D58]">
           <p v-if="photoCount">You have {{ photoCount }} {{ photoCount === 1 ? 'photo' : 'photos' }} ready.</p>
-          <p v-else>You can upload a JPEG, PNG, or WebP image up to 5 MB, or continue without one for now.</p>
+          <p v-else>Add a JPEG, PNG, or WebP image to finish setting up your discoverable profile.</p>
         </div>
-        <div class="actions"><button class="secondary" type="button" @click="step = 5"><ArrowLeft class="size-4" />Back</button><NuxtLink to="/photos?onboarding=1" class="secondary"><ImagePlus class="size-4" />{{ photoCount ? 'Manage photos' : 'Upload a photo' }}</NuxtLink><button :disabled="saving" class="primary" type="button" @click="finish"><Check class="size-4" />{{ saving ? 'Finishing…' : photoCount ? 'Finish setup' : 'Skip photos and finish' }}</button></div>
+        <div class="actions"><button class="secondary" type="button" @click="step = 5"><ArrowLeft class="size-4" />Back</button><NuxtLink to="/photos?onboarding=1" class="secondary"><ImagePlus class="size-4" />{{ photoCount ? 'Manage photos' : 'Upload a photo' }}</NuxtLink><button :disabled="saving || photoCount < 1" class="primary" type="button" @click="finish"><Check class="size-4" />{{ saving ? 'Finishing…' : 'Finish setup' }}</button></div>
       </section>
       <p v-if="errorMessage" class="mt-4 rounded-lg bg-[#FCE3E8] p-4 text-sm font-semibold text-[#8F1839]" role="alert">{{ errorMessage }}</p>
     </section>

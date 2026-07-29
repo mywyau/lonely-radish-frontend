@@ -34,6 +34,7 @@ export default defineEventHandler(async (event) => {
       from profile_activities pa left join activities a on a.id=pa.activity_id
       where pa.user_id=p.user_id and ((a.id is not null and a.is_active=true) or pa.custom_label is not null)) all_selected on true
     where p.user_id<>$2
+      and u.onboarding_completed_at is not null
       and p.visibility='active' and (u.account_status='active' or
         (u.account_status='paused' and u.paused_until is not null and u.paused_until<=now()))
       and (u.discovery_restricted_until is null or u.discovery_restricted_until<=now())

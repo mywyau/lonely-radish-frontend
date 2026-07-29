@@ -33,7 +33,7 @@ export default defineEventHandler(async (event) => {
     left join lateral (select m.id,m.status,m.ended_by,m.ended_at from matches m where
       (m.user_one_id=$2 and m.user_two_id=p.user_id) or (m.user_two_id=$2 and m.user_one_id=p.user_id)
       order by coalesce(m.ended_at,m.matched_at) desc limit 1) relationship on true
-    where p.slug=$1 and p.visibility='active' and (u.account_status='active' or
+    where p.slug=$1 and u.onboarding_completed_at is not null and p.visibility='active' and (u.account_status='active' or
       (u.account_status='paused' and u.paused_until is not null and u.paused_until<=now()))
       and p.user_id<>$2 and not exists(select 1 from blocks b where
         (b.blocker_id=$2 and b.blocked_id=p.user_id) or (b.blocker_id=p.user_id and b.blocked_id=$2))`, [slug,viewer.sub])

@@ -25,4 +25,5 @@ export interface MeUser {
 export type MeState =
   | { status: "loading" }
   | { status: "logged-out" }
+  | { status: "unavailable"; message: string }
   | { status: "logged-in"; user: MeUser };

@@ -75,6 +75,9 @@ describe("business subscriptions", () => {
     expect(read("pages/business/pricing.vue")).toContain(
       "Business subscriptions",
     );
+    expect(read("pages/business/pricing.vue")).toContain("Multi-location campaigns");
+    expect(read("pages/business/pricing.vue")).not.toContain("Offer scheduling");
+    expect(read("pages/business/pricing.vue")).not.toContain("as they launch");
     expect(read("components/BlankNavBar.vue")).toContain("Business login");
   });
 

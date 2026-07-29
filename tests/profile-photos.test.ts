@@ -39,7 +39,7 @@ describe('private profile photo storage', () => {
     expect(page).toContain("isOnboarding && 'onboarding-return'")
     expect(page).toContain('@keyframes onboardingReturnPulse')
     expect(page).toContain('prefers-reduced-motion: reduce')
-    expect(page).toContain('Skip for now')
+    expect(page).not.toContain('Skip for now')
     const profilePage = read('pages/profiles/[slug].vue')
     expect(profilePage).toContain('gallerySlots')
     expect(profilePage).toContain('Empty photo slot')

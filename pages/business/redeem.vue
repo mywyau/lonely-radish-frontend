@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { BadgeCheck, Camera, CameraOff, History, MapPin, ScanLine, ShieldCheck } from '@lucide/vue'
 import type QrScanner from 'qr-scanner'
+import { trackProductEvent } from '~/utils/productAnalytics'
 
 definePageMeta({ title: 'Redeem offers · Lonely Radish', middleware: 'business-only' })
 
@@ -183,6 +184,7 @@ async function redeem() {
         })
         redemption.value = result.redemption
         code.value = ''
+        trackProductEvent('Offer Redeemed')
         await loadRedemptions()
     } catch (error: any) {
         errorMessage.value = error?.data?.statusMessage || 'The offer could not be redeemed.'

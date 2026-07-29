@@ -7,11 +7,16 @@ const interests = ref<SentInterest[]>([])
 const loading = ref(true)
 const errorMessage = ref('')
 const { todaysInterests, dailyInterestLimit, loadInterest } = useDailyInterest()
-onMounted(async () => {
+async function loadSentInterests() {
+  loading.value = true
+  errorMessage.value = ''
   const dailyRequest = loadInterest()
   try { interests.value = (await $fetch<{ interests: SentInterest[] }>('/api/interests/sent')).interests }
   catch (error: any) { errorMessage.value = error?.data?.statusMessage || 'Sent interests could not be loaded.' }
   finally { await dailyRequest; loading.value = false }
+}
+onMounted(async () => {
+  await loadSentInterests()
 })
 </script>
 
@@ -23,7 +28,7 @@ onMounted(async () => {
       <p class="mt-3 max-w-2xl text-[#6E4D58]">A record of the people you chose. Interest remains private unless they choose you too.</p>
       <DailyInterestCounter class="mt-6" :count="todaysInterests.length" :limit="dailyInterestLimit" />
       <div v-if="loading" class="mt-8 rounded-lg bg-white p-8 text-center text-[#6E4D58]">Loading sent interests…</div>
-      <p v-else-if="errorMessage" class="mt-8 rounded-lg bg-[#FCE3E8] p-4 text-sm font-semibold text-[#8F1839]">{{ errorMessage }}</p>
+      <div v-else-if="errorMessage" class="mt-8 rounded-lg bg-[#FCE3E8] p-4 text-sm font-semibold text-[#8F1839]" role="alert"><p>{{ errorMessage }}</p><button type="button" class="mt-3 rounded-lg bg-white px-4 py-2" @click="loadSentInterests">Try again</button></div>
       <div v-else-if="interests.length" class="mt-8 grid gap-3">
         <article v-for="interest in interests" :key="interest.id" class="flex flex-col gap-4 rounded-lg bg-white p-5 shadow-[0_8px_20px_rgba(180,35,74,.07)] sm:flex-row sm:items-center">
           <img v-if="interest.photoUrl" :src="interest.photoUrl" :alt="`${interest.name}'s profile photo`" class="size-14 rounded-full object-cover">

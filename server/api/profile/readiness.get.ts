@@ -19,7 +19,7 @@ export default defineEventHandler(async (event) => {
     left join match_preferences mp on mp.user_id=u.id where u.id=$1`, [sub])
   const state = rows[0] ?? {}
   const photoCount = Number(state.photoCount ?? 0)
-  const photosRequired = 6
+  const photosRequired = 1
   const checks = {
     profileBasics: state.profileBasics === true,
     photos: photoCount >= photosRequired,
@@ -33,7 +33,7 @@ export default defineEventHandler(async (event) => {
   const completedWithoutPhotos = Object.entries(checks)
     .filter(([key, isComplete]) => key !== 'photos' && isComplete)
     .length
-  const weightedProgress = completedWithoutPhotos + (photoCount / photosRequired)
+  const weightedProgress = completedWithoutPhotos + Math.min(photoCount / photosRequired, 1)
   return {
     checks,
     completed,

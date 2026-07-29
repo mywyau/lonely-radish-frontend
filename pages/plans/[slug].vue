@@ -1,11 +1,15 @@
 <script setup lang="ts">
 import { CalendarDays, Check, ChevronDown, MapPin, MessageCircle, ShieldCheck, Sparkles } from '@lucide/vue'
+import { trackProductEvent } from '~/utils/productAnalytics'
 
 definePageMeta({ middleware: 'logged-in' })
 
 const route = useRoute()
 const databasePerson = ref<{ name: string } | null>(null)
 const databaseActivities = ref<string[]>([])
+const planningLoaded = ref(false)
+const planningError = ref('')
+const allowDemoPlan = ref(false)
 type AvailabilityWindow = { label: string; weekday?: number | null; startTime?: string | null; endTime?: string | null }
 type TimeOption = { label: string; value: string; id?: string }
 const matchAvailability = ref<AvailabilityWindow[]>([])
@@ -22,8 +26,10 @@ const interestsByPerson: Record<string, string[]> = {
   nina: ['Indie films', 'City walks', 'Casual food spots', 'Comedy nights', 'Markets'],
   alex: ['Climbing', 'Book markets', 'Riverside walks', 'Board games', 'Cooking classes'],
 }
-const personName = computed(() => databasePerson.value?.name || names[String(route.params.slug)] || 'Your match')
-const activities = computed(() => databaseActivities.value.length ? databaseActivities.value : (interestsByPerson[String(route.params.slug)] || ['Gallery walks', 'Markets', 'Riverside walks']))
+const personName = computed(() => databasePerson.value?.name
+  || (allowDemoPlan.value ? names[String(route.params.slug)] : null) || 'Your match')
+const activities = computed(() => databaseActivities.value.length ? databaseActivities.value
+  : allowDemoPlan.value ? (interestsByPerson[String(route.params.slug)] || []) : [])
 const initialActivity = computed(() => activityLabels[String(route.query.activity)] || activities.value[0] || '')
 const activity = ref(initialActivity.value)
 const inviteMessage = ref('')
@@ -134,12 +140,13 @@ async function saveProposalDraft() {
     return true
   } catch (error: any) {
     const status = (error as { response?: { status?: number } }).response?.status
-    if (status === 404 && ['maya', 'nina', 'alex'].includes(String(route.params.slug))) { proposalStatus.value = 'draft'; return true }
+    if (import.meta.dev && allowDemoPlan.value && status === 404) { proposalStatus.value = 'draft'; return true }
     else sendError.value = error?.data?.statusMessage || 'We could not send this proposal. Please review the details and try again.'
     return false
   } finally { sending.value = false }
 }
 async function confirmAndSend() {
+  const wasReproposal = reproposing.value
   const saved = await saveProposalDraft()
   if (!saved || !proposalId.value) return
   if (proposalStatus.value !== 'draft') {
@@ -152,6 +159,7 @@ async function confirmAndSend() {
     const response = await $fetch<{ status: string }>(`/api/proposals/${proposalId.value}/send`, { method: 'POST' })
     proposalStatus.value = response.status
     confirmed.value = true
+    trackProductEvent('Date Proposal Sent', { reproposal: wasReproposal })
     await navigateTo('/matches')
   } catch (error: any) {
     sendError.value = error?.data?.statusMessage || 'The draft was saved, but could not be sent.'
@@ -164,7 +172,10 @@ async function respond(status: 'accepted' | 'declined', timeId?: string) {
     await $fetch(`/api/proposals/${proposalId.value}/respond`, { method: 'POST', body: { status, timeId } })
     proposalStatus.value = status
     canRespond.value = false
-    if (status === 'accepted') confirmed.value = true
+    if (status === 'accepted') {
+      confirmed.value = true
+      trackProductEvent('Date Confirmed')
+    }
     else await navigateTo('/matches')
   } catch (error: any) { sendError.value = error?.data?.statusMessage || 'We could not save your response.' }
   finally { sending.value = false }
@@ -189,10 +200,16 @@ async function suggestChanges() {
     times.value = response.times.map((value: string) => ({ value, label: new Date(value).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' }) }))
     selectedTimes.value = response.times
     proposalStatus.value = 'pending'; canRespond.value = false; confirmed.value = true
+    trackProductEvent('Date Changes Suggested')
   } catch (error: any) { sendError.value = error?.data?.statusMessage || 'Your suggested changes could not be sent.' }
   finally { suggestingChanges.value = false }
 }
-onMounted(async () => {
+async function loadPlanning() {
+  planningLoaded.value = false
+  planningError.value = ''
+  allowDemoPlan.value = false
+  databasePerson.value = null
+  databaseActivities.value = []
   const minimum = new Date(Date.now() + 15 * 60 * 1000)
   const pad = (value: number) => String(value).padStart(2, '0')
   earliestCustomTime.value = `${minimum.getFullYear()}-${pad(minimum.getMonth() + 1)}-${pad(minimum.getDate())}T${pad(minimum.getHours())}:${pad(minimum.getMinutes())}`
@@ -221,7 +238,16 @@ onMounted(async () => {
       selectedTimes.value = []
       if (!databaseActivities.value.includes(activity.value)) activity.value = databaseActivities.value[0] || ''
     }
-  } catch { /* Keep fictional prototype matches available. */ }
+  } catch (error: any) {
+    const status = error?.statusCode || error?.response?.status || error?.data?.statusCode
+    allowDemoPlan.value = import.meta.dev && status === 404 && Boolean(names[String(route.params.slug)])
+    if (!allowDemoPlan.value) planningError.value = error?.data?.statusMessage || 'This planning room could not be loaded.'
+  } finally {
+    planningLoaded.value = true
+  }
+}
+onMounted(async () => {
+  await loadPlanning()
 })
 useHead(() => ({ title: `Plan a Date with ${personName.value} · Lonely Radish` }))
 </script>
@@ -229,6 +255,11 @@ useHead(() => ({ title: `Plan a Date with ${personName.value} · Lonely Radish` 
 <template>
   <main class="min-h-screen bg-[#FBF7F1] px-5 py-8 text-[#2A1520] sm:px-8 sm:py-10">
     <section class="mx-auto max-w-4xl">
+      <div v-if="!planningLoaded" class="rounded-lg bg-white p-8 text-center text-sm text-[#6E4D58]" role="status">Loading your planning room…</div>
+      <section v-else-if="planningError" class="rounded-lg bg-[#FCE3E8] p-6 text-center text-sm font-semibold text-[#8F1839]" role="alert">
+        <p>{{ planningError }}</p><button type="button" class="mt-4 rounded-lg bg-white px-4 py-2" @click="loadPlanning">Try again</button>
+      </section>
+      <template v-else>
       <div class="rounded-lg bg-[#2A1520] p-6 text-white sm:p-8"><p class="text-xs font-extrabold uppercase tracking-widest text-[#F7B7C4]">Planning room</p><h1 class="mt-2 text-3xl font-semibold sm:text-4xl">Plan a date with {{ personName }}</h1><p class="mt-3 text-sm leading-6 text-white/75">Agree the essentials here. Save the real conversation for when you meet.</p></div>
 
       <div class="mt-5 grid gap-5">
@@ -268,6 +299,7 @@ useHead(() => ({ title: `Plan a Date with ${personName.value} · Lonely Radish` 
 
         </template>
       </div>
+      </template>
     </section>
   </main>
 </template>

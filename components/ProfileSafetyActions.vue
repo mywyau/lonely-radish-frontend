@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { trackProductEvent } from '~/utils/productAnalytics'
+
 const props = defineProps<{ profileSlug: string; profileName: string }>()
 const open = ref(false)
 const mode = ref<'block' | 'report'>('block')
@@ -26,9 +28,11 @@ async function report() {
   if (!category.value) { errorMessage.value = 'Choose a reason for the report.'; return }
   submitting.value = true; errorMessage.value = ''
   try {
-    await $fetch(`/api/profiles/${props.profileSlug}/report`, { method: 'POST', body: {
+    const result = await $fetch<{ reportId: string }>(`/api/profiles/${props.profileSlug}/report`, { method: 'POST', body: {
       category: category.value, details: details.value, alsoBlock: alsoBlock.value,
     } })
+    window.sessionStorage.setItem('lonely-radish-latest-report-reference', result.reportId)
+    trackProductEvent('Safety Report Submitted', { category: category.value, blocked: alsoBlock.value })
     await navigateTo(`/activities?safety=${alsoBlock.value ? 'reported-blocked' : 'reported'}`)
   } catch (error: any) { errorMessage.value = error?.data?.statusMessage || 'Your report could not be submitted.' }
   finally { submitting.value = false }
@@ -51,6 +55,9 @@ async function report() {
         <h2 id="safety-title" class="text-2xl font-semibold">Report {{ profileName }}</h2>
         <label class="mt-5 block text-sm font-semibold" for="report-category">Reason</label>
         <select id="report-category" v-model="category" required class="mt-2 w-full rounded-lg border border-[#D8C8B6] bg-white px-3 py-3 text-sm"><option value="" disabled>Choose a reason</option><option value="safety">Immediate safety concern</option><option value="harassment">Harassment</option><option value="impersonation">Impersonation</option><option value="spam">Spam or scam</option><option value="other">Something else</option></select>
+        <div v-if="category === 'safety'" class="mt-3 rounded-lg bg-[#FFF1C7] p-3 text-sm leading-6 text-[#694C00]" role="alert">
+          <strong>This report is not an emergency service.</strong> If anyone is in immediate danger, move somewhere safe and contact local emergency services. Submitting this report alerts the moderation queue.
+        </div>
         <label class="mt-4 block text-sm font-semibold" for="report-details">Details <span class="font-normal text-[#6E4D58]">(optional)</span></label>
         <textarea id="report-details" v-model="details" maxlength="2000" rows="4" class="mt-2 w-full rounded-lg border border-[#D8C8B6] px-3 py-3 text-sm" placeholder="Share only what is useful for reviewing this report."></textarea>
         <label class="mt-3 flex items-start gap-2 text-sm"><input v-model="alsoBlock" type="checkbox" class="mt-1">Also block {{ profileName }} immediately</label>

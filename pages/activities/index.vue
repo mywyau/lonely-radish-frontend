@@ -5,6 +5,21 @@ definePageMeta({
   title: 'Date Ideas · Lonely Radish',
 })
 
+const route = useRoute()
+const reportReference = ref('')
+const safetyMessage = computed(() => {
+  if (route.query.safety === 'blocked') return 'That person has been blocked. You will no longer see each other.'
+  if (route.query.safety === 'reported-blocked') return 'Your report was submitted and the person was blocked immediately.'
+  if (route.query.safety === 'reported') return 'Your report was submitted to the moderation team.'
+  return ''
+})
+
+onMounted(() => {
+  if (!safetyMessage.value || !String(route.query.safety).startsWith('reported')) return
+  reportReference.value = window.sessionStorage.getItem('lonely-radish-latest-report-reference') || ''
+  window.sessionStorage.removeItem('lonely-radish-latest-report-reference')
+})
+
 const categories = [
   { slug: 'casual', name: 'Casual', detail: 'Food, markets, coffee, relaxed meetups, and activities people have added themselves.', icon: Utensils, tone: 'bg-[#F3E8DA]' },
   { slug: 'culture', name: 'Culture', detail: 'Galleries, films, theatre, music, comedy, museums, and other cultural plans.', icon: Palette, tone: 'bg-[#FCE3E8]' },
@@ -22,6 +37,10 @@ const categories = [
 <template>
   <main class="min-h-screen bg-[#FBF7F1] px-5 py-10 text-[#2A1520] sm:px-8">
     <section class="mx-auto max-w-6xl">
+      <div v-if="safetyMessage" class="mb-7 rounded-lg bg-[#EAF2DE] p-4 text-sm font-semibold text-[#4D2F39]" role="status">
+        <p>{{ safetyMessage }}</p>
+        <p v-if="reportReference" class="mt-1 break-all text-xs font-medium text-[#6E4D58]">Report reference: {{ reportReference }}</p>
+      </div>
       <div class="max-w-3xl">
         <p class="section-kicker">Discover</p>
         <h1 class="mt-2 text-4xl font-semibold leading-tight sm:text-5xl">

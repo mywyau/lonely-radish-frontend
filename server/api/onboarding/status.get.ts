@@ -12,6 +12,7 @@ export default defineEventHandler(async (event) => {
     (p.race_ethnicity is not null) as "racialIdentityComplete",
     (select count(*)::int from profile_activities pa where pa.user_id=u.id) as "activityCount",
     (select count(*)::int from profile_photos pp where pp.user_id=u.id) as "photoCount",
+    (p.location is not null) as "locationComplete",
     (mp.user_id is not null) as "preferencesComplete",
     (mp.user_id is not null and mp.dating_preferences_set=true
       and (mp.open_to_everyone=true or cardinality(mp.interested_genders)>0)
@@ -26,8 +27,11 @@ export default defineEventHandler(async (event) => {
   const preferencesComplete = state.preferencesComplete === true
   const datingComplete = state.datingComplete === true
   const photoCount = Number(state.photoCount || 0)
-  const nextStep = !profileComplete ? 1 : !racialIdentityComplete ? 2 : activityCount < 1 ? 3 : !preferencesComplete ? 4 : !datingComplete ? 5 : 6
+  const locationComplete = state.locationComplete === true
+  const nextStep = !profileComplete ? 1 : !racialIdentityComplete ? 2 : activityCount < 1 ? 3
+    : !preferencesComplete || !locationComplete ? 4 : !datingComplete ? 5 : 6
   const complete = Boolean(state.completedAt) && profileComplete && racialIdentityComplete
-    && activityCount > 0 && preferencesComplete && datingComplete
-  return { complete, completedAt: state.completedAt, nextStep, profileComplete, racialIdentityComplete, activityCount, photoCount, preferencesComplete, datingComplete }
+    && activityCount > 0 && preferencesComplete && datingComplete && locationComplete && photoCount > 0
+  return { complete, completedAt: state.completedAt, nextStep, profileComplete, racialIdentityComplete,
+    activityCount, photoCount, preferencesComplete, datingComplete, locationComplete }
 })

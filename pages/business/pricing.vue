@@ -8,8 +8,8 @@ const purchasing = ref<string | null>(null)
 const errorMessage = ref('')
 const plans = [
   { id: 'free', name: 'Free', price: '£0', description: 'Test whether date-friendly offers work for your venue.', features: ['One venue','One offer','Manual business verification'] },
-  { id: 'standard', name: 'Standard', price: '£19/month', description: 'For venues running regular offers.', features: ['Up to five offers','Offer scheduling','Redemption analytics as they launch'] },
-  { id: 'featured', name: 'Featured', price: '£49/month', description: 'For venues wanting more visibility.', features: ['Up to ten offers','Priority date-planning placement','Featured category visibility'] },
+  { id: 'standard', name: 'Standard', price: '£19/month', description: 'For venues running regular offers.', features: ['Up to five offers','Multi-location campaigns','One-time redemption codes'] },
+  { id: 'featured', name: 'Featured', price: '£49/month', description: 'For venues wanting more visibility.', features: ['Up to ten offers','Priority offer placement','Multi-location campaigns'] },
 ]
 async function subscribe(plan: string) {
   if (!business.value) return

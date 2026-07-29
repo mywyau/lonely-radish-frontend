@@ -1,5 +1,8 @@
-import { defineEventHandler, getHeader, getRequestURL } from "h3";
+import { randomUUID } from "node:crypto";
+import { defineEventHandler, getHeader, getRequestURL, setHeader } from "h3";
 import { redactIdentifier, summarizeUserAgent } from "~/server/utils/logging/redact";
+import { startServerRequest } from "~/server/utils/telemetry";
+import { normalizeTelemetryRoute } from "~/server/utils/telemetryConfig";
 
 const SENSITIVE_PATH_PREFIXES = [
   "/api/auth",
@@ -33,11 +36,21 @@ export default defineEventHandler((event) => {
     return;
   }
 
-  event.node.res.on("finish", () => {
-    const statusCode = event.node.res.statusCode || 200;
+  const method = event.node.req.method || "GET";
+  const incomingRequestId = getHeader(event, "x-request-id");
+  const requestId = incomingRequestId && /^[a-zA-Z0-9._:-]{1,128}$/.test(incomingRequestId)
+    ? incomingRequestId
+    : randomUUID();
+  setHeader(event, "x-request-id", requestId);
+  const telemetry = startServerRequest(method, Object.fromEntries(event.headers.entries()));
+  let completed = false;
+
+  const finish = (statusCode: number) => {
+    if (completed) return;
+    completed = true;
     const durationMs = Date.now() - startedAt;
-    const method = event.node.req.method || "GET";
-    const requestId = getHeader(event, "x-request-id") || null;
+    const route = event.context.matchedRoute?.path || normalizeTelemetryRoute(url.pathname);
+    telemetry.finish(route, statusCode, durationMs);
     const userAgent = getHeader(event, "user-agent") || "";
     const referrer = getHeader(event, "referer") || null;
     const forwardedFor = getHeader(event, "x-forwarded-for") || null;
@@ -55,7 +68,7 @@ export default defineEventHandler((event) => {
       JSON.stringify({
         event: "request_telemetry",
         method,
-        path: url.pathname,
+        path: route,
         statusCode,
         durationMs,
         requestId,
@@ -67,5 +80,10 @@ export default defineEventHandler((event) => {
         timestamp: new Date().toISOString(),
       }),
     );
-  });
+  };
+
+  event.node.res.once("finish", () => finish(event.node.res.statusCode || 200));
+  event.node.res.once("close", () => finish(event.node.res.writableEnded
+    ? event.node.res.statusCode || 200
+    : 499));
 });

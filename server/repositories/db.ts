@@ -1,5 +1,6 @@
 import { attachDatabasePool } from "@vercel/functions";
 import pg from "pg";
+import { tracePostgresPoolWait, tracePostgresQuery } from "../utils/telemetry";
 
 const { Pool } = pg;
 
@@ -47,7 +48,10 @@ function createMockDb(): Database {
 function postgresQueryable(queryable: pg.Pool | pg.PoolClient): DatabaseQueryable {
   return {
     async query<Row = Record<string, any>>(text: string, values?: readonly unknown[]) {
-      const result = await queryable.query(text, values ? [...values] : undefined)
+      const result = await tracePostgresQuery(
+        text,
+        () => queryable.query(text, values ? [...values] : undefined),
+      )
       return {
         rows: result.rows as Row[],
         rowCount: result.rowCount ?? 0,
@@ -60,7 +64,7 @@ function createPostgresDb(pool: pg.Pool): Database {
   return {
     ...postgresQueryable(pool),
     async connect() {
-      const client = await pool.connect()
+      const client = await tracePostgresPoolWait(() => pool.connect())
       return {
         ...postgresQueryable(client),
         release: () => client.release(),

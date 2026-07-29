@@ -44,12 +44,12 @@ infrastructure around it.
 - npm
 - A PostgreSQL database
 - An Auth0 Regular Web Application
-- A Supabase project if profile-photo uploads are required
+- A Supabase project for the profile photo required before discovery
 
 Stripe, Resend, Upstash Redis, and QStash can be added after the core personal
 flow is running. Stripe falls back to a local mock and Redis falls back to
-in-memory storage when their credentials are absent. Auth0 and PostgreSQL are
-required for a useful persistent local environment.
+in-memory storage when their credentials are absent. Auth0, PostgreSQL, and
+Supabase Storage are required to complete the persistent member onboarding journey.
 
 ## Quick start
 
@@ -218,6 +218,50 @@ UPSTASH_REDIS_REST_TOKEN=...
 
 Without these values, development uses a process-local in-memory substitute.
 That substitute is not suitable for multiple instances or durable rate limits.
+
+### OpenTelemetry
+
+The server emits OpenTelemetry request and PostgreSQL traces plus request,
+latency, active-request, database-operation, and pool-wait metrics. Telemetry is
+server-side only and deliberately excludes user identifiers, raw SQL, query
+values, profile slugs, and dynamic route ids.
+
+Tracing uses `@vercel/otel`, so a Vercel tracing integration or Trace Drain can
+receive traces automatically. To export metrics, configure an OTLP-compatible
+backend or collector in the Vercel Production environment:
+
+```env
+OTEL_SERVICE_NAME=lonely-radish
+OTEL_EXPORTER_OTLP_ENDPOINT=https://your-collector.example
+OTEL_EXPORTER_OTLP_HEADERS=authorization=Bearer%20your-token
+OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+OTEL_TRACES_SAMPLER=parentbased_traceidratio
+OTEL_TRACES_SAMPLER_ARG=0.1
+OTEL_METRIC_EXPORT_INTERVAL=30000
+```
+
+`OTEL_EXPORTER_OTLP_ENDPOINT` is a base URL; the exporters append `/v1/traces`
+and `/v1/metrics`. If the provider gives a dedicated metrics URL, set
+`OTEL_EXPORTER_OTLP_METRICS_ENDPOINT` including its `/v1/metrics` path.
+Provider-specific header formatting varies, so copy the exact OTLP endpoint and
+header value from that provider. Add these variables to Preview separately if
+you want preview telemetry isolated from production.
+
+Production traces default to 10% sampling when no sampler variables are set.
+Errors are still counted by metrics even when their trace is not sampled.
+Increase sampling temporarily during an incident instead of permanently
+exporting every production trace.
+
+Initial dashboards should chart:
+
+- request rate, p50/p95/p99 duration, and 5xx rate by `http.route`;
+- active requests by `http.request.method`;
+- PostgreSQL p95 duration by `db.operation.name` and `db.collection.name`;
+- PostgreSQL connection-pool wait duration;
+- trace examples for the slowest API routes and failed database operations.
+
+Telemetry is optional and fails open: without an OTLP endpoint the application
+still runs, and the OpenTelemetry API remains a no-op for metrics.
 
 ### Resend
 

@@ -47,7 +47,7 @@ const readinessItems = computed(() => {
   const checks = readiness.value?.checks;
   return [
     { key: 'profileBasics', label: 'Profile basics', detail: 'Name, bio and identity', to: '/account/v2' },
-    { key: 'photos', label: 'Profile photos', detail: `${readiness.value?.photoCount ?? 0} of ${readiness.value?.photosRequired ?? 6} photos added`, to: '/photos' },
+    { key: 'photos', label: 'Profile photo', detail: `${readiness.value?.photoCount ?? 0} added · at least ${readiness.value?.photosRequired ?? 1} required`, to: '/photos' },
     { key: 'activities', label: 'Activity interests', detail: 'Choose what you would enjoy', to: '/preferences/activities' },
     { key: 'location', label: 'Approximate location', detail: 'Set a postcode for distance matching', to: '/preferences#location-and-age' },
     { key: 'generalPreferences', label: 'Age and distance', detail: 'Set a practical matching range', to: '/preferences#location-and-age' },

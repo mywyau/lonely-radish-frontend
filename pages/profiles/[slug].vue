@@ -45,6 +45,7 @@ const profiles: Record<string, any> = {
 const databaseProfile = ref<any>(null)
 const profileLoaded = ref(false)
 const profileLoadError = ref('')
+const allowDemoProfile = ref(false)
 const apologyMessage = ref('')
 const apologySending = ref(false)
 const apologyError = ref('')
@@ -59,7 +60,8 @@ const activePhotoIndex = ref(0)
 const photoViewerOpen = ref(false)
 const photoSwipeStartX = ref<number | null>(null)
 const profile = computed(() => {
-  const resolvedProfile = databaseProfile.value || profiles[route.params.slug as keyof typeof profiles]
+  const resolvedProfile = databaseProfile.value
+    || (allowDemoProfile.value ? profiles[route.params.slug as keyof typeof profiles] : null)
   if (!resolvedProfile || route.query.connection !== 'past') return resolvedProfile
   return {
     ...resolvedProfile,
@@ -147,22 +149,29 @@ function handleGalleryKeydown(event: KeyboardEvent) {
   if (event.key === 'ArrowRight') changePhoto(1)
 }
 
-onMounted(async () => {
-  window.addEventListener('keydown', handleGalleryKeydown)
-  await loadInterest()
+async function loadProfile() {
+  profileLoaded.value = false
+  profileLoadError.value = ''
+  allowDemoProfile.value = false
+  databaseProfile.value = null
   try {
     databaseProfile.value = await $fetch(`/api/profiles/${profileSlug.value}`)
   } catch (error: any) {
-    databaseProfile.value = null
     const status = error?.statusCode || error?.response?.status || error?.data?.statusCode
+    allowDemoProfile.value = import.meta.dev && status === 404 && Boolean(profiles[profileSlug.value])
     if (status !== 404) profileLoadError.value = 'We could not load this profile. Please try again.'
-    else if (profileSlug.value === 'nina' && import.meta.dev && window.localStorage.getItem('lonely-radish-preview-rejected-match')) {
+    else if (allowDemoProfile.value && profileSlug.value === 'nina' && window.localStorage.getItem('lonely-radish-preview-rejected-match')) {
       profiles.nina.isMatched = false
       Object.assign(profiles.nina, { relationshipStatus: 'unmatched', endedByMe: true, apologySent: false })
     }
   } finally {
     profileLoaded.value = true
   }
+}
+
+onMounted(async () => {
+  window.addEventListener('keydown', handleGalleryKeydown)
+  await Promise.all([loadInterest(), loadProfile()])
 })
 onBeforeUnmount(() => window.removeEventListener('keydown', handleGalleryKeydown))
 watch(profileSlug, () => {
@@ -171,6 +180,7 @@ watch(profileSlug, () => {
   profileDetailsCollapsed.value = true
   profileCardFlipped.value = false
   photoViewerOpen.value = false
+  void loadProfile()
 })
 useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lonely Radish` : !profileLoaded.value ? 'Loading Profile · Lonely Radish' : 'Profile Not Found · Lonely Radish' }))
 </script>
@@ -448,6 +458,7 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
       <UserRound class="mx-auto size-8 text-[#B4234A]" />
       <h1 class="mt-4 text-2xl font-semibold">{{ profileLoadError ? 'Profile unavailable' : 'Profile not found' }}</h1>
       <p class="mt-2 text-sm text-[#6E4D58]">{{ profileLoadError || 'This profile may no longer be available.' }}</p>
+      <button v-if="profileLoadError" type="button" class="mt-5 rounded-lg bg-[#F3E8DA] px-5 py-3 text-sm font-semibold text-[#8F1839]" @click="loadProfile">Try again</button>
       <NuxtLink to="/matches"
         class="mt-5 inline-flex rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white">
         Browse matches</NuxtLink>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { BadgeCheck, BadgePercent, ChevronDown, Clock3, Copy, MapPin, Search, Store, TicketCheck, X } from '@lucide/vue'
+import { trackProductEvent } from '~/utils/productAnalytics'
 
 definePageMeta({ title: 'Date offers · Lonely Radish', middleware: 'logged-in' })
 
@@ -167,6 +168,7 @@ async function claimOffer(offerId: string) {
     }
     claims.value[offerId] = result.claim
     await generateQrCode(result.claim)
+    trackProductEvent('Offer Claimed', { attachedToDate: Boolean(proposalId.value) })
   } catch (error: any) {
     claimErrors.value[offerId] = error?.data?.statusMessage || 'The offer code could not be created.'
   } finally { claimingId.value = '' }

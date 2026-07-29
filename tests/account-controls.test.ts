@@ -13,5 +13,8 @@ describe('account controls page', () => {
     expect(controls).toContain('Pause discovery')
     expect(controls).toContain('Date reliability')
     expect(controls).toContain("middleware: 'logged-in'")
+    expect(controls).toContain('Promise.allSettled')
+    expect(controls).toContain('controlsLoadError')
+    expect(controls).toContain('@click="loadControls"')
   })
 })

@@ -12,6 +12,8 @@ const reliability = ref<{ confirmedNoShows: number; restrictedUntil: string | nu
 const openingBillingPortal = ref(false)
 const billingError = ref('')
 const loading = ref(true)
+const controlsLoadError = ref('')
+const pauseLoaded = ref(false)
 const planLabel = computed(() => entitlement.value?.plan === 'yearly' ? 'Yearly plan' : entitlement.value?.plan === 'quarterly' ? 'Three-month plan' : entitlement.value?.plan === 'monthly' ? 'Monthly plan' : 'Free plan')
 const isPaidPlan = computed(() => ['monthly','quarterly','yearly'].includes(entitlement.value?.plan || ''))
 
@@ -33,13 +35,27 @@ async function managePlan() {
     openingBillingPortal.value = false
   }
 }
-onMounted(async () => {
+async function loadControls() {
+  loading.value = true
+  controlsLoadError.value = ''
   await resolve({ force: true })
-  await Promise.all([
-    $fetch<any>('/api/account/pause').then(result => { pauseState.value = result }).catch(() => {}),
-    $fetch<any>('/api/account/reliability').then(result => { reliability.value = result }).catch(() => {}),
+  const [pauseResult, reliabilityResult] = await Promise.allSettled([
+    $fetch<any>('/api/account/pause'),
+    $fetch<any>('/api/account/reliability'),
   ])
+  if (pauseResult.status === 'fulfilled') {
+    pauseState.value = pauseResult.value
+    pauseLoaded.value = true
+  } else {
+    pauseLoaded.value = false
+    controlsLoadError.value = 'Your discovery pause setting could not be loaded.'
+  }
+  if (reliabilityResult.status === 'fulfilled') reliability.value = reliabilityResult.value
+  else controlsLoadError.value ||= 'Your date reliability history could not be loaded.'
   loading.value = false
+}
+onMounted(async () => {
+  await loadControls()
 })
 </script>
 
@@ -53,6 +69,9 @@ onMounted(async () => {
       <p v-if="loading" class="mt-8 rounded-lg bg-white p-6 text-center text-sm text-[#6E4D58]">Loading account controls…</p>
 
       <div v-else class="mt-8 space-y-5">
+        <div v-if="controlsLoadError" class="rounded-lg bg-[#FCE3E8] p-4 text-sm font-semibold text-[#8F1839]" role="alert">
+          <p>{{ controlsLoadError }}</p><button type="button" class="mt-3 rounded-lg bg-white px-4 py-2" @click="loadControls">Try again</button>
+        </div>
         <section class="rounded-lg bg-[#2A1520] p-6 text-white shadow-[0_14px_32px_rgba(42,21,32,0.16)]">
           <HeartHandshake class="size-6 text-[#F7B7C4]" />
           <div class="mt-4 flex items-center gap-2"><h2 class="text-xl font-semibold">Plan preview</h2><span class="rounded-full px-2.5 py-1 text-xs font-bold" :class="isPaidPlan ? 'bg-[#EAF2DE] text-[#4D2F39]' : 'bg-white/15 text-white'">{{ isPaidPlan ? 'Paid' : 'Free' }}</span></div>
@@ -62,7 +81,7 @@ onMounted(async () => {
           <p v-if="billingError" class="mt-3 text-sm font-semibold text-[#F7B7C4]" role="alert">{{ billingError }}</p>
         </section>
 
-        <section class="rounded-lg bg-[#EAF2DE] p-6 shadow-[0_10px_24px_rgba(180,35,74,0.08)]">
+        <section v-if="pauseLoaded" class="rounded-lg bg-[#EAF2DE] p-6 shadow-[0_10px_24px_rgba(180,35,74,0.08)]">
           <div class="flex items-start gap-3"><PauseCircle class="mt-1 size-5 text-[#6E8B52]" /><div class="min-w-0 flex-1">
             <h2 class="text-xl font-semibold">Pause discovery</h2><p class="mt-2 text-sm leading-6 text-[#4D2F39]">Hide your profile from new people while keeping existing matches, plans and dates available.</p>
             <div v-if="pauseState.paused" class="mt-4 rounded-lg bg-white/75 p-4"><p class="text-sm font-semibold">Your profile is paused<span v-if="pauseState.pausedUntil"> until {{ new Date(pauseState.pausedUntil).toLocaleDateString('en-GB', { dateStyle: 'long' }) }}</span><span v-else> indefinitely</span>.</p><button type="button" class="mt-3 rounded-lg bg-[#B4234A] px-4 py-2.5 text-sm font-semibold text-white" :disabled="savingPause" @click="updatePause('resume')">{{ savingPause ? 'Resuming…' : 'Resume discovery now' }}</button></div>

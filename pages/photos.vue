@@ -291,7 +291,6 @@ onMounted(async () => {
           <NuxtLink :to="isOnboarding ? '/onboarding' : '/account/v2'" class="inline-flex items-center justify-center gap-2 rounded-lg bg-[#F3E8DA] px-5 py-3 text-sm font-semibold text-[#8F1839] transition hover:bg-[#FCE3E8]" :class="isOnboarding && 'onboarding-return'">
             <ChevronLeft v-if="isOnboarding" class="size-4" aria-hidden="true" />{{ isOnboarding ? 'Return to onboarding' : 'Back to account' }}
           </NuxtLink>
-          <NuxtLink v-if="isOnboarding && !photos.length" to="/onboarding?skipPhotos=1" class="px-4 py-3 text-center text-sm font-semibold text-[#6E4D58] underline underline-offset-4">Skip for now</NuxtLink>
           <span v-if="saved" class="text-sm font-semibold text-[#6E8B52]">Photo order saved.</span>
         </div>
         <p v-if="errorMessage" class="rounded-lg bg-[#FCE3E8] p-4 text-sm font-semibold text-[#8F1839]" role="alert">{{ errorMessage }}</p>
