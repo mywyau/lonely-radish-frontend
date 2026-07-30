@@ -5,6 +5,7 @@ describe('legal and policy page contracts', () => {
   it('terms, acceptable use and refund pages keep key policy details', () => {
     const terms = readPage('terms-of-service.vue')
     const acceptableUse = readPage('acceptable-use.vue')
+    const lawEnforcement = readPage('law-enforcement-guidelines.vue')
     const refund = readPage('refund-policy.vue')
 
     expect(terms).toContain("title: 'Terms of Service · Lonely Radish'")
@@ -17,6 +18,12 @@ describe('legal and policy page contracts', () => {
     expect(acceptableUse).toContain('Adults only')
     expect(acceptableUse).toContain('Paid companionship')
     expect(acceptableUse).toContain('Reporting and enforcement')
+
+    expect(lawEnforcement).toContain("title: 'Law Enforcement Guidelines · Lonely Radish'")
+    expect(lawEnforcement).toContain('Verification and review')
+    expect(lawEnforcement).toContain('Preservation requests')
+    expect(lawEnforcement).toContain('Emergency requests')
+    expect(lawEnforcement).toContain('mailto:contact@lonelyradish.app')
 
     expect(refund).toContain("title: 'Refund Policy · Lonely Radish'")
     expect(refund).toContain('non-refundable')

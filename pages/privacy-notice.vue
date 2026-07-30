@@ -18,7 +18,7 @@ definePageMeta({
       </h1>
 
       <p class="text-sm text-gray-500">
-        Last updated: {{ new Date().toLocaleDateString() }}
+        Last updated: <time datetime="2026-07-30">30 July 2026</time>
       </p>
     </header>
 
@@ -146,6 +146,25 @@ definePageMeta({
           cookies or similar technologies if we introduce them in future.
         </li>
       </ul>
+    </section>
+
+    <section class="space-y-3">
+      <FooterPageSectionHeading :icon="Scale">Requests from law enforcement</FooterPageSectionHeading>
+
+      <p class="text-gray-700">
+        We may preserve or disclose personal data where required by valid legal process,
+        or where disclosure is otherwise lawfully permitted, necessary and proportionate
+        for a law enforcement purpose. We limit any disclosure to information relevant
+        to the request.
+      </p>
+
+      <p class="text-gray-700">
+        Our
+        <NuxtLink to="/law-enforcement-guidelines" class="font-medium text-gray-900 hover:underline">
+          Law Enforcement Guidelines
+        </NuxtLink>
+        explain how authorised agencies can submit, preserve and verify a request.
+      </p>
     </section>
 
     <section class="space-y-3">

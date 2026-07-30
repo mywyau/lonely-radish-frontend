@@ -32,6 +32,10 @@
           Acceptable Use
         </NuxtLink>
 
+        <NuxtLink to="/law-enforcement-guidelines" class="hover:underline">
+          Law Enforcement
+        </NuxtLink>
+
         <NuxtLink to="/refund-policy" class="hover:underline">
           Refund Policy
         </NuxtLink>

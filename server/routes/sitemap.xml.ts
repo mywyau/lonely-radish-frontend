@@ -9,6 +9,7 @@ export default defineEventHandler((event) => {
     '/contact',
     '/terms-of-service',
     '/acceptable-use',
+    '/law-enforcement-guidelines',
     '/privacy-notice',
     '/refund-policy',
   ]
