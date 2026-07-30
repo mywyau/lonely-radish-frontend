@@ -90,7 +90,7 @@ onMounted(async () => {
         <div>
           <p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">Your profile</p>
           <h1 class="mt-2 text-4xl font-semibold">About me & lifestyle</h1>
-          <p class="mt-3 max-w-2xl leading-6 text-[#6E4D58]">Introduce yourself in your own words and choose the optional details you are comfortable showing on your profile.</p>
+          <p class="mt-3 max-w-2xl leading-6 text-[#6E4D58]">Tell people a little about yourself and choose which optional details you’re happy to show.</p>
         </div>
         <NuxtLink to="/profile/preview" class="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg bg-[#4D2F39] px-4 py-3 text-sm font-semibold text-white">
           <Eye class="size-4" aria-hidden="true" /> Preview profile
@@ -106,7 +106,7 @@ onMounted(async () => {
             <Heart class="mt-1 size-5 shrink-0 text-[#B4234A]" aria-hidden="true" />
             <div>
               <h2 class="text-xl font-semibold">Lifestyle and profile details</h2>
-              <p class="mt-1 text-sm leading-6 text-[#6E4D58]">These details are optional and are presented with clear labels on your profile.</p>
+              <p class="mt-1 text-sm leading-6 text-[#6E4D58]">Everything here is optional and will be labelled clearly on your profile.</p>
             </div>
           </div>
 
@@ -139,13 +139,13 @@ onMounted(async () => {
             <UserRound class="mt-1 size-5 shrink-0 text-[#B4234A]" aria-hidden="true" />
             <div>
               <h2 class="text-xl font-semibold">About me</h2>
-              <p class="mt-1 text-sm leading-6 text-[#6E4D58]">Share what makes you you, what your life looks like, and the kind of connection you would enjoy.</p>
+              <p class="mt-1 text-sm leading-6 text-[#6E4D58]">Write the sort of introduction you’d be happy for someone new to read.</p>
             </div>
           </div>
 
           <form class="mt-6" @submit.prevent="saveBio">
             <label for="profile-bio" class="text-sm font-semibold">Your introduction</label>
-            <textarea id="profile-bio" v-model="bio" required :maxlength="bioLimit" rows="8" class="field resize-y" placeholder="A little about you and the kind of person you would enjoy meeting…" />
+            <textarea id="profile-bio" v-model="bio" required :maxlength="bioLimit" rows="8" class="field resize-y" placeholder="What are you like, and how do you enjoy spending your time?" />
             <div class="mt-2 flex items-start justify-between gap-4">
               <p class="text-xs leading-5 text-[#6E4D58]">This appears in the About me section of your public dating profile.</p>
               <span class="shrink-0 text-xs text-[#6E4D58]">{{ bio.length }}/{{ bioLimit }}</span>

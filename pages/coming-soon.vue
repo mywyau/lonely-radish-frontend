@@ -30,10 +30,10 @@ const matches = [
 ]
 
 const flow = [
-  'Pick an activity and date window',
-  'Browse a small table of compatible people',
+  'Choose something you’d like to do',
+  'See who nearby is interested too',
   'Choose a public place to meet',
-  'Confirm the plan without endless chat',
+  'Agree the plan together',
 ]
 </script>
 
@@ -48,10 +48,10 @@ const flow = [
 
         <div class="space-y-4">
           <h1 class="max-w-2xl text-4xl font-semibold leading-tight sm:text-5xl">
-            Browse matches built around something you both want to do.
+            Start with something you’d both enjoy doing.
           </h1>
           <p class="max-w-xl text-[#6B5C52]">
-            This placeholder shows the intended dating flow without requiring auth, real profiles, or backend data.
+            Here’s a quick look at how Lonely Radish helps you go from finding someone to making a real plan.
           </p>
         </div>
 
@@ -64,7 +64,7 @@ const flow = [
           <div class="rounded-lg bg-white p-4 shadow-sm">
             <ShieldCheck class="size-5 text-[#2F7D63]" aria-hidden="true" />
             <p class="mt-3 text-sm font-semibold">Public first</p>
-            <p class="mt-1 text-sm text-[#6B5C52]">Public activity suggestions only</p>
+            <p class="mt-1 text-sm text-[#6B5C52]">Choose somewhere public to meet</p>
           </div>
         </div>
 

@@ -4,113 +4,117 @@ import { CalendarDays, HeartHandshake, HelpCircle, ShieldCheck, Sparkles, UserRo
 definePageMeta({ title: 'How Lonely Radish works · FAQ' })
 useSeoMeta({
   title: 'How Lonely Radish works · FAQ',
-  description: 'Understand discovery, matching, date planning, rescheduling, privacy and safety on Lonely Radish.',
+  description: 'Find out how matching, date planning, rescheduling, privacy and safety work on Lonely Radish.',
   ogTitle: 'How Lonely Radish works · FAQ',
-  ogDescription: 'The rules and features behind more intentional matching and clearer date plans.',
+  ogDescription: 'Straightforward answers about matching, making plans and meeting safely.',
 })
 
 const sections = [
   {
     title: 'Getting started',
-    description: 'Who the app is for and what you need before discovery.',
+    description: 'Who can join and what you’ll need to get going.',
     icon: UserRound,
     questions: [
       {
         question: 'Who can use Lonely Radish?',
-        answer: 'Lonely Radish is for adults aged 18 or over who are open to meeting new people through casual, public activity dates.',
+        answer: 'Lonely Radish is for adults aged 18 or over who would like to meet someone new over a casual activity in a public place.',
       },
       {
         question: 'What do I need to complete my profile?',
-        answer: 'You need the core profile details, your preferences and interests, usual availability, an approximate UK location and at least one profile photo. Your exact private address is not requested for discovery.',
+        answer: 'We’ll ask for some basic details, what you’re interested in, when you’re usually free, an approximate UK location and at least one photo. We never ask for your home address.',
       },
       {
         question: 'Why does the app ask about activities and availability?',
-        answer: 'Activities provide a natural reason to meet, while your usual availability helps another person propose a realistic time. You can update both from your account.',
+        answer: 'Having an activity in mind makes it easier to suggest a first date. Sharing when you’re usually free also helps someone choose a time that might actually work. You can change both later.',
       },
     ],
   },
   {
     title: 'Discovery and matching',
-    description: 'The limits that make discovery more selective.',
+    description: 'How interests become matches, and why there are limits.',
     icon: Sparkles,
     questions: [
       {
         question: 'How many people can I show interest in?',
-        answer: 'You can show interest in up to five people per day. The limit is intentional: it encourages considered choices rather than an unlimited swipe queue.',
+        answer: 'You can show interest in up to five people each day. The idea is to choose people you’re genuinely curious about, rather than work through an endless queue.',
       },
       {
         question: 'When does an interest become a match?',
-        answer: 'If you have both already shown interest, the match can form automatically. Otherwise, the recipient can review the interest and choose whether to accept it.',
+        answer: 'If you’ve both shown interest, you’ll match automatically. If only one person has, the other can look at their profile and decide whether to accept.',
+      },
+      {
+        question: 'Why can I receive only five interests at a time?',
+        answer: 'The limit gives you a small group to consider without an endless queue. When five people are waiting, your profile pauses incoming interest. Passing is final and new interest does not replace that person immediately. You can still choose people yourself, and a mutual interest can become a direct match.',
       },
       {
         question: 'How do active match limits work?',
-        answer: 'Free accounts can have up to three active matches and paid plans can have up to five. New matches, plans in progress and confirmed dates all count. Waiting matches do not use an active space until they are activated.',
+        answer: 'Free accounts can have up to three active matches and paid accounts can have up to five. A new match, a plan in progress and a confirmed date each use one space. A waiting match does not count until you activate it.',
       },
       {
         question: 'What is a manual match?',
-        answer: 'A manual match is created when somebody sends you interest and you choose “Accept and match.” It is different from a mutual match, which forms automatically after both people independently show interest.',
+        answer: 'This simply means you accepted an interest from someone you had not already chosen. A mutual match happens automatically when you both show interest independently.',
       },
       {
-        question: 'Why can I have only one manual match awaiting my move?',
-        answer: 'After manually accepting an interest, start a date proposal or close that match before manually accepting another. This is a one-at-a-time action rule, not a lifetime or daily matching allowance. Mutual matches do not use this manual-action slot.',
+        question: 'Why can I accept only one interest at a time?',
+        answer: 'When you accept someone’s interest, take a moment to act on that match before accepting another. Start making a plan, or close the match if you change your mind. This rule applies one match at a time; it is not a daily or lifetime limit, and mutual matches are unaffected.',
       },
       {
         question: 'What happens when a match is waiting?',
-        answer: 'If either person has filled their active match spaces, the new match stays visible in Matches waiting. It is not lost and does not count as active. Planning can begin when both people have space and the waiting match is activated.',
+        answer: 'If either person’s match list is full, the new match waits until you both have room. It stays visible under “Matches waiting” and does not use an active space.',
       },
       {
         question: 'Can I remove a match?',
-        answer: 'Yes. Removing a match closes that connection. Blocking is a separate safety control and prevents either person from appearing to the other.',
+        answer: 'Yes. Removing a match ends the connection. Blocking goes further: neither of you will be shown to the other again.',
       },
     ],
   },
   {
     title: 'Planning a date',
-    description: 'How proposals become clear, mutually agreed plans.',
+    description: 'From the first suggestion to a plan you’ve both agreed.',
     icon: CalendarDays,
     questions: [
       {
         question: 'How does a date proposal work?',
-        answer: 'One person suggests an activity, one future time and a public venue. The other person can accept it, decline it or suggest different details. The date is confirmed only after acceptance.',
+        answer: 'One person suggests what to do, a time and a public place to meet. The other can accept, decline or suggest something different. It only becomes a confirmed date when you both agree.',
       },
       {
         question: 'What happens when someone proposes a reschedule?',
-        answer: 'The currently confirmed date remains the agreed plan while the replacement is reviewed. The new time and venue replace it only when the other person accepts them.',
+        answer: 'Your original date stays confirmed while the other person considers the new suggestion. It changes only if they accept the replacement.',
       },
       {
         question: 'How is cancelling different from rescheduling?',
-        answer: 'Rescheduling means you still want to meet and are proposing a replacement plan. Cancelling ends the confirmed date immediately, notifies the other person and leaves the match open so you can plan again later.',
+        answer: 'Rescheduling says “I still want to meet, but can we change the plan?” Cancelling ends the date and tells the other person straight away. You’ll remain matched, so you can make another plan later if you both want to.',
       },
       {
         question: 'Can I edit a confirmed date directly?',
-        answer: 'No. Confirmed details should not change silently. Use “Propose a different date” so the existing agreement stays visible and the other person can explicitly accept the replacement.',
+        answer: 'No. Use “Propose a different date” instead. Your existing plan will stay visible until the other person accepts the change, so there is no confusion about when or where you’re meeting.',
       },
       {
         question: 'Will I receive reminders?',
-        answer: 'The app can send reminders before a confirmed date and lets each person confirm that they are still going. Notification preferences can be managed from your account.',
+        answer: 'Yes. We can remind you before a confirmed date and ask whether you’re still going. You can manage email notifications from your account.',
       },
     ],
   },
   {
     title: 'Privacy and safety',
-    description: 'Controls for meeting with clearer boundaries.',
+    description: 'What you share, where to meet and what to do if something feels wrong.',
     icon: ShieldCheck,
     questions: [
       {
         question: 'Do I have to share my contact details?',
-        answer: 'No. Contact sharing is optional, and the planning journey can remain inside Lonely Radish. Do not put private contact or home-address information into public venue details.',
+        answer: 'No. You can make and manage the whole plan inside Lonely Radish. If you do add contact details, you choose whether to share them with active matches. Never put private contact details or a home address in the venue fields.',
       },
       {
         question: 'What kind of venue should I choose?',
-        answer: 'Choose a recognisable public place and add only the meeting details needed to find each other, such as the entrance or nearby landmark.',
+        answer: 'Choose somewhere public and easy to recognise. Add the entrance, station exit or nearby landmark if that will help you find each other.',
       },
       {
         question: 'What should I do if a person makes me uncomfortable?',
-        answer: 'You can block or report them from their profile and relevant date surfaces. Blocking prevents further interaction; reports are sent for moderation review. Lonely Radish is not an emergency service.',
+        answer: 'You can block or report someone from their profile or date page. Blocking stops further contact, while a report goes to the moderation team. Lonely Radish is not an emergency service.',
       },
       {
         question: 'What happens after a date?',
-        answer: 'Each person can privately record whether the date happened and whether they would meet again. Reliability controls distinguish a clear cancellation from a reported no-show.',
+        answer: 'We’ll privately ask whether the date happened and whether you’d like to meet again. Your answers are not shared unless you both want another date. Cancelling in advance is treated differently from not turning up.',
       },
     ],
   },
@@ -122,8 +126,8 @@ const sections = [
     <div class="mx-auto max-w-4xl">
       <header class="rounded-xl bg-[#2A1520] p-7 text-white sm:p-10">
         <p class="inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-widest text-[#F7B7C4]"><HelpCircle class="size-4" />How it works</p>
-        <h1 class="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">Rules, features and frequently asked questions</h1>
-        <p class="mt-4 max-w-2xl leading-7 text-white/75">Lonely Radish is designed around selective discovery, mutually agreed plans and clear follow-through. Here is what that means in practice.</p>
+        <h1 class="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">Questions about how Lonely Radish works?</h1>
+        <p class="mt-4 max-w-2xl leading-7 text-white/75">Here are the answers to the things people are most likely to wonder about, from matching to changing a date.</p>
       </header>
 
       <nav class="mt-5 flex flex-wrap gap-2" aria-label="FAQ sections">

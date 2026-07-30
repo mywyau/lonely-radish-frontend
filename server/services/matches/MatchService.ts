@@ -19,6 +19,7 @@ export interface AcceptInterestResult {
   matchId: string
   slug: string
   name: string
+  inboxReopensAt: string | null
 }
 
 export interface MatchServiceDependencies {
@@ -110,6 +111,10 @@ export class MatchService {
       if (existing?.status === 'unmatched') {
         await repository.clearDateProposals(match.id)
       }
+      const inboxReopensAt = await repository.resolveAcceptedInterest(
+        input.interestId,
+        input.recipientId,
+      )
 
       const activated = await activateMatch(client, match.id)
       await events.publish({
@@ -131,6 +136,7 @@ export class MatchService {
         matchId: match.id,
         slug: incoming.slug,
         name: incoming.displayName,
+        inboxReopensAt,
       }
       await requests.complete(
         input.recipientId,

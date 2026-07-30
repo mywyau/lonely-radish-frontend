@@ -22,7 +22,7 @@ const cancelled = computed(() => /access denied|cancel|denied|permissions/i.test
           <p class="text-sm font-semibold text-[#B05D45]">Welcome back</p>
           <h1 class="mt-2 text-3xl font-semibold">Sign in to Lonely Radish</h1>
           <p class="mt-3 text-[#6B5C52]">
-            Sign in or create an account to manage your profile, show interest, and plan dates.
+            Sign in to pick up where you left off, or create an account if you’re new here.
           </p>
         </div>
       </div>

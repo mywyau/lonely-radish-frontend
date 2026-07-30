@@ -67,7 +67,7 @@ onMounted(() => loadConnections())
     <section class="mx-auto max-w-3xl">
       <p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">History</p>
       <h1 class="mt-2 text-4xl font-semibold">Past connections</h1>
-      <p class="mt-3 max-w-2xl leading-7 text-[#6E4D58]">Matches that have ended are kept here for clarity. They do not count towards your active-match limit.</p>
+      <p class="mt-3 max-w-2xl leading-7 text-[#6E4D58]">You can find ended matches here. They don’t take up room in your active match list.</p>
       <div v-if="loading" class="mt-8 rounded-lg bg-white p-8 text-center text-[#6E4D58]">Loading past connections…</div>
       <p v-else-if="errorMessage && !connections.length" class="mt-8 rounded-lg bg-[#FCE3E8] p-4 text-sm font-semibold text-[#8F1839]">{{ errorMessage }}</p>
       <div v-else-if="connections.length" class="mt-8 grid gap-3">
@@ -78,9 +78,9 @@ onMounted(() => loadConnections())
             <div class="min-w-0 flex-1"><h2 class="text-lg font-semibold">{{ connection.name }}</h2><p class="mt-1 flex items-center gap-1.5 text-sm text-[#6E4D58]"><XCircle class="size-4" />{{ outcome(connection) }}</p><p v-if="connection.activity" class="mt-1 text-xs text-[#6E4D58]">Last plan: {{ connection.activity }}</p><p v-if="connection.endedAt" class="mt-1 text-xs text-[#6E4D58]">{{ new Date(connection.endedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) }}</p></div>
           </div>
           <div class="mt-4 flex flex-wrap gap-2">
-            <NuxtLink v-if="connection.canViewProfile" :to="{ path: `/profiles/${connection.slug}`, query: { connection: 'past' } }" class="rounded-lg bg-[#F3E8DA] px-4 py-2.5 text-sm font-semibold text-[#8F1839]">View unmatched profile</NuxtLink>
+            <NuxtLink v-if="connection.canViewProfile" :to="{ path: `/profiles/${connection.slug}`, query: { connection: 'past' } }" class="rounded-lg bg-[#F3E8DA] px-4 py-2.5 text-sm font-semibold text-[#8F1839]">View their profile</NuxtLink>
             <NuxtLink v-if="connection.canReconsider && connection.proposalId" :to="`/dates/${connection.proposalId}/follow-up`" class="rounded-lg bg-[#B4234A] px-4 py-2.5 text-sm font-semibold text-white">Review your answer</NuxtLink>
-            <button v-if="connection.endedByMe && !connection.apologySent" type="button" class="rounded-lg bg-[#FCE3E8] px-4 py-2.5 text-sm font-semibold text-[#8F1839]" @click="apologyFor = connection.id; apologyMessage = ''">Send a message and reconnect</button>
+            <button v-if="connection.endedByMe && !connection.apologySent" type="button" class="rounded-lg bg-[#FCE3E8] px-4 py-2.5 text-sm font-semibold text-[#8F1839]" @click="apologyFor = connection.id; apologyMessage = ''">Send a note</button>
             <span v-else-if="connection.apologySent" class="rounded-lg bg-[#EAF2DE] px-4 py-2.5 text-sm font-semibold text-[#4D2F39]">Apology sent</span>
             <button v-if="connection.wasUnmatched && !connection.contactSent" type="button" class="inline-flex items-center gap-1.5 rounded-lg bg-[#F3E8DA] px-4 py-2.5 text-sm font-semibold text-[#8F1839]" @click="contactFor = connection.id; contactMessage = ''"><MessageCircle class="size-4" />Send a message</button>
             <span v-else-if="connection.contactSent" class="rounded-lg bg-[#EAF2DE] px-4 py-2.5 text-sm font-semibold text-[#4D2F39]">Message sent — no reply required</span>
@@ -93,7 +93,7 @@ onMounted(() => loadConnections())
         <button v-if="hasMore" type="button" :disabled="loadingMore" class="mx-auto mt-3 rounded-lg bg-[#4D2F39] px-5 py-3 text-sm font-semibold text-white disabled:opacity-50" @click="loadConnections(true)">{{ loadingMore ? 'Loading…' : 'Load more past connections' }}</button>
         <p v-if="errorMessage" class="text-center text-sm font-semibold text-[#8F1839]" role="alert">{{ errorMessage }}</p>
       </div>
-      <div v-else class="mt-8 rounded-lg bg-white p-8 text-center"><History class="mx-auto size-8 text-[#B4234A]" /><h2 class="mt-3 text-xl font-semibold">No past connections.</h2><p class="mt-2 text-sm text-[#6E4D58]">Matches that end will appear here.</p></div>
+      <div v-else class="mt-8 rounded-lg bg-white p-8 text-center"><History class="mx-auto size-8 text-[#B4234A]" /><h2 class="mt-3 text-xl font-semibold">Nothing here yet</h2><p class="mt-2 text-sm text-[#6E4D58]">If a match ends, you’ll be able to find it here.</p></div>
       <NuxtLink to="/matches" class="mt-8 inline-flex items-center gap-2 rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white"><CalendarClock class="size-4" />Return to active matches</NuxtLink>
     </section>
   </main>

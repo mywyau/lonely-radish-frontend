@@ -31,8 +31,8 @@ onMounted(async () => {
   <main class="min-h-screen bg-[#FBF7F1] px-5 py-10 text-[#2A1520] sm:px-8">
     <section class="mx-auto max-w-6xl">
       <p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">Business subscriptions</p>
-      <h1 class="mt-2 text-4xl font-semibold">Choose how customers discover your venue.</h1>
-      <p class="mt-3 max-w-2xl leading-7 text-[#6E4D58]">Start free, then upgrade when you need more offers and visibility. Businesses never receive member profiles or dating-preference data.</p>
+      <h1 class="mt-2 text-4xl font-semibold">Choose the plan that suits your venue.</h1>
+      <p class="mt-3 max-w-2xl leading-7 text-[#6E4D58]">Start free and upgrade if you need more offers or visibility. You’ll never receive anyone’s dating profile or preferences.</p>
       <div v-if="loading" class="mt-8 text-[#6E4D58]">Loading plans…</div>
       <div v-else-if="!business" class="mt-8 rounded-lg bg-white p-6"><p class="font-semibold">Create a business profile before choosing a plan.</p><NuxtLink to="/business" class="mt-4 inline-flex rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white">Create business profile</NuxtLink></div>
       <div v-else class="mt-8 grid gap-4 lg:grid-cols-3">

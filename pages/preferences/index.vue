@@ -54,15 +54,15 @@ onMounted(async () => {
   <main class="min-h-screen bg-[#FBF7F1] px-5 py-10 text-[#2A1520] sm:px-8">
     <section class="mx-auto max-w-6xl">
       <div class="max-w-2xl">
-        <p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">Match settings</p>
-        <h1 class="mt-2 text-4xl font-semibold">Match preferences</h1>
-        <p class="mt-3 leading-6 text-[#6E4D58]">Manage each part separately, so it is easy to revisit what matters to you.</p>
+        <p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">Who you’d like to meet</p>
+        <h1 class="mt-2 text-4xl font-semibold">Your preferences</h1>
+        <p class="mt-3 leading-6 text-[#6E4D58]">Change what you’re looking for, where you’d like to meet and when you’re usually free.</p>
       </div>
 
       <div class="mt-8 grid items-start gap-6 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
         <form class="space-y-5" @submit.prevent="savePreferences">
         <section id="location-and-age" class="scroll-mt-24 rounded-lg bg-white p-6 shadow-[0_12px_28px_rgba(180,35,74,0.08)]">
-          <div class="flex items-start gap-3"><MapPin class="mt-1 size-5 text-[#B4234A]" /><div><h2 class="text-xl font-semibold">Location and age</h2><p class="mt-1 text-sm text-[#6E4D58]">Keep possible matches practical for you.</p></div></div>
+          <div class="flex items-start gap-3"><MapPin class="mt-1 size-5 text-[#B4234A]" /><div><h2 class="text-xl font-semibold">Location and age</h2><p class="mt-1 text-sm text-[#6E4D58]">Choose a distance and age range that work for you.</p></div></div>
           <div class="mt-6 rounded-lg bg-[#FBF7F1] p-4">
             <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
               <label class="min-w-0 flex-1 text-sm font-medium">UK postcode
@@ -70,7 +70,7 @@ onMounted(async () => {
               </label>
               <button type="button" :disabled="locationSaving || !location.postcode.trim()" class="rounded-lg bg-[#4D2F39] px-4 py-3 text-sm font-semibold text-white disabled:opacity-50" @click="saveLocation">{{ locationSaving ? 'Checking…' : location.hasLocation ? 'Update location' : 'Save location' }}</button>
             </div>
-            <p class="mt-2 text-xs leading-5 text-[#6E4D58]">We store an approximate map point and postcode area—not your full postcode—and never show your coordinates.</p>
+            <p class="mt-2 text-xs leading-5 text-[#6E4D58]">We keep only an approximate location and your postcode area. We don’t save your full postcode or show your position on a map.</p>
             <div v-if="location.hasLocation" class="mt-3 flex flex-wrap items-center gap-3 text-sm"><span class="font-semibold text-[#52713A]">Using {{ location.label }} · {{ location.postcodeArea }}</span><button type="button" class="font-semibold text-[#8F1839] underline" @click="removeLocation">Remove</button></div>
             <p v-if="locationMessage" class="mt-2 text-sm font-semibold text-[#52713A]" role="status">{{ locationMessage }}</p>
             <p v-if="locationError" class="mt-2 text-sm font-semibold text-[#8F1839]" role="alert">{{ locationError }}</p>
@@ -106,25 +106,25 @@ onMounted(async () => {
         <NuxtLink to="/preferences/activities" class="group rounded-lg bg-[#FCE3E8] p-6 shadow-[0_10px_24px_rgba(180,35,74,0.08)] transition hover:-translate-y-0.5">
           <div class="flex items-center justify-between"><Sparkles class="size-6 text-[#B4234A]" /><ChevronRight class="size-5 transition group-hover:translate-x-1" /></div>
           <h2 class="mt-5 text-xl font-semibold">Activity interests</h2>
-          <p class="mt-2 text-sm leading-6 text-[#6E4D58]">Choose the plans, sports, games, and experiences you would enjoy sharing.</p>
+          <p class="mt-2 text-sm leading-6 text-[#6E4D58]">Choose things you’d genuinely enjoy doing with someone new.</p>
         </NuxtLink>
 
         <NuxtLink to="/preferences/interests" class="group rounded-lg bg-[#F3E8DA] p-6 shadow-[0_10px_24px_rgba(180,35,74,0.08)] transition hover:-translate-y-0.5">
           <div class="flex items-center justify-between"><Tags class="size-6 text-[#B4234A]" /><ChevronRight class="size-5 transition group-hover:translate-x-1" /></div>
           <h2 class="mt-5 text-xl font-semibold">Personal interests</h2>
-          <p class="mt-2 text-sm leading-6 text-[#6E4D58]">Write up to five interests in your own words to show more of your personality.</p>
+          <p class="mt-2 text-sm leading-6 text-[#6E4D58]">Add up to five things that give people a better feel for you.</p>
         </NuxtLink>
 
         <NuxtLink to="/preferences/dating" class="group rounded-lg bg-[#EAF2DE] p-6 shadow-[0_10px_24px_rgba(110,139,82,0.1)] transition hover:-translate-y-0.5">
           <div class="flex items-center justify-between"><Heart class="size-6 text-[#B4234A]" /><ChevronRight class="size-5 transition group-hover:translate-x-1" /></div>
           <h2 class="mt-5 text-xl font-semibold">Dating preferences</h2>
-          <p class="mt-2 text-sm leading-6 text-[#6E4D58]">Set sexual, racial, and ethnic preferences, or keep your matching pool open.</p>
+          <p class="mt-2 text-sm leading-6 text-[#6E4D58]">Choose who you’re open to dating, or keep your options open.</p>
         </NuxtLink>
 
         <NuxtLink to="/preferences/schedule" class="group rounded-lg bg-white p-6 shadow-[0_10px_24px_rgba(180,35,74,0.08)] transition hover:-translate-y-0.5">
           <div class="flex items-center justify-between"><CalendarClock class="size-6 text-[#B4234A]" /><ChevronRight class="size-5 transition group-hover:translate-x-1" /></div>
-          <h2 class="mt-5 text-xl font-semibold">Timing and safety</h2>
-          <p class="mt-2 text-sm leading-6 text-[#6E4D58]">Set the days and time ranges when you are usually free, and keep first meetings in public places.</p>
+          <h2 class="mt-5 text-xl font-semibold">When you’re free</h2>
+          <p class="mt-2 text-sm leading-6 text-[#6E4D58]">Share the times that usually suit you and keep first meetings in public places.</p>
         </NuxtLink>
         </nav>
       </div>

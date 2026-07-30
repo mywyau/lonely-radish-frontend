@@ -36,7 +36,7 @@ export class MatchRepository {
       from daily_interests di
       join profiles p on p.user_id=di.sender_id
       join users u on u.id=di.sender_id
-      where di.id=$1 and di.recipient_id=$2 and di.declined_at is null
+      where di.id=$1 and di.recipient_id=$2 and di.resolved_at is null
         and p.visibility='active' and (u.account_status='active' or
           (u.account_status='paused' and u.paused_until is not null and u.paused_until<=now()))
         and not exists(select 1 from matches ended where ended.status='unmatched'
@@ -94,6 +94,20 @@ export class MatchRepository {
 
   async clearDateProposals(matchId: string) {
     await this.client.query('delete from date_proposals where match_id=$1', [matchId])
+  }
+
+  async resolveAcceptedInterest(interestId: string, recipientId: string) {
+    const { rows } = await this.client.query<{ inboxReopensAt: string }>(`with resolved as (
+        update daily_interests set resolution='accepted',resolved_at=now()
+        where id=$1 and recipient_id=$2 and resolved_at is null returning recipient_id
+      )
+      update users u set interest_inbox_reopens_at=greatest(
+        coalesce(u.interest_inbox_reopens_at,'-infinity'::timestamptz),
+        ((date_trunc('day',now() at time zone coalesce(u.timezone,'UTC'))+interval '1 day')
+          at time zone coalesce(u.timezone,'UTC')))
+      from resolved where u.id=resolved.recipient_id
+      returning u.interest_inbox_reopens_at as "inboxReopensAt"`, [interestId,recipientId])
+    return rows[0]?.inboxReopensAt ?? null
   }
 
 }

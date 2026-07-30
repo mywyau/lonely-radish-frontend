@@ -3,7 +3,7 @@ import { db } from '~/server/repositories/db'
 import { requireUser } from '~/server/utils/requireUser'
 import { signedPhotoUrls } from '~/server/utils/supabaseStorage'
 import { discoveryCategory } from '~/utils/activityDiscovery'
-import { discoveryDistanceSelect, viewerDiscoveryJoins, viewerDiscoveryWhere } from '~/server/utils/discoveryFilters'
+import { discoveryDistanceSelect, recipientInterestAvailabilityWhere, viewerDiscoveryJoins, viewerDiscoveryWhere } from '~/server/utils/discoveryFilters'
 import { decodeCursor, pageRows } from '~/server/utils/cursorPagination'
 
 export default defineEventHandler(async (event) => {
@@ -43,6 +43,7 @@ export default defineEventHandler(async (event) => {
       and not exists(select 1 from matches m where m.status in ('active','queued') and
         ((m.user_one_id=$2 and m.user_two_id=p.user_id) or (m.user_two_id=$2 and m.user_one_id=p.user_id)))
       ${viewerDiscoveryWhere}
+      ${recipientInterestAvailabilityWhere}
       and ($3::timestamptz is null or (p.updated_at,p.slug)<($3::timestamptz,$4::text))
     order by p.updated_at desc,p.slug desc limit $5`, [category.databaseCategories,sub,cursor?.sortAt || null,cursor?.tieBreaker || null,pageSize+1]),
     db.query(`select mp.minimum_age as "minimumAge",mp.maximum_age as "maximumAge",

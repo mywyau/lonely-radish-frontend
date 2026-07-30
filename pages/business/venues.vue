@@ -65,8 +65,7 @@ onMounted(() => load()
         <section class="mx-auto max-w-5xl">
             <p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">Business dashboard</p>
             <h1 class="mt-2 text-4xl font-semibold">Locations</h1>
-            <p class="mt-3 max-w-2xl leading-7 text-[#6E4D58]">Manage each physical establishment separately. New
-                locations require approval before they appear to members or accept all-location offer campaigns.</p>
+            <p class="mt-3 max-w-2xl leading-7 text-[#6E4D58]">Add and manage each of your locations. We’ll review a new location before people can see it or use an offer there.</p>
 
             <div v-if="loading" class="mt-8 rounded-lg bg-white p-8 text-[#6E4D58]">Loading locations…</div>
             <template v-else-if="business">
@@ -108,9 +107,7 @@ onMounted(() => load()
                         <Plus class="size-5 text-[#B4234A]" />
                         <h2 class="text-xl font-semibold">Add another location</h2>
                     </div>
-                    <p class="mt-2 text-sm text-[#6E4D58]">All-location campaigns will include this establishment
-                        automatically
-                        after an administrator approves it.</p>
+                    <p class="mt-2 text-sm text-[#6E4D58]">Once approved, this location will automatically join any offers that apply everywhere.</p>
                     <div class="mt-5 grid gap-4 sm:grid-cols-2">
                         <label class="text-sm font-semibold">Location name
                             <input v-model="form.name" minlength="2" maxlength="120" required class="field"

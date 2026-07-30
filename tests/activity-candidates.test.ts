@@ -20,7 +20,7 @@ describe('real activity candidates', () => {
     expect(page).toContain(":aria-label=\"`View ${person.name}'s profile`\"")
     expect(page).not.toContain('showInterest(person.slug, person.name)')
     expect(page).not.toContain('useDailyInterest()')
-    expect(page).toContain('broader category')
+    expect(page).toContain('Everyone here chose something in this category')
     expect(page).toContain('person.matchedActivityTags')
     expect(page).toContain('person.otherActivityTags')
     expect(page).toContain('Also interested in')
@@ -35,8 +35,8 @@ describe('real activity candidates', () => {
     expect(page).toContain('Using ${appliedFilters.searchLocation}')
     expect(api).toContain('p.postcode_area as "postcodeArea"')
     expect(page).toContain('{{ person.place }}')
-    expect(page).toContain('No profiles match your filters yet')
-    expect(page).toContain('Adjust match preferences')
+    expect(page).toContain('Nobody here fits your preferences yet')
+    expect(page).toContain('Change preferences')
   })
 
   it('supports wellness, nightlife, exploration and community discovery', () => {

@@ -187,7 +187,7 @@ onMounted(async () => {
         </div>
 
         <section class="rounded-lg bg-white p-5 shadow-[0_12px_28px_rgba(180,35,74,0.08)]">
-          <div class="flex items-start gap-3"><ImagePlus class="mt-1 size-5 shrink-0 text-[#B4234A]" aria-hidden="true" /><div><h2 class="text-xl font-semibold">Upload photos</h2><p class="mt-1 text-sm text-[#6E4D58]">Choose up to six JPEG, PNG, or WebP images, up to 20 MB each. Photos are resized and converted to WebP before upload.</p></div></div>
+          <div class="flex items-start gap-3"><ImagePlus class="mt-1 size-5 shrink-0 text-[#B4234A]" aria-hidden="true" /><div><h2 class="text-xl font-semibold">Add your photos</h2><p class="mt-1 text-sm text-[#6E4D58]">Choose up to six JPEG, PNG or WebP images. Each one can be up to 20 MB, and we’ll optimise it before uploading.</p></div></div>
           <button type="button" :disabled="uploading || photoSlots === 0" class="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#B4234A] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#8F1839] disabled:opacity-50" @click="openFilePicker"><UploadCloud class="size-4" aria-hidden="true" />{{ uploading ? (uploadStatus || 'Preparing photos…') : 'Add photos' }}</button>
           <input ref="fileInput" accept="image/jpeg,image/png,image/webp" class="sr-only" multiple type="file" @change="onFilesSelected">
           <div class="mt-4 rounded-lg border border-dashed border-[#D8C8B6] bg-[#FBF7F1] p-4 text-center"><p class="text-sm font-semibold text-[#4D2F39]">{{ photos.length }} / 6 photos selected</p><p class="mt-1 text-sm text-[#6E4D58]">{{ photoSlots }} slots remaining</p></div>

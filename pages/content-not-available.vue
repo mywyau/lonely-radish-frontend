@@ -15,22 +15,22 @@ definePageMeta({
         </div>
 
         <div class="min-w-0 flex-1">
-          <p class="text-sm font-semibold text-[#2F7D63]">Prototype preview</p>
-          <h1 class="mt-2 text-3xl font-semibold">Premium dating tools are mocked for now.</h1>
+          <p class="text-sm font-semibold text-[#2F7D63]">Coming later</p>
+          <h1 class="mt-2 text-3xl font-semibold">This part isn’t ready yet.</h1>
           <p class="mt-3 text-[#6B5C52]">
-            Auth and subscription checks are disabled while the product shape is being explored. This screen reserves space for future gated tools.
+            We’re still working on it. You can carry on using the rest of Lonely Radish in the meantime.
           </p>
 
           <div class="mt-6 grid gap-3 sm:grid-cols-2">
             <div class="rounded-lg bg-[#FBF7F1] p-4">
               <Sparkles class="size-5 text-[#B05D45]" aria-hidden="true" />
-              <p class="mt-3 text-sm font-semibold">Profile polish</p>
-              <p class="mt-1 text-sm text-[#6B5C52]">Prompts and activity-date intent hints.</p>
+              <p class="mt-3 text-sm font-semibold">More profile help</p>
+              <p class="mt-1 text-sm text-[#6B5C52]">Extra prompts to help you introduce yourself.</p>
             </div>
             <div class="rounded-lg bg-[#FBF7F1] p-4">
               <ShieldCheck class="size-5 text-[#2F7D63]" aria-hidden="true" />
               <p class="mt-3 text-sm font-semibold">Safety controls</p>
-              <p class="mt-1 text-sm text-[#6B5C52]">Public-place defaults and reporting tools.</p>
+              <p class="mt-1 text-sm text-[#6B5C52]">More ways to manage your privacy and safety.</p>
             </div>
           </div>
         </div>

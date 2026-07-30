@@ -8,8 +8,8 @@ const read = (path: string) =>
 describe("core journey recovery", () => {
   it("does not present a discovery outage as an empty match pool", () => {
     const page = read("pages/activities/[slug].vue");
-    expect(page).toContain("We could not load people right now");
-    expect(page).toContain("This is not the same as having no matches.");
+    expect(page).toContain("We couldn’t load anyone just now");
+    expect(page).toContain("Try again in a moment.");
     expect(page).toContain('@click="loadCandidates()"');
   });
 

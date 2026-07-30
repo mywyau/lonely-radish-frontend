@@ -303,9 +303,8 @@ onBeforeUnmount(stopScanner)
                     </article>
                     <article class="rounded-lg bg-white p-5 text-sm leading-6 text-[#6E4D58]">
                         <ShieldCheck class="size-6 text-[#52713A]" />
-                        <p class="mt-3 font-semibold text-[#2A1520]">Privacy by design</p>
-                        <p class="mt-1">You receive offer and redemption details—not member profiles, matches, or dating
-                            preferences.</p>
+                        <p class="mt-3 font-semibold text-[#2A1520]">What you can see</p>
+                        <p class="mt-1">You’ll receive only the offer and redemption details. Dating profiles, matches and preferences remain private.</p>
                     </article>
                 </div>
             </div>

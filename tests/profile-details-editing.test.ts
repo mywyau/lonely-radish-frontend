@@ -21,7 +21,7 @@ describe('profile details editing', () => {
     expect(account).toContain('to="/profile/details"')
     expect(account).toContain('About me & lifestyle')
     expect(account.indexOf('to="/account/controls"')).toBeLessThan(account.indexOf('to="/profile/details"'))
-    expect(account.indexOf('to="/profile/details"')).toBeLessThan(account.indexOf('Discovery readiness'))
+    expect(account.indexOf('to="/profile/details"')).toBeLessThan(account.indexOf('A few things left to add'))
     expect(account).not.toContain('function saveLifestyle()')
     expect(account).not.toContain('@submit.prevent="saveLifestyle"')
   })

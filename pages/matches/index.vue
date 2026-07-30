@@ -46,10 +46,10 @@ const previewMatch: MatchCard = {
 }
 
 const sectionDefinitions = [
-  { key: 'queued', title: 'Matches waiting', description: 'You matched, but planning waits until both people have an available match space.', icon: Clock3, tone: 'bg-[#FFF1C7]' },
-  { key: 'fresh', title: 'New matches', description: 'You both want to meet. Choose a date idea and start making a plan.', icon: HeartHandshake, tone: 'bg-[#FCE3E8]' },
-  { key: 'planning', title: 'Planning', description: 'A proposal is in progress and needs a response or another detail.', icon: Clock3, tone: 'bg-[#F3E8DA]' },
-  { key: 'confirmed', title: 'Confirmed dates', description: 'The activity, time, and public venue have been agreed.', icon: CalendarCheck, tone: 'bg-[#EAF2DE]' },
+  { key: 'queued', title: 'Matches waiting', description: 'You matched, but one of you needs room in their match list before you can make a plan.', icon: Clock3, tone: 'bg-[#FFF1C7]' },
+  { key: 'fresh', title: 'New matches', description: 'You both said yes. Now you can suggest something to do together.', icon: HeartHandshake, tone: 'bg-[#FCE3E8]' },
+  { key: 'planning', title: 'Making plans', description: 'There’s a date suggestion to finish or respond to.', icon: Clock3, tone: 'bg-[#F3E8DA]' },
+  { key: 'confirmed', title: 'Dates coming up', description: 'You’ve both agreed what you’re doing, when and where to meet.', icon: CalendarCheck, tone: 'bg-[#EAF2DE]' },
 ] as const
 
 const sections = computed(() => sectionDefinitions.map(section => ({ ...section,
@@ -290,9 +290,9 @@ onMounted(async () => {
 <template>
   <main class="min-h-screen bg-[#FBF7F1] px-5 py-10 text-[#2A1520] sm:px-8">
     <section class="mx-auto max-w-5xl">
-      <p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">Matches & plans</p>
-      <h1 class="mt-2 text-4xl font-semibold sm:text-5xl">Make plans and take the next step.</h1>
-      <p class="mt-4 max-w-2xl leading-7 text-[#6E4D58]">See matches: choose what to do, agree a time and public venue, then meet.</p>
+      <p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">Your matches</p>
+      <h1 class="mt-2 text-4xl font-semibold sm:text-5xl">Who are you making plans with?</h1>
+      <p class="mt-4 max-w-2xl leading-7 text-[#6E4D58]">Pick up a new match, reply to a suggestion or check the details of a date that’s coming up.</p>
       <NuxtLink to="/matches/past" class="mt-4 inline-flex text-sm font-semibold text-[#8F1839] hover:underline">View past connections →</NuxtLink>
 
       <div class="mt-6 flex justify-end"><button type="button" class="inline-flex items-center gap-1.5 text-sm font-semibold text-[#8F1839] hover:underline" :aria-pressed="!showSummaryCounts" @click="toggleSummaryCounts"><EyeOff v-if="showSummaryCounts" class="size-4" aria-hidden="true" /><Eye v-else class="size-4" aria-hidden="true" />{{ showSummaryCounts ? 'Hide counts' : 'Show counts' }}</button></div>
@@ -306,12 +306,12 @@ onMounted(async () => {
       </div>
       <div v-if="showSummaryCounts" class="mt-4 grid gap-3 text-xs leading-5 sm:grid-cols-2">
         <section class="rounded-lg bg-white/70 p-4">
-          <h2 class="font-bold text-[#4D2F39]">Active match spaces</h2>
-          <p class="mt-1 text-[#6E4D58]">New, planning and confirmed matches use one of your {{ activeMatchLimit }} spaces. Waiting matches do not count until activated.<span v-if="activeMatchLimit === 3"> <NuxtLink to="/upgrade" class="font-semibold text-[#8F1839] hover:underline">Paid plans allow 5 active matches.</NuxtLink></span></p>
+          <h2 class="font-bold text-[#4D2F39]">Room for {{ activeMatchLimit }} active matches</h2>
+          <p class="mt-1 text-[#6E4D58]">New matches, plans in progress and confirmed dates all count. Waiting matches do not. <span v-if="activeMatchLimit === 3"><NuxtLink to="/upgrade" class="font-semibold text-[#8F1839] hover:underline"> Paid accounts have room for 5.</NuxtLink></span></p>
         </section>
         <section class="rounded-lg bg-white/70 p-4">
-          <h2 class="font-bold text-[#4D2F39]">Manual matching: {{ manualMatchCount }}/{{ manualMatchLimit }} awaiting your move</h2>
-          <p class="mt-1 text-[#6E4D58]">When you accept an incoming interest, start planning or close that match before manually accepting another. Automatic mutual matches do not use this slot.</p>
+          <h2 class="font-bold text-[#4D2F39]">Accepted interests waiting on you: {{ manualMatchCount }}/{{ manualMatchLimit }}</h2>
+          <p class="mt-1 text-[#6E4D58]">After accepting someone, either start a plan or close the match before accepting another interest. This doesn’t affect matches where you had already chosen each other.</p>
         </section>
       </div>
 
@@ -321,7 +321,7 @@ onMounted(async () => {
             <span class="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#FCE3E8] text-[#B4234A]"><Bell class="size-4.5" aria-hidden="true" /></span>
             <div>
               <div class="flex flex-wrap items-center gap-2"><h2 id="match-updates-title" class="font-semibold">Recent updates</h2><span class="rounded-full bg-[#B4234A] px-2 py-0.5 text-[10px] font-extrabold text-white">{{ notifications.length }}</span></div>
-              <p class="mt-1 text-xs text-[#6E4D58]">Newest first. Showing the updates that still need your attention.</p>
+              <p class="mt-1 text-xs text-[#6E4D58]">Things that may still need a reply or a quick look.</p>
             </div>
           </div>
           <div class="flex flex-wrap items-center gap-3 text-xs font-semibold">

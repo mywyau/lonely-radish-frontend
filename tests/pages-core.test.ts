@@ -20,9 +20,9 @@ describe("core page contracts", () => {
   it("home page keeps SEO metadata and activity-date call to action", () => {
     const source = readPage("index.vue");
     expect(source).toContain(
-      "title: 'Meet through activities you both want to do'",
+      "title: 'Meet someone over something you both enjoy'",
     );
-    expect(source).toContain("Start matching");
+    expect(source).toContain("Meet someone new");
     expect(source).toContain("navigateTo('/activities')");
     expect(source).toContain('to="/matches"');
     expect(source).toContain("'Good morning'");
@@ -33,16 +33,16 @@ describe("core page contracts", () => {
     expect(source).toContain("firstName.charAt(0).toLocaleUpperCase()");
     expect(source).toContain("welcomeMessages");
     expect(source).toContain(
-      "A shared interest could be the start of something lovely.",
+      "Fancy making a plan with someone new?",
     );
-    expect(source).toContain("Skip the endless swiping. Say yes to a plan.");
-    expect(source).toContain("The rules behind the app");
-    expect(source).toContain("Interest is deliberately selective");
-    expect(source).toContain("Plans come before collecting matches");
-    expect(source).toContain("Date changes need a clear response");
-    expect(source).toContain("Shared-interest discovery");
-    expect(source).toContain("In-app date planning");
-    expect(source).toContain("From match to meetup");
+    expect(source).toContain(
+      "Spend less time swiping and more time seeing if you click.",
+    );
+    expect(source).toContain("Why it works this way");
+    expect(source).toContain("Choose who you’re actually curious about");
+    expect(source).toContain("Keep room for a real conversation");
+    expect(source).toContain("A plan is only a plan when you both say yes");
+    expect(source).toContain("When you find someone");
     expect(source).toContain("name: 'Theo'");
     expect(source).toContain("photo: '/images/theo-profile-triptych.png'");
     expect(source).not.toContain("name: 'Alex'");
@@ -68,16 +68,16 @@ describe("core page contracts", () => {
     );
 
     expect(activities).toContain("title: 'Date Ideas · Lonely Radish'");
-    expect(activities).toContain("Browse people through broader interests.");
+    expect(activities).toContain("What sounds good to you?");
     expect(activities).toContain("slug: 'sports'");
     expect(activities).toContain("slug: 'games'");
     expect(activities).toContain("`/activities/${category.slug}`");
-    expect(activities).toContain("Browse people");
+    expect(activities).toContain("See who’s interested");
     expect(activityMatches).toContain(
       "visiblePeople.length === 1 ? 'person' : 'people'",
     );
-    expect(activityMatches).toContain("broader category");
-    expect(activityMatches).toContain("No profiles match your filters yet");
+    expect(activityMatches).toContain("Everyone here chose something in this category");
+    expect(activityMatches).toContain("Nobody here fits your preferences yet");
     expect(activityMatches).toContain("`/profiles/${person.slug}`");
     expect(activityMatches).toContain("`/api/activities/${slug.value}/people`");
     expect(profile).toContain(
@@ -100,31 +100,31 @@ describe("core page contracts", () => {
     expect(profile).toContain(`profile.relationshipStatus !== 'unmatched'`);
     expect(profile).toContain("Past connection");
     expect(profile).toContain("route.query.connection !== 'past'");
-    expect(profile).toContain(
-      "profile.contactDetails && profile.isMatched && profile.relationshipStatus !== 'unmatched'",
-    );
+    expect(profile).toContain("hasSharedContactDetails");
+    expect(profile).toContain("availabilityContactFlipped");
+    expect(profile).toContain("Show shared contact details");
     expect(profile).toContain("profileInterests");
     expect(profileActivityPanel).toContain(".profile-flip-card:hover");
     expect(profile).toContain("useDailyInterest()");
     expect(activityMatches).not.toContain("useDailyInterest()");
     expect(activityMatches).toContain(':to="`/profiles/${person.slug}`"');
     expect(matches).toContain("title: 'Matches & Plans · Lonely Radish'");
-    expect(matches).toContain("Make plans and take the next step.");
+    expect(matches).toContain("Who are you making plans with?");
     expect(matches).toContain("title: 'New matches'");
-    expect(matches).toContain("title: 'Planning'");
-    expect(matches).toContain("title: 'Confirmed dates'");
+    expect(matches).toContain("title: 'Making plans'");
+    expect(matches).toContain("title: 'Dates coming up'");
     expect(matches).toContain("`/profiles/${match.slug}`");
     expect(matches).toContain("View {{ match.name }}’s profile");
     expect(plan).toContain("Plan a date with {{ personName }}");
     expect(plan).toContain("Suggest a date and time");
-    expect(plan).toContain("Add a clear public meeting place");
+    expect(plan).toContain("Choose where to meet");
     expect(plan).not.toContain("Keep logistics simple");
     expect(plan).toContain("Short reply");
     expect(plan).not.toContain("Add preset");
     expect(plan).not.toContain("removeQuickMessage");
     expect(plan).not.toContain("lonely-radish-planning-quick-messages");
     expect(plan).toContain("interestsByPerson");
-    expect(plan).toContain("Add a short invite note");
+    expect(plan).toContain("2. Add a note");
     expect(plan).toContain("inviteMessageLimit = 240");
     expect(nav).toContain("to: '/activities'");
     expect(nav).toContain("to: '/matches'");

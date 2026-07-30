@@ -431,14 +431,61 @@ useHead(() => ({ title: `Plan a Date with ${personName.value} · Lonely Radish` 
           </div>
           <p v-if="proposalStatus === 'accepted'" class="mt-3 text-xs leading-5 text-[#6E4D58]">Need to change the details? Propose a replacement so both people can clearly agree the new plan.</p>
         </section>
-        <section v-if="proposalStatus === 'pending' && !canRespond" class="rounded-lg bg-[#FFF1C7] p-5 sm:p-6" role="status">
-          <p class="text-xs font-extrabold uppercase tracking-widest text-[#694C00]">{{ isReplacement ? 'Reschedule proposed' : 'Proposal sent' }}</p>
-          <h2 class="mt-1 text-xl font-semibold">Waiting for {{ personName }}’s response</h2>
-          <p class="mt-2 text-sm leading-6 text-[#694C00]">{{ isReplacement ? 'Your original date remains confirmed while they review the new time and venue.' : 'You will see the plan here as soon as they accept it or suggest a change.' }}</p>
+        <section v-if="proposalStatus === 'pending' && !canRespond"
+          class="overflow-hidden rounded-lg border border-[#E6CF88] bg-gradient-to-br from-[#FFFDF5] to-[#FFF1C7] shadow-[0_16px_36px_rgba(105,76,0,0.10)]"
+          aria-labelledby="sent-proposal-title">
+          <div class="flex flex-wrap items-start justify-between gap-4 border-b border-[#E6CF88]/70 px-5 py-5 sm:px-6">
+            <div class="flex min-w-0 items-start gap-3">
+              <span class="flex size-11 shrink-0 items-center justify-center rounded-full bg-[#B4234A] text-white shadow-sm">
+                <Check class="size-5" aria-hidden="true" />
+              </span>
+              <div>
+                <p class="text-xs font-extrabold uppercase tracking-widest text-[#8F1839]">{{ isReplacement ? 'Reschedule proposed' : 'Proposal sent' }}</p>
+                <h2 id="sent-proposal-title" class="mt-1 text-xl font-semibold">Waiting for {{ personName }}’s response</h2>
+                <p class="mt-1 text-sm leading-6 text-[#694C00]">{{ isReplacement ? 'Your original date remains confirmed while they review this one.' : 'Here is exactly what you sent them.' }}</p>
+              </div>
+            </div>
+            <span class="inline-flex items-center gap-2 rounded-full border border-[#E6CF88] bg-white/80 px-3 py-1.5 text-xs font-bold text-[#694C00]">
+              <span class="size-2 rounded-full bg-[#D49A00]" aria-hidden="true"></span>Awaiting reply
+            </span>
+          </div>
+
+          <div class="p-5 sm:p-6">
+            <p class="text-xs font-extrabold uppercase tracking-widest text-[#6E4D58]">Your proposed date</p>
+            <dl class="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+              <div class="rounded-lg border border-white/90 bg-white/75 p-4 shadow-sm">
+                <dt class="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-[#6E4D58]"><Sparkles class="size-4 text-[#B4234A]" aria-hidden="true" />Activity</dt>
+                <dd class="mt-2 text-base font-semibold text-[#2A1520]">{{ activity }}</dd>
+              </div>
+              <div class="rounded-lg border border-white/90 bg-white/75 p-4 shadow-sm">
+                <dt class="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-[#6E4D58]"><CalendarDays class="size-4 text-[#B4234A]" aria-hidden="true" />Date and time</dt>
+                <dd class="mt-2 text-base font-semibold text-[#2A1520]">{{ times[0]?.label || 'Time unavailable' }}</dd>
+              </div>
+              <div class="rounded-lg border border-white/90 bg-white/75 p-4 shadow-sm sm:col-span-2">
+                <dt class="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-[#6E4D58]"><MapPin class="size-4 text-[#B4234A]" aria-hidden="true" />Meeting place</dt>
+                <dd class="mt-2 text-base font-semibold text-[#2A1520]">{{ venue }}</dd>
+                <dd v-if="venueAddress" class="mt-1 text-[#4D2F39]">{{ venueAddress }}</dd>
+                <dd v-if="venuePostcode" class="font-semibold text-[#4D2F39]">{{ venuePostcode }}</dd>
+                <dd v-if="venueDetails" class="mt-2 whitespace-pre-wrap text-[#4D2F39]"><span class="font-semibold">Meet:</span> {{ venueDetails }}</dd>
+                <div v-if="venueAddress || venuePostcode" class="mt-4 flex flex-wrap gap-2 text-xs font-semibold">
+                  <a :href="mapSearchUrl(venue, venueAddress, venuePostcode)" target="_blank" rel="noopener noreferrer"
+                    class="inline-flex items-center gap-1.5 rounded-full bg-[#FCE3E8] px-3 py-2 text-[#8F1839] transition hover:brightness-95"><ExternalLink class="size-3.5" />View on map</a>
+                  <button type="button"
+                    class="inline-flex items-center gap-1.5 rounded-full bg-[#F3E8DA] px-3 py-2 text-[#8F1839] transition hover:brightness-95"
+                    @click="copyMeetingAddress(venue, venueAddress, venuePostcode)"><Copy class="size-3.5" />Copy address</button>
+                </div>
+              </div>
+              <div v-if="inviteMessage" class="rounded-lg border border-white/90 bg-white/75 p-4 shadow-sm sm:col-span-2">
+                <dt class="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-[#6E4D58]"><MessageCircle class="size-4 text-[#B4234A]" aria-hidden="true" />Your note</dt>
+                <dd class="mt-2 whitespace-pre-wrap leading-6 text-[#4D2F39]">“{{ inviteMessage }}”</dd>
+              </div>
+            </dl>
+            <p v-if="copyStatus" class="mt-3 text-xs font-semibold text-[#694C00]" role="status">{{ copyStatus }}</p>
+          </div>
         </section>
         <section v-if="canRespond && !reproposing" class="rounded-lg bg-[#EAF2DE] p-5 sm:p-6">
           <h2 class="text-xl font-semibold">{{ isReplacement ? `${personName} proposed a different date` : `${personName} suggested this date` }}</h2>
-          <p class="mt-2 text-sm text-[#4D2F39]">Review the final proposal. You can accept it as shown, or suggest a simple time or venue change.</p>
+          <p class="mt-2 text-sm text-[#4D2F39]">Have a look at the details. You can say yes, decline, or suggest a change.</p>
           <dl class="mt-5 grid gap-3 rounded-lg bg-white/75 p-4 text-sm">
             <div><dt class="text-[#6E4D58]">Activity</dt><dd class="font-semibold">{{ activity }}</dd></div>
             <div v-if="inviteMessage"><dt class="text-[#6E4D58]">Their note</dt><dd class="whitespace-pre-wrap">{{ inviteMessage }}</dd></div>
@@ -452,7 +499,7 @@ useHead(() => ({ title: `Plan a Date with ${personName.value} · Lonely Radish` 
           <div class="mt-5 grid gap-2 sm:grid-cols-3">
             <button type="button" class="rounded-lg bg-[#B4234A] px-4 py-3 text-sm font-semibold text-white disabled:opacity-40" :disabled="sending || suggestingChanges || !times[0]?.id" @click="respond('accepted', times[0]?.id)">{{ sending ? 'Accepting…' : 'Accept proposal' }}</button>
             <button type="button" class="rounded-lg border border-[#B4234A]/40 bg-white/75 px-4 py-3 text-sm font-semibold text-[#8F1839] disabled:opacity-40" :disabled="sending || suggestingChanges" @click="respond('declined')">Decline</button>
-            <button type="button" class="rounded-lg bg-[#4D2F39] px-4 py-3 text-sm font-semibold text-white disabled:opacity-40" :disabled="sending || suggestingChanges" @click="beginReproposal">Suggest a completely different date</button>
+            <button type="button" class="rounded-lg bg-[#4D2F39] px-4 py-3 text-sm font-semibold text-white disabled:opacity-40" :disabled="sending || suggestingChanges" @click="beginReproposal">Suggest a different plan</button>
           </div>
           <div class="mt-6 border-t border-[#C9D8B5] pt-5">
             <button type="button" class="group flex w-full items-center justify-between gap-3 text-left font-semibold text-[#4D2F39]" :aria-expanded="smallChangeOpen" aria-controls="small-change-form" @click="smallChangeOpen = !smallChangeOpen"><span class="underline-offset-4 group-hover:underline">Suggest a small change</span><ChevronDown class="size-5 shrink-0 transition-transform" :class="smallChangeOpen && 'rotate-180'" aria-hidden="true" /></button>
@@ -487,11 +534,11 @@ useHead(() => ({ title: `Plan a Date with ${personName.value} · Lonely Radish` 
             </div>
           </div>
         </section>
-        <section v-if="canEditProposal" class="plan-card"><div class="flex items-center gap-2"><MessageCircle class="size-5 text-[#B4234A]" /><h2 class="text-xl font-semibold">2. Add a short invite note</h2></div><p class="mt-2 text-sm text-[#6E4D58]">A little context is enough — there will be time to talk when you meet.</p><textarea v-model="inviteMessage" :maxlength="inviteMessageLimit" rows="4" class="mt-4 w-full resize-none rounded-lg border border-[#E8D8C4] bg-[#FBF7F1] px-4 py-3 text-sm outline-none transition focus:border-[#B4234A] focus:ring-2 focus:ring-[#F7B7C4]" :placeholder="`For example: I’d love to try this with you — the weekend afternoon could work well for me.`"></textarea><p class="mt-2 text-right text-xs text-[#6E4D58]">{{ inviteMessage.length }}/{{ inviteMessageLimit }}</p></section>
+        <section v-if="canEditProposal" class="plan-card"><div class="flex items-center gap-2"><MessageCircle class="size-5 text-[#B4234A]" /><h2 class="text-xl font-semibold">2. Add a note</h2></div><p class="mt-2 text-sm text-[#6E4D58]">Keep it simple. You’ll have plenty to talk about when you meet.</p><textarea v-model="inviteMessage" :maxlength="inviteMessageLimit" rows="4" class="mt-4 w-full resize-none rounded-lg border border-[#E8D8C4] bg-[#FBF7F1] px-4 py-3 text-sm outline-none transition focus:border-[#B4234A] focus:ring-2 focus:ring-[#F7B7C4]" :placeholder="`For example: I’d love to try this with you. A weekend afternoon could work well for me.`"></textarea><p class="mt-2 text-right text-xs text-[#6E4D58]">{{ inviteMessage.length }}/{{ inviteMessageLimit }}</p></section>
         <section v-if="canEditProposal" class="plan-card"><div class="flex items-center gap-2"><CalendarDays class="size-5 text-[#B4234A]" /><h2 class="text-xl font-semibold">3. Suggest a date and time</h2></div><p class="mt-2 text-sm text-[#6E4D58]">{{ structuredAvailability.length ? `Choose a time within ${personName}’s shared schedule.` : 'Choose the time you would like to propose.' }}</p><div class="mt-4"><label class="text-sm font-semibold">Proposed date and time<input v-model="customTime" type="datetime-local" :min="earliestCustomTime" class="field" @input="resetCustomTimeSelection"></label><p class="mt-2 text-xs text-[#6E4D58]">{{ structuredAvailability.length ? `The time must leave at least one hour within ${personName}’s usual availability.` : 'Select both a date and a time, then apply it to the proposal.' }}</p><p v-if="customTimeError" class="mt-2 text-sm font-semibold text-[#8F1839]" role="alert">{{ customTimeError }}</p><p v-if="chosenCustomTimeLabel" class="mt-2 text-sm font-semibold text-[#52713A]" role="status">Selected: {{ chosenCustomTimeLabel }}</p><button type="button" class="mt-3 rounded-lg bg-[#4D2F39] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-40" :disabled="!customTime" @click="chooseCustomTime">Use this time</button></div></section>
         <section v-if="canEditProposal" class="plan-card">
-          <div class="flex items-center gap-2"><MapPin class="size-5 text-[#B4234A]" /><h2 class="text-xl font-semibold">4. Add a clear public meeting place</h2></div>
-          <p class="mt-2 text-sm leading-6 text-[#6E4D58]">Add enough detail for both people to find the same public place without sharing a private address.</p>
+          <div class="flex items-center gap-2"><MapPin class="size-5 text-[#B4234A]" /><h2 class="text-xl font-semibold">4. Choose where to meet</h2></div>
+          <p class="mt-2 text-sm leading-6 text-[#6E4D58]">Choose somewhere public and add enough detail that you’ll both arrive at the same spot.</p>
           <label class="mt-4 block text-sm font-semibold">Venue name<input v-model="venue" type="text" :maxlength="venueLimit" class="field" placeholder="For example, Barbican Centre" autocomplete="organization"><span class="mt-1 block text-right text-xs font-normal text-[#6E4D58]">{{ venue.length }}/{{ venueLimit }}</span></label>
           <div class="mt-4 grid gap-3 sm:grid-cols-[1fr_10rem]">
             <label class="text-sm font-semibold">Public address<input v-model="venueAddress" type="text" :maxlength="venueAddressLimit" class="field" placeholder="For example, Silk Street, London" autocomplete="street-address"><span class="mt-1 block text-right text-xs font-normal text-[#6E4D58]">{{ venueAddress.length }}/{{ venueAddressLimit }}</span></label>

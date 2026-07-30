@@ -42,12 +42,12 @@ const categories = [
         <p v-if="reportReference" class="mt-1 break-all text-xs font-medium text-[#6E4D58]">Report reference: {{ reportReference }}</p>
       </div>
       <div class="max-w-3xl">
-        <p class="section-kicker">Discover</p>
+        <p class="section-kicker">Find someone</p>
         <h1 class="mt-2 text-4xl font-semibold leading-tight sm:text-5xl">
-          Browse people through broader interests.
+          What sounds good to you?
         </h1>
         <p class="mt-4 max-w-2xl text-[#6E4D58]">
-          Detailed activities still help express who you are. Discovery uses larger categories so good people are not split across lots of tiny lists.
+          Pick a category and see who nearby is interested in something similar. Their profile will show the particular activities they chose.
         </p>
       </div>
 
@@ -66,7 +66,7 @@ const categories = [
               <p class="mt-2 text-sm leading-6 text-[#4D2F39]">
                 {{ category.detail }}
               </p>
-              <span class="mt-5 inline-flex items-center gap-1 text-sm font-semibold text-[#8F1839] group-hover:underline"><Sparkles class="size-4" />Browse people →</span>
+              <span class="mt-5 inline-flex items-center gap-1 text-sm font-semibold text-[#8F1839] group-hover:underline"><Sparkles class="size-4" />See who’s interested →</span>
             </NuxtLink>
       </div>
     </section>

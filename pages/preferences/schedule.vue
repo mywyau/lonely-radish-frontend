@@ -65,12 +65,12 @@ onMounted(async () => {
   <main class="min-h-screen bg-[#FBF7F1] px-5 py-10 text-[#2A1520] sm:px-8">
     <section class="mx-auto max-w-3xl">
       <p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">Match preferences</p>
-      <h1 class="mt-2 text-4xl font-semibold">Timing and safety</h1>
-      <p class="mt-3 max-w-2xl leading-6 text-[#6E4D58]">Share the days and time ranges when you are generally free. Matches can use this when suggesting a date, without needing an open-ended chat.</p>
+      <h1 class="mt-2 text-4xl font-semibold">When are you usually free?</h1>
+      <p class="mt-3 max-w-2xl leading-6 text-[#6E4D58]">Share the times that tend to suit you. It gives a match a useful starting point when they suggest a date.</p>
 
       <form class="mt-8 space-y-5" @submit.prevent="save">
         <section class="rounded-lg bg-white p-5 shadow-[0_12px_28px_rgba(180,35,74,0.08)] sm:p-6">
-          <div class="flex items-start justify-between gap-4"><div class="flex items-start gap-3"><CalendarClock class="mt-1 size-5 text-[#B4234A]" /><div><h2 class="text-xl font-semibold">Weekly availability</h2><p class="mt-1 text-sm text-[#6E4D58]">Select a day, then set the earliest and latest time that usually works.</p></div></div><button type="button" class="shrink-0 text-sm font-semibold text-[#8F1839] underline underline-offset-4 disabled:opacity-40" :disabled="!selectedCount" @click="resetAvailability">Reset all</button></div>
+          <div class="flex items-start justify-between gap-4"><div class="flex items-start gap-3"><CalendarClock class="mt-1 size-5 text-[#B4234A]" /><div><h2 class="text-xl font-semibold">Your usual week</h2><p class="mt-1 text-sm text-[#6E4D58]">Pick a day, then add the range of times that normally works.</p></div></div><button type="button" class="shrink-0 text-sm font-semibold text-[#8F1839] underline underline-offset-4 disabled:opacity-40" :disabled="!selectedCount" @click="resetAvailability">Reset all</button></div>
           <div class="mt-6 grid gap-3 md:grid-cols-2">
             <article v-for="day in days" :key="day.weekday" class="rounded-lg border p-4" :class="day.enabled ? 'border-[#D7A7B3] bg-[#FCE3E8]/40' : 'border-[#E8D8C4] bg-[#FBF7F1]'">
               <div class="flex items-center justify-between gap-4"><label class="flex items-center gap-3 font-semibold"><input v-model="day.enabled" type="checkbox" class="size-4 accent-[#B4234A]">{{ day.name }}</label><span class="text-xs font-semibold text-[#6E4D58]">{{ day.enabled ? 'Available' : 'Not available' }}</span></div>
@@ -82,7 +82,7 @@ onMounted(async () => {
           </div>
           <p class="mt-4 text-sm text-[#6E4D58]">{{ selectedCount ? `${selectedCount} ${selectedCount === 1 ? 'day' : 'days'} selected` : 'No regular availability selected yet' }}</p>
           <p v-if="resetPending" class="mt-1 text-xs font-semibold text-[#8F1839]">Reset is ready. Select Save schedule to apply it.</p>
-          <label class="mt-5 flex items-start justify-between gap-4 rounded-lg bg-[#F3E8DA] p-4 text-sm"><span><strong class="block">Show availability before matching</strong><span class="mt-1 block leading-5 text-[#6E4D58]">Off by default. Matches can always see your schedule when planning a date.</span></span><input v-model="availabilityVisibleBeforeMatch" type="checkbox" class="mt-1 size-4 shrink-0 accent-[#B4234A]"></label>
+          <label class="mt-5 flex items-start justify-between gap-4 rounded-lg bg-[#F3E8DA] p-4 text-sm"><span><strong class="block">Let people see this before you match</strong><span class="mt-1 block leading-5 text-[#6E4D58]">This is off by default. Once you match, they can see these times while making a plan.</span></span><input v-model="availabilityVisibleBeforeMatch" type="checkbox" class="mt-1 size-4 shrink-0 accent-[#B4234A]"></label>
         </section>
 
         <section class="rounded-lg bg-[#EAF2DE] p-5 sm:p-6"><div class="flex items-start gap-3"><ShieldCheck class="mt-1 size-5 text-[#6E8B52]" /><div class="flex-1"><h2 class="text-xl font-semibold">First-date safety</h2><p class="mt-1 text-sm leading-6 text-[#4D2F39]">Keep first meetings in places where other people are around.</p><label class="mt-5 flex items-center justify-between gap-4 rounded-lg bg-white/75 p-4 text-sm font-semibold"><span>Only suggest public places</span><input v-model="publicOnly" type="checkbox" class="size-4 accent-[#B4234A]"></label></div></div></section>

@@ -92,9 +92,12 @@ describe('interest and match services', () => {
       findEndedMatch: vi.fn().mockResolvedValue(null),
       findInterest: vi.fn().mockResolvedValue(null),
       countSentToday: vi.fn().mockResolvedValue(0),
+      lockRecipientInbox: vi.fn(),
+      recipientInboxAcceptingInterests: vi.fn().mockResolvedValue(true),
       createInterest,
       hasReverseInterest: vi.fn().mockResolvedValue(true),
       upsertQueuedMatch: vi.fn().mockResolvedValue({ id: 'match-1' }),
+      resolvePairInterestsAccepted: vi.fn(),
       clearDateProposals: vi.fn(),
     } as unknown as InterestRepository
     const requests = {
@@ -127,11 +130,10 @@ describe('interest and match services', () => {
     expect(repository.lockPair).toHaveBeenCalledWith('user-a', 'user-b')
     expect(repository.findEligibleTarget).toHaveBeenCalledTimes(2)
     expect(activateMatch).toHaveBeenCalledWith(expect.anything(), 'match-1')
-    expect(publish).toHaveBeenCalledTimes(2)
-    expect(publish).toHaveBeenCalledWith(expect.objectContaining({
-      eventType: 'interest.sent',
-      aggregateId: 'interest-1',
-    }))
+    expect(repository.createInterest).toHaveBeenCalledWith('user-a', 'user-b', true)
+    expect(repository.resolvePairInterestsAccepted).toHaveBeenCalledWith('user-a', 'user-b')
+    expect(repository.lockRecipientInbox).not.toHaveBeenCalled()
+    expect(publish).toHaveBeenCalledTimes(1)
     expect(publish).toHaveBeenCalledWith(expect.objectContaining({
       eventType: 'match.created',
       aggregateId: 'match-1',
@@ -142,6 +144,58 @@ describe('interest and match services', () => {
     expect(requestOutboxProcessing).toHaveBeenCalledWith(
       'interest.send:user-a:request-key-0002',
     )
+  })
+
+  it('does not admit a one-sided interest when the recipient inbox is unavailable', async () => {
+    const { database, query } = databaseClient()
+    const repository = {
+      lockSender: vi.fn(),
+      getSenderForUpdate: vi.fn().mockResolvedValue({
+        accountStatus: 'active',
+        pausedUntil: null,
+        discoveryRestrictedUntil: null,
+      }),
+      findEligibleTarget: vi.fn().mockResolvedValue({
+        userId: 'user-b',
+        displayName: 'Alex',
+      }),
+      lockPair: vi.fn(),
+      findCurrentMatch: vi.fn().mockResolvedValue(null),
+      findEndedMatch: vi.fn().mockResolvedValue(null),
+      findInterest: vi.fn().mockResolvedValue(null),
+      countSentToday: vi.fn().mockResolvedValue(0),
+      hasReverseInterest: vi.fn().mockResolvedValue(false),
+      lockRecipientInbox: vi.fn(),
+      recipientInboxAcceptingInterests: vi.fn().mockResolvedValue(false),
+      createInterest: vi.fn(),
+    } as unknown as InterestRepository
+    const requests = {
+      removeExpired: vi.fn(),
+      claim: vi.fn().mockResolvedValue({ claimed: true }),
+      complete: vi.fn(),
+    } as unknown as IdempotencyRepository
+    const events = { publish: vi.fn() } as unknown as OutboxRepository
+    const service = new InterestService({
+      database,
+      interests: () => repository,
+      idempotency: () => requests,
+      outbox: () => events,
+      activateMatch: vi.fn(),
+      requestOutboxProcessing: vi.fn(),
+    })
+
+    await expect(service.sendInterest({
+      senderId: 'user-a',
+      profileSlug: 'alex',
+      idempotencyKey: 'request-key-0004',
+    })).rejects.toMatchObject({
+      statusCode: 409,
+      statusMessage: 'This person is not accepting new interests right now',
+    })
+
+    expect(repository.lockRecipientInbox).toHaveBeenCalledWith('user-b')
+    expect(repository.createInterest).not.toHaveBeenCalled()
+    expect(query.mock.calls.at(-1)?.[0]).toBe('rollback')
   })
 
   it('serializes manual acceptance and preserves a capacity-limited queued match', async () => {
@@ -161,6 +215,7 @@ describe('interest and match services', () => {
       findPairMatch: vi.fn().mockResolvedValue(null),
       createOrResetQueuedMatch: vi.fn().mockResolvedValue({ id: 'match-2' }),
       clearDateProposals: vi.fn(),
+      resolveAcceptedInterest: vi.fn().mockResolvedValue('2026-08-31T23:00:00.000Z'),
     } as unknown as MatchRepository
     const requests = {
       removeExpired: vi.fn(),

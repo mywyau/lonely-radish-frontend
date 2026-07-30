@@ -12,10 +12,10 @@ import {
 } from '@lucide/vue'
 
 useSeoMeta({
-  title: 'Meet through activities you both want to do',
-  description: 'Meet new people nearby through simple, low-pressure shared plans.',
-  ogTitle: 'Meet through activities you both want to do | Lonely Radish',
-  ogDescription: 'Find someone nearby, pick an activity, and meet around something you both enjoy.',
+  title: 'Meet someone over something you both enjoy',
+  description: 'Find someone nearby, make a simple plan together and see how you get on.',
+  ogTitle: 'Meet someone over something you both enjoy | Lonely Radish',
+  ogDescription: 'Find someone nearby, make a simple plan together and see how you get on.',
 })
 
 const { isLoggedIn, user, resolve: resolveMeState } = useMeStateV2()
@@ -24,12 +24,10 @@ const welcomeMessageIndex = ref(0)
 const nighttimeGreetingIndex = ref(0)
 
 const welcomeMessages = [
-  'A shared interest could be the start of something lovely.',
-  'There are new people and possibilities waiting to be discovered.',
-  'Your next great plan could be one introduction away.',
-  'Take a look around — someone nearby may enjoy the same things you do.',
-  'A simple hello and a shared plan can go a long way.',
-  'New activity matches are ready whenever you are.',
+  'Fancy making a plan with someone new?',
+  'See who nearby is into the same things as you.',
+  'Someone new might have caught your eye.',
+  'Have a look around when you’re ready.',
 ]
 
 const timeOfDayGreeting = computed(() => {
@@ -65,7 +63,7 @@ const featuredMatches = [
     name: 'Maya',
     age: 31,
     photo: '/images/maya-profile-triptych.png',
-    detail: 'Gallery walks, Sunday markets, low-key gigs',
+    detail: 'Gallery walks, Sunday markets and small gigs',
     time: 'Free Thu evening',
     tone: 'bg-[#F3E8DA]',
   },
@@ -73,7 +71,7 @@ const featuredMatches = [
     name: 'Theo',
     age: 32,
     photo: '/images/theo-profile-triptych.png',
-    detail: 'Bookshops, live jazz, evening walks',
+    detail: 'Bookshops, live jazz and evening walks',
     time: 'Free Sat morning',
     tone: 'bg-[#EAF2DE]',
   },
@@ -81,7 +79,7 @@ const featuredMatches = [
     name: 'Nina',
     age: 29,
     photo: '/images/nina-profile-triptych.png',
-    detail: 'Indie films, city walks, casual food spots',
+    detail: 'Indie films, city walks and casual places to eat',
     time: 'Free after work',
     tone: 'bg-[#F7D4DC]',
   },
@@ -89,60 +87,60 @@ const featuredMatches = [
 
 const dateFlow = [
   {
-    kicker: 'Intentional match',
-    title: 'Choose each other for a reason',
-    description: 'Match through mutual interest, or deliberately accept someone who wants to meet you.',
-    detail: 'Shared activities · Manageable match spaces',
-    action: 'View match',
+    kicker: 'Find someone',
+    title: 'Start with something in common',
+    description: 'Perhaps you both like gallery trips, live music or trying a new place to eat. That gives you an easy place to begin.',
+    detail: 'You both fancy a gallery visit',
+    action: 'Say hello',
     icon: HeartHandshake,
   },
   {
-    kicker: 'Mutually agreed plan',
-    title: 'Make the details clear',
-    description: 'Choose a shared or custom activity, future time and structured public meeting place. Both people approve changes.',
-    detail: 'Gallery walk · Sat, 2:00 pm · Public venue',
-    action: 'Agree plan',
+    kicker: 'Make a plan',
+    title: 'Sort out the details together',
+    description: 'Suggest what to do, when to go and where to meet. Nothing is booked in until you have both agreed.',
+    detail: 'Gallery visit · Sat, 2:00 pm · Meet by the entrance',
+    action: 'That works',
     icon: CalendarDays,
   },
   {
-    kicker: 'Clear follow-through',
-    title: 'Meet with fewer unknowns',
-    description: 'Use reminders and attendance confirmation, reschedule or cancel clearly, then complete a private follow-up.',
-    detail: 'Reminders on · Contact sharing optional',
-    action: 'Meet',
+    kicker: 'Meet up',
+    title: 'Know where you stand',
+    description: 'You’ll get a reminder before the date. If something changes, either person can suggest another time or cancel clearly.',
+    detail: 'Still going? · Yes, see you there',
+    action: 'See you soon',
     icon: MessageCircle,
   },
 ]
 
 const principles = [
-  'People who are open to forming new relationships',
-  'Activity preferences and simple plans up front',
-  'Public places first, with safety reminders and confirmations on meetups.',
+  'Meet people who are genuinely open to someone new',
+  'Start with an activity, so there is already something to talk about',
+  'Make the first plan somewhere public and confirm before you go',
 ]
 
 const intentionRules = [
   {
-    label: 'A daily limit',
-    title: 'Interest is deliberately selective',
-    description: 'You can show interest in up to five people each day, so each choice stays meaningful instead of becoming endless swiping.',
+    label: 'Five people a day',
+    title: 'Choose who you’re actually curious about',
+    description: 'You can show interest in up to five people each day. Enough to meet someone new, without turning it into a numbers game.',
     icon: Sparkles,
   },
   {
-    label: 'A smaller match list',
-    title: 'Plans come before collecting matches',
-    description: 'Free accounts can have 3 active matches and paid plans can have 5. Extra matches wait safely until both people have space.',
+    label: 'Three or five matches',
+    title: 'Keep room for a real conversation',
+    description: 'Free accounts can have 3 active matches and paid accounts can have 5. If your list is full, any new matches will wait for you.',
     icon: HeartHandshake,
   },
   {
-    label: 'Agreement matters',
-    title: 'Date changes need a clear response',
-    description: 'A date is only confirmed once both people accept it. A proposed reschedule does not replace the agreed plan until it is accepted.',
+    label: 'Both people agree',
+    title: 'A plan is only a plan when you both say yes',
+    description: 'The time and place are confirmed together. If someone suggests a change, the original plan stays put until the other person accepts.',
     icon: CalendarDays,
   },
   {
-    label: 'Follow through',
-    title: 'Cancel clearly rather than disappearing',
-    description: 'Confirm attendance, reschedule early or cancel explicitly. Blocking, reporting and private post-date follow-up remain available when needed.',
+    label: 'No guesswork',
+    title: 'If plans change, say so',
+    description: 'Confirm before you go, suggest another time or cancel clearly. You can also block or report someone whenever you need to.',
     icon: ShieldCheck,
   },
 ]
@@ -175,21 +173,21 @@ onMounted(() => {
         <div class="max-w-3xl">
           <p class="mb-4 inline-flex items-center gap-2 rounded-full border border-[#E8D8C4] bg-white px-3 py-1 text-sm font-medium text-[#8F1839] shadow-sm">
             <Sparkles class="size-4" aria-hidden="true" />
-            Meet interesting new souls near you!
+            Dating feels better when there’s a plan
           </p>
 
           <h1 class="max-w-3xl text-4xl font-semibold leading-[1.05] tracking-tight text-[#2A1520] sm:text-6xl">
-            Meet through something you both enjoy.
+            Meet someone by doing something you both enjoy.
           </h1>
 
           <p class="mt-5 max-w-2xl text-base leading-7 text-[#6E4D58] sm:text-lg">
-            Find someone nearby who wants to do the same kind of thing. Pick an activity, choose a public place, and meet and form new relationships naturally.
+            Start with something you’d both like to do. If you like each other too, choose a public place and make a plan together.
           </p>
 
           <div class="mt-7 flex flex-col gap-3 sm:flex-row">
             <button type="button" class="primary-action" @click="startOnboarding">
               <Sparkles class="size-5" aria-hidden="true" />
-              Start matching
+              Meet someone new
             </button>
 
             <NuxtLink to="/matches" class="secondary-action">
@@ -202,12 +200,12 @@ onMounted(() => {
 
     <section class="mx-auto grid max-w-6xl gap-8 px-5 py-10 sm:px-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-start">
       <div>
-        <p class="section-kicker">Meet casually</p>
+        <p class="section-kicker">A different way to date</p>
         <h2 class="section-heading">
-          Skip the endless swiping. Say yes to a plan.
+          Spend less time swiping and more time seeing if you click.
         </h2>
         <p class="mt-4 max-w-xl text-[#6E4D58]">
-          Lonely Radish is for individuals who would rather meet around a shared activity.
+          Lonely Radish is for people who would rather share a coffee, a walk or an afternoon out than spend weeks chatting in an app.
         </p>
 
         <ul class="mt-6 space-y-3">
@@ -242,10 +240,10 @@ onMounted(() => {
     <section class="border-y border-[#B4234A]/10 bg-white/55 px-5 py-12 sm:px-8 sm:py-16">
       <div class="mx-auto max-w-6xl">
         <div class="max-w-2xl">
-          <p class="section-kicker">The rules behind the app</p>
-          <h2 class="section-heading">Less swiping. More intention.</h2>
+          <p class="section-kicker">Why it works this way</p>
+          <h2 class="section-heading">Feel less disposable.</h2>
           <p class="mt-4 leading-7 text-[#6E4D58]">
-            Intention comes from the boundaries built into Lonely Radish—not just the wording. These rules keep attention on a few genuine possibilities and clearer real-world plans.
+            We don’t want you juggling dozens of matches or wondering whether a date is still happening. These are the simple rules we use to keep things manageable.
           </p>
         </div>
 
@@ -261,20 +259,13 @@ onMounted(() => {
         </ul>
 
         <div class="mt-6 rounded-lg border border-[#B4234A]/15 bg-[#FCE3E8]/55 p-4 text-sm leading-6 text-[#4D2F39]">
-          <strong>Manual matching has a separate one-at-a-time rule.</strong>
-          When you accept someone’s interest, start planning or close that new match before manually accepting another. Mutual matches still form automatically.
-          <NuxtLink to="/faq#discovery-and-matching" class="ml-1 font-semibold text-[#8F1839] hover:underline">Read the matching rules</NuxtLink>
+          <strong>Accepting an interest works one at a time.</strong>
+          Once you accept someone, either start making a plan or decide that the match isn’t for you before accepting the next person. If you had already liked each other, you’ll still match automatically.
+          <NuxtLink to="/faq#discovery-and-matching" class="ml-1 font-semibold text-[#8F1839] hover:underline">How matching works</NuxtLink>
         </div>
 
-        <div class="mt-7 flex flex-wrap gap-2" aria-label="Lonely Radish features">
-          <span class="feature-pill">Shared-interest discovery</span>
-          <span class="feature-pill">Selective matches</span>
-          <span class="feature-pill">In-app date planning</span>
-          <span class="feature-pill">Date-friendly offers</span>
-          <span class="feature-pill">Safety and reporting tools</span>
-        </div>
         <NuxtLink to="/faq" class="mt-7 inline-flex items-center gap-2 rounded-lg bg-[#2A1520] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#4D2F39]">
-          Read more <span aria-hidden="true">→</span>
+          Read the FAQs <span aria-hidden="true">→</span>
         </NuxtLink>
       </div>
     </section>
@@ -283,12 +274,12 @@ onMounted(() => {
       <div class="mx-auto max-w-6xl">
         <div class="mb-7 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div>
-            <p class="section-kicker text-[#F7B7C4]">From match to meetup</p>
+            <p class="section-kicker text-[#F7B7C4]">When you find someone</p>
             <h2 class="section-heading max-w-2xl text-white">
-              Match intentionally. Agree a plan. Meet.
+              We help with the awkward bit between matching and meeting.
             </h2>
             <p class="mt-4 max-w-2xl leading-7 text-white/70">
-              Lonely Radish keeps the journey focused: a considered match, a public plan both people approve, and clear follow-through before and after meeting.
+              No vague “we should do something sometime”. You can pick an idea, agree the details and know whether you’re both still on for it.
             </p>
           </div>
           <NuxtLink to="/contact" class="text-sm font-semibold text-[#F7B7C4] hover:text-white">
@@ -314,10 +305,10 @@ onMounted(() => {
     <section class="offer-section px-5 py-12 sm:px-8 sm:py-16">
       <div class="mx-auto max-w-6xl">
         <div class="max-w-3xl">
-          <p class="section-kicker">Date-friendly offers</p>
-          <h2 class="section-heading">Turn a confirmed date into a better local experience.</h2>
+          <p class="section-kicker">A little extra</p>
+          <h2 class="section-heading">Already made a plan? See if there’s an offer nearby.</h2>
           <p class="mt-4 max-w-2xl leading-7 text-[#6E4D58]">
-            Lonely Radish connects real date plans with offers from approved local businesses giving couples a useful saving and venues a genuine reason to welcome them.
+            Once your date is confirmed, you can look for offers from approved local places. It might mean money off a meal, a drink or something you can do together.
           </p>
         </div>
 
@@ -327,21 +318,21 @@ onMounted(() => {
               <span class="offer-icon offer-icon-daters"><HeartHandshake class="size-6" aria-hidden="true" /></span>
               <div>
                 <p class="offer-card-kicker">For people dating</p>
-                <h3 class="text-2xl font-semibold">Add an offer once the date is confirmed.</h3>
+                <h3 class="text-2xl font-semibold">Found one you both like?</h3>
               </div>
             </div>
             <ol class="mt-6 grid gap-4">
               <li class="offer-step">
                 <BadgePercent class="size-5 shrink-0 text-[#B4234A]" aria-hidden="true" />
-                <span><strong>Choose together.</strong> Browse approved offers and attach one that suits your confirmed plan.</span>
+                <span><strong>Add it to the plan.</strong> Pick an offer that suits the date you have already agreed.</span>
               </li>
               <li class="offer-step">
                 <TicketCheck class="size-5 shrink-0 text-[#B4234A]" aria-hidden="true" />
-                <span><strong>Keep the code private.</strong> The person claiming receives a secure, expiring code to show at the venue.</span>
+                <span><strong>Keep the code handy.</strong> The person claiming it gets a private code to show at the venue.</span>
               </li>
               <li class="offer-step">
                 <CheckCircle2 class="size-5 shrink-0 text-[#B4234A]" aria-hidden="true" />
-                <span><strong>Use it for that date.</strong> Each offer can be redeemed once for each confirmed couple date, subject to its terms.</span>
+                <span><strong>Use it when you meet.</strong> Each offer can be used once for that confirmed date, subject to its terms.</span>
               </li>
             </ol>
             <NuxtLink to="/offers" class="offer-link">Explore date offers <span aria-hidden="true">→</span></NuxtLink>
@@ -352,21 +343,21 @@ onMounted(() => {
               <span class="offer-icon offer-icon-business"><Store class="size-6" aria-hidden="true" /></span>
               <div>
                 <p class="offer-card-kicker offer-card-kicker-business">For business owners</p>
-                <h3 class="text-2xl font-semibold">Reach couples who already have a plan.</h3>
+                <h3 class="text-2xl font-semibold">Welcome people who are already heading out.</h3>
               </div>
             </div>
             <ol class="mt-6 grid gap-4">
               <li class="offer-step">
                 <BadgePercent class="size-5 shrink-0 text-[#52713A]" aria-hidden="true" />
-                <span><strong>Create a campaign.</strong> Set the saving, terms and the venues where it applies.</span>
+                <span><strong>Create an offer.</strong> Choose the saving, the terms and where people can use it.</span>
               </li>
               <li class="offer-step">
                 <ShieldCheck class="size-5 shrink-0 text-[#52713A]" aria-hidden="true" />
-                <span><strong>Publish after review.</strong> Approved offers become discoverable while you remain free to pause them.</span>
+                <span><strong>Send it for review.</strong> Once approved, people can find it. You can pause it whenever you like.</span>
               </li>
               <li class="offer-step">
                 <TicketCheck class="size-5 shrink-0 text-[#52713A]" aria-hidden="true" />
-                <span><strong>Redeem with confidence.</strong> Validate the date’s code at the venue and follow redemptions from your dashboard.</span>
+                <span><strong>Check the code.</strong> Validate it at the venue and see redemptions in your dashboard.</span>
               </li>
             </ol>
             <NuxtLink to="/business" class="offer-link offer-link-business">Offer something date-friendly <span aria-hidden="true">→</span></NuxtLink>
@@ -502,16 +493,6 @@ onMounted(() => {
   font-weight: 850;
   letter-spacing: 0.08em;
   color: #8f1839;
-}
-
-.feature-pill {
-  border: 1px solid rgba(180, 35, 74, 0.16);
-  border-radius: 999px;
-  background: #fbf7f1;
-  padding: 0.5rem 0.75rem;
-  color: #6e4d58;
-  font-size: 0.75rem;
-  font-weight: 750;
 }
 
 .offer-section { border-top: 1px solid rgba(180,35,74,.1); background: linear-gradient(180deg, rgba(252,227,232,.32), rgba(234,242,222,.35)); }

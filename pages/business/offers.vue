@@ -127,9 +127,9 @@ onMounted(() => load()
     <main class="min-h-screen bg-[#FBF7F1] px-5 py-10 text-[#2A1520] sm:px-8">
         <section class="mx-auto max-w-5xl">
             <p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">Business dashboard</p>
-            <h1 class="mt-2 text-4xl font-semibold">Date-friendly offers</h1>
+            <h1 class="mt-2 text-4xl font-semibold">Your offers</h1>
             <p class="mt-3 text-[#6E4D58]">Your {{ business?.plan || 'free' }} plan allows {{ offerLimit }}
-                {{ offerLimit === 1 ? 'campaign' : 'campaigns' }}. One campaign can cover one, selected, or all
+                {{ offerLimit === 1 ? 'offer' : 'offers' }}. One offer can cover one, selected, or all
                 locations.</p>
 
             <div v-if="loading" class="mt-8 text-[#6E4D58]">Loading offers…</div>
@@ -171,7 +171,7 @@ onMounted(() => load()
                     @submit.prevent="addOffer">
                     <div class="flex items-center gap-2">
                         <Plus class="size-5 text-[#B4234A]" />
-                        <h2 class="text-xl font-semibold">Create an offer campaign</h2>
+                        <h2 class="text-xl font-semibold">Create an offer</h2>
                     </div>
                     <div class="mt-5 grid gap-4 sm:grid-cols-2">
                         <label class="text-sm font-semibold">Offer title
@@ -203,7 +203,7 @@ onMounted(() => load()
                                     <input v-model="form.venueScope" type="radio" value="single"
                                         class="mt-1 accent-[#B4234A]">
                                     <span><strong class="block">One location</strong><span class="scope-help">A
-                                            branch-specific campaign.</span></span>
+                                            location-specific offer.</span></span>
                                 </label>
                                 <label class="scope-choice"
                                     :class="form.venueScope === 'selected' ? 'scope-choice-active' : ''">

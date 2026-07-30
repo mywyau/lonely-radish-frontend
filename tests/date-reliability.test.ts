@@ -43,7 +43,7 @@ describe('private date reliability', () => {
     expect(page).toContain('Dispute report')
     expect(page).toContain('never appear as public profile labels')
     const controls = read('pages/account/controls.vue')
-    expect(controls).toContain('Date reliability')
+    expect(controls).toContain('Your attendance history')
     expect(controls).toContain('>Private</span>')
   })
 })

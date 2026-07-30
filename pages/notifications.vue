@@ -136,12 +136,12 @@ onMounted(async () => {
   <main class="min-h-screen bg-[#FBF7F1] px-5 py-10 text-[#2A1520] sm:px-8">
     <section class="mx-auto max-w-3xl">
       <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div><p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">Updates</p><h1 class="mt-2 text-4xl font-semibold">Notifications</h1><p class="mt-3 text-[#6E4D58]">Matches, date plans, and post-date check-ins in one place.</p></div>
+        <div><p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">What’s happened</p><h1 class="mt-2 text-4xl font-semibold">Your notifications</h1><p class="mt-3 text-[#6E4D58]">Updates about people, plans and dates, all in one place.</p></div>
         <div v-if="notices.length" class="flex flex-wrap gap-2"><button v-if="unreadCount" type="button" class="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-[#8F1839]" @click="readAll"><CheckCheck class="size-4" />Mark all read</button><button type="button" class="inline-flex items-center justify-center gap-2 rounded-lg border border-[#B4234A]/30 bg-white px-4 py-2.5 text-sm font-semibold text-[#8F1839]" @click="showDeleteAllConfirmation = true"><Trash2 class="size-4" />Delete all</button></div>
       </div>
       <section class="mt-8 rounded-lg bg-white p-5 shadow-[0_8px_20px_rgba(180,35,74,.06)]">
         <button type="button" class="flex w-full items-start justify-between gap-4 text-left" :aria-expanded="!emailPreferencesCollapsed" aria-controls="email-notification-settings" @click="emailPreferencesCollapsed = !emailPreferencesCollapsed">
-          <span><span class="block text-lg font-semibold">Email notifications</span><span class="mt-1 block text-sm text-[#6E4D58]">Choose which important updates can also reach your inbox.</span></span>
+          <span><span class="block text-lg font-semibold">What should we email you about?</span><span class="mt-1 block text-sm text-[#6E4D58]">You’ll still find every update here, even if you turn its emails off.</span></span>
           <ChevronDown class="mt-1 size-5 shrink-0 text-[#8F1839] transition-transform" :class="!emailPreferencesCollapsed && 'rotate-180'" aria-hidden="true" />
         </button>
         <form id="email-notification-settings" v-show="!emailPreferencesCollapsed" class="mt-4 grid gap-3 sm:grid-cols-2" @submit.prevent="saveEmailPreferences">
@@ -166,7 +166,7 @@ onMounted(async () => {
         <button v-if="hasMore" type="button" :disabled="loadingMore" class="mx-auto mt-3 rounded-lg bg-[#4D2F39] px-5 py-3 text-sm font-semibold text-white disabled:opacity-50" @click="load(true)">{{ loadingMore ? 'Loading…' : 'Load more notifications' }}</button>
         <p v-if="errorMessage" class="text-center text-sm font-semibold text-[#8F1839]" role="alert">{{ errorMessage }}</p>
       </div>
-      <div v-else class="mt-8 rounded-lg bg-white p-8 text-center"><Inbox class="mx-auto size-8 text-[#B4234A]" /><h2 class="mt-3 text-xl font-semibold">You’re all caught up.</h2><p class="mt-2 text-sm text-[#6E4D58]">New match and date updates will appear here.</p></div>
+      <div v-else class="mt-8 rounded-lg bg-white p-8 text-center"><Inbox class="mx-auto size-8 text-[#B4234A]" /><h2 class="mt-3 text-xl font-semibold">Nothing new right now</h2><p class="mt-2 text-sm text-[#6E4D58]">When something happens with a match or date, you’ll see it here.</p></div>
     </section>
 
     <Teleport to="body">

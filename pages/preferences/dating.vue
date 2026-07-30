@@ -31,7 +31,7 @@ onMounted(async () => { Object.assign(preferences, await $fetch('/api/preference
     <section class="mx-auto max-w-3xl">
       <p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">Match preferences</p>
       <h1 class="mt-2 text-4xl font-semibold">Who are you interested in meeting?</h1>
-      <p class="mt-3 leading-6 text-[#6E4D58]">These optional choices shape who appears in your match pool. You can change or remove them at any time.</p>
+      <p class="mt-3 leading-6 text-[#6E4D58]">These choices affect who you see and stay private. You can change them at any time.</p>
 
       <form class="mt-8 space-y-5" @submit.prevent="save">
         <section class="rounded-lg bg-white p-6 shadow-[0_12px_28px_rgba(180,35,74,0.08)]">
@@ -51,12 +51,12 @@ onMounted(async () => { Object.assign(preferences, await $fetch('/api/preference
         </section>
 
         <section class="rounded-lg bg-white p-6 shadow-[0_12px_28px_rgba(180,35,74,0.08)]">
-          <div class="flex items-start gap-3"><UsersRound class="mt-1 size-5 text-[#B4234A]" /><div><h2 class="text-xl font-semibold">Racial and ethnic preferences</h2><p class="mt-1 text-sm text-[#6E4D58]">Optional. Choose communities you are interested in dating, or leave your match pool open.</p></div></div>
+          <div class="flex items-start gap-3"><UsersRound class="mt-1 size-5 text-[#B4234A]" /><div><h2 class="text-xl font-semibold">Racial and ethnic preferences</h2><p class="mt-1 text-sm text-[#6E4D58]">This is optional. Choose the communities you’re open to dating, or leave this open.</p></div></div>
           <div class="mt-5 grid gap-2 sm:grid-cols-2">
             <button type="button" class="choice sm:col-span-2" :class="preferences.noRaceEthnicityPreference && 'choice-selected'" :aria-pressed="preferences.noRaceEthnicityPreference" @click="selectNoRacePreference">{{ openRaceEthnicityPreferenceLabel }}</button>
             <button v-for="option in raceEthnicityOptions" :key="option" type="button" class="choice" :class="preferences.raceEthnicities.includes(option) && 'choice-selected'" :aria-pressed="preferences.raceEthnicities.includes(option)" @click="toggleRaceEthnicity(option)">{{ option }}</button>
           </div>
-          <div class="mt-5 flex gap-2 rounded-lg bg-[#F3E8DA] p-4 text-sm leading-6 text-[#4D2F39]"><Info class="mt-0.5 size-4 shrink-0" /><p>Identity is personal and nuanced. These broad options are only matching controls; they do not define how another person identifies.</p></div>
+          <div class="mt-5 flex gap-2 rounded-lg bg-[#F3E8DA] p-4 text-sm leading-6 text-[#4D2F39]"><Info class="mt-0.5 size-4 shrink-0" /><p>Everyone describes their identity in their own way. These broad choices only affect who appears for you; they don’t redefine anyone else’s identity.</p></div>
         </section>
 
         <div class="flex flex-wrap items-center gap-3"><button type="submit" :disabled="!preferences.orientations.length" class="rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white disabled:opacity-50">Save dating preferences</button><NuxtLink to="/preferences" class="px-3 py-2 text-sm font-semibold text-[#8F1839]">Back to match preferences</NuxtLink><span v-if="saved" class="text-sm font-semibold text-[#6E8B52]">Dating preferences saved.</span></div>

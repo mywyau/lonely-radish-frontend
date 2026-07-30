@@ -39,11 +39,11 @@ const showPaidPlans = ref(false)
 
 const benefits = [
   { icon: markRaw(CalendarDays), text: 'See past connections' },
-  { icon: markRaw(HeartHandshake), text: 'Apologise to previous matches and rejections' },
+  { icon: markRaw(HeartHandshake), text: 'Send a private note before asking a past match to reconnect' },
   // { icon: markRaw(Sparkles), text: 'Get deals with partners and brand discounts' },
   // { icon: markRaw(MapPin), text: 'Incognitio Discovery' },
-  { icon: markRaw(ShieldCheck), text: 'Extra safety and privacy controls as they launch' },
-  { icon: markRaw(Tags), text: 'Early access to new dating features' },
+  { icon: markRaw(ShieldCheck), text: 'New safety and privacy options when they become available' },
+  { icon: markRaw(Tags), text: 'Try new paid features as they are released' },
   // { icon: markRaw(Sparkles), text: 'Profile polish tools for clearer first impressions' },
 ]
 
@@ -84,11 +84,11 @@ onMounted(() => resolve())
 
         <!-- Title -->
         <h1 class="text-2xl font-semibold">
-          Upgrade your plan
+          Want a little more room?
         </h1>
 
         <p class="mx-auto max-w-xl text-[#6E4D58]">
-          Unlock premium matching, activity planning, and profile tools as they become available.
+          A paid plan gives you more active matches, more activity interests and access to the paid features below.
         </p>
 
         <!-- <p v-if="authReady && currentPlan"
@@ -116,7 +116,7 @@ onMounted(() => resolve())
               class="absolute right-4 top-4 rounded-full bg-[#B4234A] px-2.5 py-1 text-[11px] font-bold text-white">Current
               plan</span>
             <p class="text-xs font-extrabold uppercase tracking-widest text-[#6E4D58]">Free plan</p>
-            <h3 class="mt-2 text-lg font-semibold">Core free experience</h3>
+            <h3 class="mt-2 text-lg font-semibold">Everything you need to get started</h3>
             <ul class="mt-4 space-y-2 text-sm text-[#4D2F39]">
               <li class="flex items-center gap-2">
                 <Tags class="size-4 text-[#B4234A]" />Up to 5 active activity interests
@@ -131,7 +131,7 @@ onMounted(() => resolve())
             :class="showPaidPlans ? 'border-[#B4234A] ring-2 ring-[#F7B7C4]' : 'border-[#E6A8B8]'"
             :aria-expanded="showPaidPlans" aria-controls="paid-plan-options" @click="showPaidPlans = !showPaidPlans">
             <p class="text-xs font-extrabold uppercase tracking-widest text-[#8F1839]">All paid plans</p>
-            <h3 class="mt-2 text-lg font-semibold">More room to discover and plan</h3>
+            <h3 class="mt-2 text-lg font-semibold">More people and more date ideas</h3>
             <div class="mt-4 space-y-2 text-sm text-[#4D2F39]">
               <p class="flex items-center gap-2">
                 <Tags class="size-4 text-[#B4234A]" />Up to 10 active activity interests
@@ -146,7 +146,7 @@ onMounted(() => resolve())
                 <Sparkles class="size-4 text-[#B4234A]" />Get discounts for dates with selected partners and brands
               </p>
               <p class="flex items-center gap-2">
-                <MapPin class="size-4 text-[#B4234A]" />Incognitio Discovery
+                <MapPin class="size-4 text-[#B4234A]" />Incognito discovery
               </p>
             </div>
             <span class="mt-5 flex items-center justify-between text-sm font-semibold text-[#8F1839]">

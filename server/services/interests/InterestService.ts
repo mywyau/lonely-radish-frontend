@@ -130,24 +130,35 @@ export class InterestService {
         throw conflict('You have reached today’s limit of 5 interests')
       }
 
-      const createdInterest = await repository.createInterest(input.senderId, target.userId)
+      const reciprocal = await repository.hasReverseInterest(input.senderId, target.userId)
+      if (!reciprocal) {
+        await repository.lockRecipientInbox(target.userId)
+        if (!await repository.recipientInboxAcceptingInterests(target.userId)) {
+          throw conflict('This person is not accepting new interests right now')
+        }
+      }
+
+      const createdInterest = await repository.createInterest(input.senderId, target.userId, reciprocal)
       if (!createdInterest) throw new Error('Interest could not be created')
-      await events.publish({
-        eventType: 'interest.sent',
-        aggregateType: 'interest',
-        aggregateId: createdInterest.id,
-        deduplicationKey: `interest.sent:${createdInterest.id}`,
-        payload: {
-          senderId: input.senderId,
-          recipientId: target.userId,
-        },
-      })
+      if (!reciprocal) {
+        await events.publish({
+          eventType: 'interest.sent',
+          aggregateType: 'interest',
+          aggregateId: createdInterest.id,
+          deduplicationKey: `interest.sent:${createdInterest.id}`,
+          payload: {
+            senderId: input.senderId,
+            recipientId: target.userId,
+          },
+        })
+      }
 
       let matched = false
       let queued = false
-      if (await repository.hasReverseInterest(input.senderId, target.userId)) {
+      if (reciprocal) {
         const match = await repository.upsertQueuedMatch(input.senderId, target.userId)
         if (!match) throw new Error('Match could not be created')
+        await repository.resolvePairInterestsAccepted(input.senderId, target.userId)
         if (endedMatch) await repository.clearDateProposals(match.id)
         const activated = await activateMatch(client, match.id)
         queued = !activated

@@ -198,12 +198,12 @@ onBeforeUnmount(() => {
 <template>
   <main class="min-h-screen bg-[#FBF7F1] px-4 py-10 text-[#2A1520] sm:px-8">
     <section class="mx-auto max-w-6xl">
-      <p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">Plan something together</p>
-      <h1 class="mt-2 text-4xl font-semibold">Date-friendly offers</h1>
-      <p class="mt-3 max-w-2xl leading-7 text-[#6E4D58]">Find an offer, open it for the full terms, and attach it when you are ready.</p>
+      <p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">Something extra for your date</p>
+      <h1 class="mt-2 text-4xl font-semibold">Offers nearby</h1>
+      <p class="mt-3 max-w-2xl leading-7 text-[#6E4D58]">See what’s available, check the terms and add an offer to a confirmed date.</p>
 
       <div v-if="proposalId" class="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-lg bg-[#EAF2DE] p-4">
-        <div><p class="text-sm font-semibold text-[#52713A]">Choose an offer for your confirmed date</p><p class="mt-1 text-xs text-[#4D2F39]">You can attach one offer. Your date will not see your private redemption code.</p></div>
+        <div><p class="text-sm font-semibold text-[#52713A]">Choose one for your confirmed date</p><p class="mt-1 text-xs text-[#4D2F39]">You can add one offer. Your redemption code stays private.</p></div>
         <NuxtLink to="/matches" class="text-sm font-semibold text-[#52713A] hover:underline">Back to matches</NuxtLink>
       </div>
 
@@ -288,7 +288,7 @@ onBeforeUnmount(() => {
         <Search v-if="hasFilters" class="mx-auto size-8 text-[#B4234A]" /><Store v-else class="mx-auto size-8 text-[#B4234A]" />
         <h2 class="mt-3 text-xl font-semibold">{{ hasFilters ? 'No offers match those filters' : 'No approved offers yet' }}</h2>
         <button v-if="hasFilters" type="button" class="mt-4 text-sm font-semibold text-[#8F1839] underline" @click="clearFilters">Clear filters</button>
-        <p v-else class="mt-2 text-sm text-[#6E4D58]">Check again as more date-friendly venues join.</p>
+        <p v-else class="mt-2 text-sm text-[#6E4D58]">There’s nothing here just yet. Check back as more local places join.</p>
       </div>
       <div v-if="hasMore" class="mt-6 text-center"><button type="button" :disabled="loadingMore" class="rounded-lg bg-[#4D2F39] px-5 py-3 text-sm font-semibold text-white disabled:opacity-50" @click="loadOffers(true)">{{ loadingMore ? 'Loading…' : 'Load more offers' }}</button></div>
       <p v-if="claimsLoading" class="mt-4 text-center text-xs text-[#6E4D58]">Checking your active offers…</p>

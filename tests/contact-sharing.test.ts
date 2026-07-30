@@ -57,4 +57,15 @@ describe('match-only contact details', () => {
     expect(preview).toContain('{{ data.contactDetails.socialHandle }}')
     expect(preview).toContain('Manage contact sharing')
   })
+
+  it('lets an active match flip availability to shared contact details', () => {
+    const profile = read('pages/profiles/[slug].vue')
+    expect(profile).toContain('const availabilityContactFlipped = ref(false)')
+    expect(profile).toContain('const hasSharedContactDetails = computed')
+    expect(profile).toContain("availabilityContactFlipped && 'is-flipped'")
+    expect(profile).toContain('aria-label="Show shared contact details"')
+    expect(profile).toContain('aria-label="Show usual availability"')
+    expect(profile).toContain('.availability-contact-flip.is-flipped')
+    expect(profile).toContain('availabilityContactFlipped.value = false')
+  })
 })

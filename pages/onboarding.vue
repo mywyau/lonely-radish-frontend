@@ -299,7 +299,7 @@ onMounted(() => { load().catch(() => { errorMessage.value = 'We could not load o
   <main class="min-h-screen bg-[#FBF7F1] px-5 py-8 text-[#2A1520] sm:px-8 sm:py-12">
     <section class="mx-auto max-w-3xl">
       <div class="mb-7 flex items-center justify-between gap-4">
-        <div><p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">Profile setup</p><h1 class="mt-2 text-3xl font-semibold sm:text-4xl">Let’s make introductions easier.</h1></div>
+        <div><p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">Set up your profile</p><h1 class="mt-2 text-3xl font-semibold sm:text-4xl">Help people get a feel for who you are.</h1></div>
         <span class="shrink-0 rounded-full bg-[#FCE3E8] px-3 py-2 text-sm font-semibold text-[#8F1839]">{{ step }} of 6</span>
       </div>
       <div class="mb-6 grid grid-cols-6 gap-2" aria-label="Onboarding progress"><span v-for="number in 6" :key="number" class="h-2 rounded-full" :class="number <= step ? 'bg-[#B4234A]' : 'bg-[#E8D8C4]'" /></div>
@@ -308,7 +308,7 @@ onMounted(() => { load().catch(() => { errorMessage.value = 'We could not load o
       <div v-if="loading" class="rounded-lg bg-white p-8 text-center text-[#6E4D58]">Loading your profile…</div>
 
       <form v-else-if="step === 1" class="onboarding-card" @submit.prevent="saveBasics">
-        <div class="step-title"><UserRound class="size-5 text-[#B4234A]" /><div><h2>Profile basics</h2><p>Tell people enough to recognise who they might meet.</p></div></div>
+        <div class="step-title"><UserRound class="size-5 text-[#B4234A]" /><div><h2>A little about you</h2><p>Start with the details people will see on your profile.</p></div></div>
         <div class="mt-6 grid gap-4 sm:grid-cols-2">
           <label>First name <input v-model="profile.firstName" required :maxlength="nameLimit" autocomplete="given-name" placeholder="Your first name"></label>
           <label>Last name <input v-model="profile.lastName" required :maxlength="nameLimit" autocomplete="family-name" placeholder="Your last name"></label>
@@ -317,7 +317,7 @@ onMounted(() => { load().catch(() => { errorMessage.value = 'We could not load o
           <label>Sexual orientation<select v-model="profile.sexualOrientation" required><option value="" disabled>Select an option</option><option v-for="option in sexualOrientationOptions" :key="option.value" :value="option.value">{{ option.label }}</option></select></label>
           <label>Pronouns <input v-model="profile.pronouns" :maxlength="pronounsLimit" autocomplete="off" placeholder="Optional"></label>
           <fieldset class="dob-field sm:col-span-2"><legend>Date of birth</legend><p class="field-hint">You must be 18 or over. This is never shown publicly.</p><div class="dob-grid"><label><span>Day</span><select v-model="birthDate.day" required @change="updateDateOfBirth"><option value="" disabled>Day</option><option v-for="day in birthDays" :key="day" :value="String(day)">{{ day }}</option></select></label><label><span>Month</span><select v-model="birthDate.month" required @change="updateDateOfBirth"><option value="" disabled>Month</option><option v-for="(month, index) in months" :key="month" :value="String(index + 1)">{{ month }}</option></select></label><label><span>Year</span><select v-model="birthDate.year" required @change="updateDateOfBirth"><option value="" disabled>Year</option><option v-for="year in birthYears" :key="year" :value="String(year)">{{ year }}</option></select></label></div></fieldset>
-          <label class="sm:col-span-2">Short bio <textarea v-model="profile.bio" required :maxlength="bioLimit" rows="5" placeholder="A little about you and the kind of person you would enjoy meeting…" /><span class="field-hint text-right">{{ profile.bio.length }}/{{ bioLimit }}</span></label>
+          <label class="sm:col-span-2">Short bio <textarea v-model="profile.bio" required :maxlength="bioLimit" rows="5" placeholder="What are you like, and how do you enjoy spending your time?" /><span class="field-hint text-right">{{ profile.bio.length }}/{{ bioLimit }}</span></label>
           <label>Height <span class="font-normal text-[#6E4D58]">(optional)</span><input v-model.number="profile.heightCm" type="number" min="120" max="230" placeholder="Height in cm"></label>
           <label>Weight <span class="font-normal text-[#6E4D58]">(optional)</span><input v-model.number="profile.weightKg" type="number" min="35" max="300" placeholder="Weight in kg"></label>
           <label>Daily rhythm <span class="font-normal text-[#6E4D58]">(optional)</span><select v-model="profile.dailyRhythm"><option value="">Not set</option><option value="early_bird">Early bird — prefers mornings</option><option value="night_owl">Night owl — prefers evenings</option><option value="flexible">Flexible — mornings or evenings</option></select></label>
@@ -335,7 +335,7 @@ onMounted(() => { load().catch(() => { errorMessage.value = 'We could not load o
       </form>
 
       <form v-else-if="step === 3" class="onboarding-card" @submit.prevent="saveActivities">
-        <div class="step-title"><Sparkles class="size-5 text-[#B4234A]" /><div><h2>What would you enjoy doing?</h2><p>Choose up to {{ activitySelectionLimit }} activities you would be interested in doing. Each choice helps people find you through the broader categories.</p></div></div>
+        <div class="step-title"><Sparkles class="size-5 text-[#B4234A]" /><div><h2>What would you enjoy doing together?</h2><p>Choose up to {{ activitySelectionLimit }} ideas for a date. We’ll use them to help the right people find you.</p></div></div>
         <section v-if="selectedActivities.length" class="mt-5 rounded-lg bg-[#FCE3E8] p-4"><h3 class="font-semibold">Your interests ({{ selectedActivities.length }}/{{ activitySelectionLimit }})</h3><p v-if="activityLimitReached" class="mt-1 text-sm font-semibold text-[#8F1839]">You have selected the maximum of {{ activitySelectionLimit }} interests.</p><div class="mt-3 flex flex-wrap gap-2"><button v-for="activity in selectedActivities" :key="activity.name" type="button" class="rounded-full bg-white px-3 py-2 text-sm font-semibold text-[#8F1839]" @click="toggleActivity(activity.name, activity.category, activity.custom)">{{ activity.name }} ×</button></div></section>
         <div class="mt-6 space-y-4">
           <section v-for="group in activityGroups" :key="group.name" class="activity-group overflow-hidden">
@@ -359,7 +359,7 @@ onMounted(() => { load().catch(() => { errorMessage.value = 'We could not load o
       </form>
 
       <form v-else-if="step === 4" class="onboarding-card" @submit.prevent="savePreferences">
-        <div class="step-title"><HeartHandshake class="size-5 text-[#B4234A]" /><div><h2>Your match preferences</h2><p>Set a useful starting point. Every setting remains editable later.</p></div></div>
+        <div class="step-title"><HeartHandshake class="size-5 text-[#B4234A]" /><div><h2>Who would you like to meet?</h2><p>Choose a distance and age range that feel practical. You can change these later.</p></div></div>
         <div class="mt-6 grid gap-5 sm:grid-cols-2">
           <label>Maximum distance
             <span class="field-with-suffix">
@@ -380,7 +380,7 @@ onMounted(() => { load().catch(() => { errorMessage.value = 'We could not load o
       </form>
 
       <form v-else-if="step === 5" class="onboarding-card" @submit.prevent="saveDatingPreferences">
-        <div class="step-title"><UsersRound class="size-5 text-[#B4234A]" /><div><h2>Who are you open to meeting?</h2><p>These private preferences shape who appears in your match pool and can be changed later.</p></div></div>
+        <div class="step-title"><UsersRound class="size-5 text-[#B4234A]" /><div><h2>Who are you open to dating?</h2><p>These choices stay private and affect who you see. You can change them whenever you like.</p></div></div>
         <fieldset class="meeting-preferences"><legend>Gender preferences</legend><p class="mt-1 text-sm font-normal leading-6 text-[#6E4D58]">Choose everyone, or select one or more types of people you are open to dating.</p><div class="mt-4 grid gap-2 sm:grid-cols-2"><button type="button" class="meeting-choice sm:col-span-2" :class="preferences.openToEveryone && 'selected'" :aria-pressed="preferences.openToEveryone" @click="selectEveryone"><span class="choice-indicator" aria-hidden="true">{{ preferences.openToEveryone ? '✓' : '' }}</span><span>Everyone</span></button><button v-for="option in genderOptions" :key="option" type="button" class="meeting-choice" :class="preferences.genders.includes(option) && 'selected'" :aria-pressed="preferences.genders.includes(option)" @click="toggleGenderPreference(option)"><span class="choice-indicator" aria-hidden="true">{{ preferences.genders.includes(option) ? '✓' : '' }}</span><span>{{ option }}</span></button></div><p class="mt-3 text-xs font-semibold text-[#6E4D58]">{{ preferences.openToEveryone ? 'Everyone selected' : preferences.genders.length ? `${preferences.genders.length} selected` : 'Select at least one option' }}</p></fieldset>
         <fieldset class="meeting-preferences"><legend>Sexual orientation preferences</legend><p class="mt-1 text-sm font-normal leading-6 text-[#6E4D58]">Choose one or more orientations you are open to dating, separately from gender.</p><div class="mt-4 grid gap-2 sm:grid-cols-3"><button v-for="option in sexualOrientationPreferenceOptions" :key="option.value" type="button" class="meeting-choice" :class="preferences.orientations.includes(option.value) && 'selected'" :aria-pressed="preferences.orientations.includes(option.value)" @click="toggleOrientationPreference(option.value)"><span class="choice-indicator" aria-hidden="true">{{ preferences.orientations.includes(option.value) ? '✓' : '' }}</span><span>{{ option.label }}</span></button></div><p class="mt-3 text-xs font-semibold text-[#6E4D58]">{{ preferences.orientations.length ? `${preferences.orientations.length} selected` : 'Select at least one orientation' }}</p></fieldset>
         <fieldset class="meeting-preferences"><legend>Racial and ethnic preferences</legend><p class="mt-1 text-sm font-normal leading-6 text-[#6E4D58]">Optional. Choose communities you are interested in dating, or keep your match pool open.</p><div class="mt-4 grid gap-2 sm:grid-cols-2"><button type="button" class="meeting-choice sm:col-span-2" :class="preferences.noRaceEthnicityPreference && 'selected'" :aria-pressed="preferences.noRaceEthnicityPreference" @click="selectNoRacePreference"><span class="choice-indicator" aria-hidden="true">{{ preferences.noRaceEthnicityPreference ? '✓' : '' }}</span><span>{{ openRaceEthnicityPreferenceLabel }}</span></button><button v-for="option in raceEthnicityOptions" :key="option" type="button" class="meeting-choice" :class="preferences.raceEthnicities.includes(option) && 'selected'" :aria-pressed="preferences.raceEthnicities.includes(option)" @click="toggleRaceEthnicity(option)"><span class="choice-indicator" aria-hidden="true">{{ preferences.raceEthnicities.includes(option) ? '✓' : '' }}</span><span>{{ option }}</span></button></div><p class="mt-3 text-xs leading-5 text-[#6E4D58]">Identity is personal and nuanced. These broad options are matching controls only.</p></fieldset>
@@ -388,10 +388,10 @@ onMounted(() => { load().catch(() => { errorMessage.value = 'We could not load o
       </form>
 
       <section v-else class="onboarding-card">
-        <div class="step-title"><ImagePlus class="size-5 text-[#B4234A]" /><div><h2>Add a profile photo</h2><p>Add at least one clear photo before your profile enters discovery. You can add up to six.</p></div></div>
+        <div class="step-title"><ImagePlus class="size-5 text-[#B4234A]" /><div><h2>Add a profile photo</h2><p>Add at least one clear photo so people can see who they might meet. You can add up to six.</p></div></div>
         <div class="mt-6 rounded-lg bg-[#FBF7F1] p-5 text-sm leading-6 text-[#6E4D58]">
           <p v-if="photoCount">You have {{ photoCount }} {{ photoCount === 1 ? 'photo' : 'photos' }} ready.</p>
-          <p v-else>Add a JPEG, PNG, or WebP image to finish setting up your discoverable profile.</p>
+          <p v-else>Add a JPEG, PNG or WebP image to finish your profile.</p>
         </div>
         <div class="actions"><button class="secondary" type="button" @click="step = 5"><ArrowLeft class="size-4" />Back</button><NuxtLink to="/photos?onboarding=1" class="secondary"><ImagePlus class="size-4" />{{ photoCount ? 'Manage photos' : 'Upload a photo' }}</NuxtLink><button :disabled="saving || photoCount < 1" class="primary" type="button" @click="finish"><Check class="size-4" />{{ saving ? 'Finishing…' : 'Finish setup' }}</button></div>
       </section>

@@ -35,7 +35,7 @@ describe('notification centre', () => {
   it('presents match updates as an ordered, collapsible timeline', () => {
     const page = read('pages/matches/index.vue')
     expect(page).toContain('Recent updates')
-    expect(page).toContain('Newest first.')
+    expect(page).toContain('Things that may still need a reply or a quick look.')
     expect(page).toContain('notificationGroups')
     expect(page).toContain('notificationDayLabel')
     expect(page).toContain('Show {{ hiddenNotificationCount }} older')

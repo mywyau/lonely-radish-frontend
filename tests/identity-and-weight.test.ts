@@ -36,7 +36,7 @@ describe('sexual orientation and profile weight', () => {
     expect(profile).toContain('profileDetailsCollapsed')
     expect(profile).toContain('aria-controls="viewed-profile-details"')
     expect(profile).toContain('id="viewed-profile-details" v-show="!profileDetailsCollapsed"')
-    expect(profile).toContain('contents lg:block lg:space-y-5')
+    expect(profile).toContain('contents lg:flex lg:flex-col lg:gap-5')
     expect(profile).toContain('profile-summary-flip order-2 min-w-0 max-w-full')
     expect(profile).toContain("profileCardFlipped && 'is-flipped'")
     expect(profile).toContain(':inert="profileCardFlipped || undefined"')

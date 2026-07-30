@@ -7,10 +7,10 @@ const read = (path: string) => readFileSync(resolve(process.cwd(), path), 'utf8'
 describe('product rules and FAQ', () => {
   it('distinguishes product rules from the date journey on the homepage', () => {
     const home = read('pages/index.vue')
-    expect(home).toContain('The rules behind the app')
-    expect(home).toContain('Interest is deliberately selective')
-    expect(home).toContain('Date changes need a clear response')
-    expect(home).toContain('Match intentionally. Agree a plan. Meet.')
+    expect(home).toContain('Why it works this way')
+    expect(home).toContain('Choose who you’re actually curious about')
+    expect(home).toContain('A plan is only a plan when you both say yes')
+    expect(home).toContain('We help with the awkward bit between matching and meeting.')
     expect(home).toContain('to="/faq"')
   })
 
@@ -20,7 +20,7 @@ describe('product rules and FAQ', () => {
     expect(faq).toContain("title: 'Planning a date'")
     expect(faq).toContain('How do active match limits work?')
     expect(faq).toContain('What is a manual match?')
-    expect(faq).toContain('Why can I have only one manual match awaiting my move?')
+    expect(faq).toContain('Why can I accept only one interest at a time?')
     expect(faq).toContain('What happens when a match is waiting?')
     expect(faq).toContain('How is cancelling different from rescheduling?')
     expect(faq).toContain("title: 'Privacy and safety'")

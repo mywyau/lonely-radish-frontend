@@ -140,6 +140,6 @@ describe("offer claims and redemptions", () => {
     const history = read("server/api/business/offer-claims/index.get.ts");
     expect(history).not.toContain("claimant_user_id");
     expect(history).not.toContain("proposal_id");
-    expect(read("pages/business/redeem.vue")).toContain("Privacy by design");
+    expect(read("pages/business/redeem.vue")).toContain("What you can see");
   });
 });

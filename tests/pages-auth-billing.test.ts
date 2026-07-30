@@ -15,10 +15,10 @@ describe("auth and billing page contracts", () => {
     expect(signIn).toContain("Create account");
 
     expect(unavailable).toContain("title: 'Feature preview · Lonely Radish'");
-    expect(unavailable).toContain("Premium dating tools are mocked for now.");
+    expect(unavailable).toContain("This part isn’t ready yet.");
 
     expect(comingSoon).toContain("title: 'Activity-date preview · Lonely Radish'");
-    expect(comingSoon).toContain("Browse matches built around something you both want to do.");
+    expect(comingSoon).toContain("Start with something you’d both enjoy doing.");
   });
 
   it("uses Stripe Checkout and confirms subscription activation", () => {
@@ -36,7 +36,7 @@ describe("auth and billing page contracts", () => {
     expect(cancel).toContain('const quarterlyPrice = 19.99');
     expect(cancel).toContain('const yearlyPrice = 55.99');
 
-    expect(upgrade).toContain("Upgrade your plan");
+    expect(upgrade).toContain("Want a little more room?");
     expect(upgrade).toContain('Free and paid plan limits');
     expect(upgrade).toContain('Up to 5 active activity interests');
     expect(upgrade).toContain('Up to 3 active matches');
@@ -84,7 +84,7 @@ describe("auth and billing page contracts", () => {
     expect(controls).toContain("const planLabel = computed")
     expect(controls).toContain("{{ isPaidPlan ? 'Paid' : 'Free' }}")
     expect(controls).toContain("'/api/stripe/portal'")
-    expect(controls.indexOf('Plan preview')).toBeLessThan(controls.indexOf('Pause discovery'))
+    expect(controls.indexOf('Your subscription')).toBeLessThan(controls.indexOf('Take a break'))
     expect(account).toContain('to="/account/controls"')
     expect(account).not.toContain("useMockProfile()");
     expect(account).not.toContain("persistProfile()");

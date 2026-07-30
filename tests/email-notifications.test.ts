@@ -41,7 +41,7 @@ describe('email notifications', () => {
 
   it('offers user-controlled email categories', () => {
     const page = read('pages/notifications.vue')
-    expect(page).toContain('Email notifications')
+    expect(page).toContain('What should we email you about?')
     expect(page).toContain("'/api/email/preferences'")
     expect(page).toContain('New interests')
     expect(page).toContain('Post-date check-ins')

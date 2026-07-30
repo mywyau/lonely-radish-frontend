@@ -62,8 +62,8 @@ onMounted(async () => {
     <section class="mx-auto max-w-5xl">
       <div class="rounded-lg bg-[#2A1520] p-6 text-white shadow-[0_14px_32px_rgba(42,21,32,0.16)] sm:p-8">
         <Sparkles class="size-6 text-[#F7B7C4]" aria-hidden="true" />
-        <h1 class="mt-2 text-3xl font-semibold sm:text-4xl">Meet people interested in {{ activityName.toLowerCase() }}.</h1>
-        <p class="mt-3 max-w-2xl text-sm leading-6 text-white/75">People in this broader category may enjoy different specific activities. Open a profile to see what each person selected.</p>
+        <h1 class="mt-2 text-3xl font-semibold sm:text-4xl">Who’s up for {{ activityName.toLowerCase() }}?</h1>
+        <p class="mt-3 max-w-2xl text-sm leading-6 text-white/75">Everyone here chose something in this category. Open a profile to see exactly what they’re into.</p>
       </div>
 
       <section v-if="appliedFilters" class="mt-5 rounded-lg border border-[#E8D8C4] bg-white p-4 shadow-[0_8px_20px_rgba(180,35,74,0.05)]" aria-label="Applied discovery filters">
@@ -80,19 +80,19 @@ onMounted(async () => {
         </div>
       </section>
 
-      <div v-if="!candidatesLoaded && !candidatesError" class="mt-8 rounded-lg bg-white p-8 text-center text-sm text-[#6E4D58]" aria-live="polite">Loading matching profiles…</div>
+      <div v-if="!candidatesLoaded && !candidatesError" class="mt-8 rounded-lg bg-white p-8 text-center text-sm text-[#6E4D58]" aria-live="polite">Finding people nearby…</div>
 
       <section v-else-if="candidatesError && !databasePeople.length" class="mt-8 rounded-lg bg-white p-8 text-center shadow-[0_10px_24px_rgba(180,35,74,0.08)]" role="alert">
         <UsersRound class="mx-auto size-8 text-[#B4234A]" />
-        <h2 class="mt-4 text-xl font-semibold">We could not load people right now</h2>
-        <p class="mt-2 text-sm leading-6 text-[#6E4D58]">{{ candidatesError }} This is not the same as having no matches.</p>
+        <h2 class="mt-4 text-xl font-semibold">We couldn’t load anyone just now</h2>
+        <p class="mt-2 text-sm leading-6 text-[#6E4D58]">{{ candidatesError }} Try again in a moment.</p>
         <button type="button" class="mt-5 rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white" @click="loadCandidates()">Try again</button>
       </section>
 
       <div v-else-if="visiblePeople.length" class="mt-8">
         <div class="flex flex-wrap items-center justify-between gap-3">
           <p class="inline-flex items-center gap-2 text-sm font-semibold text-[#6E4D58]"><UsersRound class="size-4" />{{ visiblePeople.length }} {{ visiblePeople.length === 1 ? 'person' : 'people' }}</p>
-          <NuxtLink to="/preferences" class="text-sm font-semibold text-[#8F1839] hover:underline">Review match preferences</NuxtLink>
+          <NuxtLink to="/preferences" class="text-sm font-semibold text-[#8F1839] hover:underline">Change who you see</NuxtLink>
         </div>
         <div class="mt-4 grid gap-4">
           <NuxtLink v-for="(person, index) in visiblePeople" :key="person.slug" :to="`/profiles/${person.slug}`"
@@ -128,9 +128,9 @@ onMounted(async () => {
 
       <div v-else class="mt-8 rounded-lg bg-white p-8 text-center shadow-[0_10px_24px_rgba(180,35,74,0.08)]">
         <UsersRound class="mx-auto size-8 text-[#B4234A]" />
-        <h2 class="mt-4 text-xl font-semibold">No profiles match your filters yet</h2>
-        <p class="mt-2 text-sm leading-6 text-[#6E4D58]">Try adjusting your distance, age or dating preferences, or check this category again later.</p>
-        <NuxtLink to="/preferences" class="mt-5 inline-flex rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white">Adjust match preferences</NuxtLink>
+        <h2 class="mt-4 text-xl font-semibold">Nobody here fits your preferences yet</h2>
+        <p class="mt-2 text-sm leading-6 text-[#6E4D58]">You could widen your distance or age range, or come back another time.</p>
+        <NuxtLink to="/preferences" class="mt-5 inline-flex rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white">Change preferences</NuxtLink>
       </div>
 
       <NuxtLink to="/activities" class="mt-8 inline-flex rounded-lg bg-[#F3E8DA] px-5 py-3 text-sm font-semibold text-[#8F1839] hover:bg-[#FCE3E8]">← Browse all categories</NuxtLink>

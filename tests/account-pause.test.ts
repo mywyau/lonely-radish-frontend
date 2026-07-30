@@ -20,6 +20,6 @@ describe('account discovery pause', () => {
 
   it('prevents paused users sending new interest while preserving existing match routes', () => {
     expect(read('server/services/interests/InterestService.ts')).toContain('Resume your profile before sending new interest')
-    expect(read('pages/account/controls.vue')).toContain('keeping existing matches, plans and dates available')
+    expect(read('pages/account/controls.vue')).toContain('without affecting your existing matches or plans')
   })
 })

@@ -1,4 +1,5 @@
 import type { DatabaseClient } from '~/server/repositories/db'
+import { viewerDiscoveryJoins, viewerDiscoveryWhere } from '~/server/utils/discoveryFilters'
 
 export interface InterestSender {
   accountStatus: string
@@ -55,10 +56,16 @@ export class InterestRepository {
       [[senderId,recipientId].sort().join(':')])
   }
 
+  async lockRecipientInbox(recipientId: string) {
+    await this.client.query('select pg_advisory_xact_lock(hashtext($1))',
+      [`interest-inbox:${recipientId}`])
+  }
+
   async findEligibleTarget(profileSlug: string, senderId: string) {
     const { rows } = await this.client.query<InterestTarget>(`select
         p.user_id as "userId",p.display_name as "displayName"
       from profiles p join users u on u.id=p.user_id
+      ${viewerDiscoveryJoins}
       where p.slug=$1 and p.user_id<>$2 and p.visibility='active' and
         (u.account_status='active' or
           (u.account_status='paused' and u.paused_until is not null and u.paused_until<=now()))
@@ -66,8 +73,17 @@ export class InterestRepository {
         and not exists(select 1 from blocks b where
           (b.blocker_id=$2 and b.blocked_id=p.user_id) or
           (b.blocker_id=p.user_id and b.blocked_id=$2))
+        ${viewerDiscoveryWhere}
       `, [profileSlug,senderId])
     return rows[0] ?? null
+  }
+
+  async recipientInboxAcceptingInterests(recipientId: string) {
+    const { rows } = await this.client.query(`select 1 from users
+      where id=$1 and (interest_inbox_reopens_at is null or interest_inbox_reopens_at<=now())
+      and (select count(*) from daily_interests where recipient_id=$1
+        and resolved_at is null and inbox_bypassed=false)<5`, [recipientId])
+    return Boolean(rows[0])
   }
 
   async findCurrentMatch(senderId: string, recipientId: string) {
@@ -111,20 +127,28 @@ export class InterestRepository {
     return rows[0]?.count ?? 0
   }
 
-  async createInterest(senderId: string, recipientId: string) {
+  async createInterest(senderId: string, recipientId: string, inboxBypassed = false) {
     const { rows } = await this.client.query<CreatedInterest>(`insert into daily_interests(
-        sender_id,recipient_id,sender_day
-      ) select $1,$2,(now() at time zone coalesce(timezone,'UTC'))::date
+        sender_id,recipient_id,sender_day,inbox_bypassed
+      ) select $1,$2,(now() at time zone coalesce(timezone,'UTC'))::date,$3
         from users where id=$1
-      returning id,sender_day::text as date`, [senderId,recipientId])
+      returning id,sender_day::text as date`, [senderId,recipientId,inboxBypassed])
     return rows[0]
   }
 
   async hasReverseInterest(senderId: string, recipientId: string) {
     const { rows } = await this.client.query(`select 1 from daily_interests
-      where sender_id=$1 and recipient_id=$2 and declined_at is null limit 1`,
+      where sender_id=$1 and recipient_id=$2 and resolved_at is null limit 1`,
     [recipientId,senderId])
     return Boolean(rows[0])
+  }
+
+  async resolvePairInterestsAccepted(senderId: string, recipientId: string) {
+    await this.client.query(`update daily_interests set
+      resolution='accepted',resolved_at=now()
+      where resolved_at is null and
+        ((sender_id=$1 and recipient_id=$2) or (sender_id=$2 and recipient_id=$1))`,
+    [senderId,recipientId])
   }
 
   async upsertQueuedMatch(senderId: string, recipientId: string) {

@@ -15,10 +15,10 @@ const form = reactive({
 const planLabel = computed(() => business.value?.plan === 'featured' ? 'Featured' :
   business.value?.plan === 'standard' ? 'Standard' : 'Free')
 const offerLimit = computed(() => business.value?.plan === 'featured' ? 10 : business.value?.plan === 'standard' ? 5 : 1)
-const heroTitle = computed(() => business.value?.name || 'Help bring more people together at your venue.')
+const heroTitle = computed(() => business.value?.name || 'Welcome people who have already made a date plan.')
 const heroDescription = computed(() => business.value
   ? 'Manage your venue, offers and business subscription.'
-  : 'Create date-friendly offers for couples already deciding where to meet.')
+  : 'Create an offer that gives people another reason to choose your venue.')
 
 async function load() {
   const result = await $fetch<{ business: any }>('/api/business/me')
@@ -63,7 +63,7 @@ onMounted(() => load().catch((error: any) => { errorMessage.value = error?.data?
             <Building2 class="size-6 text-[#B4234A]" />
             <p class="mt-4 text-xs font-bold uppercase tracking-wide text-[#6E4D58]">Verification</p>
             <h2 class="mt-1 text-xl font-semibold capitalize">{{ business.status }}</h2>
-            <p class="mt-2 text-sm text-[#6E4D58]">Offers remain private until the business and venue are approved.</p>
+            <p class="mt-2 text-sm text-[#6E4D58]">People won’t see your offers until both the business and venue have been approved.</p>
           </article>
           <article class="rounded-lg bg-[#FCE3E8] p-6 shadow-[0_10px_24px_rgba(180,35,74,0.08)]">
             <BadgePoundSterling class="size-6 text-[#B4234A]" />
@@ -75,7 +75,7 @@ onMounted(() => load().catch((error: any) => { errorMessage.value = error?.data?
             <Store class="size-6 text-[#52713A]" />
             <p class="mt-4 text-xs font-bold uppercase tracking-wide text-[#52713A]">Venues</p>
             <h2 class="mt-1 text-xl font-semibold">{{ business.venues.length }}</h2>
-            <p class="mt-2 text-sm text-[#4D2F39]">Campaigns can cover one, selected, or every approved location.</p>
+            <p class="mt-2 text-sm text-[#4D2F39]">An offer can cover one location, a selection or all of them.</p>
           </article>
         </div>
 
@@ -106,8 +106,8 @@ onMounted(() => load().catch((error: any) => { errorMessage.value = error?.data?
           </NuxtLink>
           <NuxtLink to="/business/offers" class="group rounded-lg bg-[#B4234A] p-6 text-white">
             <Plus class="size-6" />
-            <h2 class="mt-4 text-xl font-semibold">Manage campaigns</h2>
-            <p class="mt-2 text-sm text-white/75">Create one offer for one, selected, or all locations.</p>
+            <h2 class="mt-4 text-xl font-semibold">Manage offers</h2>
+            <p class="mt-2 text-sm text-white/75">Create an offer for one location, a selection or all of them.</p>
           </NuxtLink>
           <NuxtLink to="/business/redeem" class="group rounded-lg bg-[#52713A] p-6 text-white">
             <ScanLine class="size-6" />

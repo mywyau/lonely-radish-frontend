@@ -53,6 +53,7 @@ const contactMessage = ref('')
 const contactSending = ref(false)
 const contactError = ref('')
 const activitiesFlipped = ref(false)
+const availabilityContactFlipped = ref(false)
 const bioExpanded = ref(false)
 const profileDetailsCollapsed = ref(true)
 const profileCardFlipped = ref(false)
@@ -90,6 +91,16 @@ const profileInterests = computed(() => profile.value?.personalInterests?.length
   : profile.value?.isDemo ? profile.value.interests || [] : [])
 const lifestyleDetails = computed(() => profile.value ? profileDetails(profile.value) : [])
 const bioNeedsExpansion = computed(() => (profile.value?.bio?.length || 0) > 420)
+const availabilityIsVisible = computed(() => Boolean(profile.value?.availability?.length
+  && (profile.value.isMatched || profile.value.availabilityVisibleBeforeMatch)))
+const hasSharedContactDetails = computed(() => Boolean(
+  profile.value?.isMatched
+  && profile.value?.relationshipStatus !== 'unmatched'
+  && profile.value?.contactDetails
+  && (profile.value.contactDetails.phoneNumber
+    || profile.value.contactDetails.contactEmail
+    || profile.value.contactDetails.socialHandle),
+))
 
 async function sendApology() {
   if (!profile.value?.matchId || !apologyMessage.value.trim()) return
@@ -179,6 +190,7 @@ watch(profileSlug, () => {
   bioExpanded.value = false
   profileDetailsCollapsed.value = true
   profileCardFlipped.value = false
+  availabilityContactFlipped.value = false
   photoViewerOpen.value = false
   void loadProfile()
 })
@@ -202,7 +214,7 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
 
     <section v-else-if="profile" class="mx-auto max-w-5xl">
       <div class="flex min-w-0 flex-col gap-5 lg:grid lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:items-start">
-        <div class="contents lg:block lg:space-y-5">
+        <div class="contents lg:flex lg:flex-col lg:gap-5">
           <section v-if="activePhoto" aria-label="Profile photos" class="order-1 min-w-0 max-w-full sm:hidden">
             <button type="button"
               class="profile-photo relative block aspect-[4/3] w-full max-w-full overflow-hidden rounded-lg"
@@ -259,7 +271,7 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
 
         </div>
 
-        <div class="contents lg:block lg:space-y-5">
+        <div class="contents lg:flex lg:flex-col lg:gap-5">
           <div class="profile-summary-flip order-2 min-w-0 max-w-full" :class="profileCardFlipped && 'is-flipped'">
             <div class="profile-summary-inner">
               <aside
@@ -356,10 +368,7 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
                     today.</template><template v-else>You have sent your 5 interests for today.</template> You can send
                   more
                   tomorrow.</p>
-                <p v-else class="mt-3 text-xs leading-5 text-[#6E4D58]">Choose thoughtfully — you can show interest in
-                  up to 5
-                  people
-                  each day.</p>
+                <p v-else class="mt-3 text-xs leading-5 text-[#6E4D58]">You can show interest in up to 5 people each day, so choose someone you’d really like to meet.</p>
                 <p v-if="successMessage" class="mt-3 rounded-lg bg-[#EAF2DE] p-3 text-xs font-semibold text-[#4D2F39]"
                   role="status">{{
                     successMessage }} <NuxtLink to="/interests/sent" class="text-[#8F1839] underline">View sent interests
@@ -415,16 +424,54 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
               </section>
             </div>
           </div>
-          <section v-if="profile.availability?.length && (profile.isMatched || profile.availabilityVisibleBeforeMatch)"
-            class="order-4 rounded-lg bg-white p-5 shadow-[0_10px_24px_rgba(180,35,74,0.08)] sm:p-6">
-            <div class="flex items-center gap-2">
-              <CalendarDays class="size-5 text-[#B4234A]" />
-              <h2 class="text-xl font-semibold">Usually free</h2>
+          <div v-if="availabilityIsVisible"
+            class="availability-contact-flip order-4" :class="availabilityContactFlipped && 'is-flipped'">
+            <div class="availability-contact-inner">
+              <section class="availability-contact-face availability-contact-front rounded-lg bg-white p-5 shadow-[0_10px_24px_rgba(180,35,74,0.08)] sm:p-6"
+                :aria-hidden="availabilityContactFlipped" :inert="availabilityContactFlipped || undefined">
+                <div class="flex items-start justify-between gap-3">
+                  <div class="flex items-center gap-2">
+                    <CalendarDays class="size-5 shrink-0 text-[#B4234A]" />
+                    <h2 class="text-xl font-semibold">Usually free</h2>
+                  </div>
+                  <button v-if="hasSharedContactDetails" type="button"
+                    class="inline-flex shrink-0 items-center gap-2 rounded-full bg-[#FCE3E8] px-3 py-2 text-xs font-semibold text-[#8F1839] hover:brightness-95"
+                    aria-label="Show shared contact details" @click="availabilityContactFlipped = true">
+                    <RefreshCw class="size-3.5" aria-hidden="true" /> Contact details
+                  </button>
+                </div>
+                <div class="mt-4 flex flex-wrap gap-2"><span v-for="time in profile.availability" :key="time"
+                    class="rounded-full bg-[#F3E8DA] px-3 py-2 text-sm font-semibold text-[#4D2F39]">{{ time }}</span></div>
+              </section>
+
+              <section v-if="hasSharedContactDetails"
+                class="availability-contact-face availability-contact-back rounded-lg bg-white p-5 shadow-[0_10px_24px_rgba(180,35,74,0.08)] sm:p-6"
+                :aria-hidden="!availabilityContactFlipped" :inert="!availabilityContactFlipped || undefined">
+                <div class="flex items-start justify-between gap-3">
+                  <div>
+                    <h2 class="text-xl font-semibold">Contact details</h2>
+                    <p class="mt-2 text-xs leading-5 text-[#6E4D58]">{{ profile.name }} chose to share these with active matches.</p>
+                  </div>
+                  <button type="button"
+                    class="inline-flex shrink-0 items-center gap-2 rounded-full bg-[#F3E8DA] px-3 py-2 text-xs font-semibold text-[#8F1839] hover:brightness-95"
+                    aria-label="Show usual availability" @click="availabilityContactFlipped = false">
+                    <RefreshCw class="size-3.5" aria-hidden="true" /> Usually free
+                  </button>
+                </div>
+                <div class="mt-4 space-y-3 text-sm">
+                  <a v-if="profile.contactDetails.phoneNumber" :href="`tel:${profile.contactDetails.phoneNumber}`"
+                    class="flex items-center gap-2 font-semibold text-[#8F1839]"><Phone class="size-4 shrink-0" />{{ profile.contactDetails.phoneNumber }}</a>
+                  <a v-if="profile.contactDetails.contactEmail" :href="`mailto:${profile.contactDetails.contactEmail}`"
+                    class="flex items-center gap-2 break-all font-semibold text-[#8F1839]"><Mail class="size-4 shrink-0" />{{ profile.contactDetails.contactEmail }}</a>
+                  <p v-if="profile.contactDetails.socialHandle" class="flex items-center gap-2 font-semibold text-[#4D2F39]">
+                    <AtSign class="size-4 shrink-0 text-[#8F1839]" aria-hidden="true" />
+                    <span class="break-all">{{ profile.contactDetails.socialHandle }}</span>
+                  </p>
+                </div>
+              </section>
             </div>
-            <div class="mt-4 flex flex-wrap gap-2"><span v-for="time in profile.availability" :key="time"
-                class="rounded-full bg-[#F3E8DA] px-3 py-2 text-sm font-semibold text-[#4D2F39]">{{ time }}</span></div>
-          </section>
-          <section v-if="profile.contactDetails && profile.isMatched && profile.relationshipStatus !== 'unmatched'"
+          </div>
+          <section v-if="hasSharedContactDetails && !availabilityIsVisible"
             class="order-5 rounded-lg bg-white p-5 shadow-[0_10px_24px_rgba(180,35,74,0.08)] sm:p-6">
             <h2 class="text-xl font-semibold">Contact details</h2>
             <p class="mt-2 text-xs leading-5 text-[#6E4D58]">Shared with you because you are an active match and they chose to share these details.</p>
@@ -546,6 +593,36 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
   pointer-events: none;
 }
 
+.availability-contact-flip {
+  perspective: 1200px;
+}
+
+.availability-contact-inner {
+  display: grid;
+  min-width: 0;
+  transform-style: preserve-3d;
+  transition: transform .55s cubic-bezier(.2, .7, .2, 1);
+}
+
+.availability-contact-flip.is-flipped .availability-contact-inner {
+  transform: rotateY(180deg);
+}
+
+.availability-contact-face {
+  grid-area: 1 / 1;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.availability-contact-back {
+  transform: rotateY(180deg);
+}
+
+.availability-contact-flip:not(.is-flipped) .availability-contact-back,
+.availability-contact-flip.is-flipped .availability-contact-front {
+  pointer-events: none;
+}
+
 .triptych {
   height: 100%;
   width: 300%;
@@ -626,7 +703,8 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
 
   .profile-flip-card,
   .profile-flip-inner,
-  .profile-summary-inner {
+  .profile-summary-inner,
+  .availability-contact-inner {
     transition: none;
   }
 

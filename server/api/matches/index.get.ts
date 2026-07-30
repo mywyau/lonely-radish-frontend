@@ -48,7 +48,7 @@ export default defineEventHandler(async (event) => {
       join users u on u.id=di.sender_id and (u.account_status='active' or
         (u.account_status='paused' and u.paused_until is not null and u.paused_until<=now()))
       join profiles p on p.user_id=di.sender_id and p.visibility='active'
-      where di.recipient_id=$1 and di.declined_at is null and not exists(select 1 from blocks b where
+      where di.recipient_id=$1 and di.resolved_at is null and di.inbox_bypassed=false and not exists(select 1 from blocks b where
         (b.blocker_id=$1 and b.blocked_id=di.sender_id) or (b.blocker_id=di.sender_id and b.blocked_id=$1))
       and not exists(select 1 from matches ended where ended.status='unmatched'
         and ((ended.user_one_id=$1 and ended.user_two_id=di.sender_id)
