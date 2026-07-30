@@ -46,12 +46,6 @@ const cancelled = computed(() => /access denied|cancel|denied|permissions/i.test
           Create account
         </button>
       </div>
-      <p class="mt-4 text-center text-xs leading-5 text-[#6E4D58]">
-        By creating an account, you agree to our
-        <NuxtLink to="/terms-of-service" class="font-semibold hover:text-[#B4234A] hover:underline">Terms of Service</NuxtLink>
-        and
-        <NuxtLink to="/acceptable-use" class="font-semibold hover:text-[#B4234A] hover:underline">Acceptable Use Policy</NuxtLink>.
-      </p>
       <button type="button" class="mt-4 inline-flex w-full items-center justify-center rounded-lg border border-[#D8C8B6] bg-white px-5 py-3 text-sm font-semibold text-[#4D2F39] transition hover:bg-[#FBF7F1]" @click="loginWithAnotherAccount(returnTo)">Use another account</button>
       <NuxtLink to="/" class="mt-5 inline-flex text-sm font-semibold text-[#6E4D58] hover:text-[#B4234A]">Return home</NuxtLink>
       <NuxtLink to="/business/sign-in" class="mt-5 ml-4 inline-flex text-sm font-semibold text-[#6E4D58] hover:text-[#B4234A]">Business login</NuxtLink>
