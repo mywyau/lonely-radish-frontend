@@ -163,7 +163,8 @@ describe("core page contracts", () => {
       "Preview only — these controls are not active here.",
     );
     expect(preview).toContain("Report profile");
-    expect(preview).toContain("Live visibility depends on your Schedule");
+    expect(preview).toContain("Show saved contact details");
+    expect(preview).toContain("Preview only — these saved details are currently hidden from matches.");
     expect(preview).not.toContain(
       "People see your selected interests when they discover you",
     );

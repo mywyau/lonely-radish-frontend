@@ -58,6 +58,17 @@ describe('match-only contact details', () => {
     expect(preview).toContain('Manage contact sharing')
   })
 
+  it('matches the live availability and contact flip in the owner preview', () => {
+    const preview = read('pages/profile/preview.vue')
+    expect(preview).toContain('const availabilityContactFlipped = ref(false)')
+    expect(preview).toContain("availabilityContactFlipped && 'is-flipped'")
+    expect(preview).toContain('aria-label="Show saved contact details"')
+    expect(preview).toContain('aria-label="Show usual availability"')
+    expect(preview).toContain('.availability-contact-flip.is-flipped')
+    expect(preview).toContain('availabilityContactFlipped.value = false')
+    expect(preview).toContain('Preview only — these saved details are currently hidden from matches.')
+  })
+
   it('lets an active match flip availability to shared contact details', () => {
     const profile = read('pages/profiles/[slug].vue')
     expect(profile).toContain('const availabilityContactFlipped = ref(false)')

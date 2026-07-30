@@ -266,7 +266,7 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
           </section>
 
           <ProfileActivityPanel v-if="profile.relationshipStatus !== 'unmatched'"
-            class="hidden lg:block" :activities="profile.activities" :personal-interests="profileInterests"
+            class="order-2 hidden lg:block" :activities="profile.activities" :personal-interests="profileInterests"
             :flipped="activitiesFlipped" @toggle="activitiesFlipped = !activitiesFlipped" />
 
         </div>

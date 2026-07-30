@@ -18,6 +18,7 @@ const loading = ref(true)
 const errorMessage = ref('')
 const data = ref<PreviewData | null>(null)
 const activitiesFlipped = ref(false)
+const availabilityContactFlipped = ref(false)
 const profileCardFlipped = ref(false)
 const profileDetailsCollapsed = ref(true)
 const bioExpanded = ref(false)
@@ -78,6 +79,7 @@ function handleGalleryKeydown(event: KeyboardEvent) {
 async function loadPreview() {
   loading.value = true
   errorMessage.value = ''
+  availabilityContactFlipped.value = false
   try { data.value = await $fetch<PreviewData>('/api/profile/me') }
   catch (error: any) { errorMessage.value = error?.data?.statusMessage || 'Your profile preview could not be loaded.' }
   finally { loading.value = false }
@@ -113,7 +115,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleGalleryKeydown
         <p>{{ errorMessage }}</p><button type="button" class="mt-3 rounded-lg bg-white px-4 py-2" @click="loadPreview">Try again</button></div>
       <template v-else-if="data?.profile">
         <div class="flex min-w-0 flex-col gap-5 lg:grid lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:items-start">
-          <div class="contents lg:block lg:space-y-5">
+          <div class="contents lg:flex lg:flex-col lg:gap-5">
             <section v-if="activePhoto" aria-label="Your profile photos" class="order-1 min-w-0 max-w-full sm:hidden">
               <button type="button"
                 class="profile-photo relative block aspect-[4/3] w-full max-w-full overflow-hidden rounded-lg"
@@ -158,12 +160,12 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleGalleryKeydown
               </button>
             </section>
 
-            <ProfileActivityPanel class="hidden lg:block" :activities="data.activities"
+            <ProfileActivityPanel class="order-2 hidden lg:block" :activities="data.activities"
               :personal-interests="data.personalInterests" :flipped="activitiesFlipped" preview
               @toggle="activitiesFlipped = !activitiesFlipped" />
           </div>
 
-          <div class="contents lg:block lg:space-y-5">
+          <div class="contents lg:flex lg:flex-col lg:gap-5">
             <div class="profile-summary-flip order-2 min-w-0 max-w-full" :class="profileCardFlipped && 'is-flipped'">
               <div class="profile-summary-inner">
                 <aside
@@ -239,18 +241,59 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleGalleryKeydown
               </div>
             </div>
 
-            <section v-if="data.availability?.length"
-              class="order-4 rounded-lg bg-white p-5 shadow-[0_10px_24px_rgba(180,35,74,0.08)] sm:p-6">
-              <div class="flex items-center gap-2">
-                <CalendarDays class="size-5 text-[#B4234A]" />
-                <h3 class="text-xl font-semibold">Usually free</h3>
-              </div>
-              <div class="mt-4 flex flex-wrap gap-2"><span v-for="time in data.availability" :key="time"
-                  class="rounded-full bg-[#F3E8DA] px-3 py-2 text-sm font-semibold text-[#4D2F39]">{{ time }}</span></div>
-              <p class="mt-4 rounded-lg bg-[#F3E8DA] p-3 text-xs leading-5 text-[#6E4D58]">Live visibility depends on your Schedule &amp; Safety setting and whether the viewer is an active match.</p>
-            </section>
+            <div v-if="data.availability?.length"
+              class="availability-contact-flip order-4" :class="availabilityContactFlipped && 'is-flipped'">
+              <div class="availability-contact-inner">
+                <section
+                  class="availability-contact-face availability-contact-front rounded-lg bg-white p-5 shadow-[0_10px_24px_rgba(180,35,74,0.08)] sm:p-6"
+                  :aria-hidden="availabilityContactFlipped" :inert="availabilityContactFlipped || undefined">
+                  <div class="flex items-start justify-between gap-3">
+                    <div class="flex items-center gap-2">
+                      <CalendarDays class="size-5 shrink-0 text-[#B4234A]" />
+                      <h3 class="text-xl font-semibold">Usually free</h3>
+                    </div>
+                    <button v-if="hasContactDetails" type="button"
+                      class="inline-flex shrink-0 items-center gap-2 rounded-full bg-[#FCE3E8] px-3 py-2 text-xs font-semibold text-[#8F1839] hover:brightness-95"
+                      aria-label="Show saved contact details" @click="availabilityContactFlipped = true">
+                      <RefreshCw class="size-3.5" aria-hidden="true" />Contact details
+                    </button>
+                  </div>
+                  <div class="mt-4 flex flex-wrap gap-2"><span v-for="time in data.availability" :key="time"
+                      class="rounded-full bg-[#F3E8DA] px-3 py-2 text-sm font-semibold text-[#4D2F39]">{{ time }}</span></div>
+                </section>
 
-            <section v-if="hasContactDetails && data.contactDetails"
+                <section v-if="hasContactDetails && data.contactDetails"
+                  class="availability-contact-face availability-contact-back rounded-lg bg-white p-5 shadow-[0_10px_24px_rgba(180,35,74,0.08)] sm:p-6"
+                  :aria-hidden="!availabilityContactFlipped" :inert="!availabilityContactFlipped || undefined">
+                  <div class="flex items-start justify-between gap-3">
+                    <div>
+                      <h3 class="text-xl font-semibold">Contact details</h3>
+                      <p class="mt-2 text-xs leading-5 text-[#6E4D58]">{{ data.contactDetails.shareWithMatches
+                        ? 'This is how your details appear to an active match.'
+                        : 'Preview only — these saved details are currently hidden from matches.' }}</p>
+                    </div>
+                    <button type="button"
+                      class="inline-flex shrink-0 items-center gap-2 rounded-full bg-[#F3E8DA] px-3 py-2 text-xs font-semibold text-[#8F1839] hover:brightness-95"
+                      aria-label="Show usual availability" @click="availabilityContactFlipped = false">
+                      <RefreshCw class="size-3.5" aria-hidden="true" />Usually free
+                    </button>
+                  </div>
+                  <div class="mt-4 space-y-3 text-sm">
+                    <p v-if="data.contactDetails.phoneNumber" class="flex items-center gap-2 font-semibold text-[#8F1839]"><Phone class="size-4 shrink-0" aria-hidden="true" />{{ data.contactDetails.phoneNumber }}</p>
+                    <p v-if="data.contactDetails.contactEmail" class="flex items-center gap-2 break-all font-semibold text-[#8F1839]"><Mail class="size-4 shrink-0" aria-hidden="true" />{{ data.contactDetails.contactEmail }}</p>
+                    <p v-if="data.contactDetails.socialHandle" class="flex items-center gap-2 font-semibold text-[#4D2F39]"><AtSign class="size-4 shrink-0 text-[#8F1839]" aria-hidden="true" /><span class="break-all">{{ data.contactDetails.socialHandle }}</span></p>
+                  </div>
+                  <div class="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-[#E8D8C4] pt-4">
+                    <span class="rounded-full px-3 py-1.5 text-xs font-bold"
+                      :class="data.contactDetails.shareWithMatches ? 'bg-[#EAF2DE] text-[#52713A]' : 'bg-[#FFF1C7] text-[#694C00]'">{{
+                        data.contactDetails.shareWithMatches ? 'Shared with active matches' : 'Currently hidden' }}</span>
+                    <NuxtLink to="/account/v2" class="text-xs font-semibold text-[#8F1839] hover:underline">Manage sharing →</NuxtLink>
+                  </div>
+                </section>
+              </div>
+            </div>
+
+            <section v-if="hasContactDetails && data.contactDetails && !data.availability?.length"
               class="order-5 rounded-lg bg-white p-5 shadow-[0_10px_24px_rgba(180,35,74,0.08)] sm:p-6">
               <div class="flex flex-wrap items-start justify-between gap-3">
                 <div><h3 class="text-xl font-semibold">Contact details</h3><p class="mt-2 text-xs leading-5 text-[#6E4D58]">This is how your saved details appear to an active match when sharing is enabled.</p></div>
@@ -349,6 +392,36 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleGalleryKeydown
   pointer-events: none;
 }
 
+.availability-contact-flip {
+  perspective: 1200px;
+}
+
+.availability-contact-inner {
+  display: grid;
+  min-width: 0;
+  transform-style: preserve-3d;
+  transition: transform .55s cubic-bezier(.2, .7, .2, 1);
+}
+
+.availability-contact-flip.is-flipped .availability-contact-inner {
+  transform: rotateY(180deg);
+}
+
+.availability-contact-face {
+  grid-area: 1 / 1;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.availability-contact-back {
+  transform: rotateY(180deg);
+}
+
+.availability-contact-flip:not(.is-flipped) .availability-contact-back,
+.availability-contact-flip.is-flipped .availability-contact-front {
+  pointer-events: none;
+}
+
 .profile-flip-card {
   min-height: 13rem;
   border-radius: .5rem;
@@ -403,7 +476,8 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleGalleryKeydown
 
   .profile-flip-card,
   .profile-flip-inner,
-  .profile-summary-inner {
+  .profile-summary-inner,
+  .availability-contact-inner {
     transition: none;
   }
 
