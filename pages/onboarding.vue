@@ -393,6 +393,12 @@ onMounted(() => { load().catch(() => { errorMessage.value = 'We could not load o
           <p v-if="photoCount">You have {{ photoCount }} {{ photoCount === 1 ? 'photo' : 'photos' }} ready.</p>
           <p v-else>Add a JPEG, PNG or WebP image to finish your profile.</p>
         </div>
+        <p class="mt-5 text-xs leading-5 text-[#6E4D58]">
+          By finishing setup, you agree to our
+          <NuxtLink to="/terms-of-service" class="font-semibold text-[#4D2F39] hover:text-[#B4234A] hover:underline">Terms of Service</NuxtLink>
+          and
+          <NuxtLink to="/acceptable-use" class="font-semibold text-[#4D2F39] hover:text-[#B4234A] hover:underline">Acceptable Use Policy</NuxtLink>.
+        </p>
         <div class="actions"><button class="secondary" type="button" @click="step = 5"><ArrowLeft class="size-4" />Back</button><NuxtLink to="/photos?onboarding=1" class="secondary"><ImagePlus class="size-4" />{{ photoCount ? 'Manage photos' : 'Upload a photo' }}</NuxtLink><button :disabled="saving || photoCount < 1" class="primary" type="button" @click="finish"><Check class="size-4" />{{ saving ? 'Finishing…' : 'Finish setup' }}</button></div>
       </section>
       <p v-if="errorMessage" class="mt-4 rounded-lg bg-[#FCE3E8] p-4 text-sm font-semibold text-[#8F1839]" role="alert">{{ errorMessage }}</p>
