@@ -195,3 +195,4 @@ onMounted(() => load().catch((error: any) => { errorMessage.value = error?.data?
   box-shadow: 0 0 0 3px rgba(180, 35, 74, .14);
 }
 </style>
+
