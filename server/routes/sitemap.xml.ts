@@ -8,6 +8,7 @@ export default defineEventHandler((event) => {
     '/upgrade',
     '/contact',
     '/terms-of-service',
+    '/acceptable-use',
     '/privacy-notice',
     '/refund-policy',
   ]

@@ -28,6 +28,10 @@
           Privacy Notice
         </NuxtLink>
 
+        <NuxtLink to="/acceptable-use" class="hover:underline">
+          Acceptable Use
+        </NuxtLink>
+
         <NuxtLink to="/refund-policy" class="hover:underline">
           Refund Policy
         </NuxtLink>

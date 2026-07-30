@@ -17,7 +17,7 @@ definePageMeta({
       </h1>
 
       <p class="text-sm text-gray-500">
-        Last updated: {{ new Date().toLocaleDateString() }}
+        Last updated: <time datetime="2026-07-30">30 July 2026</time>
       </p>
     </header>
 
@@ -75,14 +75,19 @@ definePageMeta({
     <section class="space-y-3">
       <FooterPageSectionHeading :icon="Handshake">Acceptable use</FooterPageSectionHeading>
       <p class="text-gray-700">
-        You agree not to misuse the service, including attempting to:
+        You must follow our
+        <NuxtLink to="/acceptable-use" class="font-medium text-gray-900 hover:underline">
+          Acceptable Use Policy
+        </NuxtLink>,
+        which forms part of these Terms. It explains the behaviour and content that
+        are not permitted on Lonely Radish.
       </p>
 
       <ul class="list-disc pl-6 space-y-2 text-gray-700">
-        <li>Access restricted areas without permission</li>
-        <li>Harass, impersonate, threaten, or mislead other users</li>
-        <li>Distribute or resell app content without authorisation</li>
-        <li>Interfere with the operation or security of the app</li>
+        <li>Lonely Radish is for people aged 18 or over</li>
+        <li>Paid companionship, escorting, prostitution and transactional dating are prohibited</li>
+        <li>Harassment, exploitation, impersonation, fraud and financial solicitation are prohibited</li>
+        <li>We may remove content or suspend accounts that breach the policy</li>
       </ul>
     </section>
 

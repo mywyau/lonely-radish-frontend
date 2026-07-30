@@ -168,6 +168,12 @@ onBeforeUnmount(() => {
           <template v-else>
             <button type="button" class="w-full rounded-lg px-3 py-2 text-left text-sm font-semibold text-black hover:bg-[#F3E8DA]" @click="login(route.fullPath)">Log in</button>
             <button type="button" class="mt-1 w-full rounded-lg bg-[#B4234A] px-3 py-2 text-left text-sm font-semibold text-white" @click="signup(route.fullPath)">Create account</button>
+            <p class="mt-2 px-1 text-xs leading-4 text-[#6E4D58]">
+              By creating an account, you agree to our
+              <NuxtLink to="/terms-of-service" class="font-semibold hover:underline" @click="closeMenu">Terms</NuxtLink>
+              and
+              <NuxtLink to="/acceptable-use" class="font-semibold hover:underline" @click="closeMenu">Acceptable Use Policy</NuxtLink>.
+            </p>
             <NuxtLink to="/business/sign-in"
               class="mt-2 flex w-full items-center gap-2 rounded-lg border border-[#E8D8C4] px-3 py-2 text-sm font-semibold text-[#4D2F39] hover:bg-[#F3E8DA]"
               @click="closeMenu">
