@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { readFileSync, readdirSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { inspectProductionConfiguration, latestRequiredMigration } from '../server/utils/productionReadiness'
+import { inspectDeploymentSafety, resolveAppEnvironment } from '../server/utils/deploymentSafety'
 
 const read = (path: string) => readFileSync(resolve(process.cwd(), path), 'utf8')
 
@@ -41,6 +42,30 @@ const configuredEnvironment = {
 }
 
 describe('production readiness', () => {
+  it('requires staging to use isolated infrastructure and safe outbound services', () => {
+    const staging = {
+      APP_ENV: 'staging',
+      NODE_ENV: 'production',
+      VERCEL_ENV: 'preview',
+      VERCEL_GIT_COMMIT_REF: 'staging',
+      SITE_URL: 'https://staging.lonelyradish.app',
+      APP_BASE_URL: 'https://staging.lonelyradish.app',
+      STRIPE_SECRET_KEY: 'sk_test_staging',
+      STAGING_EMAIL_ALLOWLIST: 'tester@example.com',
+      SUPABASE_URL: 'https://stagingref.supabase.co',
+      NUXT_PUBLIC_SUPABASE_URL: 'https://stagingref.supabase.co',
+      DATABASE_URL: 'postgresql://postgres.stagingref:secret@aws-0-eu-west-2.pooler.supabase.com:6543/postgres',
+    }
+    expect(resolveAppEnvironment(staging)).toBe('staging')
+    expect(inspectDeploymentSafety(staging)).toEqual({ ready: true, environment: 'staging', issues: [] })
+    expect(inspectDeploymentSafety({ ...staging, STRIPE_SECRET_KEY: 'sk_live_nope' }).issues)
+      .toContain('Staging must use a Stripe test-mode secret key')
+    expect(inspectDeploymentSafety({
+      ...staging,
+      DATABASE_URL: 'postgresql://postgres.productionref:secret@aws-0-eu-west-2.pooler.supabase.com:6543/postgres',
+    }).issues).toContain('DATABASE_URL and Supabase URLs must reference the same staging project')
+  })
+
   it('identifies every missing production service without exposing values', () => {
     const report = inspectProductionConfiguration({ NODE_ENV: 'production' })
     expect(report.ready).toBe(false)

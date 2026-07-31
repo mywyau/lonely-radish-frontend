@@ -27,6 +27,8 @@ describe('email notifications', () => {
     expect(sender).toContain("locked_at<now()-interval '10 minutes'")
     expect(sender).toContain('failed, skipped')
     expect(sender).toContain("status='failed'")
+    expect(sender).toContain('stagingEmailAllowlist')
+    expect(sender).toContain('Blocked by staging email allowlist')
   })
 
   it('requires a valid QStash signature outside local development', () => {

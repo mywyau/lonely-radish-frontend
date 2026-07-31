@@ -1,4 +1,5 @@
 import { db } from '~/server/repositories/db'
+import { resolveAppEnvironment, stagingEmailAllowlist } from '~/server/utils/deploymentSafety'
 
 const subjects: Record<string, string> = {
   interest_received: 'Someone is interested in meeting you',
@@ -189,6 +190,8 @@ export async function processPendingNotificationEmails(limit = 20) {
   const from = process.env.EMAIL_FROM
   if (!apiKey || !from) throw new Error('RESEND_API_KEY and EMAIL_FROM are required')
   const baseUrl = (process.env.APP_BASE_URL || process.env.SITE_URL || 'http://localhost:3000').replace(/\/+$/, '')
+  const appEnvironment = resolveAppEnvironment()
+  const allowedStagingRecipients = stagingEmailAllowlist()
   let sent = 0
   let failed = 0
   let skipped = 0
@@ -198,6 +201,12 @@ export async function processPendingNotificationEmails(limit = 20) {
       : setting === 'date_plans' ? row.datePlans : row.followUps
     if (!enabled) {
       await db.query(`update email_deliveries set status='skipped',locked_at=null,last_error='Disabled by recipient' where id=$1`, [row.id])
+      skipped++
+      continue
+    }
+    if (appEnvironment === 'staging' && !allowedStagingRecipients.has(String(row.email).trim().toLowerCase())) {
+      await db.query(`update email_deliveries set status='skipped',locked_at=null,
+        last_error='Blocked by staging email allowlist' where id=$1`, [row.id])
       skipped++
       continue
     }

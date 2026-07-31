@@ -1,4 +1,5 @@
 import { db } from '~/server/repositories/db'
+import { inspectDeploymentSafety } from '~/server/utils/deploymentSafety'
 import { inspectProductionConfiguration, latestRequiredMigration } from '~/server/utils/productionReadiness'
 
 export default defineEventHandler(async (event) => {
@@ -6,6 +7,7 @@ export default defineEventHandler(async (event) => {
 
   const production = process.env.NODE_ENV === 'production'
   const configuration = inspectProductionConfiguration()
+  const deploymentSafety = inspectDeploymentSafety()
   let database: 'connected' | 'unavailable' | 'mock' = process.env.DATABASE_URL ? 'unavailable' : 'mock'
   let migrations: 'current' | 'missing' | 'unavailable' | 'skipped' = process.env.DATABASE_URL ? 'unavailable' : 'skipped'
   let outbox: 'healthy' | 'delayed' | 'dead_lettered' | 'unavailable' | 'skipped' =
@@ -44,7 +46,8 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  const ready = (!production || configuration.ready)
+  const ready = deploymentSafety.ready
+    && (!production || configuration.ready)
     && database !== 'unavailable'
     && migrations !== 'missing'
     && migrations !== 'unavailable'
@@ -52,6 +55,7 @@ export default defineEventHandler(async (event) => {
 
   return {
     status: ready ? "ok" : "not_ready",
+    environment: deploymentSafety.environment,
     timestamp: new Date().toISOString(),
     runtime: process.env.NITRO_PRESET ?? "unknown",
     checks: {
@@ -59,6 +63,8 @@ export default defineEventHandler(async (event) => {
       migrations,
       outbox,
       requiredMigration: latestRequiredMigration,
+      deploymentSafety: deploymentSafety.ready ? 'safe' : 'unsafe',
+      deploymentSafetyIssues: deploymentSafety.issues,
       services: Object.fromEntries(Object.entries(configuration.services)
         .map(([name, service]) => [name, service.configured ? 'configured' : production ? 'missing' : 'not_configured'])),
     },
