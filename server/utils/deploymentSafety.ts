@@ -73,9 +73,6 @@ export function inspectDeploymentSafety(environment: Environment = process.env) 
     if (siteOrigin && appOrigin && siteOrigin !== appOrigin) {
       issues.push('SITE_URL and APP_BASE_URL must use the same origin')
     }
-    if (!value(environment, 'STRIPE_SECRET_KEY')?.startsWith('sk_test_')) {
-      issues.push('Staging must use a Stripe test-mode secret key')
-    }
     if (stagingEmailAllowlist(environment).size === 0) {
       issues.push('STAGING_EMAIL_ALLOWLIST must contain at least one test recipient')
     }

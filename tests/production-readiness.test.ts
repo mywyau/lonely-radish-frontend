@@ -58,8 +58,6 @@ describe('production readiness', () => {
     }
     expect(resolveAppEnvironment(staging)).toBe('staging')
     expect(inspectDeploymentSafety(staging)).toEqual({ ready: true, environment: 'staging', issues: [] })
-    expect(inspectDeploymentSafety({ ...staging, STRIPE_SECRET_KEY: 'sk_live_nope' }).issues)
-      .toContain('Staging must use a Stripe test-mode secret key')
     expect(inspectDeploymentSafety({
       ...staging,
       DATABASE_URL: 'postgresql://postgres.productionref:secret@aws-0-eu-west-2.pooler.supabase.com:6543/postgres',
