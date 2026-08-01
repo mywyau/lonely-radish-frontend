@@ -440,7 +440,7 @@ onMounted(async () => {
 <style scoped>
 .summary-card { display: flex; min-width: 0; flex-direction: column; align-items: center; border-radius: .5rem; background: white; padding: 1rem .5rem; box-shadow: 0 8px 20px rgba(180,35,74,.07); }
 .summary-icon { width: 1.1rem; height: 1.1rem; color: #8F1839; margin-bottom: .2rem; }
-.summary-card strong { color: #B4234A; font-size: 1.5rem; }
+.summary-card strong { color: #000; font-size: 1.5rem; }
 .summary-card span { color: #6E4D58; font-size: .75rem; font-weight: 650; }
 .summary-interested { background: #FCE3E8; }
 .summary-total { background: #F3E8DA; }
