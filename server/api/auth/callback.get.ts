@@ -1,6 +1,7 @@
 import { createRemoteJWKSet, jwtVerify } from 'jose'
 import { createError, getQuery, sendRedirect } from 'h3'
 import { ensureUser } from '~/server/services/auth/ensureUser'
+import { accountCollisionMessage, isUniqueConstraintViolation, normalizeAuthEmail } from '~/server/services/auth/accountCollision'
 import { db } from '~/server/repositories/db'
 import { useAuthFlowSession, useAuthSession } from '~/server/utils/authSession'
 
@@ -41,18 +42,48 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 401, statusMessage: 'Invalid Auth0 identity token' })
   }
 
+  const email = normalizeAuthEmail(payload.email)
+  const returnTo = flow.data.returnTo || '/'
+  const redirectWithError = async (message: string) => {
+    const errorPage = flow.data.intent === 'business' ? '/business/sign-in' : '/please-sign-in'
+    const params = new URLSearchParams({ error: message, redirect: returnTo })
+    await flow.clear()
+    return sendRedirect(event, `${errorPage}?${params.toString()}`, 302)
+  }
+  if (payload.email_verified !== true) {
+    return redirectWithError('Please verify your email address before signing in, then try again.')
+  }
+
+  const accountWithEmail = await db.query<{ id: string }>(
+    'select id from users where lower(email)=lower($1) limit 1',
+    [email],
+  )
+  if (accountWithEmail.rows[0] && accountWithEmail.rows[0].id !== payload.sub) {
+    return redirectWithError(accountCollisionMessage(accountWithEmail.rows[0].id))
+  }
+
   const existing = await db.query(`select u.account_type,u.onboarding_completed_at,
     exists(select 1 from profiles p where p.user_id=u.id) as "hasProfile" from users u where u.id=$1`, [payload.sub])
-  await ensureUser(payload.sub, payload.email)
+  try {
+    await ensureUser(payload.sub, email)
+  } catch (error) {
+    // The unique email index remains the final guard if two first logins race.
+    if (!isUniqueConstraintViolation(error)) throw error
+    const conflictingAccount = await db.query<{ id: string }>(
+      'select id from users where lower(email)=lower($1) limit 1',
+      [email],
+    )
+    if (!conflictingAccount.rows[0] || conflictingAccount.rows[0].id === payload.sub) throw error
+    return redirectWithError(accountCollisionMessage(conflictingAccount.rows[0].id))
+  }
   if (flow.data.intent === 'business' && (!existing.rows[0] ||
     (existing.rows[0].account_type === 'personal' && !existing.rows[0].onboarding_completed_at && !existing.rows[0].hasProfile))) {
     await db.query(`update users set account_type='business' where id=$1`, [payload.sub])
   }
   const session = await useAuthSession(event)
-  await session.update({ user: { sub: payload.sub, email: payload.email,
+  await session.update({ user: { sub: payload.sub, email,
     emailVerified: payload.email_verified === true, name: typeof payload.name === 'string' ? payload.name : undefined,
     mode: flow.data.intent === 'business' ? 'business' : 'personal' } })
-  const returnTo = flow.data.returnTo || '/'
   const onboarding = await db.query('select onboarding_completed_at,account_type from users where id=$1', [payload.sub])
   await flow.clear()
   if (onboarding.rows[0]?.account_type === 'business') {
