@@ -16,9 +16,11 @@ describe("account deletion", () => {
     expect(page).toContain("window.location.assign('/api/auth/logout')");
     const endpoint = read("server/api/account/v2/index.delete.ts");
     expect(endpoint).toContain("Confirmation text did not match");
-    expect(endpoint).toContain("account_deletion_jobs");
     expect(endpoint).toContain("useAuthSession");
     expect(endpoint).toContain(".clear()");
+    const service = read("server/services/accountDeletion.ts");
+    expect(service).toContain("account_deletion_jobs");
+    expect(service).toContain("account_status='deleting'");
   });
 
   it("removes external services, stored photos, and cascading database data", () => {

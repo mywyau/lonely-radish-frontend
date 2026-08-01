@@ -9,6 +9,8 @@ describe('first-login onboarding', () => {
     expect(read('server/api/auth/callback.get.ts')).toContain('/onboarding?redirect=')
     expect(read('middleware/logged-in.ts')).toContain('/api/onboarding/status')
     expect(read('pages/onboarding.vue')).toContain("step.value = status.nextStep")
+    expect(read('pages/onboarding.vue')).toContain('watch(step')
+    expect(read('pages/onboarding.vue')).toContain("window.scrollTo({ top: 0, left: 0, behavior: 'auto' })")
   })
 
   it('persists every onboarding stage before completion', () => {

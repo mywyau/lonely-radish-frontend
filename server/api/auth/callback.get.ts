@@ -51,7 +51,7 @@ export default defineEventHandler(async (event) => {
     return sendRedirect(event, `${errorPage}?${params.toString()}`, 302)
   }
   if (payload.email_verified !== true) {
-    return redirectWithError('Please verify your email address before signing in, then try again.')
+    return redirectWithError('This email/password account hasn’t been verified. Check your inbox, or choose “Use another account” to use your original sign-in method.')
   }
 
   const accountWithEmail = await db.query<{ id: string }>(

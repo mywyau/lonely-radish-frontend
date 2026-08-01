@@ -241,9 +241,9 @@ onMounted(() => {
       <div class="mx-auto max-w-6xl">
         <div class="max-w-2xl">
           <p class="section-kicker">Why it works this way</p>
-          <h2 class="section-heading">Feel less disposable.</h2>
+          <h2 class="section-heading">Give each connection room to grow.</h2>
           <p class="mt-4 leading-7 text-[#6E4D58]">
-            We don’t want you juggling dozens of matches or wondering whether a date is still happening. These are the simple rules we use to keep things manageable.
+            We don’t want you juggling dozens of matches or wondering whether a date is still happening. We have some rules we use to keep things manageable.
           </p>
         </div>
 

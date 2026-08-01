@@ -15,6 +15,7 @@ describe('regular web application auth flow', () => {
     expect(callback).toContain("required('AUTH0_CLIENT_SECRET')")
     expect(callback).toContain('payload.nonce !== flow.data.nonce')
     expect(callback).toContain('payload.email_verified !== true')
+    expect(callback).toContain('This email/password account hasn’t been verified.')
     expect(callback).toContain('accountCollisionMessage')
     expect(callback).toContain('isUniqueConstraintViolation')
     expect(login).toContain("audience !== 'your-auth0-api-identifier'")

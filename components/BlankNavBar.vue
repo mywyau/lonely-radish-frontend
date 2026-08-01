@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useMeStateV2 } from '@/composables/useMeStateV2'
-import { BadgePercent, Bell, Building2, ClipboardCheck, Eye, HeartHandshake, History, House, Menu, Send, ShieldAlert, ShieldCheck, Sparkles, X } from '@lucide/vue'
+import { BadgePercent, Bell, Building2, ClipboardCheck, Eye, HeartHandshake, History, House, Menu, Send, ShieldAlert, ShieldCheck, Sparkles, UsersRound, X } from '@lucide/vue'
 import { login, logout, signup } from '@/composables/useAuth'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
@@ -32,6 +32,7 @@ const navLinks = computed(() => {
     { to: '/account/blocked', label: 'Blocked users', icon: ShieldCheck },
   ]
   if (isAdmin.value) {
+    links.push({ to: '/admin/users', label: 'Member administration', icon: UsersRound })
     links.push({ to: '/admin/moderation', label: 'Safety moderation', icon: ShieldAlert })
     links.push({ to: '/admin/businesses', label: 'Business approvals', icon: ClipboardCheck })
   }

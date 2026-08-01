@@ -14,6 +14,13 @@ const saving = ref(false)
 const errorMessage = ref('')
 const step = ref(1)
 const photoCount = ref(0)
+
+watch(step, async (currentStep, previousStep) => {
+  if (currentStep === previousStep || !import.meta.client) return
+  await nextTick()
+  window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
+})
+
 const nameLimit = 80
 const displayNameLimit = 80
 const pronounsLimit = 40

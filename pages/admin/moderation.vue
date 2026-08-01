@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { AlertTriangle, Check, ChevronDown, Clock3, Search, ShieldAlert, UserRound, X } from '@lucide/vue'
+import { AlertTriangle, Check, ChevronDown, Clock3, Search, ShieldAlert, Trash2, UserRound, X } from '@lucide/vue'
 
 definePageMeta({ title: 'Moderation · Lonely Radish', middleware: 'admin' })
 
@@ -55,6 +55,10 @@ const nextCursor = ref<string | null>(null)
 const hasMore = ref(false)
 const decisions = reactive<Record<string, Decision>>({})
 const notes = reactive<Record<string, string>>({})
+const deletionPanels = reactive<Record<string, boolean>>({})
+const deletionConfirmations = reactive<Record<string, string>>({})
+const deletionReasons = reactive<Record<string, string>>({})
+const deletingUserId = ref('')
 let filterTimer: ReturnType<typeof setTimeout> | undefined
 let requestNumber = 0
 
@@ -164,6 +168,40 @@ async function applyDecision(report: ReportItem) {
   }
 }
 
+async function permanentlyDeleteMember(report: ReportItem) {
+  const confirmation = deletionConfirmations[report.id]?.trim() || ''
+  const reason = deletionReasons[report.id]?.trim() || ''
+  if (confirmation.toLowerCase() !== report.reportedEmail.toLowerCase()) {
+    errorMessage.value = 'Enter the reported member’s complete email address to confirm deletion.'
+    return
+  }
+  if (reason.length < 10) {
+    errorMessage.value = 'Add a deletion reason of at least 10 characters.'
+    return
+  }
+
+  deletingUserId.value = report.reportedId
+  errorMessage.value = ''
+  successMessage.value = ''
+  try {
+    await $fetch(`/api/admin/users/${encodeURIComponent(report.reportedId)}`, {
+      method: 'DELETE',
+      body: { confirmEmail: confirmation, reason, reportId: report.id },
+    })
+    for (const item of reports.value) {
+      if (item.reportedId === report.reportedId) item.reportedAccountStatus = 'deleting'
+    }
+    deletionPanels[report.id] = false
+    delete deletionConfirmations[report.id]
+    delete deletionReasons[report.id]
+    successMessage.value = 'Permanent account deletion has been queued and audited.'
+  } catch (error: any) {
+    errorMessage.value = error?.data?.statusMessage || 'Permanent account deletion could not be queued.'
+  } finally {
+    deletingUserId.value = ''
+  }
+}
+
 watch([status, category, priority], () => {
   nextCursor.value = null
   void loadReports()
@@ -242,6 +280,22 @@ onBeforeUnmount(() => {
             <p v-if="report.resolution" class="mt-4 rounded-lg bg-[#EAF2DE] p-4 text-sm"><span class="font-semibold">Resolution:</span> {{ report.resolution }}<span v-if="report.reviewedBy" class="block mt-1 text-xs text-[#52713A]">Reviewed by {{ report.reviewedBy }} on {{ formattedDate(report.reviewedAt) }}</span></p>
 
             <section class="mt-5 border-t border-[#E8D8C4] pt-5"><h3 class="font-semibold">Record a decision</h3><div class="mt-3 grid gap-3 md:grid-cols-[0.8fr_1.2fr]"><label class="text-sm font-semibold">Action<select v-model="decisions[report.id]" class="filter-field"><option value="reviewing">Mark as reviewing</option><option value="dismiss">Close — no action</option><option value="warning">Issue warning</option><option value="suspend_7_days">Suspend for 7 days</option><option value="suspend_30_days">Suspend for 30 days</option><option value="suspend_permanent">Suspend permanently</option><option v-if="report.reportedAccountStatus === 'suspended'" value="restore">Restore account</option></select></label><label class="text-sm font-semibold">Private resolution note<textarea v-model="notes[report.id]" maxlength="1000" rows="3" class="filter-field resize-none" placeholder="Required for final decisions; never shown to the reporter or reported member." /></label></div><div class="mt-3 flex items-center justify-between gap-3"><p class="text-xs text-[#6E4D58]">Every action records the administrator, timestamp and report.</p><button type="button" :disabled="savingId === report.id" class="inline-flex items-center gap-2 rounded-lg bg-[#B4234A] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50" @click="applyDecision(report)"><Check class="size-4" />{{ savingId === report.id ? 'Saving…' : 'Save decision' }}</button></div></section>
+
+            <section v-if="report.reportedRole === 'member'" class="mt-5 border-t border-[#E8D8C4] pt-5">
+              <div class="flex flex-wrap items-start justify-between gap-3">
+                <div><h3 class="font-semibold text-[#8F1839]">Permanent account deletion</h3><p class="mt-1 max-w-2xl text-sm leading-6 text-[#6E4D58]">This removes the member’s Auth0 login, profile photos and application data, and cancels active subscriptions. It cannot be undone.</p></div>
+                <span v-if="report.reportedAccountStatus === 'deleting'" class="rounded-full bg-[#FCE3E8] px-3 py-2 text-xs font-bold text-[#8F1839]">Deletion queued</span>
+                <button v-else-if="!deletionPanels[report.id]" type="button" class="inline-flex items-center gap-2 rounded-lg border border-[#B4234A] px-4 py-2.5 text-sm font-semibold text-[#8F1839]" @click="deletionPanels[report.id] = true"><Trash2 class="size-4" />Permanently delete account</button>
+              </div>
+              <div v-if="deletionPanels[report.id] && report.reportedAccountStatus !== 'deleting'" class="mt-4 rounded-lg bg-[#FCE3E8] p-4">
+                <p class="text-sm font-semibold text-[#8F1839]">Confirm the exact account and record why deletion is necessary.</p>
+                <div class="mt-3 grid gap-3 md:grid-cols-2">
+                  <label class="text-sm font-semibold">Deletion reason<textarea v-model="deletionReasons[report.id]" maxlength="1000" rows="3" class="filter-field resize-none" placeholder="At least 10 characters; retained in the deletion audit." /></label>
+                  <label class="text-sm font-semibold">Type {{ report.reportedEmail }} to confirm<input v-model="deletionConfirmations[report.id]" class="filter-field" autocomplete="off" /></label>
+                </div>
+                <div class="mt-3 flex flex-wrap justify-end gap-2"><button type="button" class="rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-[#4D2F39]" @click="deletionPanels[report.id] = false">Cancel</button><button type="button" :disabled="deletingUserId === report.reportedId" class="inline-flex items-center gap-2 rounded-lg bg-[#8F1839] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50" @click="permanentlyDeleteMember(report)"><Trash2 class="size-4" />{{ deletingUserId === report.reportedId ? 'Queuing deletion…' : 'Confirm permanent deletion' }}</button></div>
+              </div>
+            </section>
           </div>
         </details>
       </div>
