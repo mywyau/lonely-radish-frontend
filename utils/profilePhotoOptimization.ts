@@ -6,7 +6,7 @@ const FULL_MAX_DIMENSION = 1600
 const FULL_TARGET_BYTES = 450 * 1024
 const THUMBNAIL_MAX_DIMENSION = 480
 const THUMBNAIL_TARGET_BYTES = 80 * 1024
-const WEBP_QUALITIES = [.82, .74, .66, .58, .5]
+const OUTPUT_QUALITIES = [.82, .74, .66, .58, .5]
 
 type LoadedImage = {
   source: CanvasImageSource
@@ -33,31 +33,32 @@ export function scaledDimensions(width: number, height: number, maxDimension: nu
   }
 }
 
-function webpName(name: string, suffix = '') {
+function optimizedName(name: string, contentType: string, suffix = '') {
   const base = name.replace(/\.[^.]+$/, '').replace(/[^a-z0-9_-]+/gi, '-').replace(/^-+|-+$/g, '') || 'profile-photo'
-  return `${base}${suffix}.webp`
+  return `${base}${suffix}.${contentType === 'image/webp' ? 'webp' : 'jpg'}`
 }
 
-function canvasToWebp(canvas: HTMLCanvasElement, quality: number) {
-  return new Promise<Blob>((resolve, reject) => {
+function canvasToBlob(canvas: HTMLCanvasElement, contentType: 'image/webp' | 'image/jpeg', quality: number) {
+  return new Promise<Blob | null>((resolve) => {
     canvas.toBlob((blob) => {
-      if (!blob || blob.type !== 'image/webp') {
-        reject(new Error('This browser could not optimise the photo as WebP. Try an up-to-date browser.'))
-        return
-      }
-      resolve(blob)
-    }, 'image/webp', quality)
+      resolve(blob?.type === contentType ? blob : null)
+    }, contentType, quality)
   })
 }
 
 async function loadImage(file: File): Promise<LoadedImage> {
   if (typeof createImageBitmap === 'function') {
-    const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' })
-    return {
-      source: bitmap,
-      width: bitmap.width,
-      height: bitmap.height,
-      dispose: () => bitmap.close(),
+    try {
+      const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' })
+      return {
+        source: bitmap,
+        width: bitmap.width,
+        height: bitmap.height,
+        dispose: () => bitmap.close(),
+      }
+    } catch {
+      // Older WebKit versions expose createImageBitmap but reject its orientation option.
+      // Loading through an HTML image keeps those browsers on the supported path below.
     }
   }
 
@@ -80,6 +81,7 @@ async function encodeVariant(
   targetBytes: number,
 ) {
   let smallest: Blob | null = null
+  let contentType: 'image/webp' | 'image/jpeg' = 'image/webp'
 
   for (const dimensionScale of [1, .88, .76]) {
     const dimensions = scaledDimensions(image.width, image.height, Math.round(maxDimension * dimensionScale))
@@ -92,8 +94,13 @@ async function encodeVariant(
     context.imageSmoothingQuality = 'high'
     context.drawImage(image.source, 0, 0, dimensions.width, dimensions.height)
 
-    for (const quality of WEBP_QUALITIES) {
-      const blob = await canvasToWebp(canvas, quality)
+    for (const quality of OUTPUT_QUALITIES) {
+      let blob = await canvasToBlob(canvas, contentType, quality)
+      if (!blob && contentType === 'image/webp') {
+        contentType = 'image/jpeg'
+        blob = await canvasToBlob(canvas, contentType, quality)
+      }
+      if (!blob) throw new Error('This browser could not optimise the photo. Try a different JPEG or PNG image.')
       if (!smallest || blob.size < smallest.size) smallest = blob
       if (blob.size <= targetBytes) return blob
     }
@@ -123,8 +130,8 @@ export async function optimizeProfilePhoto(file: File): Promise<OptimizedProfile
     }
 
     return {
-      full: new File([fullBlob], webpName(file.name), { type: 'image/webp', lastModified: file.lastModified }),
-      thumbnail: new File([thumbnailBlob], webpName(file.name, '-thumbnail'), { type: 'image/webp', lastModified: file.lastModified }),
+      full: new File([fullBlob], optimizedName(file.name, fullBlob.type), { type: fullBlob.type, lastModified: file.lastModified }),
+      thumbnail: new File([thumbnailBlob], optimizedName(file.name, thumbnailBlob.type, '-thumbnail'), { type: thumbnailBlob.type, lastModified: file.lastModified }),
       originalBytes: file.size,
     }
   } finally {

@@ -62,6 +62,7 @@ async function onFilesSelected(event: Event) {
         method: 'POST',
         body: {
           contentType: optimized.full.type,
+          thumbnailContentType: optimized.thumbnail.type,
           size: optimized.full.size,
           thumbnailSize: optimized.thumbnail.size,
         },
@@ -71,10 +72,10 @@ async function onFilesSelected(event: Event) {
         const bucket = supabase.storage.from('profile-photos')
         const [photoUpload, thumbnailUpload] = await Promise.all([
           bucket.uploadToSignedUrl(signed.photo.path, signed.photo.token, optimized.full, {
-            contentType: 'image/webp', cacheControl: '31536000',
+            contentType: optimized.full.type, cacheControl: '31536000',
           }),
           bucket.uploadToSignedUrl(signed.thumbnail.path, signed.thumbnail.token, optimized.thumbnail, {
-            contentType: 'image/webp', cacheControl: '31536000',
+            contentType: optimized.thumbnail.type, cacheControl: '31536000',
           }),
         ])
         if (photoUpload.error) throw photoUpload.error

@@ -31,7 +31,7 @@ export default defineEventHandler(async (event) => {
   const nextStep = !profileComplete ? 1 : !racialIdentityComplete ? 2 : activityCount < 1 ? 3
     : !preferencesComplete || !locationComplete ? 4 : !datingComplete ? 5 : 6
   const complete = Boolean(state.completedAt) && profileComplete && racialIdentityComplete
-    && activityCount > 0 && preferencesComplete && datingComplete && locationComplete && photoCount > 0
+    && activityCount > 0 && preferencesComplete && datingComplete && locationComplete
   return { complete, completedAt: state.completedAt, nextStep, profileComplete, racialIdentityComplete,
     activityCount, photoCount, preferencesComplete, datingComplete, locationComplete }
 })

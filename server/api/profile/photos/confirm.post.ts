@@ -6,6 +6,7 @@ import { photoOwnerFolder, PROFILE_PHOTO_BUCKET, signedPhotoUrl, storageAdmin } 
 
 const MAX_PHOTO_BYTES = 1024 * 1024
 const MAX_THUMBNAIL_BYTES = 200 * 1024
+const ACCEPTED_CONTENT_TYPES = new Set(['image/webp', 'image/jpeg'])
 
 function objectMetadata(object: any) {
   return {
@@ -37,7 +38,7 @@ export default defineEventHandler(async (event) => {
 
   const photo = objectMetadata(photoInfo.data)
   const thumbnail = objectMetadata(thumbnailInfo.data)
-  if (photo.contentType !== 'image/webp' || thumbnail.contentType !== 'image/webp'
+  if (!ACCEPTED_CONTENT_TYPES.has(photo.contentType) || !ACCEPTED_CONTENT_TYPES.has(thumbnail.contentType)
     || photo.size < 1 || photo.size > MAX_PHOTO_BYTES
     || thumbnail.size < 1 || thumbnail.size > MAX_THUMBNAIL_BYTES) {
     await bucket.remove([storageKey, thumbnailStorageKey])

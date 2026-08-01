@@ -9,19 +9,27 @@ import { enforceRateLimit } from '~/server/utils/rate-limiting/rateLimit'
 const MAX_PHOTO_BYTES = 1024 * 1024
 const MAX_THUMBNAIL_BYTES = 200 * 1024
 
+function photoExtension(contentType: string) {
+  if (contentType === 'image/webp') return 'webp'
+  if (contentType === 'image/jpeg') return 'jpg'
+  badRequest('Photos must be optimised as WebP or JPEG before upload')
+}
+
 export default defineEventHandler(async (event) => {
   const { sub } = await requireUser(event)
   await enforceRateLimit(`rl:photo-upload:${sub}`, 12, 60 * 60)
   const body = objectBody(await readBody(event))
   const contentType = text(body.contentType, 'File type', 100, true)!
+  const thumbnailContentType = text(body.thumbnailContentType, 'Thumbnail file type', 100, true)!
   const size = integer(body.size, 'File size', 1, MAX_PHOTO_BYTES)
   const thumbnailSize = integer(body.thumbnailSize, 'Thumbnail size', 1, MAX_THUMBNAIL_BYTES)
-  if (contentType !== 'image/webp') badRequest('Photos must be optimised as WebP before upload')
+  const extension = photoExtension(contentType)
+  const thumbnailExtension = photoExtension(thumbnailContentType)
   const { rows } = await db.query('select count(*)::int as count from profile_photos where user_id=$1', [sub])
   if (Number(rows[0]?.count || 0) >= 6) badRequest('You can upload up to six photos')
   const id = randomUUID()
-  const storageKey = `${photoOwnerFolder(sub)}/${id}.webp`
-  const thumbnailStorageKey = `${photoOwnerFolder(sub)}/${id}-thumbnail.webp`
+  const storageKey = `${photoOwnerFolder(sub)}/${id}.${extension}`
+  const thumbnailStorageKey = `${photoOwnerFolder(sub)}/${id}-thumbnail.${thumbnailExtension}`
   const bucket = storageAdmin().storage.from(PROFILE_PHOTO_BUCKET)
   const [photoUpload, thumbnailUpload] = await Promise.all([
     bucket.createSignedUploadUrl(storageKey),
@@ -34,6 +42,7 @@ export default defineEventHandler(async (event) => {
     photo: { path: photoUpload.data.path, token: photoUpload.data.token },
     thumbnail: { path: thumbnailUpload.data.path, token: thumbnailUpload.data.token },
     contentType,
+    thumbnailContentType,
     size,
     thumbnailSize,
   }

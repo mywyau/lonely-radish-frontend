@@ -5,6 +5,8 @@ import {
   MAX_STORED_THUMBNAIL_BYTES,
   scaledDimensions,
 } from '../utils/profilePhotoOptimization'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 
 describe('profile photo optimisation', () => {
   it('preserves aspect ratio and never enlarges smaller photos', () => {
@@ -21,5 +23,11 @@ describe('profile photo optimisation', () => {
 
   it('rejects invalid dimensions', () => {
     expect(() => scaledDimensions(0, 600, 1600)).toThrow('dimensions')
+  })
+
+  it('falls back to JPEG when the browser cannot encode WebP', () => {
+    const optimizer = readFileSync(resolve(process.cwd(), 'utils/profilePhotoOptimization.ts'), 'utf8')
+    expect(optimizer).toContain("contentType = 'image/jpeg'")
+    expect(optimizer).toContain("contentType === 'image/webp' ? 'webp' : 'jpg'")
   })
 })
