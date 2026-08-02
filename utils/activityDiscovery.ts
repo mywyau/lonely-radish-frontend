@@ -1,10 +1,12 @@
 export type DiscoveryCategory = {
   name: string
   databaseCategories: string[]
+  customOnly?: boolean
 }
 
 export const discoveryCategories: Record<string, DiscoveryCategory> = {
-  casual: { name: 'Casual', databaseCategories: ['Food and drink'] },
+  'food-drink': { name: 'Food & drink', databaseCategories: ['Food and drink'] },
+  'your-ideas': { name: 'Your ideas', databaseCategories: [], customOnly: true },
   culture: { name: 'Culture', databaseCategories: ['Culture'] },
   sports: { name: 'Sports', databaseCategories: ['Sports'] },
   outdoors: { name: 'Outdoors', databaseCategories: ['Outdoors'] },
@@ -17,8 +19,9 @@ export const discoveryCategories: Record<string, DiscoveryCategory> = {
 }
 
 const legacyCategorySlugs: Record<string, string> = {
+  casual: 'food-drink',
   'gallery-wander': 'culture', 'live-music-set': 'culture',
-  'market-loop': 'casual', 'casual-food-crawl': 'casual',
+  'market-loop': 'food-drink', 'casual-food-crawl': 'food-drink',
   'riverside-walk': 'outdoors', 'cycle-and-stop': 'outdoors',
   'park-tennis-rally': 'sports', 'climbing-taster': 'sports',
   'co-op-game-session': 'games', 'puzzle-room-online': 'games', 'watch-and-play-lobby': 'games',

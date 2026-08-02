@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ArrowRight, CalendarDays, CheckCircle2, ChevronDown, Circle, MapPin, ShieldCheck, SlidersHorizontal, Sparkles, Trash2, UserRound } from "@lucide/vue";
 import { raceEthnicityOptions, raceEthnicitySelfDescriptionLimit, usesRaceEthnicitySelfDescription } from '~/utils/raceEthnicity';
+import { genderIdentityOptions } from '~/utils/genderIdentity';
 import { sexualOrientationOptions } from '~/utils/sexualOrientation';
 
 definePageMeta({
@@ -9,7 +10,7 @@ definePageMeta({
 });
 
 const { user } = useMeStateV2();
-const profile = reactive({ firstName: "", lastName: "", displayName: "", raceEthnicity: "", raceEthnicitySelfDescription: "", sexualOrientation: "" });
+const profile = reactive({ firstName: "", lastName: "", displayName: "", genderIdentity: "", pronouns: "", raceEthnicity: "", raceEthnicitySelfDescription: "", sexualOrientation: "" });
 
 const savingAccountDetails = ref(false);
 const accountDetailsSaved = ref(false);
@@ -29,6 +30,7 @@ const deleteError = ref("");
 const deletionQueued = ref(false);
 const contact = reactive({ phoneNumber: '', contactEmail: '', socialHandle: '', shareWithMatches: false });
 const accountNameLimit = 80;
+const pronounsLimit = 40;
 const phoneNumberLimit = 30;
 const contactEmailLimit = 254;
 const socialHandleLimit = 100;
@@ -151,6 +153,10 @@ async function saveProfileBasics() {
     profileBasicsError.value = 'Select your sexual orientation.'
     return
   }
+  if (!profile.genderIdentity) {
+    profileBasicsError.value = 'Select your gender identity.'
+    return
+  }
   if (!profile.raceEthnicity) {
     profileBasicsError.value = 'Select your racial or ethnic identity.'
     return
@@ -166,6 +172,8 @@ async function saveProfileBasics() {
       timeout: requestTimeoutMs,
       body: {
         displayName: profile.displayName,
+        genderIdentity: profile.genderIdentity,
+        pronouns: profile.pronouns,
         raceEthnicity: profile.raceEthnicity,
         raceEthnicitySelfDescription: profile.raceEthnicitySelfDescription,
         sexualOrientation: profile.sexualOrientation,
@@ -259,6 +267,8 @@ onMounted(async () => {
     profile.raceEthnicity = result.profile?.raceEthnicity || '';
     profile.raceEthnicitySelfDescription = result.profile?.raceEthnicitySelfDescription || '';
     profile.sexualOrientation = result.profile?.sexualOrientation || '';
+    profile.genderIdentity = result.profile?.genderIdentity || '';
+    profile.pronouns = result.profile?.pronouns || '';
     profile.displayName = result.profile?.displayName || '';
   } else {
     accountLoadError.value ||= requestMessage(profileResult.reason, 'Some account details could not be loaded. Refresh the page and try again.')
@@ -405,6 +415,20 @@ onMounted(async () => {
                 Profile name
                 <input v-model="profile.displayName" class="field" type="text" :maxlength="accountNameLimit" autocomplete="nickname" required placeholder="Name shown to other members">
                 <span class="mt-1 block text-xs font-normal text-[#6E4D58]">This is your unique public name. Changing it does not change your private first or last name.</span>
+              </label>
+
+              <label class="block text-sm font-medium">
+                Gender identity
+                <select v-model="profile.genderIdentity" class="field" required>
+                  <option value="" disabled>Select an option</option>
+                  <option v-for="option in genderIdentityOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
+                </select>
+              </label>
+
+              <label class="block text-sm font-medium">
+                Pronouns <span class="font-normal text-[#6E4D58]">(optional)</span>
+                <input v-model="profile.pronouns" class="field" type="text" :maxlength="pronounsLimit" autocomplete="off" placeholder="For example, she/her">
+                <span class="mt-1 block text-xs font-normal text-[#6E4D58]">Shown on your profile when provided.</span>
               </label>
 
               <label class="block text-sm font-medium sm:col-span-2">

@@ -3,7 +3,7 @@ import { db } from '~/server/repositories/db'
 import { requireUser } from '~/server/utils/requireUser'
 import { boolean, objectBody, stringArray } from '~/server/utils/productValidation'
 import { isRaceEthnicity, raceEthnicityOptions } from '~/utils/raceEthnicity'
-import { expandSexualOrientationPreferences, groupSexualOrientationPreferences, sexualOrientationValues } from '~/utils/sexualOrientation'
+import { expandSexualOrientationPreferences, groupSexualOrientationPreferences, sexualOrientationPreferenceValues } from '~/utils/sexualOrientation'
 
 export default defineEventHandler(async (event) => {
   const { sub } = await requireUser(event)
@@ -14,8 +14,8 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'Select valid gender preferences' })
   }
   const openToEveryone = boolean(body.openToEveryone, 'Open to everyone')
-  const requestedOrientations = stringArray(body.orientations, 'Sexual orientation preferences', sexualOrientationValues.length)
-  if (requestedOrientations.some(orientation => !sexualOrientationValues.includes(orientation as typeof sexualOrientationValues[number]))) {
+  const requestedOrientations = stringArray(body.orientations, 'Sexual orientation preferences', sexualOrientationPreferenceValues.length)
+  if (requestedOrientations.some(orientation => !sexualOrientationPreferenceValues.includes(orientation as typeof sexualOrientationPreferenceValues[number]))) {
     throw createError({ statusCode: 400, statusMessage: 'Select valid sexual orientation preferences' })
   }
   const orientations = expandSexualOrientationPreferences(requestedOrientations)

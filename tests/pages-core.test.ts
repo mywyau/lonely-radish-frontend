@@ -92,6 +92,8 @@ describe("core page contracts", () => {
     expect(profile).toContain("galleryPhotos");
     expect(profile).toContain(".slice(0, 6)");
     expect(profile).toContain("pronouns: 'they/them'");
+    expect(profile).toContain("genderIdentity: 'neither'");
+    expect(profile).toContain('genderIdentityLabel(profile.genderIdentity)');
     expect(profile).toContain("'Show interest'");
     expect(profile).toContain("Already matched with ${profile.name}");
     expect(profile).toContain("Unmatched from ${profile.name}");

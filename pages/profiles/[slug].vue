@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { AtSign, CalendarDays, ChevronDown, ChevronLeft, ChevronRight, Expand, HeartHandshake, Mail, MapPin, Phone, RefreshCw, ShieldCheck, Sparkles, UserRound, X } from '@lucide/vue'
 import { profileDetails } from '~/utils/profileDetails'
+import { genderIdentityLabel } from '~/utils/genderIdentity'
 
 definePageMeta({ middleware: 'logged-in' })
 
@@ -10,7 +11,7 @@ const { todaysInterests, dailyInterestLimit, activeMatchLimit, hasUsedDailyInter
 const profiles: Record<string, any> = {
   maya: {
     isDemo: true,
-    name: 'Maya', age: 31, pronouns: 'she/her', place: 'London',
+    name: 'Maya', age: 31, genderIdentity: 'woman', pronouns: 'she/her', place: 'London',
     bio: 'I’m a book designer who is happiest wandering around a small exhibition, finding the best thing at a Sunday market, or catching a low-key gig. I’m looking for someone kind and curious who is up for making an actual plan.',
     activities: ['Gallery walks', 'Sunday markets', 'Live music', 'Bookshops', 'Riverside walks'],
     interests: ['Design', 'Independent magazines', 'Cooking', 'City history'],
@@ -20,7 +21,7 @@ const profiles: Record<string, any> = {
   },
   nina: {
     isDemo: true,
-    name: 'Nina', age: 29, pronouns: 'she/her', place: 'London',
+    name: 'Nina', age: 29, genderIdentity: 'woman', pronouns: 'she/her', place: 'London',
     isMatched: true,
     bio: 'I work in community radio and spend a lot of my free time looking for films, food, and corners of London I have not seen before. I appreciate thoughtful people, silly observations, and plans that leave room for a spontaneous second stop.',
     activities: ['Indie films', 'City walks', 'Casual food spots', 'Comedy nights', 'Markets'],
@@ -32,7 +33,7 @@ const profiles: Record<string, any> = {
   },
   alex: {
     isDemo: true,
-    name: 'Alex', age: 34, pronouns: 'they/them', place: 'London',
+    name: 'Alex', age: 34, genderIdentity: 'neither', pronouns: 'they/them', place: 'London',
     bio: 'I’m a product researcher, enthusiastic beginner climber, and collector of second-hand books I absolutely intend to read. I like people who are curious, direct, and happy to alternate active plans with a quiet wander and a good snack.',
     activities: ['Climbing', 'Book markets', 'Riverside walks', 'Board games', 'Cooking classes'],
     interests: ['Architecture', 'Science fiction', 'Ceramics', 'Neighbourhood history'],
@@ -282,9 +283,12 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
                   profile
                 </p>
                 <div class="flex flex-wrap items-start justify-between gap-3">
-                  <div class="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1">
-                    <h1 class="text-3xl font-semibold">{{ profile.name }}, {{ profile.age }}</h1><span
-                      class="text-sm text-[#6E4D58]">{{ profile.pronouns }}</span>
+                  <div class="min-w-0">
+                    <h1 class="text-3xl font-semibold">{{ profile.name }}, {{ profile.age }}</h1>
+                    <div v-if="genderIdentityLabel(profile.genderIdentity) || profile.pronouns" class="mt-2 flex flex-wrap gap-2 text-xs font-semibold text-[#4D2F39]">
+                      <span v-if="genderIdentityLabel(profile.genderIdentity)" class="rounded-full bg-[#F3E8DA] px-3 py-1.5">{{ genderIdentityLabel(profile.genderIdentity) }}</span>
+                      <span v-if="profile.pronouns" class="rounded-full bg-[#FCE3E8] px-3 py-1.5">{{ profile.pronouns }}</span>
+                    </div>
                   </div>
                   <button type="button"
                     class="inline-flex shrink-0 items-center gap-2 rounded-full bg-[#FCE3E8] px-3 py-2 text-xs font-semibold text-[#8F1839 hover:brightness-90"

@@ -8,7 +8,7 @@ export default defineEventHandler(async (event) => {
   const viewer = await requireUser(event)
   const slug = getRouterParam(event, 'slug')
   const { rows } = await db.query(`select p.user_id as "userId",p.slug,p.display_name as name,
-    extract(year from age(current_date,p.date_of_birth))::int as age,p.pronouns,p.bio,
+    extract(year from age(current_date,p.date_of_birth))::int as age,p.gender_identity as "genderIdentity",p.pronouns,p.bio,
     coalesce(p.location_label,p.postcode_area,p.neighbourhood) as place,
     p.height_cm as "heightCm",p.weight_kg as "weightKg",p.drinking,p.smoking,p.daily_rhythm as "dailyRhythm",
     relationship.id as "matchId",relationship.status as "relationshipStatus",
@@ -57,7 +57,7 @@ export default defineEventHandler(async (event) => {
     src: photo.storageKey ? photoUrls.get(photo.storageKey) : photo.src, storageKey: undefined,
   })), activities: activities.rows.map(row => row.name),
     personalInterests: personalInterests.rows.map(row => row.label),
-    interestCategories: [...new Set(activities.rows.map(row => ({ 'Food and drink': 'Casual', Gaming: 'Games', Learning: 'Learn & create' }[row.category as string] || row.category)).filter(Boolean))],
+    interestCategories: [...new Set(activities.rows.map(row => ({ 'Food and drink': 'Food & drink', Gaming: 'Games', Learning: 'Learn & create' }[row.category as string] || row.category)).filter(Boolean))],
     availability: availability.rows.map(row => row.label),
     availabilityVisibleBeforeMatch: profile.availabilityVisibleBeforeMatch,
     contactDetails: contactDetails.rows[0] ?? null }

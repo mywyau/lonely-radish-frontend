@@ -47,7 +47,8 @@ onMounted(async () => { Object.assign(preferences, await $fetch('/api/preference
           <div class="mt-5 grid gap-2 sm:grid-cols-3">
             <button v-for="option in sexualOrientationPreferenceOptions" :key="option.value" type="button" class="choice" :class="preferences.orientations.includes(option.value) && 'choice-selected'" :aria-pressed="preferences.orientations.includes(option.value)" @click="toggleOrientation(option.value)">{{ option.label }}</button>
           </div>
-          <p class="mt-3 text-xs font-semibold text-[#6E4D58]">{{ preferences.orientations.length ? `${preferences.orientations.length} selected` : 'Select at least one orientation' }}</p>
+          <p class="mt-3 text-xs leading-5 text-[#6E4D58]">“Homosexual” includes people who describe themselves as gay or lesbian.</p>
+          <p class="mt-2 text-xs font-semibold text-[#6E4D58]">{{ preferences.orientations.length ? `${preferences.orientations.length} selected` : 'Select at least one orientation' }}</p>
         </section>
 
         <section class="rounded-lg bg-white p-6 shadow-[0_12px_28px_rgba(180,35,74,0.08)]">

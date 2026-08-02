@@ -9,6 +9,7 @@ const route = useRoute()
 const slug = computed(() => String(route.params.slug || ''))
 const activityName = computed(() => discoveryCategory(slug.value)?.name || 'This category')
 const activityExists = computed(() => Boolean(discoveryCategory(slug.value)))
+const customActivityCategory = computed(() => discoveryCategory(slug.value)?.customOnly === true)
 
 const fallbackPeople = [
   { slug: 'maya', name: 'Maya', age: 31, place: 'London', matchedActivityTags: ['Gallery walks'], otherActivityTags: ['Markets', 'Live music'], tone: 'bg-[#FCE3E8]' },
@@ -62,8 +63,8 @@ onMounted(async () => {
     <section class="mx-auto max-w-5xl">
       <div class="rounded-lg bg-[#2A1520] p-6 text-white shadow-[0_14px_32px_rgba(42,21,32,0.16)] sm:p-8">
         <Sparkles class="size-6 text-[#F7B7C4]" aria-hidden="true" />
-        <h1 class="mt-2 text-3xl font-semibold sm:text-4xl">Who’s up for {{ activityName.toLowerCase() }}?</h1>
-        <p class="mt-3 max-w-2xl text-sm leading-6 text-white/75">Everyone here chose something in this category. Open a profile to see exactly what they’re into.</p>
+        <h1 class="mt-2 text-3xl font-semibold sm:text-4xl">{{ customActivityCategory ? 'Who has added their own date ideas?' : `Who’s up for ${activityName.toLowerCase()}?` }}</h1>
+        <p class="mt-3 max-w-2xl text-sm leading-6 text-white/75">{{ customActivityCategory ? 'Everyone here wrote at least one activity themselves. Open a profile to see their ideas.' : 'Everyone here chose something in this category. Open a profile to see exactly what they’re into.' }}</p>
       </div>
 
       <section v-if="appliedFilters" class="mt-5 rounded-lg border border-[#E8D8C4] bg-white p-4 shadow-[0_8px_20px_rgba(180,35,74,0.05)]" aria-label="Applied discovery filters">

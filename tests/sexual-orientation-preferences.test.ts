@@ -6,19 +6,19 @@ import {
 } from '../utils/sexualOrientation'
 
 describe('sexual orientation settings', () => {
-  it('uses the same five choices for identity and matching', () => {
+  it('keeps identity labels distinct while grouping gay and lesbian for matching', () => {
     expect(sexualOrientationPreferenceOptions.map(option => option.label))
-      .toEqual(['Straight', 'Gay', 'Lesbian', 'Bisexual', 'Another orientation'])
+      .toEqual(['Heterosexual', 'Homosexual', 'Bisexual', 'Another orientation'])
   })
 
-  it('stores selected filters directly without broad-group translation', () => {
-    expect(expandSexualOrientationPreferences(['straight', 'gay', 'another_orientation']))
-      .toEqual(['straight', 'gay', 'another_orientation'])
+  it('expands the combined matching preference into both stored identities', () => {
+    expect(expandSexualOrientationPreferences(['straight', 'gay_or_lesbian', 'another_orientation']))
+      .toEqual(['straight', 'gay', 'lesbian', 'another_orientation'])
     expect(expandSexualOrientationPreferences(['heterosexual', 'other'])).toEqual([])
   })
 
-  it('returns only supported stored preferences to the UI', () => {
-    expect(groupSexualOrientationPreferences(['straight', 'bisexual', 'queer']))
-      .toEqual(['straight', 'bisexual'])
+  it('returns one combined choice for existing gay or lesbian filters', () => {
+    expect(groupSexualOrientationPreferences(['straight', 'lesbian', 'bisexual', 'queer']))
+      .toEqual(['straight', 'gay_or_lesbian', 'bisexual'])
   })
 })

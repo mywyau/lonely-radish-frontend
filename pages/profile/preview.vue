@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { AtSign, CalendarDays, ChevronDown, ChevronLeft, ChevronRight, Expand, Eye, HeartHandshake, ImagePlus, Mail, MapPin, Phone, RefreshCw, ShieldCheck, UserRound, X } from '@lucide/vue';
 import { profileDetails } from '~/utils/profileDetails';
+import { genderIdentityLabel } from '~/utils/genderIdentity';
 
 definePageMeta({ title: 'Profile Preview · Lonely Radish', middleware: 'logged-in' })
 
 type PreviewData = {
-  profile: { displayName: string; dateOfBirth?: string; pronouns?: string; bio?: string; neighbourhood?: string; visibility?: string; heightCm?: number; weightKg?: number; drinking?: string; smoking?: string; dailyRhythm?: string } | null
+  profile: { displayName: string; dateOfBirth?: string; genderIdentity?: string; pronouns?: string; bio?: string; neighbourhood?: string; visibility?: string; heightCm?: number; weightKg?: number; drinking?: string; smoking?: string; dailyRhythm?: string } | null
   photos: Array<{ id: string; url: string; altText?: string; position: number }>
   activities: string[]
   interestCategories: string[]
@@ -172,9 +173,12 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleGalleryKeydown
                   class="profile-summary-face profile-summary-front min-w-0 max-w-full rounded-lg bg-white p-4 shadow-[0_12px_28px_rgba(180,35,74,0.08)] min-[360px]:p-5 sm:p-6"
                   :aria-hidden="profileCardFlipped" :inert="profileCardFlipped || undefined">
                   <div class="flex flex-wrap items-start justify-between gap-3">
-                    <div class="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1">
+                    <div class="min-w-0">
                       <h2 class="text-3xl font-semibold">{{ data.profile.displayName }}<template v-if="age !== null">, {{ age }}</template></h2>
-                      <span v-if="data.profile.pronouns" class="text-sm text-[#6E4D58]">{{ data.profile.pronouns }}</span>
+                      <div v-if="genderIdentityLabel(data.profile.genderIdentity) || data.profile.pronouns" class="mt-2 flex flex-wrap gap-2 text-xs font-semibold text-[#4D2F39]">
+                        <span v-if="genderIdentityLabel(data.profile.genderIdentity)" class="rounded-full bg-[#F3E8DA] px-3 py-1.5">{{ genderIdentityLabel(data.profile.genderIdentity) }}</span>
+                        <span v-if="data.profile.pronouns" class="rounded-full bg-[#FCE3E8] px-3 py-1.5">{{ data.profile.pronouns }}</span>
+                      </div>
                     </div>
                     <button type="button"
                       class="inline-flex shrink-0 items-center gap-2 rounded-full bg-[#FCE3E8] px-3 py-2 text-xs font-semibold text-[#8F1839]"

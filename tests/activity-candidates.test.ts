@@ -10,6 +10,8 @@ describe('real activity candidates', () => {
     expect(api).toContain('array_agg(coalesce(a.name,pa.custom_label)')
     expect(api).toContain('a.category=any($1::text[])')
     expect(api).toContain('pa.custom_category=any($1::text[])')
+    expect(api).toContain('$6::boolean and pa.custom_label is not null')
+    expect(api).toContain('category.customOnly === true')
     expect(api).toContain('all_selected."allActivityTags"')
     expect(api).toContain('matchedActivityTags: matchedActivityTags.slice(0, 3)')
     expect(api).toContain('otherActivityTags: otherActivityTags.slice(0, 3)')
@@ -54,5 +56,16 @@ describe('real activity candidates', () => {
       expect(preferences).toContain(`'${activity}'`)
       expect(refinedIdeas).toContain(`'${activity}'`)
     }
+  })
+
+  it('separates food and drink from activities members wrote themselves', () => {
+    const discovery = read('utils/activityDiscovery.ts')
+    const activities = read('pages/activities/index.vue')
+
+    expect(discovery).toContain("'food-drink': { name: 'Food & drink', databaseCategories: ['Food and drink'] }")
+    expect(discovery).toContain("'your-ideas': { name: 'Your ideas', databaseCategories: [], customOnly: true }")
+    expect(discovery).toContain("casual: 'food-drink'")
+    expect(activities).toContain("slug: 'your-ideas', name: 'Your ideas'")
+    expect(activities).not.toContain("name: 'Casual'")
   })
 })

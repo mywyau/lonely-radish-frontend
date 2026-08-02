@@ -21,6 +21,9 @@ describe('account details saving', () => {
     expect(page).toContain('You have unsaved account detail changes.')
     expect(page).toContain('Account details saved successfully.')
     expect(page).toContain('@input="markAccountDetailsChanged"')
+    expect(page).toContain('v-model="profile.genderIdentity"')
+    expect(page).toContain('v-model="profile.pronouns"')
+    expect(page).toContain('Shown on your profile when provided.')
   })
 
   it('updates public basics atomically for the authenticated profile', () => {
@@ -28,7 +31,8 @@ describe('account details saving', () => {
     expect(endpoint).toContain('requireUser(event)')
     expect(endpoint).toContain('display_name=$2,race_ethnicity=$3')
     expect(endpoint).toContain('sexual_orientation=$4')
-    expect(endpoint).toContain('[sub, displayName, raceEthnicity, sexualOrientation, raceEthnicitySelfDescription]')
+    expect(endpoint).toContain('gender_identity=$6,pronouns=$7')
+    expect(endpoint).toContain('[sub, displayName, raceEthnicity, sexualOrientation, raceEthnicitySelfDescription, genderIdentity, pronouns]')
   })
 
   it('shows contact validation errors instead of relying on native browser validation', () => {

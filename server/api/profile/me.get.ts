@@ -28,5 +28,5 @@ export default defineEventHandler(async (event) => {
   })), availability: availability.rows.map(row => row.label), activities: activities.rows.map(row => row.name),
     personalInterests: personalInterests.rows.map(row => row.label),
     contactDetails: contactDetails.rows[0] ?? null,
-    interestCategories: [...new Set(activities.rows.map(row => ({ 'Food and drink': 'Casual', Gaming: 'Games', Learning: 'Learn & create' }[row.category as string] || row.category)).filter(Boolean))] }
+    interestCategories: [...new Set(activities.rows.map(row => ({ 'Food and drink': 'Food & drink', Gaming: 'Games', Learning: 'Learn & create' }[row.category as string] || row.category)).filter(Boolean))] }
 })

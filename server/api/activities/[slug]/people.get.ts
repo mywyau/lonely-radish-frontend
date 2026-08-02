@@ -28,8 +28,11 @@ export default defineEventHandler(async (event) => {
       from profile_photos where user_id=p.user_id order by position limit 1) photo on true
     join lateral (select array_agg(coalesce(a.name,pa.custom_label) order by pa.position) as "activityTags"
       from profile_activities pa left join activities a on a.id=pa.activity_id
-      where pa.user_id=p.user_id and ((a.is_active=true and a.category=any($1::text[])) or
-        pa.custom_category=any($1::text[]))) shared on cardinality(shared."activityTags")>0
+      where pa.user_id=p.user_id and (
+        ($6::boolean and pa.custom_label is not null) or
+        (not $6::boolean and ((a.is_active=true and a.category=any($1::text[])) or
+          pa.custom_category=any($1::text[])))
+      )) shared on cardinality(shared."activityTags")>0
     left join lateral (select array_agg(coalesce(a.name,pa.custom_label) order by pa.position) as "allActivityTags"
       from profile_activities pa left join activities a on a.id=pa.activity_id
       where pa.user_id=p.user_id and ((a.id is not null and a.is_active=true) or pa.custom_label is not null)) all_selected on true
@@ -45,7 +48,7 @@ export default defineEventHandler(async (event) => {
       ${viewerDiscoveryWhere}
       ${recipientInterestAvailabilityWhere}
       and ($3::timestamptz is null or (p.updated_at,p.slug)<($3::timestamptz,$4::text))
-    order by p.updated_at desc,p.slug desc limit $5`, [category.databaseCategories,sub,cursor?.sortAt || null,cursor?.tieBreaker || null,pageSize+1]),
+    order by p.updated_at desc,p.slug desc limit $5`, [category.databaseCategories,sub,cursor?.sortAt || null,cursor?.tieBreaker || null,pageSize+1,category.customOnly === true]),
     db.query(`select mp.minimum_age as "minimumAge",mp.maximum_age as "maximumAge",
       mp.max_distance_km as "distance",mp.open_to_everyone as "openToEveryone",
       mp.interested_genders as genders,mp.no_orientation_preference as "noOrientationPreference",

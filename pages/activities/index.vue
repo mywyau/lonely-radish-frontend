@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { BookOpen, Compass, Gamepad2, HandHeart, HeartPulse, Leaf, MoonStar, Palette, Sparkles, Trophy, Utensils } from '@lucide/vue'
+import { BookOpen, Compass, Gamepad2, HandHeart, HeartPulse, Leaf, MoonStar, Palette, PencilLine, Sparkles, Trophy, Utensils } from '@lucide/vue'
 
 definePageMeta({
   title: 'Date Ideas · Lonely Radish',
@@ -21,7 +21,8 @@ onMounted(() => {
 })
 
 const categories = [
-  { slug: 'casual', name: 'Casual', detail: 'Food, markets, coffee, relaxed meetups, and activities people have added themselves.', icon: Utensils, tone: 'bg-[#F3E8DA]' },
+  { slug: 'food-drink', name: 'Food & drink', detail: 'Markets, coffee, cooking, picnics, restaurants, and other things to enjoy together.', icon: Utensils, tone: 'bg-[#F3E8DA]' },
+  { slug: 'your-ideas', name: 'Your ideas', detail: 'Original activities that members have written and added themselves.', icon: PencilLine, tone: 'bg-[#FFF1C7]' },
   { slug: 'culture', name: 'Culture', detail: 'Galleries, films, theatre, music, comedy, museums, and other cultural plans.', icon: Palette, tone: 'bg-[#FCE3E8]' },
   { slug: 'sports', name: 'Sports', detail: 'Tennis, climbing, running, swimming, football, and other active interests.', icon: Trophy, tone: 'bg-[#EAF2DE]' },
   { slug: 'outdoors', name: 'Outdoors', detail: 'Walks, parks, cycling, gardens, photography, hikes, and time outside.', icon: Leaf, tone: 'bg-[#EAF2DE]' },
