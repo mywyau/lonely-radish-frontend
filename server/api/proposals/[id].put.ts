@@ -2,7 +2,7 @@ import { createError, getRouterParam, readBody } from 'h3'
 import { db } from '~/server/repositories/db'
 import { requireUser } from '~/server/utils/requireUser'
 import { badRequest, objectBody, stringArray, text } from '~/server/utils/productValidation'
-import { ensureTimesFitAvailability } from '~/server/utils/proposalAvailability'
+import { ensureTimesFitSharedAvailability } from '~/server/utils/proposalAvailability'
 import { isUkPostcode, normalizeUkPostcode } from '~/utils/ukPostcode'
 
 export default defineEventHandler(async (event) => {
@@ -33,7 +33,7 @@ export default defineEventHandler(async (event) => {
     const recipientSuggestingChange = current.inviteeId === sub && current.status === 'pending'
     const recipientReproposing = current.inviteeId === sub && current.status === 'pending' && fullReproposal
     const otherUserId = current.inviterId === sub ? current.inviteeId : current.inviterId
-    await ensureTimesFitAvailability(client, otherUserId, times)
+    await ensureTimesFitSharedAvailability(client, [sub,otherUserId], times)
     const proposal = await client.query(`update date_proposals set
       activity_label=$3,invite_note=$4,venue=$5,venue_address=$6,venue_postcode=$7,venue_details=$8,
       public_venue_confirmed_at=now(),status=$9,selected_time_id=null,confirmed_at=null,inviter_id=$2,invitee_id=$10

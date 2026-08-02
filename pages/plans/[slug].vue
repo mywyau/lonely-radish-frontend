@@ -15,6 +15,9 @@ type AvailabilityWindow = { label: string; weekday?: number | null; startTime?: 
 type TimeOption = { label: string; value: string; id?: string }
 const matchAvailability = ref<AvailabilityWindow[]>([])
 const availabilityTimezone = ref('Europe/London')
+const viewerAvailability = ref<AvailabilityWindow[]>([])
+const viewerTimezone = ref('Europe/London')
+const sharedSuggestedTimes = ref<TimeOption[]>([])
 const proposalId = ref<string | null>(null)
 const proposalStatus = ref<string | null>(null)
 type ConfirmedPlan = { id: string; activity: string; venue: string; venueAddress?: string | null; venuePostcode?: string | null; meetingPoint?: string | null; venueDetails?: string | null; confirmedTime?: string | null }
@@ -70,21 +73,29 @@ const showCancelConfirmation = ref(false)
 const copyStatus = ref('')
 const structuredAvailability = computed(() => matchAvailability.value.filter(window =>
   Number.isInteger(window.weekday) && /^\d{2}:\d{2}/.test(window.startTime || '') && /^\d{2}:\d{2}/.test(window.endTime || '')))
+const structuredViewerAvailability = computed(() => viewerAvailability.value.filter(window =>
+  Number.isInteger(window.weekday) && /^\d{2}:\d{2}/.test(window.startTime || '') && /^\d{2}:\d{2}/.test(window.endTime || '')))
+const bothSchedulesConfigured = computed(() => Boolean(structuredAvailability.value.length
+  && structuredViewerAvailability.value.length))
 function minutes(time: string) {
   const [hour, minute] = time.slice(0, 5).split(':').map(Number)
   return hour * 60 + minute
 }
-function fitsMatchAvailability(date: Date) {
-  if (!structuredAvailability.value.length) return true
+function fitsAvailability(date: Date, windows: AvailabilityWindow[], timeZone: string) {
+  if (!windows.length) return true
   try {
     const parts = Object.fromEntries(new Intl.DateTimeFormat('en-GB', {
-      timeZone: availabilityTimezone.value, weekday: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
+      timeZone, weekday: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
     }).formatToParts(date).map(part => [part.type, part.value]))
     const weekday = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].indexOf(parts.weekday)
     const selectedMinutes = Number(parts.hour) * 60 + Number(parts.minute)
-    return structuredAvailability.value.some(window => window.weekday === weekday
+    return windows.some(window => window.weekday === weekday
       && selectedMinutes >= minutes(window.startTime!) && selectedMinutes + 60 <= minutes(window.endTime!))
   } catch { return false }
+}
+function fitsSharedAvailability(date: Date) {
+  return fitsAvailability(date, structuredAvailability.value, availabilityTimezone.value)
+    && fitsAvailability(date, structuredViewerAvailability.value, viewerTimezone.value)
 }
 const times = ref<TimeOption[]>([])
 const isReplacement = computed(() => Boolean(currentConfirmed.value && proposalId.value !== currentConfirmed.value.id))
@@ -146,8 +157,8 @@ function chooseCustomTime() {
     customTimeError.value = 'Choose a complete date and time in the future.'
     return
   }
-  if (!fitsMatchAvailability(date)) {
-    customTimeError.value = `Choose a time within ${personName.value}’s usual availability, with at least an hour free.`
+  if (!fitsSharedAvailability(date)) {
+    customTimeError.value = 'Choose a time that fits both of your usual schedules, with at least an hour free.'
     return
   }
   const value = date.toISOString()
@@ -155,6 +166,14 @@ function chooseCustomTime() {
   times.value = [{ value, label }]
   selectedTimes.value = [value]
   chosenCustomTimeLabel.value = label
+  sendError.value = ''
+}
+function chooseSuggestedTime(option: TimeOption) {
+  times.value = [{ ...option }]
+  selectedTimes.value = [option.value]
+  customTime.value = ''
+  customTimeError.value = ''
+  chosenCustomTimeLabel.value = option.label
   sendError.value = ''
 }
 function beginReproposal() {
@@ -173,6 +192,9 @@ function beginReproposal() {
   publicVenueConfirmed.value = false
   times.value = []
   selectedTimes.value = []
+  customTime.value = ''
+  customTimeError.value = ''
+  chosenCustomTimeLabel.value = ''
 }
 function cancelReproposal() {
   if (proposalSnapshot.value) {
@@ -186,7 +208,10 @@ function cancelReproposal() {
     publicVenueConfirmed.value = proposalSnapshot.value.publicVenueConfirmed
     times.value = proposalSnapshot.value.times
     selectedTimes.value = proposalSnapshot.value.selectedTimes
+    chosenCustomTimeLabel.value = proposalSnapshot.value.times[0]?.label || ''
   }
+  customTime.value = ''
+  customTimeError.value = ''
   proposalSnapshot.value = null
   reproposing.value = false
 }
@@ -303,8 +328,8 @@ async function suggestChanges() {
   try {
     const proposedTime = new Date(suggestedTime.value)
     if (Number.isNaN(proposedTime.getTime()) || proposedTime <= new Date()) { sendError.value = 'Choose a future date and time.'; return }
-    if (!fitsMatchAvailability(proposedTime)) {
-      sendError.value = `Choose a time within ${personName.value}’s usual availability, with at least an hour free.`
+    if (!fitsSharedAvailability(proposedTime)) {
+      sendError.value = 'Choose a time that fits both of your usual schedules, with at least an hour free.'
       return
     }
     const response = await $fetch<any>(`/api/proposals/${proposalId.value}`, { method: 'PUT', body: {
@@ -334,6 +359,12 @@ async function loadPlanning() {
   databasePerson.value = null
   databaseActivities.value = []
   currentConfirmed.value = null
+  matchAvailability.value = []
+  viewerAvailability.value = []
+  sharedSuggestedTimes.value = []
+  customTime.value = ''
+  customTimeError.value = ''
+  chosenCustomTimeLabel.value = ''
   const minimum = new Date(Date.now() + 15 * 60 * 1000)
   const pad = (value: number) => String(value).padStart(2, '0')
   earliestCustomTime.value = `${minimum.getFullYear()}-${pad(minimum.getMonth() + 1)}-${pad(minimum.getDate())}T${pad(minimum.getHours())}:${pad(minimum.getMinutes())}`
@@ -343,6 +374,13 @@ async function loadPlanning() {
     databaseActivities.value = response.activities
     matchAvailability.value = response.availability || []
     availabilityTimezone.value = response.availabilityTimezone || 'Europe/London'
+    viewerAvailability.value = response.viewerAvailability || []
+    viewerTimezone.value = response.viewerTimezone || 'Europe/London'
+    sharedSuggestedTimes.value = (response.suggestedTimes || []).map((value: string) => ({ value,
+      label: new Date(value).toLocaleDateString('en-GB', {
+        weekday: 'long', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit',
+      }),
+    }))
     currentConfirmed.value = response.currentConfirmed || null
     if (response.proposal && route.query.new !== '1') {
       proposalId.value = response.proposal.id
@@ -536,7 +574,28 @@ useHead(() => ({ title: `Plan a Date with ${personName.value} · Lonely Radish` 
           </div>
         </section>
         <section v-if="canEditProposal" class="plan-card"><div class="flex items-center gap-2"><MessageCircle class="size-5 text-[#B4234A]" /><h2 class="text-xl font-semibold">2. Add a note</h2></div><p class="mt-2 text-sm text-[#6E4D58]">Keep it simple. You’ll have plenty to talk about when you meet.</p><textarea v-model="inviteMessage" :maxlength="inviteMessageLimit" rows="4" class="mt-4 w-full resize-none rounded-lg border border-[#E8D8C4] bg-[#FBF7F1] px-4 py-3 text-sm outline-none transition focus:border-[#B4234A] focus:ring-2 focus:ring-[#F7B7C4]" :placeholder="`For example: I’d love to try this with you. A weekend afternoon could work well for me.`"></textarea><p class="mt-2 text-right text-xs text-[#6E4D58]">{{ inviteMessage.length }}/{{ inviteMessageLimit }}</p></section>
-        <section v-if="canEditProposal" class="plan-card"><div class="flex items-center gap-2"><CalendarDays class="size-5 text-[#B4234A]" /><h2 class="text-xl font-semibold">3. Suggest a date and time</h2></div><p class="mt-2 text-sm text-[#6E4D58]">{{ structuredAvailability.length ? `Choose a time within ${personName}’s shared schedule.` : 'Choose the time you would like to propose.' }}</p><div class="mt-4"><label class="text-sm font-semibold">Proposed date and time<input v-model="customTime" type="datetime-local" :min="earliestCustomTime" class="field" @input="resetCustomTimeSelection"></label><p class="mt-2 text-xs text-[#6E4D58]">{{ structuredAvailability.length ? `The time must leave at least one hour within ${personName}’s usual availability.` : 'Select both a date and a time, then apply it to the proposal.' }}</p><p v-if="customTimeError" class="mt-2 text-sm font-semibold text-[#8F1839]" role="alert">{{ customTimeError }}</p><p v-if="chosenCustomTimeLabel" class="mt-2 text-sm font-semibold text-[#52713A]" role="status">Selected: {{ chosenCustomTimeLabel }}</p><button type="button" class="mt-3 rounded-lg bg-[#4D2F39] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-40" :disabled="!customTime" @click="chooseCustomTime">Use this time</button></div></section>
+        <section v-if="canEditProposal" class="plan-card">
+          <div class="flex items-center gap-2"><CalendarDays class="size-5 text-[#B4234A]" /><h2 class="text-xl font-semibold">3. Suggest a date and time</h2></div>
+          <p class="mt-2 text-sm text-[#6E4D58]">Choose a time that works for both of you, or pick another time below.</p>
+          <div v-if="sharedSuggestedTimes.length" class="mt-4 rounded-lg bg-[#EAF2DE] p-4">
+            <p class="text-sm font-semibold text-[#4D2F39]">Times that fit both schedules</p>
+            <p class="mt-1 text-xs leading-5 text-[#6E4D58]">These suggestions use your shared availability without adding either full schedule to the proposal.</p>
+            <div class="mt-3 grid gap-2 sm:grid-cols-3">
+              <button v-for="option in sharedSuggestedTimes" :key="option.value" type="button"
+                class="rounded-lg border bg-white px-3 py-3 text-left text-sm font-semibold transition"
+                :class="selectedTimes[0] === option.value ? 'border-[#B4234A] ring-2 ring-[#F7B7C4]' : 'border-[#C9D8B5] hover:border-[#B4234A]'"
+                @click="chooseSuggestedTime(option)">{{ option.label }}</button>
+            </div>
+          </div>
+          <p v-else-if="bothSchedulesConfigured" class="mt-4 rounded-lg bg-[#FFF1C7] p-3 text-sm text-[#694C00]">There are no shared one-hour windows in the next two weeks. You can choose a later time that fits both schedules.</p>
+          <div class="mt-5 border-t border-[#E8D8C4] pt-5">
+            <label class="text-sm font-semibold">Choose another date and time<input v-model="customTime" type="datetime-local" :min="earliestCustomTime" class="field" @input="resetCustomTimeSelection"></label>
+            <p class="mt-2 text-xs text-[#6E4D58]">{{ structuredAvailability.length || structuredViewerAvailability.length ? 'The time must leave at least one hour within each configured schedule.' : 'Select both a date and a time, then apply it to the proposal.' }}</p>
+            <p v-if="customTimeError" class="mt-2 text-sm font-semibold text-[#8F1839]" role="alert">{{ customTimeError }}</p>
+            <p v-if="chosenCustomTimeLabel" class="mt-2 text-sm font-semibold text-[#52713A]" role="status">Selected: {{ chosenCustomTimeLabel }}</p>
+            <button type="button" class="mt-3 rounded-lg bg-[#4D2F39] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-40" :disabled="!customTime" @click="chooseCustomTime">Use this time</button>
+          </div>
+        </section>
         <section v-if="canEditProposal" class="plan-card">
           <div class="flex items-center gap-2"><MapPin class="size-5 text-[#B4234A]" /><h2 class="text-xl font-semibold">4. Choose where to meet</h2></div>
           <p class="mt-2 text-sm leading-6 text-[#6E4D58]">Choose somewhere public and add enough detail that you’ll both arrive at the same spot.</p>

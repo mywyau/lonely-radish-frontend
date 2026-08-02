@@ -21,7 +21,9 @@ describe('schedule and safety preferences', () => {
 
   it('shows a match schedule while organising a date', () => {
     expect(read('server/api/planning/[slug].get.ts')).toContain('from availability')
+    expect(read('server/api/planning/[slug].get.ts')).toContain('sharedAvailabilitySuggestions')
     expect(read('pages/plans/[slug].vue')).toContain('When {{ personName }} is usually free')
+    expect(read('pages/plans/[slug].vue')).toContain('Times that fit both schedules')
     expect(read('pages/preferences/index.vue')).toContain('to="/preferences/schedule"')
   })
 })

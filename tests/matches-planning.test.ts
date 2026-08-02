@@ -55,17 +55,20 @@ describe('matches and date planning dashboard', () => {
     expect(read('pages/plans/[slug].vue')).toContain("route.query.new !== '1'")
   })
 
-  it('keeps proposed times within the other person’s usual availability', () => {
+  it('suggests and enforces times within both members’ usual availability', () => {
     const page = read('pages/plans/[slug].vue')
     const availabilityGuard = read('server/utils/proposalAvailability.ts')
-    expect(page).toContain('fitsMatchAvailability')
+    expect(page).toContain('fitsSharedAvailability')
     expect(page).toContain('with at least an hour free')
     expect(page).toContain('3. Suggest a date and time')
+    expect(page).toContain('Times that fit both schedules')
+    expect(page).toContain('chooseSuggestedTime(option)')
     expect(page).not.toContain('v-for="time in times"')
-    expect(read('server/api/planning/[slug].get.ts')).not.toContain('suggestedTimes')
-    expect(read('server/api/proposals/index.post.ts')).toContain('ensureTimesFitAvailability')
-    expect(read('server/api/proposals/[id].put.ts')).toContain('ensureTimesFitAvailability')
-    expect(availabilityGuard).toContain('Choose a time within the other person’s usual availability')
+    expect(read('server/api/planning/[slug].get.ts')).toContain('suggestedTimes')
+    expect(read('server/api/proposals/index.post.ts')).toContain('ensureTimesFitSharedAvailability')
+    expect(read('server/api/proposals/[id].put.ts')).toContain('ensureTimesFitSharedAvailability')
+    expect(availabilityGuard).toContain('Choose a time that fits both of your usual schedules')
+    expect(availabilityGuard).toContain('672 constant-time checks')
     expect(availabilityGuard).toContain("a.end_time-(chosen.proposed_at at time zone")
   })
 
