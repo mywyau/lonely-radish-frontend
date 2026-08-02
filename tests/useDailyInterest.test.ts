@@ -18,6 +18,7 @@ describe('daily interest allowance', () => {
     expect(source).toContain('window.confirm(`Show interest in ${profileName}?')
     expect(source).toContain('remainingAfterSend')
     expect(source).toContain("status === 404 ? 'You can’t show interest in this profile right now.'")
+    expect(source).toContain("'This person isn’t accepting new interests right now.'")
     expect(readFileSync(resolve(process.cwd(), 'components/DailyInterestCounter.vue'), 'utf8')).toContain('of {{ limit }} sent today')
   })
 })
