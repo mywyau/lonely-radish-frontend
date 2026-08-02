@@ -1,13 +1,11 @@
 import { createHash } from 'node:crypto'
 import { Client } from '@upstash/qstash'
+import { qstashDeliveryHeaders } from '~/server/utils/qstashDelivery'
 
 export function outboxProcessorUrl() {
   const siteUrl = process.env.SITE_URL?.trim().replace(/\/+$/,'')
   if (!siteUrl) return null
-  const url = new URL(`${siteUrl}/api/outbox/process`)
-  const bypass = process.env.VERCEL_AUTOMATION_BYPASS_SECRET?.trim()
-  if (bypass) url.searchParams.set('x-vercel-protection-bypass',bypass)
-  return url.toString()
+  return `${siteUrl}/api/outbox/process`
 }
 
 export async function requestOutboxProcessing(deduplicationSource: string) {
@@ -35,6 +33,7 @@ export async function requestOutboxProcessing(deduplicationSource: string) {
     const result = await new Client({ token }).publishJSON({
       url: processorUrl,
       body: { source: 'domain-event' },
+      headers: qstashDeliveryHeaders(),
       retries: 3,
       deduplicationId,
       flowControl: {

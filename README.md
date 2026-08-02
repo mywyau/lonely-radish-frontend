@@ -298,7 +298,8 @@ QStash cannot deliver to localhost. The signed processing routes are:
 
 If the Vercel staging deployment has Deployment Protection enabled, also set
 `VERCEL_AUTOMATION_BYPASS_SECRET` in the staging branch's Preview environment.
-The application adds it to QStash destinations; this is separate from the local
+The application forwards it to QStash workers as a protected request header;
+this is separate from the local
 `E2E_VERCEL_BYPASS_SECRET`, although both values should refer to the same current
 Vercel automation-bypass secret.
 

@@ -1,6 +1,7 @@
 import { useRuntimeConfig } from "#imports";
 import { Client } from "@upstash/qstash";
 import type { H3Event } from "h3";
+import { qstashDeliveryHeaders } from "~/server/utils/qstashDelivery";
 
 export async function enqueueStripeEventJob(
   event: H3Event,
@@ -40,6 +41,7 @@ export async function enqueueStripeEventJob(
     body: {
       eventId: job.eventId,
     },
+    headers: qstashDeliveryHeaders(),
     retries: 3,
     deduplicationId: job.eventId,
     flowControl: {

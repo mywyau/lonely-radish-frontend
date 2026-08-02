@@ -2,6 +2,7 @@ import { Client as QStashClient } from '@upstash/qstash'
 import { createError } from 'h3'
 import { db } from '~/server/repositories/db'
 import { redactIdentifier } from '~/server/utils/logging/redact'
+import { qstashDeliveryHeaders } from '~/server/utils/qstashDelivery'
 
 type JobStatus = 'pending' | 'processing' | 'failed' | 'completed'
 
@@ -96,6 +97,7 @@ export async function queueAccountDeletion(userId: string, options: QueueOptions
       const publishResult = await new QStashClient({ token: required('QSTASH_TOKEN') }).publishJSON({
         url: workerUrl,
         body: { jobId, userId },
+        headers: qstashDeliveryHeaders(),
         deduplicationId: `account_delete_${jobId}`,
       })
       console.log('Published account deletion job', {
