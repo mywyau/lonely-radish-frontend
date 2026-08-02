@@ -296,6 +296,12 @@ QStash cannot deliver to localhost. The signed processing routes are:
 - `POST /api/reminders/process`
 - `POST /api/account/v2/worker-delete`
 
+If the Vercel staging deployment has Deployment Protection enabled, also set
+`VERCEL_AUTOMATION_BYPASS_SECRET` in the staging branch's Preview environment.
+The application adds it to QStash destinations; this is separate from the local
+`E2E_VERCEL_BYPASS_SECRET`, although both values should refer to the same current
+Vercel automation-bypass secret.
+
 Match and interest writes commit their outbox events in the same PostgreSQL
 transaction and then ask QStash to process them immediately. The outbox worker
 safely leases events across multiple instances, retries temporary failures, and

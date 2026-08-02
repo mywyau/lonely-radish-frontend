@@ -28,5 +28,11 @@ export default defineEventHandler(async (event) => {
     returning phone_number as "phoneNumber",contact_email as "contactEmail",
       social_handle as "socialHandle",share_with_matches as "shareWithMatches"`,
   [sub,phoneNumber,contactEmail,socialHandle,shareWithMatches])
-  return rows[0]
+  const details = rows[0]
+  return {
+    phoneNumber: details?.phoneNumber || '',
+    contactEmail: details?.contactEmail || '',
+    socialHandle: details?.socialHandle || '',
+    shareWithMatches: details?.shareWithMatches === true,
+  }
 })

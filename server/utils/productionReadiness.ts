@@ -78,6 +78,9 @@ export function inspectProductionConfiguration(env: Environment = process.env): 
   if (usable(env.SITE_URL) && !isHttpsOrigin(env.SITE_URL)) {
     invalidate(services.qstash, 'SITE_URL must be an HTTPS origin without a path')
   }
+  if (env.APP_ENV?.trim().toLowerCase() === 'staging' && !usable(env.VERCEL_AUTOMATION_BYPASS_SECRET)) {
+    invalidate(services.qstash, 'VERCEL_AUTOMATION_BYPASS_SECRET is required for protected staging deliveries')
+  }
   if (usable(env.APP_BASE_URL) && !isHttpsOrigin(env.APP_BASE_URL)) {
     invalidate(services.email, 'APP_BASE_URL must be an HTTPS origin without a path')
   }

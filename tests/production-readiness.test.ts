@@ -81,6 +81,19 @@ describe('production readiness', () => {
     expect(inspectProductionConfiguration({ ...configuredEnvironment, AUTH_SESSION_SECRET: 'too-short' }).services.auth0.configured).toBe(false)
   })
 
+  it('requires the Vercel automation bypass for protected staging QStash deliveries', () => {
+    const staging = { ...configuredEnvironment, APP_ENV: 'staging' }
+    const missing = inspectProductionConfiguration(staging)
+    expect(missing.services.qstash.configured).toBe(false)
+    expect(missing.services.qstash.missing).toContain(
+      'VERCEL_AUTOMATION_BYPASS_SECRET is required for protected staging deliveries',
+    )
+    expect(inspectProductionConfiguration({
+      ...staging,
+      VERCEL_AUTOMATION_BYPASS_SECRET: 'current-automation-bypass-secret',
+    }).services.qstash.configured).toBe(true)
+  })
+
   it('fails database, Redis and Stripe closed in production', () => {
     expect(read('server/repositories/db.ts')).toContain('DATABASE_URL is required in production')
     expect(read('server/repositories/redis.ts')).toContain('Upstash Redis credentials are required in production')

@@ -37,12 +37,27 @@ const savingContact = ref(false);
 const contactSaved = ref(false);
 const contactError = ref('');
 const contactLoadError = ref('');
+const contactLoading = ref(true);
 const accountLoadError = ref('');
 type ReadinessChecks = { profileBasics: boolean; photos: boolean; activities: boolean; location: boolean; generalPreferences: boolean; datingPreferences: boolean };
 const readiness = ref<{ checks: ReadinessChecks; completed: number; total: number; percentage: number; photoCount: number; photosRequired: number } | null>(null);
 const readinessCollapsed = ref(false);
 const readinessLoading = ref(true);
 const readinessError = ref('');
+
+type ContactDetails = {
+  phoneNumber?: string | null
+  contactEmail?: string | null
+  socialHandle?: string | null
+  shareWithMatches?: boolean | null
+}
+
+function applyContactDetails(details: ContactDetails | null | undefined) {
+  contact.phoneNumber = details?.phoneNumber || ''
+  contact.contactEmail = details?.contactEmail || ''
+  contact.socialHandle = details?.socialHandle || ''
+  contact.shareWithMatches = details?.shareWithMatches === true
+}
 const readinessItems = computed(() => {
   const checks = readiness.value?.checks;
   return [
@@ -199,7 +214,7 @@ async function saveContactDetails() {
   }
   savingContact.value = true;
   try {
-    Object.assign(contact, await $fetch('/api/profile/contact', {
+    applyContactDetails(await $fetch<ContactDetails>('/api/profile/contact', {
       method: 'PUT',
       timeout: requestTimeoutMs,
       body: { phoneNumber, contactEmail, socialHandle, shareWithMatches: contact.shareWithMatches },
@@ -211,10 +226,15 @@ async function saveContactDetails() {
 
 onMounted(async () => {
   const identityRequest = $fetch<{ firstName: string | null; lastName: string | null }>('/api/meV2', { timeout: requestTimeoutMs })
-  const contactRequest = $fetch('/api/profile/contact', { timeout: requestTimeoutMs })
+  const contactRequest = $fetch<ContactDetails>('/api/profile/contact', { timeout: requestTimeoutMs })
+    .then((details) => applyContactDetails(details))
+    .catch((error) => {
+      contactLoadError.value = requestMessage(error, 'Existing contact details could not be loaded. You can still enter and save them again.')
+    })
+    .finally(() => { contactLoading.value = false })
   const profileRequest = $fetch<any>('/api/profile/me', { timeout: requestTimeoutMs })
   const readinessRequest = loadReadiness()
-  const supportingResults = Promise.allSettled([contactRequest, profileRequest, readinessRequest])
+  const supportingResults = Promise.allSettled([profileRequest, readinessRequest])
 
   try {
     const identity = await identityRequest
@@ -232,13 +252,8 @@ onMounted(async () => {
     accountIdentityLoading.value = false
   }
 
-  const [contactResult, profileResult] = await supportingResults
-
-  if (contactResult.status === 'fulfilled') {
-    Object.assign(contact, contactResult.value)
-  } else {
-    contactLoadError.value = requestMessage(contactResult.reason, 'Existing contact details could not be loaded. You can still enter and save them again.')
-  }
+  await contactRequest
+  const [profileResult] = await supportingResults
   if (profileResult.status === 'fulfilled') {
     const result = profileResult.value
     profile.raceEthnicity = result.profile?.raceEthnicity || '';
@@ -442,12 +457,15 @@ onMounted(async () => {
             <p class="mt-5 text-sm leading-6 text-[#6E4D58]">These details are never shown in discovery and are only available to active matches when sharing is switched on.</p>
             <p v-if="contactLoadError" class="mt-4 rounded-lg bg-[#FFF1C7] p-3 text-sm font-semibold text-[#694C00]" role="alert">{{ contactLoadError }}</p>
             <form class="mt-5 grid gap-4 sm:grid-cols-2" novalidate @submit.prevent="saveContactDetails">
+              <p v-if="contactLoading" class="text-sm text-[#6E4D58] sm:col-span-2" role="status">Loading contact details…</p>
+              <fieldset class="contents" :disabled="contactLoading">
               <label class="text-sm font-medium">Phone number <span class="font-normal text-[#6E4D58]">(optional)</span><input v-model="contact.phoneNumber" class="field" type="tel" :maxlength="phoneNumberLimit" autocomplete="tel" placeholder="+44 7700 900000"></label>
               <label class="text-sm font-medium">Contact email <span class="font-normal text-[#6E4D58]">(optional)</span><input v-model="contact.contactEmail" class="field" type="email" :maxlength="contactEmailLimit" autocomplete="email" placeholder="you@example.com"></label>
               <label class="text-sm font-medium sm:col-span-2">Social or contact handle <span class="font-normal text-[#6E4D58]">(optional)</span><input v-model="contact.socialHandle" class="field" type="text" :maxlength="socialHandleLimit" autocomplete="off" placeholder="@yourhandle or preferred contact app"><span class="mt-1 block text-right text-xs font-normal text-[#6E4D58]">{{ contact.socialHandle.length }}/{{ socialHandleLimit }}</span></label>
               <label class="flex items-start gap-3 rounded-lg bg-[#F3E8DA] p-4 text-sm sm:col-span-2"><input v-model="contact.shareWithMatches" class="mt-1 size-4 accent-[#B4234A]" type="checkbox"><span><strong class="block">Share with active matches</strong><span class="mt-1 block leading-5 text-[#6E4D58]">Access ends if either person unmatches, rejects, or blocks the other.</span></span></label>
               <div class="flex items-center gap-3 sm:col-span-2"><button type="submit" class="rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white disabled:opacity-50" :disabled="savingContact">{{ savingContact ? 'Saving…' : 'Save contact details' }}</button><span v-if="contactSaved" class="text-sm font-semibold text-[#6E8B52]" role="status">Contact details saved.</span></div>
               <p v-if="contactError" class="text-sm font-semibold text-[#8F1839] sm:col-span-2" role="alert">{{ contactError }}</p>
+              </fieldset>
             </form>
           </div>
         </section>

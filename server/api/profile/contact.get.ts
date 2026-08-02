@@ -8,5 +8,11 @@ export default defineEventHandler(async (event) => {
   const { rows } = await db.query(`select phone_number as "phoneNumber",contact_email as "contactEmail",
     social_handle as "socialHandle",share_with_matches as "shareWithMatches"
     from profile_contact_details where user_id=$1`, [sub])
-  return rows[0] ?? { phoneNumber: '', contactEmail: '', socialHandle: '', shareWithMatches: false }
+  const details = rows[0]
+  return {
+    phoneNumber: details?.phoneNumber || '',
+    contactEmail: details?.contactEmail || '',
+    socialHandle: details?.socialHandle || '',
+    shareWithMatches: details?.shareWithMatches === true,
+  }
 })

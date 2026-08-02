@@ -32,7 +32,7 @@ export async function requestOutboxProcessing(deduplicationSource: string) {
     .digest('hex')
     .slice(0,48)}`
   try {
-    await new Client({ token }).publishJSON({
+    const result = await new Client({ token }).publishJSON({
       url: processorUrl,
       body: { source: 'domain-event' },
       retries: 3,
@@ -44,6 +44,11 @@ export async function requestOutboxProcessing(deduplicationSource: string) {
         period: '1m',
       },
     })
+    console.info(JSON.stringify({
+      event: 'outbox_enqueue_succeeded',
+      messageId: result.messageId,
+      deduplicated: result.deduplicated === true,
+    }))
     return true
   } catch (error) {
     console.error(JSON.stringify({
