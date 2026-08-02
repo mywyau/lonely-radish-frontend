@@ -29,18 +29,18 @@ export default defineEventHandler(async (event) => {
     db.query(`select label,weekday,start_time::text as "startTime",end_time::text as "endTime"
       from availability where user_id=$1 order by coalesce(weekday,position)`, [rows[0].userId])])
   const activeProposal = proposal.rows[0] ?? null
-  const currentConfirmed = activeProposal?.replacesProposalId
-    ? (await db.query(`select dp.id,dp.activity_label as activity,dp.venue,
+  const currentConfirmed = activeProposal?.status === 'accepted'
+    ? { id: activeProposal.id, activity: activeProposal.activity, venue: activeProposal.venue,
+        venueAddress: activeProposal.venueAddress, venuePostcode: activeProposal.venuePostcode,
+        venueDetails: activeProposal.venueDetails, meetingPoint: activeProposal.meetingPoint,
+        confirmedTime: activeProposal.times.find((time: { id: string }) => time.id === activeProposal.selectedTimeId)?.proposedAt || null }
+    : activeProposal?.replacesProposalId
+      ? (await db.query(`select dp.id,dp.activity_label as activity,dp.venue,
         dp.venue_address as "venueAddress",dp.venue_postcode as "venuePostcode",
         dp.venue_details as "venueDetails",dp.venue_details as "meetingPoint",
         selected.proposed_at as "confirmedTime"
         from date_proposals dp left join proposal_times selected on selected.id=dp.selected_time_id
         where dp.id=$1 and dp.status='accepted'`, [activeProposal.replacesProposalId])).rows[0] ?? null
-    : activeProposal?.status === 'accepted'
-      ? { id: activeProposal.id, activity: activeProposal.activity, venue: activeProposal.venue,
-          venueAddress: activeProposal.venueAddress, venuePostcode: activeProposal.venuePostcode,
-          venueDetails: activeProposal.venueDetails, meetingPoint: activeProposal.meetingPoint,
-          confirmedTime: activeProposal.times.find((time: { id: string }) => time.id === activeProposal.selectedTimeId)?.proposedAt || null }
       : null
   return { person: rows[0], activities: activities.rows.map(row => row.name), proposal: activeProposal,
     currentConfirmed,
