@@ -89,7 +89,7 @@ async function declineInterest(person: ReceivedInterest) {
 
 <template>
   <main class="min-h-screen bg-[#FBF7F1] px-5 py-10 text-[#2A1520] sm:px-8"><section class="mx-auto max-w-3xl">
-    <p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">People who chose you</p><h1 class="mt-2 text-4xl font-semibold">Who’s interested?</h1><p class="mt-3 max-w-2xl leading-6 text-[#6E4D58]">Take your time. These are people who chose to meet you, not a stack you need to clear.</p>
+    <p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">People who chose you</p><h1 class="mt-2 text-4xl font-semibold">Who’s interested?</h1><p class="mt-3 max-w-2xl leading-6 text-[#6E4D58]">Take your time. These are people who chose to meet you.</p>
     <!-- <section class="mt-5 rounded-lg bg-[#F3E8DA] p-4 text-sm leading-6 text-[#4D2F39]" aria-labelledby="manual-match-rules">
       <h2 id="manual-match-rules" class="font-semibold">A maximum of {{ interestLimit }} at a time</h2>
       <p class="mt-1">When {{ interestLimit }} people are waiting, your profile pauses incoming interest while you consider them. Passing is final and does not reveal a replacement straight away.</p>
