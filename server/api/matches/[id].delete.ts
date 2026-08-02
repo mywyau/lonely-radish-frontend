@@ -1,5 +1,6 @@
 import { createError, getRouterParam } from 'h3'
 import { db } from '~/server/repositories/db'
+import { promoteOldestEligibleQueuedMatch } from '~/server/utils/promoteQueuedMatch'
 import { requireUser } from '~/server/utils/requireUser'
 
 export default defineEventHandler(async (event) => {
@@ -16,8 +17,13 @@ export default defineEventHandler(async (event) => {
     await client.query('delete from date_proposals where match_id=$1', [id])
     await client.query(`insert into notifications(recipient_id,actor_id,match_id,kind)
       values($1,$2,$3,'match_ended')`, [match.recipientId,sub,id])
+    const promotedMatchIds: string[] = []
+    for (const freedUserId of [sub, match.recipientId].sort()) {
+      const promoted = await promoteOldestEligibleQueuedMatch(client, freedUserId)
+      if (promoted) promotedMatchIds.push(promoted.id)
+    }
     await client.query('commit')
-    return { rejected: true }
+    return { rejected: true, promotedMatchIds }
   } catch (error) {
     await client.query('rollback')
     throw error

@@ -110,7 +110,7 @@ onBeforeUnmount(() => {
       </NuxtLink>
 
       <div class="flex items-center gap-1">
-        <NuxtLink v-if="isLoggedIn" to="/matches" class="nav-count-link" :aria-label="`${matchCount} active ${matchCount === 1 ? 'match' : 'matches'}`" title="Active matches">
+        <NuxtLink v-if="isLoggedIn" to="/matches" class="nav-count-link" :aria-label="`${matchCount} current ${matchCount === 1 ? 'match' : 'matches'}, including any waiting for space`" title="Current matches, including waiting matches">
           <HeartHandshake class="size-5" aria-hidden="true" />
           <span class="nav-count-badge">{{ matchCount > 99 ? '99+' : matchCount }}</span>
         </NuxtLink>
