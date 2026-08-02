@@ -105,6 +105,8 @@ describe('transactional outbox', () => {
     expect(endpoint).toContain('QSTASH_NEXT_SIGNING_KEY')
     expect(endpoint).toContain('result.processed === 25')
     expect(enqueue).toContain('deduplicationId')
+    expect(enqueue).toContain('VERCEL_AUTOMATION_BYPASS_SECRET')
+    expect(enqueue).toContain('x-vercel-protection-bypass')
     expect(enqueue).toContain("key: 'transactional-outbox'")
     expect(enqueue).toContain('retries: 3')
     expect(migration).toContain('create table if not exists outbox_events')
