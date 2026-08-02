@@ -13,6 +13,9 @@ vi.mock('~/server/repositories/interests', () => ({ InterestRepository: class {}
 vi.mock('~/server/repositories/matches', () => ({ MatchRepository: class {} }))
 vi.mock('~/server/repositories/outbox', () => ({ OutboxRepository: class {} }))
 vi.mock('~/server/utils/matchQueue', () => ({ activateMatchOrQueue: vi.fn() }))
+vi.mock('../server/services/outbox/requestOutboxProcessing', () => ({
+  requestOutboxProcessing: vi.fn(),
+}))
 
 function databaseClient() {
   const query = vi.fn().mockResolvedValue({ rows: [], rowCount: 0 })
