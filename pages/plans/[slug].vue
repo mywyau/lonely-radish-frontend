@@ -88,6 +88,7 @@ function fitsMatchAvailability(date: Date) {
 }
 const times = ref<TimeOption[]>([])
 const isReplacement = computed(() => Boolean(currentConfirmed.value && proposalId.value !== currentConfirmed.value.id))
+const isNewProposal = computed(() => isReplacement.value || reproposing.value)
 const canEditProposal = computed(() => !proposalId.value || proposalStatus.value === 'draft' || reproposing.value)
 const confirmedTimeLabel = computed(() => currentConfirmed.value?.confirmedTime
   ? new Date(currentConfirmed.value.confirmedTime).toLocaleDateString('en-GB', {
@@ -199,7 +200,7 @@ async function saveProposalDraft() {
       inviteNote: inviteMessage.value, venue: venue.value, venueAddress: venueAddress.value,
       venuePostcode: normalizeUkPostcode(venuePostcode.value), meetingPoint: venueDetails.value,
       publicVenueConfirmed: publicVenueConfirmed.value,
-      times: selectedTimes.value, fullReproposal: reproposing.value }
+      times: selectedTimes.value, fullReproposal: isNewProposal.value }
     const response = await $fetch<{ id: string; status: string }>(endpoint, { method: proposalId.value ? 'PUT' : 'POST', body })
     proposalId.value = response.id
     proposalStatus.value = response.status
@@ -214,7 +215,7 @@ async function saveProposalDraft() {
   } finally { sending.value = false }
 }
 async function confirmAndSend() {
-  const wasReproposal = reproposing.value
+  const wasReproposal = isNewProposal.value
   const saved = await saveProposalDraft()
   if (!saved || !proposalId.value) return
   if (proposalStatus.value !== 'draft') {
@@ -551,7 +552,7 @@ useHead(() => ({ title: `Plan a Date with ${personName.value} · Lonely Radish` 
 
         <template v-if="canEditProposal">
         <section class="rounded-lg bg-[#EAF2DE] p-5 sm:p-6">
-          <div class="flex flex-wrap items-center justify-between gap-2"><div><p class="text-xs font-extrabold uppercase tracking-widest text-[#6E4D58]">Proposal preview</p><h2 class="mt-1 text-xl font-semibold">{{ reproposing ? 'Your new proposal' : 'Your proposed date' }}</h2></div><span v-if="proposalStatus === 'draft'" class="rounded-full bg-white px-3 py-1 text-xs font-bold text-[#8F1839]">Private draft</span></div>
+          <div class="flex flex-wrap items-center justify-between gap-2"><div><p class="text-xs font-extrabold uppercase tracking-widest text-[#6E4D58]">Proposal preview</p><h2 class="mt-1 text-xl font-semibold">{{ isNewProposal ? 'Your new proposal' : 'Your proposed date' }}</h2></div><span v-if="proposalStatus === 'draft'" class="rounded-full bg-white px-3 py-1 text-xs font-bold text-[#8F1839]">Private draft</span></div>
           <p class="mt-2 text-xs text-[#4D2F39]">This is how the key details will appear to {{ personName }}.</p>
           <dl class="mt-4 grid gap-3 text-sm">
             <div><dt class="text-[#6E4D58]">Idea</dt><dd class="font-semibold">{{ activity || 'Choose an idea' }}</dd></div>
@@ -562,7 +563,7 @@ useHead(() => ({ title: `Plan a Date with ${personName.value} · Lonely Radish` 
           <p v-if="proposalStatus === 'draft'" class="mt-4 text-xs leading-5 text-[#4D2F39]">{{ personName }} cannot see this proposal until you confirm and send it.</p>
           <div class="mt-5 flex flex-col gap-2 sm:flex-row">
             <button v-if="proposalStatus !== 'accepted' && !reproposing" type="button" class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-white px-5 py-3 text-sm font-semibold text-[#8F1839] disabled:opacity-40 sm:w-auto" :disabled="!activity || selectedTimes.length !== 1 || !proposalLocationComplete || sending || (canRespond && !reproposing)" @click="saveProposalDraft">{{ sending ? 'Saving…' : proposalId ? 'Save as draft' : 'Save draft' }}</button>
-            <button type="button" class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white disabled:opacity-40 sm:w-auto" :disabled="!activity || selectedTimes.length !== 1 || !proposalLocationComplete || sending || (canRespond && !reproposing)" @click="confirmAndSend"><Check class="size-4" />{{ sending ? 'Sending…' : reproposing ? `Send new proposal to ${personName}` : proposalStatus === 'accepted' ? 'Send date changes' : `Confirm and send to ${personName}` }}</button>
+            <button type="button" class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white disabled:opacity-40 sm:w-auto" :disabled="!activity || selectedTimes.length !== 1 || !proposalLocationComplete || sending || (canRespond && !reproposing)" @click="confirmAndSend"><Check class="size-4" />{{ sending ? 'Sending…' : isNewProposal ? `Send new proposal to ${personName}` : proposalStatus === 'accepted' ? 'Send date changes' : `Confirm and send to ${personName}` }}</button>
             <button v-if="reproposing" type="button" class="px-4 py-3 text-sm font-semibold text-[#8F1839]" :disabled="sending" @click="cancelReproposal">Cancel</button>
           </div>
           <p v-if="proposalStatus === 'accepted'" class="mt-3 text-xs text-[#4D2F39]">Changing confirmed details will ask {{ personName }} to approve the updated plan.</p>
