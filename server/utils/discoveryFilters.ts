@@ -3,13 +3,14 @@
 export const viewerDiscoveryJoins = `
   join profiles viewer on viewer.user_id=$2
   left join match_preferences mine on mine.user_id=$2
-  left join match_preferences theirs on theirs.user_id=p.user_id`
+  left join match_preferences theirs on theirs.user_id=p.user_id
+  left join interest_inbox_state inbox_state on inbox_state.user_id=p.user_id`
 
 export const viewerDiscoveryWhere = `
-  and extract(year from age(current_date,p.date_of_birth))::int between
-    coalesce(mine.minimum_age,18) and coalesce(mine.maximum_age,100)
-  and extract(year from age(current_date,viewer.date_of_birth))::int between
-    coalesce(theirs.minimum_age,18) and coalesce(theirs.maximum_age,100)
+  and p.date_of_birth<=(current_date-(coalesce(mine.minimum_age,18)*interval '1 year'))::date
+  and p.date_of_birth>(current_date-((coalesce(mine.maximum_age,100)+1)*interval '1 year'))::date
+  and viewer.date_of_birth<=(current_date-(coalesce(theirs.minimum_age,18)*interval '1 year'))::date
+  and viewer.date_of_birth>(current_date-((coalesce(theirs.maximum_age,100)+1)*interval '1 year'))::date
   and (coalesce(mine.open_to_everyone,true) or case p.gender_identity
     when 'woman' then 'Women' when 'man' then 'Men' when 'neither' then 'Non-binary' end = any(mine.interested_genders)
     or (p.gender_identity='neither' and 'Non-binary people'=any(mine.interested_genders)))
@@ -32,10 +33,7 @@ export const recipientInterestAvailabilityWhere = `
       and reciprocal.resolved_at is null)
     or (
       (u.interest_inbox_reopens_at is null or u.interest_inbox_reopens_at<=now())
-      and (select count(*) from daily_interests pending_interest where
-        pending_interest.recipient_id=p.user_id
-        and pending_interest.resolved_at is null
-        and pending_interest.inbox_bypassed=false)<5
+      and coalesce(inbox_state.pending_count,0)<5
     )
   )`
 

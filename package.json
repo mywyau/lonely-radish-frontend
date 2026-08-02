@@ -5,6 +5,7 @@
   "scripts": {
     "build": "npm run typecheck && nuxt build",
     "db:migrate": "node --env-file=.env scripts/migrate.mjs",
+    "db:reconcile-interest-inboxes": "node --env-file=.env scripts/reconcile-interest-inboxes.mjs",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",

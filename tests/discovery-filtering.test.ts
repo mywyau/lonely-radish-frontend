@@ -23,7 +23,9 @@ describe('scalable discovery filtering', () => {
   it('applies age, reciprocal gender and orientation, ethnicity and distance filters on the server', () => {
     const filters = read('server/utils/discoveryFilters.ts')
     const discovery = read('server/api/activities/[slug]/people.get.ts')
-    expect(filters).toContain('between')
+    expect(filters).toContain("p.date_of_birth<=(current_date-(coalesce(mine.minimum_age,18)*interval '1 year'))::date")
+    expect(filters).toContain("p.date_of_birth>(current_date-((coalesce(mine.maximum_age,100)+1)*interval '1 year'))::date")
+    expect(filters).not.toContain('extract(year from age(current_date,p.date_of_birth))')
     expect(filters).toContain('mine.interested_genders')
     expect(filters).toContain('theirs.interested_genders')
     expect(filters).toContain('mine.interested_orientations')
@@ -33,6 +35,8 @@ describe('scalable discovery filtering', () => {
     expect(filters).toContain('extensions.ST_DWithin')
     expect(discovery).toContain('viewerDiscoveryWhere')
     expect(discovery).toContain('distanceKm')
+    const migration = read('docs/migrations/20260905_optimize_discovery_interest_capacity.sql')
+    expect(migration).toContain('profiles_discovery_birth_date_idx')
   })
 
   it('offers location controls in onboarding and match preferences', () => {

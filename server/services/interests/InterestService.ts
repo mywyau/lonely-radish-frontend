@@ -132,7 +132,6 @@ export class InterestService {
 
       const reciprocal = await repository.hasReverseInterest(input.senderId, target.userId)
       if (!reciprocal) {
-        await repository.lockRecipientInbox(target.userId)
         if (!await repository.recipientInboxAcceptingInterests(target.userId)) {
           throw conflict('This person is not accepting new interests right now')
         }
@@ -199,6 +198,9 @@ export class InterestService {
       await client.query('rollback')
       const databaseError = error as { code?: string; constraint?: string }
       if (databaseError.code === '23514') {
+        if (databaseError.constraint === 'interest_inbox_capacity') {
+          throw conflict('This person is not accepting new interests right now')
+        }
         throw conflict('One of you has reached their active match limit')
       }
       if (databaseError.code === '23505') {

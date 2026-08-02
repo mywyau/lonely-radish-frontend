@@ -95,7 +95,6 @@ describe('interest and match services', () => {
       findEndedMatch: vi.fn().mockResolvedValue(null),
       findInterest: vi.fn().mockResolvedValue(null),
       countSentToday: vi.fn().mockResolvedValue(0),
-      lockRecipientInbox: vi.fn(),
       recipientInboxAcceptingInterests: vi.fn().mockResolvedValue(true),
       createInterest,
       hasReverseInterest: vi.fn().mockResolvedValue(true),
@@ -135,7 +134,6 @@ describe('interest and match services', () => {
     expect(activateMatch).toHaveBeenCalledWith(expect.anything(), 'match-1')
     expect(repository.createInterest).toHaveBeenCalledWith('user-a', 'user-b', true)
     expect(repository.resolvePairInterestsAccepted).toHaveBeenCalledWith('user-a', 'user-b')
-    expect(repository.lockRecipientInbox).not.toHaveBeenCalled()
     expect(publish).toHaveBeenCalledTimes(1)
     expect(publish).toHaveBeenCalledWith(expect.objectContaining({
       eventType: 'match.created',
@@ -168,7 +166,6 @@ describe('interest and match services', () => {
       findInterest: vi.fn().mockResolvedValue(null),
       countSentToday: vi.fn().mockResolvedValue(0),
       hasReverseInterest: vi.fn().mockResolvedValue(false),
-      lockRecipientInbox: vi.fn(),
       recipientInboxAcceptingInterests: vi.fn().mockResolvedValue(false),
       createInterest: vi.fn(),
     } as unknown as InterestRepository
@@ -196,8 +193,58 @@ describe('interest and match services', () => {
       statusMessage: 'This person is not accepting new interests right now',
     })
 
-    expect(repository.lockRecipientInbox).toHaveBeenCalledWith('user-b')
+    expect(repository.recipientInboxAcceptingInterests).toHaveBeenCalledWith('user-b')
     expect(repository.createInterest).not.toHaveBeenCalled()
+    expect(query.mock.calls.at(-1)?.[0]).toBe('rollback')
+  })
+
+  it('turns an atomic capacity race into the normal full-inbox response', async () => {
+    const { database, query } = databaseClient()
+    const repository = {
+      lockSender: vi.fn(),
+      getSenderForUpdate: vi.fn().mockResolvedValue({
+        accountStatus: 'active',
+        pausedUntil: null,
+        discoveryRestrictedUntil: null,
+      }),
+      findEligibleTarget: vi.fn().mockResolvedValue({
+        userId: 'user-b',
+        displayName: 'Alex',
+      }),
+      lockPair: vi.fn(),
+      findCurrentMatch: vi.fn().mockResolvedValue(null),
+      findEndedMatch: vi.fn().mockResolvedValue(null),
+      findInterest: vi.fn().mockResolvedValue(null),
+      countSentToday: vi.fn().mockResolvedValue(0),
+      hasReverseInterest: vi.fn().mockResolvedValue(false),
+      recipientInboxAcceptingInterests: vi.fn().mockResolvedValue(true),
+      createInterest: vi.fn().mockRejectedValue({
+        code: '23514',
+        constraint: 'interest_inbox_capacity',
+      }),
+    } as unknown as InterestRepository
+    const requests = {
+      removeExpired: vi.fn(),
+      claim: vi.fn().mockResolvedValue({ claimed: true }),
+      complete: vi.fn(),
+    } as unknown as IdempotencyRepository
+    const service = new InterestService({
+      database,
+      interests: () => repository,
+      idempotency: () => requests,
+      outbox: () => ({ publish: vi.fn() }) as unknown as OutboxRepository,
+      activateMatch: vi.fn(),
+      requestOutboxProcessing: vi.fn(),
+    })
+
+    await expect(service.sendInterest({
+      senderId: 'user-a',
+      profileSlug: 'alex',
+      idempotencyKey: 'request-key-capacity-race',
+    })).rejects.toMatchObject({
+      statusCode: 409,
+      statusMessage: 'This person is not accepting new interests right now',
+    })
     expect(query.mock.calls.at(-1)?.[0]).toBe('rollback')
   })
 

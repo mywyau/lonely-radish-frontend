@@ -1,6 +1,6 @@
 type Environment = Record<string, string | undefined>
 
-export const latestRequiredMigration = '20260904_group_gay_lesbian_match_preferences.sql'
+export const latestRequiredMigration = '20260905_optimize_discovery_interest_capacity.sql'
 
 const placeholderPrefixes = [
   'your-',

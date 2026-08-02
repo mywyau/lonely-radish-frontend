@@ -67,13 +67,17 @@ These reduce risk, but they do not replace authenticated load tests against real
 
 | ID | Status | Change | Definition of done |
 | --- | --- | --- | --- |
-| SCALE-101 | Not started | Profile and optimise activity discovery. Replace calculated-age predicates with date-of-birth ranges, validate query plans, and add only evidence-backed indexes. | Discovery remains within the latency objective on the large staging dataset and query plans avoid broad profile scans. |
-| SCALE-102 | Not started | Remove the per-candidate pending-interest `COUNT(*)` from discovery. Maintain inbox capacity atomically as derived state. | Discovery does not count a candidate's inbox rows; concurrency tests prove the five-interest limit cannot be exceeded. |
+| SCALE-101 | In progress | Profile and optimise activity discovery. Replace calculated-age predicates with date-of-birth ranges, validate query plans, and add only evidence-backed indexes. | Discovery remains within the latency objective on the large staging dataset and query plans avoid broad profile scans. |
+| SCALE-102 | In progress | Remove the per-candidate pending-interest `COUNT(*)` from discovery. Maintain inbox capacity atomically as derived state. | Discovery does not count a candidate's inbox rows; concurrency tests prove the five-interest limit cannot be exceeded. |
 | SCALE-103 | Not started | Reduce navigation request amplification. Return session/user/role/counters in one bootstrap response and stop recounting on every route change. | A normal client-side navigation makes no unconditional database count request; counters update after relevant actions or a controlled refresh. |
 | SCALE-104 | Not started | Optimise matches and notification counters. Consolidate related queries and add participant/status indexes supported by `EXPLAIN ANALYZE`. | Loading matches avoids unnecessary full counts and meets the latency target on representative history. |
 | SCALE-105 | Not started | Bound date reminder work. Claim a small batch, commit promptly, then enqueue the next batch when work remains. | No invocation handles an unbounded result set or holds locks during an entire backlog; retries are idempotent. |
 | SCALE-106 | Not started | Replace multi-request Redis rate limiting with one atomic operation or supported limiter. Pipeline presence operations where appropriate. | One logical rate-limit decision uses one atomic Redis operation and expiry cannot be lost after incrementing. |
 | SCALE-107 | Not started | Cache or prerender public pages at the edge while keeping authenticated responses private. | Homepage, FAQ, and legal pages are served from cache; personalised pages and APIs retain `private, no-store` behaviour. |
+
+`SCALE-101` and `SCALE-102` now have application and migration implementations.
+They remain in progress until the migration is deployed to staging and the
+discovery query plan and concurrent fifth-slot behaviour are verified there.
 
 ### P2 — prepare data growth
 

@@ -56,11 +56,6 @@ export class InterestRepository {
       [[senderId,recipientId].sort().join(':')])
   }
 
-  async lockRecipientInbox(recipientId: string) {
-    await this.client.query('select pg_advisory_xact_lock(hashtext($1))',
-      [`interest-inbox:${recipientId}`])
-  }
-
   async findEligibleTarget(profileSlug: string, senderId: string) {
     const { rows } = await this.client.query<InterestTarget>(`select
         p.user_id as "userId",p.display_name as "displayName"
@@ -79,10 +74,10 @@ export class InterestRepository {
   }
 
   async recipientInboxAcceptingInterests(recipientId: string) {
-    const { rows } = await this.client.query(`select 1 from users
-      where id=$1 and (interest_inbox_reopens_at is null or interest_inbox_reopens_at<=now())
-      and (select count(*) from daily_interests where recipient_id=$1
-        and resolved_at is null and inbox_bypassed=false)<5`, [recipientId])
+    const { rows } = await this.client.query(`select 1 from users u join interest_inbox_state inbox
+      on inbox.user_id=u.id where u.id=$1
+      and (u.interest_inbox_reopens_at is null or u.interest_inbox_reopens_at<=now())
+      and inbox.pending_count<5 for update of inbox`, [recipientId])
     return Boolean(rows[0])
   }
 

@@ -14,6 +14,16 @@ npm run db:migrate
 
 The runner creates `schema_migrations`, locks concurrent migration runs, verifies checksums, and skips migrations already applied. Do not edit an applied migration; add a new dated SQL file instead.
 
+Pending received-interest capacity is maintained transactionally by PostgreSQL.
+To repair counters from `daily_interests` after an operational incident, run:
+
+```sh
+npm run db:reconcile-interest-inboxes
+```
+
+Pass `-- --user=AUTH0_USER_ID` to reconcile one account. The command reports
+only counters that actually changed.
+
 ## Product data
 
 - `users`: Auth0 identity, account role (`member`, `moderator`, or `admin`), timezone, and lifecycle state.
