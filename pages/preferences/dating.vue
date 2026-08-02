@@ -51,7 +51,7 @@ onMounted(async () => { Object.assign(preferences, await $fetch('/api/preference
         </section>
 
         <section class="rounded-lg bg-white p-6 shadow-[0_12px_28px_rgba(180,35,74,0.08)]">
-          <div class="flex items-start gap-3"><UsersRound class="mt-1 size-5 text-[#B4234A]" /><div><h2 class="text-xl font-semibold">Racial and ethnic preferences</h2><p class="mt-1 text-sm text-[#6E4D58]">This is optional. Choose the communities you’re open to dating, or leave this open.</p></div></div>
+          <div class="flex items-start gap-3"><UsersRound class="mt-1 size-5 text-[#B4234A]" /><div><h2 class="text-xl font-semibold">Racial and ethnic preferences</h2><p class="mt-1 text-sm text-[#6E4D58]">This is optional. Choose one or more broad backgrounds, or leave this open.</p></div></div>
           <div class="mt-5 grid gap-2 sm:grid-cols-2">
             <button type="button" class="choice sm:col-span-2" :class="preferences.noRaceEthnicityPreference && 'choice-selected'" :aria-pressed="preferences.noRaceEthnicityPreference" @click="selectNoRacePreference">{{ openRaceEthnicityPreferenceLabel }}</button>
             <button v-for="option in raceEthnicityOptions" :key="option" type="button" class="choice" :class="preferences.raceEthnicities.includes(option) && 'choice-selected'" :aria-pressed="preferences.raceEthnicities.includes(option)" @click="toggleRaceEthnicity(option)">{{ option }}</button>

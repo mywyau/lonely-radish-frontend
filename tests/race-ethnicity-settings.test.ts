@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { openRaceEthnicityPreferenceLabel, raceEthnicityOptions } from '../utils/raceEthnicity'
+import { openRaceEthnicityPreferenceLabel, raceEthnicityOptions, usesRaceEthnicitySelfDescription } from '../utils/raceEthnicity'
 
 const read = (path: string) => readFileSync(resolve(process.cwd(), path), 'utf8')
 
@@ -11,17 +11,13 @@ describe('racial and ethnic identity settings', () => {
     expect(raceEthnicityOptions).toEqual([
       'Asian',
       'Black',
-      'African',
-      'Caribbean',
       'Latin American',
-      'Middle Eastern',
-      'North African',
+      'Middle Eastern or North African',
       'White',
-      'Mixed ethnicity',
+      'Mixed or multiple backgrounds',
       'Indigenous',
-      'Pacific Islander',
-      'Another ethnic background',
-      'Prefer to self-describe',
+      'Another racial or ethnic background',
+      'Prefer not to say',
     ])
 
     for (const file of [
@@ -39,12 +35,16 @@ describe('racial and ethnic identity settings', () => {
   it('normalises preference state and supports a bounded self-description', () => {
     const preferencesApi = read('server/api/preferences/dating.put.ts')
     const profileApi = read('server/api/profile/me.put.ts')
-    const migration = read('docs/migrations/20260802_refine_race_ethnicity_taxonomy.sql')
+    const migration = read('docs/migrations/20260903_simplify_race_ethnicity_taxonomy.sql')
 
     expect(preferencesApi).toContain('noRaceEthnicityPreference ? [] : requestedRaceEthnicities')
     expect(preferencesApi).toContain("if (!noRaceEthnicityPreference && !raceEthnicities.length)")
     expect(profileApi).toContain('raceEthnicitySelfDescriptionLimit')
+    expect(usesRaceEthnicitySelfDescription('Another racial or ethnic background')).toBe(true)
+    expect(usesRaceEthnicitySelfDescription('Prefer not to say')).toBe(false)
     expect(migration).toContain('race_ethnicity_self_description')
-    expect(migration).toContain("array['Black', 'African', 'Caribbean']")
+    expect(migration).toContain("when 'African' then array['Black']")
+    expect(migration).toContain("when 'North African' then array['Middle Eastern or North African']")
+    expect(migration).toContain("when 'Prefer to self-describe' then array['Another racial or ethnic background']")
   })
 })

@@ -3,17 +3,13 @@ export const openRaceEthnicityPreferenceLabel = 'Open to all backgrounds'
 export const raceEthnicityOptions = [
   'Asian',
   'Black',
-  'African',
-  'Caribbean',
   'Latin American',
-  'Middle Eastern',
-  'North African',
+  'Middle Eastern or North African',
   'White',
-  'Mixed ethnicity',
+  'Mixed or multiple backgrounds',
   'Indigenous',
-  'Pacific Islander',
-  'Another ethnic background',
-  'Prefer to self-describe',
+  'Another racial or ethnic background',
+  'Prefer not to say',
 ] as const
 
 export type RaceEthnicity = typeof raceEthnicityOptions[number]
@@ -25,5 +21,5 @@ export function isRaceEthnicity(value: string): value is RaceEthnicity {
 }
 
 export function usesRaceEthnicitySelfDescription(value: string) {
-  return value === 'Prefer to self-describe'
+  return value === 'Another racial or ethnic background'
 }
