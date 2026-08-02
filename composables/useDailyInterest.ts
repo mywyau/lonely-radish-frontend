@@ -101,7 +101,9 @@ export function useDailyInterest() {
           ? 'You have already matched with this person.'
           : status === 409 && failure.data?.statusMessage?.includes('active match limit')
           ? `One of you has reached their active match limit. Your plan allows ${activeMatchLimit.value}.`
-          : status === 409 ? 'You have reached today’s limit of 5 interests.' : 'We could not save your interest. Please try again.'
+          : status === 409 ? 'You have reached today’s limit of 5 interests.'
+          : status === 404 ? 'You can’t show interest in this profile right now.'
+          : 'We could not save your interest. Please try again.'
         return false
       }
     } finally {
