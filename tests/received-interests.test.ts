@@ -13,7 +13,7 @@ describe('received interests', () => {
     expect(api).toContain('pendingInterestCount')
     expect(api).toContain('not exists(select 1 from blocks')
     expect(api).toContain('di.created_at<=ended.ended_at')
-    expect(read('server/api/matches/index.get.ts')).toContain('di.created_at<=ended.ended_at')
+    expect(read('server/api/matches/index.get.ts')).toContain('interest_inbox_state')
     expect(read('pages/interests/received.vue')).toContain('Accept and match')
     expect(read('pages/interests/received.vue')).toContain('Pass')
     expect(read('pages/interests/received.vue')).toContain('Passing is final')

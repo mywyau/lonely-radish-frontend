@@ -36,11 +36,27 @@ describe('match momentum', () => {
     const endpoint = read('server/api/matches/index.get.ts')
     const page = read('pages/matches/index.vue')
     expect(endpoint).toContain('action_required_by=$1 and action_completed_at is null')
+    expect(endpoint).toContain("count(*) filter(where status='active')")
+    expect(endpoint).toContain('interest_inbox_state')
+    expect(endpoint.match(/db\.query/g)).toHaveLength(1)
     expect(endpoint).toContain('manualMatchLimit: 1')
     expect(page).toContain('{{ activeMatchCount }}/{{ activeMatchLimit }}')
     expect(page).toContain('{{ manualMatchCount }}/{{ manualMatchLimit }}')
     expect(page).toContain('Accepted interests waiting on you: {{ manualMatchCount }}/{{ manualMatchLimit }}')
     expect(page).toContain('This doesn’t affect matches where you had already chosen each other')
+  })
+
+  it('uses bounded participant lookups and enriches only the visible match page', () => {
+    const endpoint = read('server/api/matches/index.get.ts')
+    const migration = read('docs/migrations/20260906_optimize_matches_dashboard.sql')
+    expect(endpoint).toContain('where m.user_one_id=$1')
+    expect(endpoint).toContain('union all')
+    expect(endpoint).toContain('where m.user_two_id=$1')
+    expect(endpoint).toContain('limited as materialized')
+    expect(endpoint.indexOf('limit 25')).toBeLessThan(endpoint.indexOf('from profile_photos'))
+    expect(migration).toContain('matches_live_user_one_idx')
+    expect(migration).toContain('matches_live_user_two_idx')
+    expect(migration).toContain('business_offer_claims_live_proposal_idx')
   })
 
   it('allows received interests to remain visible and be passed on', () => {

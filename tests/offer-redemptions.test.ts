@@ -129,7 +129,7 @@ describe("offer claims and redemptions", () => {
     expect(memberPage).toContain("Replace attached offer");
     expect(memberPage).toContain("attachedToCurrentDate");
     expect(claims).toContain('proposal_id as "proposalId"');
-    expect(matchesApi).toContain("c.proposal_id=proposal.id");
+    expect(matchesApi).toContain('c.proposal_id=limited."proposalId"');
     expect(matchesApi).toContain('as "attachedOfferTitle"');
     expect(read("server/api/offers/[id]/claim.post.ts")).toContain(
       "set proposal_id=null",
