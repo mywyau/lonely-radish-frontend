@@ -141,7 +141,8 @@ describe("auth and billing page contracts", () => {
     expect(photos).toContain("Photo order saved.");
     expect(nav).toContain("Match preferences");
     expect(nav).toContain('name.charAt(0).toLocaleUpperCase()');
-    expect(nav).toContain("resolve({ force: true })");
+    expect(nav).toContain("await resolve()");
+    expect(nav).not.toContain("resolve({ force: true })");
     expect(nav).toContain("Profile photos");
     expect(account).toContain("/api/account/v2/profile");
     expect(account).not.toContain("getAccessToken");

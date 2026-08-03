@@ -21,6 +21,7 @@ function normaliseInterest(interest: DailyInterest): DailyInterest {
 }
 
 export function useDailyInterest() {
+  const { adjustMatchCount } = useMeStateV2()
   const interests = useState<DailyInterest[]>('daily-interests', () => [])
   const loaded = useState<boolean>('daily-interest-loaded', () => false)
   const errorMessage = useState<string | null>('daily-interest-error', () => null)
@@ -79,6 +80,7 @@ export function useDailyInterest() {
       })
       interests.value = interests.value.filter(interest => interest.profileSlug !== profileSlug)
       interests.value.push(normaliseInterest(response.interest))
+      if (response.matched) adjustMatchCount(1)
       if (response.matched && !response.queued) activeMatchCount.value += 1
       trackProductEvent('Interest Sent', {
         matchedImmediately: Boolean(response.matched),

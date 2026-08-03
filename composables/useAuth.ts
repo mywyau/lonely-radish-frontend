@@ -62,5 +62,6 @@ export async function businessSignup() {
 
 export async function logout() {
   if (!import.meta.client) return;
+  useMeStateV2().clear();
   window.location.assign("/api/auth/logout");
 }

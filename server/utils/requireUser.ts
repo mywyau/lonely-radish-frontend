@@ -6,6 +6,7 @@ type AuthUser = {
   sub: string;
   email?: string;
   email_verified?: boolean;
+  mode?: "personal" | "business";
 };
 
 export async function requireUser(event: any): Promise<AuthUser> {
@@ -41,5 +42,10 @@ export async function requireUser(event: any): Promise<AuthUser> {
       data: { code: "ACCOUNT_DELETING" },
     });
   }
-  return { sub: session.data.user.sub, email: session.data.user.email, email_verified: session.data.user.emailVerified };
+  return {
+    sub: session.data.user.sub,
+    email: session.data.user.email,
+    email_verified: session.data.user.emailVerified,
+    mode: session.data.user.mode,
+  };
 }

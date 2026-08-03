@@ -9,7 +9,7 @@ definePageMeta({ title: 'Set up your profile · Lonely Radish', middleware: 'log
 
 const router = useRouter()
 const route = useRoute()
-const { user, resolve } = useMeStateV2()
+const { user, resolve, setOnboardingComplete } = useMeStateV2()
 const loading = ref(true)
 const saving = ref(false)
 const errorMessage = ref('')
@@ -292,6 +292,7 @@ async function finish() {
   errorMessage.value = ''; saving.value = true
   try {
     await $fetch('/api/onboarding/complete', { method: 'POST' })
+    setOnboardingComplete()
     trackProductEvent('Onboarding Completed', { photoCount: photoCount.value })
     const redirect = typeof route.query.redirect === 'string' && route.query.redirect.startsWith('/') && !route.query.redirect.startsWith('//')
       ? route.query.redirect : '/'

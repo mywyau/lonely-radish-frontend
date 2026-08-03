@@ -69,7 +69,7 @@ These reduce risk, but they do not replace authenticated load tests against real
 | --- | --- | --- | --- |
 | SCALE-101 | In progress | Profile and optimise activity discovery. Replace calculated-age predicates with date-of-birth ranges, validate query plans, and add only evidence-backed indexes. | Discovery remains within the latency objective on the large staging dataset and query plans avoid broad profile scans. |
 | SCALE-102 | In progress | Remove the per-candidate pending-interest `COUNT(*)` from discovery. Maintain inbox capacity atomically as derived state. | Discovery does not count a candidate's inbox rows; concurrency tests prove the five-interest limit cannot be exceeded. |
-| SCALE-103 | Not started | Reduce navigation request amplification. Return session/user/role/counters in one bootstrap response and stop recounting on every route change. | A normal client-side navigation makes no unconditional database count request; counters update after relevant actions or a controlled refresh. |
+| SCALE-103 | In progress | Reduce navigation request amplification. Return session/user/role/counters in one bootstrap response and stop recounting on every route change. | A normal client-side navigation makes no unconditional database count request; counters update after relevant actions or a controlled refresh. |
 | SCALE-104 | In progress | Optimise matches and notification counters. Consolidate related queries and add participant/status indexes supported by `EXPLAIN ANALYZE`. | Loading matches avoids unnecessary full counts and meets the latency target on representative history. |
 | SCALE-105 | Not started | Bound date reminder work. Claim a small batch, commit promptly, then enqueue the next batch when work remains. | No invocation handles an unbounded result set or holds locks during an entire backlog; retries are idempotent. |
 | SCALE-106 | Not started | Replace multi-request Redis rate limiting with one atomic operation or supported limiter. Pipeline presence operations where appropriate. | One logical rate-limit decision uses one atomic Redis operation and expiry cannot be lost after incrementing. |
@@ -84,6 +84,14 @@ and maintained interest-inbox capacity with one database statement. Its partial
 participant indexes and query plan still need staging verification on representative
 match history before the item can be marked complete. Notification-history loading
 remains part of this item.
+
+`SCALE-103` now has one authenticated bootstrap response for member identity,
+entitlement, account mode, role, onboarding readiness, match capacity and navigation
+counters. Navigation and route middleware reuse the shared snapshot; relevant
+mutations update it locally, and returning to a stale tab refreshes it. It remains
+in progress until staging confirms ordinary client-side navigation makes no
+unconditional bootstrap, navigation-count, admin-role, account-mode or onboarding
+status request.
 
 ### P2 — prepare data growth
 

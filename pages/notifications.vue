@@ -21,6 +21,7 @@ const emailPreferencesError = ref('')
 const hasAnyEmailSubscriptions = computed(() => Object.values(emailPreferences).some(Boolean))
 const deletingAll = ref(false)
 const showDeleteAllConfirmation = ref(false)
+const { setUnreadNotificationCount, adjustUnreadNotificationCount } = useMeStateV2()
 
 const copy: Record<string, (notice: Notice) => string> = {
   interest_received: n => `${n.actorName || 'Someone new'} showed interest in meeting you.`,
@@ -65,24 +66,34 @@ async function load(loadMore = false) {
       query: { includeRead: true, ...(loadMore && nextCursor.value ? { cursor: nextCursor.value } : {}) },
     })
     notices.value = loadMore ? [...notices.value, ...result.notifications] : result.notifications
-    unreadCount.value = result.unreadCount; nextCursor.value = result.nextCursor; hasMore.value = result.hasMore
+    unreadCount.value = result.unreadCount
+    setUnreadNotificationCount(result.unreadCount)
+    nextCursor.value = result.nextCursor; hasMore.value = result.hasMore
   } catch (error: any) { errorMessage.value = error?.data?.statusMessage || 'Notifications could not be loaded.' }
   finally { loading.value = false; loadingMore.value = false }
 }
 async function markRead(notice: Notice) {
-  if (!notice.readAt) await $fetch(`/api/notifications/${notice.id}/read`, { method: 'POST' })
-  notice.readAt = new Date().toISOString(); unreadCount.value = Math.max(0, unreadCount.value - 1)
+  if (!notice.readAt) {
+    await $fetch(`/api/notifications/${notice.id}/read`, { method: 'POST' })
+    notice.readAt = new Date().toISOString()
+    unreadCount.value = Math.max(0, unreadCount.value - 1)
+    adjustUnreadNotificationCount(-1)
+  }
 }
 async function readAll() {
   await $fetch('/api/notifications/read-all', { method: 'POST' })
   notices.value.forEach(notice => { notice.readAt ||= new Date().toISOString() }); unreadCount.value = 0
+  setUnreadNotificationCount(0)
 }
 async function deleteNotice(notice: Notice) {
   if (!window.confirm('Delete this notification permanently?')) return
   try {
     await $fetch(`/api/notifications/${notice.id}`, { method: 'DELETE' })
     notices.value = notices.value.filter(item => item.id !== notice.id)
-    if (!notice.readAt) unreadCount.value = Math.max(0, unreadCount.value - 1)
+    if (!notice.readAt) {
+      unreadCount.value = Math.max(0, unreadCount.value - 1)
+      adjustUnreadNotificationCount(-1)
+    }
   } catch (error: any) { errorMessage.value = error?.data?.statusMessage || 'The notification could not be deleted.' }
 }
 async function deleteAllNotices() {
@@ -92,6 +103,7 @@ async function deleteAllNotices() {
     await $fetch('/api/notifications/all', { method: 'DELETE' })
     notices.value = []
     unreadCount.value = 0
+    setUnreadNotificationCount(0)
     nextCursor.value = null
     hasMore.value = false
     showDeleteAllConfirmation.value = false

@@ -104,11 +104,12 @@ describe("business subscriptions", () => {
     expect(businessNav).not.toContain("Matches & plans");
     expect(businessNav).not.toContain("Match preferences");
     expect(read("middleware/account-mode.global.ts")).toContain(
-      "mode.accountType === 'business'",
+      "accountType.value === 'business'",
     );
     const businessOnly = read("middleware/business-only.ts");
-    expect(businessOnly).toContain("mode.sessionMode === 'business'");
-    expect(businessOnly).toContain("!mode.hasBusiness");
+    expect(businessOnly).toContain("sessionMode.value === 'business'");
+    expect(businessOnly).toContain("!hasBusiness.value");
+    expect(businessOnly).not.toContain("'/api/account/mode'");
     expect(businessOnly).toContain("to.path !== '/business'");
     expect(businessOnly).toContain("onboarding:'required'");
     expect(read("pages/business/index.vue")).toMatch(

@@ -26,6 +26,7 @@ const manualMatchLimit = ref(1)
 const manualMatchCount = ref(0)
 const interestReceivedCount = ref(0)
 const notifications = ref<MatchNotification[]>([])
+const { adjustMatchCount, setUnreadNotificationCount, adjustUnreadNotificationCount } = useMeStateV2()
 const showAllMatchUpdates = ref(false)
 const markingAllUpdatesSeen = ref(false)
 const pendingReject = ref<MatchCard | null>(null)
@@ -236,11 +237,14 @@ async function loadMatches() {
   }
 }
 async function loadNotifications() {
-  notifications.value = (await $fetch<{ notifications: MatchNotification[] }>('/api/notifications')).notifications
+  const result = await $fetch<{ notifications: MatchNotification[]; unreadCount: number }>('/api/notifications')
+  notifications.value = result.notifications
+  setUnreadNotificationCount(result.unreadCount)
 }
 async function dismissNotification(id: string) {
   await $fetch(`/api/notifications/${id}/read`, { method: 'POST' })
   notifications.value = notifications.value.filter(notification => notification.id !== id)
+  adjustUnreadNotificationCount(-1)
 }
 async function markAllUpdatesSeen() {
   if (markingAllUpdatesSeen.value) return
@@ -248,6 +252,7 @@ async function markAllUpdatesSeen() {
   try {
     await $fetch('/api/notifications/read-all', { method: 'POST' })
     notifications.value = []
+    setUnreadNotificationCount(0)
     showAllMatchUpdates.value = false
   } catch (error: any) {
     errorMessage.value = error?.data?.statusMessage || 'Your updates could not be marked as seen.'
@@ -261,7 +266,10 @@ async function rejectMatch() {
       previewRejected.value = true
       window.localStorage.setItem('lonely-radish-preview-rejected-match', JSON.stringify({ endedAt: new Date().toISOString() }))
     }
-    else await $fetch(`/api/matches/${pendingReject.value.id}`, { method: 'DELETE' })
+    else {
+      await $fetch(`/api/matches/${pendingReject.value.id}`, { method: 'DELETE' })
+      adjustMatchCount(-1)
+    }
     pendingReject.value = null
     await loadMatches()
   } catch (error: any) { rejectError.value = error?.data?.statusMessage || 'This match could not be removed.' }

@@ -9,6 +9,7 @@ const details = ref('')
 const alsoBlock = ref(true)
 const submitting = ref(false)
 const errorMessage = ref('')
+const { resolve: refreshBootstrap } = useMeStateV2()
 
 function show(next: 'block' | 'report') {
   mode.value = next
@@ -20,6 +21,7 @@ async function block() {
   submitting.value = true; errorMessage.value = ''
   try {
     await $fetch(`/api/profiles/${props.profileSlug}/block`, { method: 'POST' })
+    await refreshBootstrap({ force: true })
     await navigateTo('/activities?safety=blocked')
   } catch (error: any) { errorMessage.value = error?.data?.statusMessage || 'This person could not be blocked.' }
   finally { submitting.value = false }
@@ -32,6 +34,7 @@ async function report() {
       category: category.value, details: details.value, alsoBlock: alsoBlock.value,
     } })
     window.sessionStorage.setItem('lonely-radish-latest-report-reference', result.reportId)
+    if (alsoBlock.value) await refreshBootstrap({ force: true })
     trackProductEvent('Safety Report Submitted', { category: category.value, blocked: alsoBlock.value })
     await navigateTo(`/activities?safety=${alsoBlock.value ? 'reported-blocked' : 'reported'}`)
   } catch (error: any) { errorMessage.value = error?.data?.statusMessage || 'Your report could not be submitted.' }

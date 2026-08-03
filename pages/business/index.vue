@@ -7,6 +7,7 @@ const loading = ref(true)
 const saving = ref(false)
 const errorMessage = ref('')
 const successMessage = ref('')
+const { resolve: refreshBootstrap } = useMeStateV2()
 const business = ref<any>(null)
 const form = reactive({
   businessName: '', contactEmail: '', venueName: '', category: 'cafe',
@@ -28,6 +29,7 @@ async function createBusiness() {
   saving.value = true; errorMessage.value = ''
   try {
     await $fetch('/api/business', { method: 'POST', body: form })
+    await refreshBootstrap({ force: true })
     successMessage.value = 'Business profile created and submitted for verification.'
     await load()
   } catch (error: any) { errorMessage.value = error?.data?.statusMessage || 'Your business profile could not be created.' }
@@ -195,4 +197,3 @@ onMounted(() => load().catch((error: any) => { errorMessage.value = error?.data?
   box-shadow: 0 0 0 3px rgba(180, 35, 74, .14);
 }
 </style>
-

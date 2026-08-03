@@ -9,10 +9,14 @@ describe("useMeStateV2 authenticated state", () => {
   it("resolves the signed-in user from the protected me endpoint", async () => {
     Object.defineProperty(process, "server", { value: false, configurable: true });
     vi.stubGlobal("$fetch", vi.fn().mockResolvedValue({
-      id: "auth0|user", email: "member@example.com", firstName: "Maya", lastName: "Lee",
-      entitlement: { plan: "free", subscription_status: "active", cancel_at_period_end: false },
+      user: { id: "auth0|user", email: "member@example.com", firstName: "Maya", lastName: "Lee",
+        entitlement: { plan: "free", subscription_status: "active", cancel_at_period_end: false } },
+      accountType: "personal", sessionMode: "personal", hasBusiness: false, isAdmin: false,
+      onboardingComplete: true, matchCount: 2, unreadNotificationCount: 3, activeMatchLimit: 3,
+      refreshedAt: new Date().toISOString(),
     }));
-    const { state, authReady, isLoggedIn, isLoggedOut, user, entitlement, resolve } =
+    const { state, authReady, isLoggedIn, isLoggedOut, user, entitlement, matchCount,
+      unreadNotificationCount, adjustMatchCount, adjustUnreadNotificationCount, resolve } =
       useMeStateV2();
 
     expect(state.value.status).toBe("loading");
@@ -25,7 +29,15 @@ describe("useMeStateV2 authenticated state", () => {
     expect(isLoggedOut.value).toBe(false);
     expect(user.value?.email).toBe("member@example.com");
     expect(entitlement.value?.plan).toBe("free");
-    expect($fetch).toHaveBeenCalledWith("/api/meV2");
+    expect(matchCount.value).toBe(2);
+    expect(unreadNotificationCount.value).toBe(3);
+    adjustMatchCount(1);
+    adjustUnreadNotificationCount(-1);
+    expect(matchCount.value).toBe(3);
+    expect(unreadNotificationCount.value).toBe(2);
+    await resolve();
+    expect($fetch).toHaveBeenCalledTimes(1);
+    expect($fetch).toHaveBeenCalledWith("/api/bootstrap");
   });
 
   it("treats only a 401 response as logged out", async () => {

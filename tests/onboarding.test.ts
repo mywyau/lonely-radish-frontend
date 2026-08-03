@@ -7,9 +7,12 @@ const read = (path: string) => readFileSync(resolve(process.cwd(), path), 'utf8'
 describe('first-login onboarding', () => {
   it('redirects incomplete authenticated users into a resumable flow', () => {
     expect(read('server/api/auth/callback.get.ts')).toContain('/onboarding?redirect=')
-    expect(read('middleware/logged-in.ts')).toContain('/api/onboarding/status')
+    expect(read('middleware/logged-in.ts')).toContain('onboardingComplete.value')
+    expect(read('middleware/logged-in.ts')).not.toContain('/api/onboarding/status')
+    expect(read('server/api/bootstrap.get.ts')).toContain('as "onboardingComplete"')
     expect(read('pages/onboarding.vue')).toContain("step.value = status.nextStep")
     expect(read('pages/onboarding.vue')).toContain('watch(step')
+    expect(read('pages/onboarding.vue')).toContain('setOnboardingComplete()')
     expect(read('pages/onboarding.vue')).toContain("window.scrollTo({ top: 0, left: 0, behavior: 'auto' })")
   })
 

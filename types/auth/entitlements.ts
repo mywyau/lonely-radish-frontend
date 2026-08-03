@@ -22,8 +22,21 @@ export interface MeUser {
   entitlement: Entitlement;
 }
 
+export interface AppBootstrap {
+  user: MeUser;
+  accountType: "personal" | "business";
+  sessionMode: "personal" | "business";
+  hasBusiness: boolean;
+  isAdmin: boolean;
+  onboardingComplete: boolean;
+  matchCount: number;
+  unreadNotificationCount: number;
+  activeMatchLimit: number;
+  refreshedAt: string;
+}
+
 export type MeState =
   | { status: "loading" }
   | { status: "logged-out" }
   | { status: "unavailable"; message: string }
-  | { status: "logged-in"; user: MeUser };
+  | { status: "logged-in"; user: MeUser; bootstrap: AppBootstrap };

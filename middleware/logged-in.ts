@@ -1,6 +1,6 @@
 export default defineNuxtRouteMiddleware(async (to) => {
   if (import.meta.server) return;
-  const { isLoggedIn, isUnavailable, resolve } = useMeStateV2();
+  const { isLoggedIn, isUnavailable, onboardingComplete, resolve } = useMeStateV2();
   await resolve();
   if (isUnavailable.value) {
     return abortNavigation(createError({
@@ -10,8 +10,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
   }
   if (!isLoggedIn.value) return navigateTo({ path: "/please-sign-in", query: { redirect: to.fullPath } });
   const onboardingPhotoSetup = to.path === "/photos" && to.query.onboarding === "1";
-  if (to.path !== "/onboarding" && !onboardingPhotoSetup) {
-    const onboarding = await $fetch<{ complete: boolean }>("/api/onboarding/status");
-    if (!onboarding.complete) return navigateTo({ path: "/onboarding", query: { redirect: to.fullPath } });
+  if (to.path !== "/onboarding" && !onboardingPhotoSetup && !onboardingComplete.value) {
+    return navigateTo({ path: "/onboarding", query: { redirect: to.fullPath } });
   }
 });

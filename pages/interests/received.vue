@@ -19,6 +19,7 @@ const interestLimit = ref(5)
 const hasMore = ref(false)
 const inboxReopensAt = ref<string | null>(null)
 const yourMoveMatch = ref<{ id: string; name: string } | null>(null)
+const { adjustMatchCount } = useMeStateV2()
 const atMatchLimit = computed(() => activeMatchCount.value >= activeMatchLimit.value)
 const inboxReopensLabel = computed(() => inboxReopensAt.value && new Date(inboxReopensAt.value) > new Date()
   ? new Date(inboxReopensAt.value).toLocaleString('en-GB', { weekday: 'long', hour: 'numeric', minute: '2-digit' })
@@ -60,6 +61,7 @@ async function acceptInterest() {
       ? `You matched with ${result.name}. Planning can begin when you both have space.`
       : `You matched with ${result.name}. Start planning before accepting another interest.`
     successShowsMatches.value = true
+    adjustMatchCount(1)
     if (!result.queued) {
       activeMatchCount.value += 1
       yourMoveMatch.value = { id: result.matchId, name: result.name }

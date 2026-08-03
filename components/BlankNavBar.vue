@@ -2,9 +2,9 @@
 import { useMeStateV2 } from '@/composables/useMeStateV2'
 import { BadgePercent, Bell, Building2, ClipboardCheck, Eye, HeartHandshake, History, House, Menu, Send, ShieldAlert, ShieldCheck, Sparkles, UsersRound, X } from '@lucide/vue'
 import { login, logout, signup } from '@/composables/useAuth'
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 
-const { user, isLoggedIn, resolve } = useMeStateV2()
+const { user, isLoggedIn, isAdmin, matchCount, unreadNotificationCount: unreadCount, resolve } = useMeStateV2()
 
 const accountLabel = computed(() => {
   const name = user.value?.firstName?.trim()
@@ -14,9 +14,6 @@ const route = useRoute()
 
 const menuOpen = ref(false)
 const navOpen = ref(false)
-const unreadCount = ref(0)
-const matchCount = ref(0)
-const isAdmin = ref(false)
 const menuRoot = ref<HTMLElement | null>(null)
 
 const navLinks = computed(() => {
@@ -70,29 +67,11 @@ function onDocumentKeydown(e: KeyboardEvent) {
   closeNav()
 }
 
-async function loadNavigationCounts() {
-  if (!isLoggedIn.value) return
-  try {
-    const counts = await $fetch<{ matchCount: number; unreadNotificationCount: number }>('/api/navigation/counts')
-    matchCount.value = counts.matchCount
-    unreadCount.value = counts.unreadNotificationCount
-  } catch { /* Navigation remains usable when counts are temporarily unavailable. */ }
-}
-
 onMounted(async () => {
-  await resolve({ force: true })
-  await loadNavigationCounts()
-  if (isLoggedIn.value) {
-    try {
-      await $fetch('/api/admin/me')
-      isAdmin.value = true
-    } catch { isAdmin.value = false }
-  }
+  await resolve()
   document.addEventListener('click', onDocumentClick)
   document.addEventListener('keydown', onDocumentKeydown)
 })
-
-watch(() => route.fullPath, () => { void loadNavigationCounts() })
 
 onBeforeUnmount(() => {
   document.removeEventListener('click', onDocumentClick)
