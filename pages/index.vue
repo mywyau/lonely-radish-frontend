@@ -11,13 +11,6 @@ import {
   TicketCheck,
 } from '@lucide/vue'
 
-useSeoMeta({
-  title: 'Meet someone over something you both enjoy',
-  description: 'Find someone nearby, make a simple plan together and see how you get on.',
-  ogTitle: 'Meet someone over something you both enjoy | Lonely Radish',
-  ogDescription: 'Find someone nearby, make a simple plan together and see how you get on.',
-})
-
 const { isLoggedIn, user, resolve: resolveMeState } = useMeStateV2()
 const localHour = ref<number | null>(null)
 const welcomeMessageIndex = ref(0)

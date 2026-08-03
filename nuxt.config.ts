@@ -64,21 +64,8 @@ export default defineNuxtConfig({
       },
       meta: [
         {
-          name: "description",
-          content:
-            "A casual dating app for low-pressure coffee dates, clear availability, and thoughtful introductions.",
-        },
-        {
-          property: "og:site_name",
-          content: "Lonely Radish",
-        },
-        {
-          property: "og:type",
-          content: "website",
-        },
-        {
-          name: "twitter:card",
-          content: "summary_large_image",
+          name: "theme-color",
+          content: "#FBF7F1",
         },
       ],
       link: [

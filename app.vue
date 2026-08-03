@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Analytics } from '@vercel/analytics/vue'
+import { defaultSeoDescription, isIndexablePath, normaliseSeoPath, publicSeoForPath, siteName } from '~/utils/siteSeo'
 
 const route = useRoute()
 const businessShell = computed(() => route.path.startsWith('/business'))
@@ -10,25 +11,52 @@ const showBackLink = computed(() => route.path !== '/')
 const runtimeConfig = useRuntimeConfig()
 
 const baseUrl = (runtimeConfig.public.siteUrl || 'http://localhost:3000').replace(/\/$/, '')
+const publicSeo = computed(() => publicSeoForPath(route.path))
+const canonicalPath = computed(() => normaliseSeoPath(route.path))
+const canonicalUrl = computed(() => `${baseUrl}${canonicalPath.value}`)
+const pageTitle = computed(() => publicSeo.value?.title
+  || (typeof route.meta.title === 'string' ? route.meta.title : undefined))
+const pageDescription = computed(() => publicSeo.value?.description || defaultSeoDescription)
+const robots = computed(() => isIndexablePath(route.path) ? 'index, follow' : 'noindex, nofollow')
 
-useHead({
-  titleTemplate: (titleChunk) => titleChunk
-    ? `${titleChunk} · Lonely Radish`
-    : 'Lonely Radish · Coffee-date dating',
+useHead(() => ({
+  title: pageTitle.value,
+  titleTemplate: (titleChunk) => {
+    if (!titleChunk) return 'Lonely Radish · Intentional dating built around real plans'
+    return titleChunk.includes(siteName) ? titleChunk : `${titleChunk} · ${siteName}`
+  },
   link: [
     {
       rel: 'canonical',
-      href: `${baseUrl}/`,
+      href: canonicalUrl.value,
     },
   ],
-})
+  script: canonicalPath.value === '/' ? [{
+    key: 'lonely-radish-website-schema',
+    type: 'application/ld+json',
+    innerHTML: JSON.stringify({
+      '@context': 'https://schema.org',
+      '@graph': [
+        { '@type': 'Organization', '@id': `${baseUrl}/#organization`, name: siteName, url: `${baseUrl}/` },
+        { '@type': 'WebSite', '@id': `${baseUrl}/#website`, name: siteName, url: `${baseUrl}/`,
+          description: defaultSeoDescription, publisher: { '@id': `${baseUrl}/#organization` } },
+      ],
+    }),
+  }] : [],
+}))
 
 useSeoMeta({
-  ogUrl: `${baseUrl}/`,
-  ogTitle: 'Lonely Radish · Activity-first dating',
-  ogDescription: 'A casual dating app for people who want to meet through shared plans, clear availability, and thoughtful introductions.',
-  twitterTitle: 'Lonely Radish · Activity-first dating',
-  twitterDescription: 'A casual dating app for people who want to meet through shared plans, clear availability, and thoughtful introductions.',
+  description: () => pageDescription.value,
+  robots: () => robots.value,
+  ogSiteName: siteName,
+  ogType: 'website',
+  ogLocale: 'en_GB',
+  ogUrl: () => canonicalUrl.value,
+  ogTitle: () => pageTitle.value ? `${pageTitle.value}${pageTitle.value.includes(siteName) ? '' : ` · ${siteName}`}` : siteName,
+  ogDescription: () => pageDescription.value,
+  twitterCard: 'summary',
+  twitterTitle: () => pageTitle.value ? `${pageTitle.value}${pageTitle.value.includes(siteName) ? '' : ` · ${siteName}`}` : siteName,
+  twitterDescription: () => pageDescription.value,
 })
 </script>
 

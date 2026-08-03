@@ -19,9 +19,6 @@ describe("core page contracts", () => {
 
   it("home page keeps SEO metadata and activity-date call to action", () => {
     const source = readPage("index.vue");
-    expect(source).toContain(
-      "title: 'Meet someone over something you both enjoy'",
-    );
     expect(source).toContain("Meet someone new");
     expect(source).toContain("navigateTo('/activities')");
     expect(source).toContain('to="/matches"');

@@ -2,12 +2,6 @@
 import { CalendarDays, HeartHandshake, HelpCircle, ShieldCheck, Sparkles, UserRound } from '@lucide/vue'
 
 definePageMeta({ title: 'How Lonely Radish works · FAQ' })
-useSeoMeta({
-  title: 'How Lonely Radish works · FAQ',
-  description: 'Find out how matching, date planning, rescheduling, privacy and safety work on Lonely Radish.',
-  ogTitle: 'How Lonely Radish works · FAQ',
-  ogDescription: 'Straightforward answers about matching, making plans and meeting safely.',
-})
 
 const sections = [
   {
