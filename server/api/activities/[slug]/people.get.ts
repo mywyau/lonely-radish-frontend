@@ -15,16 +15,8 @@ export default defineEventHandler(async (event) => {
   const cursor = decodeCursor(getQuery(event).cursor)
   const pageSize = 20
 
-  const candidates = await db.query(`select candidate.*,
-    coalesce(mine.minimum_age,18) as "minimumAge",coalesce(mine.maximum_age,100) as "maximumAge",
-    coalesce(mine.max_distance_km,10) as distance,coalesce(mine.open_to_everyone,true) as "openToEveryone",
-    coalesce(mine.interested_genders,'{}'::text[]) as genders,
-    coalesce(mine.no_orientation_preference,true) as "noOrientationPreference",
-    coalesce(mine.interested_orientations,'{}'::text[]) as orientations,
-    coalesce(mine.no_ethnicity_preference,true) as "noRacePreference",
-    viewer.location_label as "locationLabel",viewer.postcode_area as "postcodeArea"
-    from profiles viewer left join match_preferences mine on mine.user_id=viewer.user_id
-    left join lateral (select p.slug,p.display_name as name,p.updated_at::text as "sortAt",
+  const [candidates, preferenceResult] = await Promise.all([
+    db.query(`select p.slug,p.display_name as name,p.updated_at::text as "sortAt",
     extract(year from age(current_date,p.date_of_birth))::int as age,
     coalesce(p.location_label,p.postcode_area,p.neighbourhood) as place,p.bio as detail,
     photo.storage_key as "photoStorageKey",photo.public_url as "legacyPhotoUrl",
@@ -56,13 +48,16 @@ export default defineEventHandler(async (event) => {
       ${viewerDiscoveryWhere}
       ${recipientInterestAvailabilityWhere}
       and ($3::timestamptz is null or (p.updated_at,p.slug)<($3::timestamptz,$4::text))
-    order by p.updated_at desc,p.slug desc limit $5) candidate on true
-    where viewer.user_id=$2
-    order by candidate."sortAt" desc nulls last,candidate.slug desc`,
-  [category.databaseCategories,sub,cursor?.sortAt || null,cursor?.tieBreaker || null,pageSize+1,category.customOnly === true])
+    order by p.updated_at desc,p.slug desc limit $5`, [category.databaseCategories,sub,cursor?.sortAt || null,cursor?.tieBreaker || null,pageSize+1,category.customOnly === true]),
+    db.query(`select mp.minimum_age as "minimumAge",mp.maximum_age as "maximumAge",
+      mp.max_distance_km as "distance",mp.open_to_everyone as "openToEveryone",
+      mp.interested_genders as genders,mp.no_orientation_preference as "noOrientationPreference",
+      mp.interested_orientations as orientations,mp.no_ethnicity_preference as "noRacePreference",
+      p.location_label as "locationLabel",p.postcode_area as "postcodeArea"
+      from profiles p left join match_preferences mp on mp.user_id=p.user_id where p.user_id=$1`, [sub]),
+  ])
 
-  const candidateRows = candidates.rows.filter(row => row.slug)
-  const page = pageRows(candidateRows, pageSize, row => ({ sortAt: row.sortAt, tieBreaker: row.slug }))
+  const page = pageRows(candidates.rows, pageSize, row => ({ sortAt: row.sortAt, tieBreaker: row.slug }))
   const photoUrls = await signedPhotoUrls(page.items.map(person => person.photoStorageKey).filter(Boolean))
   const people = page.items.map(person => {
     const matchedActivityTags = (person.activityTags || []).filter(Boolean)
@@ -78,7 +73,7 @@ export default defineEventHandler(async (event) => {
         ? photoUrls.get(person.photoStorageKey) : person.legacyPhotoUrl || null,
     }
   })
-  const preferences = candidates.rows[0] ?? { minimumAge: 18, maximumAge: 100, distance: 10,
+  const preferences = preferenceResult.rows[0] ?? { minimumAge: 18, maximumAge: 100, distance: 10,
     openToEveryone: true, genders: [], noOrientationPreference: true, orientations: [], noRacePreference: true,
     locationLabel: null, postcodeArea: null }
   const searchLocation = [preferences.locationLabel, preferences.postcodeArea].filter((value, index, values) =>

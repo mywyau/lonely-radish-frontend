@@ -1,6 +1,8 @@
 // Candidate profile alias: p. Viewing profile alias: viewer. Preference aliases: mine and theirs.
 // Keeping this fragment shared prevents future discovery surfaces from applying different compatibility rules.
 export const viewerDiscoveryJoins = `
+  join profiles viewer on viewer.user_id=$2
+  left join match_preferences mine on mine.user_id=$2
   left join match_preferences theirs on theirs.user_id=p.user_id
   left join interest_inbox_state inbox_state on inbox_state.user_id=p.user_id`
 

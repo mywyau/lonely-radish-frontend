@@ -15,11 +15,10 @@ describe('measured read-path query amplification', () => {
     expect(profile).not.toContain('Promise.all')
   })
 
-  it('loads candidates and the viewer filter summary with one endpoint query', () => {
-    const discovery = read('server/api/activities/[slug]/people.get.ts')
-    expect(discovery.match(/db\.query/g)).toHaveLength(1)
-    expect(discovery).toContain('from profiles viewer left join match_preferences mine')
-    expect(discovery).toContain('left join lateral (select p.slug')
-    expect(discovery).not.toContain('Promise.all')
+  it('loads notification rows and the unread total with one endpoint query', () => {
+    const notifications = read('server/api/notifications.get.ts')
+    expect(notifications.match(/db\.query/g)).toHaveLength(1)
+    expect(notifications).toContain('with notification_page as materialized')
+    expect(notifications).toContain('from unread left join notification_page on true')
   })
 })

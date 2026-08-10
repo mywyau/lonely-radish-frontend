@@ -35,7 +35,7 @@ describe('real activity candidates', () => {
     expect(page).toContain('Ages {{ appliedFilters.minimumAge }}–{{ appliedFilters.maximumAge }}')
     expect(page).toContain('Within {{ appliedFilters.distance }} km')
     expect(page).toContain('Using ${appliedFilters.searchLocation}')
-    expect(api).toContain('viewer.postcode_area as "postcodeArea"')
+    expect(api).toContain('p.postcode_area as "postcodeArea"')
     expect(page).toContain('{{ person.place }}')
     expect(page).toContain('Nobody here fits your preferences yet')
     expect(page).toContain('Change preferences')
