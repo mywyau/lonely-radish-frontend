@@ -1,5 +1,6 @@
 import { attachDatabasePool } from "@vercel/functions";
 import pg from "pg";
+import { databasePoolMax } from "./databasePoolConfig";
 import { tracePostgresPoolWait, tracePostgresQuery } from "../utils/telemetry";
 
 const { Pool } = pg;
@@ -62,7 +63,14 @@ function postgresQueryable(queryable: pg.Pool | pg.PoolClient): DatabaseQueryabl
 
 function createPostgresDb(pool: pg.Pool): Database {
   return {
-    ...postgresQueryable(pool),
+    async query<Row = Record<string, any>>(text: string, values?: readonly unknown[]) {
+      const client = await tracePostgresPoolWait(() => pool.connect())
+      try {
+        return await postgresQueryable(client).query<Row>(text, values)
+      } finally {
+        client.release()
+      }
+    },
     async connect() {
       const client = await tracePostgresPoolWait(() => pool.connect())
       return {
@@ -83,7 +91,7 @@ const pool = process.env.DATABASE_URL
       ssl: { rejectUnauthorized: false },
       // Serverless instances scale horizontally. Keep each local pool small so
       // bursts do not exhaust Supabase's shared transaction-pooler clients.
-      max: 2,
+      max: databasePoolMax(),
       idleTimeoutMillis: 10000,
       connectionTimeoutMillis: 2000,
     })
