@@ -13,10 +13,10 @@ describe('match-only contact details', () => {
 
   it('only returns opted-in contact details to active matches', () => {
     const api = read('server/api/profiles/[slug].get.ts')
-    expect(api).toContain('profile.isMatched')
-    expect(api).toContain('profile.isMatched\n      ? db.query')
+    expect(api).toContain("on relationship.status='active'")
+    expect(api).toContain("'phoneNumber',phone_number")
     expect(api).toContain('share_with_matches=true')
-    expect(api).toContain('contactDetails: contactDetails.rows[0] ?? null')
+    expect(api).toContain('contact.item as "contactDetails"')
   })
 
   it('lets an account owner manage sharing without putting activities in account details', () => {

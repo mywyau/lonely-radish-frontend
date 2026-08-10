@@ -14,7 +14,9 @@ describe('schedule and safety preferences', () => {
     expect(page).toContain('Let people see this before you match')
     expect(page).toContain('resetAvailability')
     expect(page).toContain('Reset all')
-    expect(read('server/api/profiles/[slug].get.ts')).toContain('profile.isMatched || profile.availabilityVisibleBeforeMatch')
+    expect(read('server/api/profiles/[slug].get.ts')).toContain(
+      "on relationship.status='active' or coalesce(mp.availability_visible_before_match,false)",
+    )
     expect(read('server/api/activities/[slug]/people.get.ts')).not.toContain('from availability')
     expect(read('server/api/preferences/schedule.put.ts')).toContain("startTime >= endTime")
   })

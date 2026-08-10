@@ -32,7 +32,7 @@ describe('personal profile interests', () => {
     const profile = read('pages/profiles/[slug].vue')
     const preview = read('pages/profile/preview.vue')
     const activityPanel = read('components/ProfileActivityPanel.vue')
-    expect(profileApi).toContain('personalInterests: personalInterests.rows.map')
+    expect(profileApi).toContain('coalesce(personal_interests.items')
     expect(meApi).toContain('personalInterests: personalInterests.rows.map')
     expect(profile).toContain('profile.value.personalInterests')
     expect(activityPanel).toContain('Personal interests')
