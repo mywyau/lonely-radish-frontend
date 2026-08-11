@@ -41,6 +41,9 @@ export default defineEventHandler(async (event) => {
       left join lateral (select coalesce(thumbnail_storage_key,storage_key) as storage_key,public_url
         from profile_photos where user_id=p.user_id order by position limit 1) photo on true
       where di.recipient_id=$1 and di.resolution in ('expired','withdrawn')
+        and not exists(select 1 from blocks b where
+          (b.blocker_id=$1 and b.blocked_id=di.sender_id)
+          or (b.blocker_id=di.sender_id and b.blocked_id=$1))
       order by di.resolved_at desc limit 25`, [sub])
     const active = await database.query(`select count(*)::int as count from matches where status='active'
       and (user_one_id=$1 or user_two_id=$1)`, [sub])

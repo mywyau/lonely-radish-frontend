@@ -19,7 +19,10 @@ export default defineEventHandler(async (event) => {
     left join lateral (select m.status from matches m where
       (m.user_one_id=$1 and m.user_two_id=di.recipient_id) or (m.user_two_id=$1 and m.user_one_id=di.recipient_id)
       order by m.matched_at desc limit 1) matched on true
-    where di.sender_id=$1 order by di.created_at desc limit 100`, [sub])
+    where di.sender_id=$1 and not exists(select 1 from blocks b where
+      (b.blocker_id=$1 and b.blocked_id=di.recipient_id)
+      or (b.blocker_id=di.recipient_id and b.blocked_id=$1))
+    order by di.created_at desc limit 100`, [sub])
   const photoUrls = await signedPhotoUrls(rows.map(row => row.photoStorageKey).filter(Boolean))
   const interests = rows.map(row => ({ ...row,
     matched: row.matchStatus === 'active', queued: row.matchStatus === 'queued',

@@ -24,6 +24,8 @@ describe('admin moderation workflow', () => {
     expect(api).toContain('"reporterSubmissionCount"')
     expect(api).toContain('"reporterBlockedUser"')
     expect(api).toContain('"relatedDateCount"')
+    expect(api).toContain('"relatedInterestId"')
+    expect(api).toContain('"relatedInterestResolution"')
   })
 
   it('audits decisions and protects privileged accounts', () => {

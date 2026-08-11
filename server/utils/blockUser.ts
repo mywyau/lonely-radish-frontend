@@ -10,8 +10,9 @@ export async function blockUser(client: DatabaseClient, blockerId: string, block
     returning id`, [blockerId,blockedId])
   await client.query(`update date_proposals set status='cancelled',updated_at=now()
     where status in ('pending','accepted') and ((inviter_id=$1 and invitee_id=$2) or (inviter_id=$2 and invitee_id=$1))`, [blockerId,blockedId])
-  await client.query(`delete from daily_interests
-    where (sender_id=$1 and recipient_id=$2) or (sender_id=$2 and recipient_id=$1)`, [blockerId,blockedId])
+  await client.query(`update daily_interests set resolution='blocked',resolved_at=now()
+    where resolved_at is null and
+      ((sender_id=$1 and recipient_id=$2) or (sender_id=$2 and recipient_id=$1))`, [blockerId,blockedId])
   await client.query(`delete from notifications
     where (recipient_id=$1 and actor_id=$2) or (recipient_id=$2 and actor_id=$1)`, [blockerId,blockedId])
   return { newlyBlocked: (matches.rowCount || 0) > 0 }

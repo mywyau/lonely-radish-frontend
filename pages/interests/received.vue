@@ -118,11 +118,17 @@ async function declineInterest(person: ReceivedInterest) {
       <h2 id="closed-interests-title" class="text-xl font-semibold">Recently closed</h2>
       <p class="mt-1 text-sm text-[#6E4D58]">Expired and withdrawn interests are kept here for clarity. They no longer use inbox space.</p>
       <div class="mt-4 grid gap-3">
-        <article v-for="interest in closedInterests" :key="interest.id" class="flex items-center gap-4 rounded-lg bg-white p-4">
-          <img v-if="interest.photoUrl" :src="interest.photoUrl" :alt="`${interest.name}'s profile photo`" class="size-12 rounded-full object-cover">
-          <div v-else class="flex size-12 items-center justify-center rounded-full bg-[#FCE3E8] font-semibold text-[#B4234A]">{{ interest.name.charAt(0) }}</div>
-          <div class="min-w-0 flex-1"><h3 class="font-semibold">{{ interest.name }}</h3><p class="mt-1 text-xs text-[#6E4D58]">Closed {{ new Date(interest.resolvedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) }}</p></div>
-          <span class="rounded-full bg-[#FCE3E8] px-3 py-2 text-xs font-semibold text-[#8F1839]">{{ interest.resolution === 'expired' ? 'Expired' : 'Withdrawn by sender' }}</span>
+        <article v-for="interest in closedInterests" :key="interest.id" class="rounded-lg bg-white p-4">
+          <div class="flex flex-wrap items-center gap-4">
+            <img v-if="interest.photoUrl" :src="interest.photoUrl" :alt="`${interest.name}'s profile photo`" class="size-12 rounded-full object-cover">
+            <div v-else class="flex size-12 items-center justify-center rounded-full bg-[#FCE3E8] font-semibold text-[#B4234A]">{{ interest.name.charAt(0) }}</div>
+            <div class="min-w-0 flex-1"><h3 class="font-semibold">{{ interest.name }}</h3><p class="mt-1 text-xs text-[#6E4D58]">Sent {{ new Date(interest.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) }} · closed {{ new Date(interest.resolvedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) }}</p></div>
+            <span class="rounded-full bg-[#FCE3E8] px-3 py-2 text-xs font-semibold text-[#8F1839]">{{ interest.resolution === 'expired' ? 'Expired' : 'Withdrawn by sender' }}</span>
+          </div>
+          <div class="mt-4 border-t border-[#E8D8C4] pt-4">
+            <NuxtLink :to="`/profiles/${interest.slug}`" class="text-xs font-semibold text-[#8F1839] hover:underline">View profile</NuxtLink>
+            <ProfileSafetyActions :profile-slug="interest.slug" :profile-name="interest.name" :interest-id="interest.id" />
+          </div>
         </article>
       </div>
     </section>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { trackProductEvent } from '~/utils/productAnalytics'
 
-const props = defineProps<{ profileSlug: string; profileName: string }>()
+const props = defineProps<{ profileSlug: string; profileName: string; interestId?: string }>()
 const open = ref(false)
 const mode = ref<'block' | 'report'>('block')
 const category = ref('')
@@ -32,6 +32,7 @@ async function report() {
   try {
     const result = await $fetch<{ reportId: string }>(`/api/profiles/${props.profileSlug}/report`, { method: 'POST', body: {
       category: category.value, details: details.value, alsoBlock: alsoBlock.value,
+      interestId: props.interestId,
     } })
     window.sessionStorage.setItem('lonely-radish-latest-report-reference', result.reportId)
     if (alsoBlock.value) await refreshBootstrap({ force: true })

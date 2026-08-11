@@ -40,5 +40,6 @@ describe('interest lifecycle', () => {
     expect(sent).toContain("return 'Withdrawn'")
     expect(received).toContain('Withdrawn by sender')
     expect(received).toContain('Recently closed')
+    expect(received).toContain('ProfileSafetyActions')
   })
 })

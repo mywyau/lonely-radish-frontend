@@ -35,6 +35,10 @@ type ReportItem = {
   relatedMatchEndedReason?: string | null
   relatedMatchEndedAt?: string | null
   relatedDateCount: number
+  relatedInterestId?: string | null
+  relatedInterestCreatedAt?: string | null
+  relatedInterestResolution?: string | null
+  relatedInterestResolvedAt?: string | null
   latestAction?: string | null
   latestActionNote?: string | null
   latestActionExpiresAt?: string | null
@@ -276,6 +280,7 @@ onBeforeUnmount(() => {
               <section class="rounded-lg border border-[#E8D8C4] p-4"><h3 class="flex items-center gap-2 font-semibold"><UserRound class="size-4 text-[#6E4D58]" />Reporter</h3><dl class="mt-3 grid gap-2 text-sm"><div><dt>Name</dt><dd>{{ displayName(report, 'reporter') }}</dd></div><div><dt>Email</dt><dd class="break-all">{{ report.reporterEmail }}</dd></div><div><dt>Reporting history</dt><dd>{{ report.reporterSubmissionCount }} other submissions</dd></div><div><dt>Safety action</dt><dd>{{ report.reporterBlockedUser ? 'Reported member was also blocked' : 'No block recorded with this report' }}</dd></div></dl></section>
             </div>
             <section v-if="report.relatedMatchId" class="mt-4 rounded-lg bg-[#FBF7F1] p-4 text-sm"><h3 class="font-semibold">Related connection context</h3><p class="mt-2 text-[#6E4D58]">Match {{ report.relatedMatchStatus }}<span v-if="report.relatedMatchEndedReason"> · ended: {{ report.relatedMatchEndedReason }}</span> · {{ report.relatedDateCount }} date plan{{ report.relatedDateCount === 1 ? '' : 's' }}</p><p class="mt-1 break-all text-xs text-[#6E4D58]">Match ID: {{ report.relatedMatchId }}</p></section>
+            <section v-if="report.relatedInterestId" class="mt-4 rounded-lg bg-[#FFF1C7] p-4 text-sm"><h3 class="font-semibold">Related interest context</h3><p class="mt-2 text-[#694C00]">Sent {{ formattedDate(report.relatedInterestCreatedAt) }} · {{ report.relatedInterestResolution || 'pending' }}<span v-if="report.relatedInterestResolvedAt"> {{ formattedDate(report.relatedInterestResolvedAt) }}</span></p><p class="mt-1 break-all text-xs text-[#694C00]">Interest ID: {{ report.relatedInterestId }}</p></section>
             <section v-if="report.recentReports.length" class="mt-4"><h3 class="font-semibold">Recent reports against this member</h3><ul class="mt-2 grid gap-2 text-sm"><li v-for="previous in report.recentReports" :key="previous.id" class="flex flex-wrap justify-between gap-2 rounded-lg bg-[#FBF7F1] p-3"><span class="capitalize">{{ previous.category }} · {{ priorityLabel(previous.priority) }}</span><span class="text-[#6E4D58]">{{ previous.status }} · {{ formattedDate(previous.createdAt) }}</span></li></ul></section>
             <p v-if="report.resolution" class="mt-4 rounded-lg bg-[#EAF2DE] p-4 text-sm"><span class="font-semibold">Resolution:</span> {{ report.resolution }}<span v-if="report.reviewedBy" class="block mt-1 text-xs text-[#52713A]">Reviewed by {{ report.reviewedBy }} on {{ formattedDate(report.reviewedAt) }}</span></p>
 

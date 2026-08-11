@@ -27,6 +27,10 @@ export default defineEventHandler(async (event) => {
     db.query(`select r.id,r.category,r.details,r.status,r.priority,
       r.created_at as "createdAt",r.reviewed_at as "reviewedAt",r.resolution,
       r.related_match_id as "relatedMatchId",reviewer.email as "reviewedBy",
+      r.related_interest_id as "relatedInterestId",
+      related_interest.created_at as "relatedInterestCreatedAt",
+      related_interest.resolution as "relatedInterestResolution",
+      related_interest.resolved_at as "relatedInterestResolvedAt",
       related_match.status as "relatedMatchStatus",related_match.ended_reason as "relatedMatchEndedReason",
       related_match.ended_at as "relatedMatchEndedAt",
       (select count(*)::int from date_proposals dp where dp.match_id=r.related_match_id) as "relatedDateCount",
@@ -52,6 +56,7 @@ export default defineEventHandler(async (event) => {
       left join profiles reporter_profile on reporter_profile.user_id=reporter.id
       left join profiles reported_profile on reported_profile.user_id=reported.id
       left join matches related_match on related_match.id=r.related_match_id
+      left join daily_interests related_interest on related_interest.id=r.related_interest_id
       left join users reviewer on reviewer.id=r.reviewed_by
       left join lateral (
         select ma.action,ma.note,ma.expires_at from moderation_actions ma
