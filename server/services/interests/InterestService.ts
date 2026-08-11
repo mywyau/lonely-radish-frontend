@@ -107,10 +107,11 @@ export class InterestService {
       }
 
       const endedMatch = await repository.findEndedMatch(input.senderId, target.userId)
+      if (endedMatch && endedMatch.endedBy !== input.senderId) {
+        throw conflict('This person ended the connection, so you cannot contact them or re-offer interest')
+      }
       if (endedMatch && !endedMatch.secondChanceAvailable) {
-        throw conflict(endedMatch.endedBy === input.senderId
-          ? 'Send a private note before asking for a second chance'
-          : 'Send a private message before re-offering interest')
+        throw conflict('Send a brief apology before asking for a second chance')
       }
 
       const existingInterest = await repository.findInterest(input.senderId, target.userId)

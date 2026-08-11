@@ -18,8 +18,6 @@ export default defineEventHandler(async (event) => {
     coalesce(followup.can_reconsider,false) as "canReconsider",
     exists(select 1 from match_apology_notes man where man.match_id=m.id and man.sender_id=$1
       and man.message_type='apology' and man.created_at>m.ended_at) as "apologySent",
-    exists(select 1 from match_apology_notes man where man.match_id=m.id and man.sender_id=$1
-      and man.message_type='contact' and man.created_at>m.ended_at) as "contactSent",
     exists(select 1 from match_apology_notes man where man.match_id=m.id and man.recipient_id=$1
       and man.message_type='apology' and man.created_at>m.ended_at) as "apologyReceived"
     from matches m join profiles p on p.user_id=case when m.user_one_id=$1 then m.user_two_id else m.user_one_id end
@@ -35,7 +33,7 @@ export default defineEventHandler(async (event) => {
   const page = pageRows(rows, pageSize, row => ({ sortAt: row.sortAt, tieBreaker: row.id }))
   const photoUrls = await signedPhotoUrls(page.items.map(row => row.photoStorageKey).filter(Boolean))
   const connections = page.items.map(row => ({ ...row, sortAt: undefined,
-    canViewProfile: row.endedByMe === true || row.wasUnmatched === true || row.canReconsider === true || row.apologyReceived === true,
+    canViewProfile: row.endedByMe === true || row.canReconsider === true || row.apologyReceived === true,
     photoStorageKey: undefined, legacyPhotoUrl: undefined,
     photoUrl: row.photoStorageKey ? photoUrls.get(row.photoStorageKey) : row.legacyPhotoUrl || null,
   }))

@@ -15,7 +15,7 @@ const sections = [
       },
       {
         question: 'What do I need to complete my profile?',
-        answer: 'We’ll ask for some basic details, what you’re interested in, when you’re usually free, an approximate UK location and at least one photo. We never ask for your home address.',
+        answer: 'We’ll ask for some basic details, what you’re interested in, your dating preferences and an approximate UK location. A profile photo and regular availability are helpful but optional, and you can add them later. We never ask for your home address.',
       },
       {
         question: 'Why does the app ask about activities and availability?',
@@ -34,7 +34,7 @@ const sections = [
       },
       {
         question: 'When does an interest become a match?',
-        answer: 'If you’ve both shown interest, you’ll match automatically. If only one person has, the other can look at their profile and decide whether to accept.',
+        answer: 'The person you choose can see your interest and decide whether to accept or pass. If you’ve both independently shown interest, you’ll match automatically.',
       },
       {
         question: 'Why can I receive only five interests at a time?',
@@ -58,7 +58,7 @@ const sections = [
       },
       {
         question: 'Can I remove a match?',
-        answer: 'Yes. Removing a match ends the connection. Blocking goes further: neither of you will be shown to the other again.',
+        answer: 'Yes. Removing a match ends the connection. Only the person who ended it may later send one apology and re-offer interest; the other person still decides whether to reconnect. Blocking goes further: neither of you will be shown to the other while the block remains in place.',
       },
     ],
   },
@@ -104,7 +104,7 @@ const sections = [
       },
       {
         question: 'What should I do if a person makes me uncomfortable?',
-        answer: 'You can block or report someone from their profile or date page. Blocking stops further contact, while a report goes to the moderation team. Lonely Radish is not an emergency service.',
+        answer: 'You can block or report someone from their profile. Blocking stops further contact, while a report goes to the moderation team. If their profile is no longer available, contact support and include any details you have. Lonely Radish is not an emergency service.',
       },
       {
         question: 'What happens after a date?',
@@ -146,10 +146,10 @@ const sections = [
         </section>
       </div>
 
-      <!-- <section class="mt-10 rounded-xl bg-[#EAF2DE] p-6 sm:flex sm:items-center sm:justify-between sm:gap-6">
+      <section class="mt-10 rounded-xl bg-[#EAF2DE] p-6 sm:flex sm:items-center sm:justify-between sm:gap-6">
         <div><div class="flex items-center gap-2"><HeartHandshake class="size-5 text-[#52713A]" /><h2 class="text-xl font-semibold">Still have a question?</h2></div><p class="mt-2 text-sm leading-6 text-[#4D2F39]">Tell us what was unclear or what you would like the app to explain better.</p></div>
         <NuxtLink to="/contact" class="mt-4 inline-flex rounded-lg bg-[#52713A] px-5 py-3 text-sm font-semibold text-white sm:mt-0">Contact us</NuxtLink>
-      </section> -->
+      </section>
     </div>
   </main>
 </template>

@@ -24,6 +24,11 @@ describe('product rules and FAQ', () => {
     expect(faq).toContain('What happens when a match is waiting?')
     expect(faq).toContain('How is cancelling different from rescheduling?')
     expect(faq).toContain("title: 'Privacy and safety'")
+    expect(faq).toContain('A profile photo and regular availability are helpful but optional')
+    expect(faq).toContain('The person you choose can see your interest')
+    expect(faq).toContain('Only the person who ended it may later send one apology')
+    expect(faq).toContain('block or report someone from their profile')
+    expect(faq).not.toContain('profile or date page')
     expect(faq).toContain('to="/contact"')
   })
 
