@@ -21,11 +21,13 @@ describe("account deletion", () => {
     const service = read("server/services/accountDeletion.ts");
     expect(service).toContain("account_deletion_jobs");
     expect(service).toContain("account_status='deleting'");
+    expect(service).toContain("replaceAccountAccess(userId, { accountStatus: 'deleting'");
   });
 
   it("removes external services, stored photos, and cascading database data", () => {
     const worker = read("server/api/account/v2/worker-delete.post.ts");
     expect(worker).toContain("deleteAuth0User");
+    expect(worker).toContain("invalidateAccountAccess(body.userId)");
     expect(worker).toContain("stripe.subscriptions.cancel");
     const local = read("server/utils/deleteUserData.ts");
     expect(local).toContain("PROFILE_PHOTO_BUCKET");

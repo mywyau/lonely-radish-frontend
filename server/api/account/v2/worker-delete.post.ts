@@ -7,6 +7,7 @@ import { db } from "~/server/repositories/db";
 import { stripe } from "~/server/services/billing/stripeClient";
 import { deleteAuth0User } from "@/server/utils/auth0";
 import { deleteUserData } from "@/server/utils/deleteUserData";
+import { invalidateAccountAccess } from "@/server/utils/accountAccess";
 
 type WorkerBody = {
   jobId: number;
@@ -256,6 +257,7 @@ export default defineEventHandler(async (event) => {
 
     // 3. Delete local app data last
     await deleteUserData(body.userId, ownedBusinesses.rows.map(business => business.id));
+    await invalidateAccountAccess(body.userId);
 
     // 4. Mark job completed
     await db.query(

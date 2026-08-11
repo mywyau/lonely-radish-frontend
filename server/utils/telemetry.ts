@@ -35,6 +35,9 @@ const databasePoolWait = meter.createHistogram('lonely_radish.db.client.connecti
   description: 'Time spent waiting for a PostgreSQL pool connection',
   unit: 's',
 })
+const accountAccessCacheOperations = meter.createCounter('lonely_radish.auth.account_access.cache.operation.count', {
+  description: 'Account access cache operations by outcome',
+})
 
 const headersGetter: TextMapGetter<Record<string, string>> = {
   keys: carrier => Object.keys(carrier),
@@ -115,4 +118,8 @@ export async function tracePostgresPoolWait<T>(connect: () => Promise<T>) {
     databasePoolWait.record(elapsedSeconds(startedAt), { 'db.system.name': 'postgresql', outcome: 'error' })
     throw error
   }
+}
+
+export function recordAccountAccessCache(outcome: 'hit' | 'miss' | 'read_error' | 'write' | 'write_error' | 'invalidate' | 'invalidate_error') {
+  accountAccessCacheOperations.add(1, { outcome })
 }

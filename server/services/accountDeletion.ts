@@ -3,6 +3,7 @@ import { createError } from 'h3'
 import { db } from '~/server/repositories/db'
 import { redactIdentifier } from '~/server/utils/logging/redact'
 import { qstashDeliveryHeaders } from '~/server/utils/qstashDelivery'
+import { replaceAccountAccess } from '~/server/utils/accountAccess'
 
 type JobStatus = 'pending' | 'processing' | 'failed' | 'completed'
 
@@ -91,6 +92,8 @@ export async function queueAccountDeletion(userId: string, options: QueueOptions
   } finally {
     client.release()
   }
+
+  await replaceAccountAccess(userId, { accountStatus: 'deleting', suspendedUntil: null })
 
   if (jobId !== null && shouldPublish) {
     try {

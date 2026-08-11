@@ -39,11 +39,20 @@ describe('admin moderation workflow', () => {
 
   it('enforces suspensions and restores expired temporary suspensions', () => {
     const guard = read('server/utils/requireUser.ts')
-    expect(guard).toContain("account_status='suspended'")
-    expect(guard).toContain('moderation_suspended_until<=now()')
-    expect(guard).toContain('ACCOUNT_SUSPENDED')
-    expect(guard).toContain("'auto_restore'")
+    const access = read('server/utils/accountAccess.ts')
+    expect(guard).toContain('resolveAccountAccess')
+    expect(access).toContain("account_status='suspended'")
+    expect(access).toContain('moderation_suspended_until<=now()')
+    expect(access).toContain('ACCOUNT_SUSPENDED')
+    expect(access).toContain("'auto_restore'")
+    expect(access).toContain("'account_restored'")
     expect(read('pages/account/suspended.vue')).toContain('Your account is suspended')
+  })
+
+  it('updates cached access after moderation changes', () => {
+    const api = read('server/api/admin/reports/[id].patch.ts')
+    expect(api).toContain('replaceAccountAccess')
+    expect(api).toContain("decision === 'restore' ? 'active' : 'suspended'")
   })
 
   it('renders the admin queue and navigation entry', () => {

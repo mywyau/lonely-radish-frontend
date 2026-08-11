@@ -1,6 +1,7 @@
 import { createError, getRouterParam, readBody } from 'h3'
 import { db } from '~/server/repositories/db'
 import { requireAdmin } from '~/server/utils/requireAdmin'
+import { replaceAccountAccess, type AccountStatus } from '~/server/utils/accountAccess'
 import { objectBody, text } from '~/server/utils/productValidation'
 
 const decisions = new Set([
@@ -80,6 +81,12 @@ export default defineEventHandler(async (event) => {
         [report.reportedId, notificationKind])
     }
     await client.query('commit')
+    if (decision.startsWith('suspend_') || decision === 'restore') {
+      await replaceAccountAccess(report.reportedId, {
+        accountStatus: (decision === 'restore' ? 'active' : 'suspended') as AccountStatus,
+        suspendedUntil: expiresAt,
+      })
+    }
     return { reportId, status: reportStatus, decision, suspendedUntil: expiresAt }
   } catch (error) {
     await client.query('rollback')

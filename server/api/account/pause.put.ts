@@ -1,6 +1,7 @@
 import { createError, readBody } from 'h3'
 import { db } from '~/server/repositories/db'
 import { requireUser } from '~/server/utils/requireUser'
+import { replaceAccountAccess } from '~/server/utils/accountAccess'
 import { objectBody, text } from '~/server/utils/productValidation'
 
 const choices = new Set(['7_days', '30_days', 'indefinite', 'resume'])
@@ -18,5 +19,6 @@ export default defineEventHandler(async (event) => {
     where id=$1 and account_status not in ('suspended','deleting')
     returning account_status as status,paused_at as "pausedAt",paused_until as "pausedUntil"`, [sub,choice])
   if (!rows[0]) throw createError({ statusCode: 409, statusMessage: 'This account cannot be paused right now' })
+  await replaceAccountAccess(sub, { accountStatus: rows[0].status, suspendedUntil: null })
   return { paused: rows[0].status === 'paused', pausedAt: rows[0].pausedAt, pausedUntil: rows[0].pausedUntil }
 })

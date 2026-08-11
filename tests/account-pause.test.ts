@@ -10,12 +10,14 @@ describe('account discovery pause', () => {
     expect(api).toContain("['7_days', '30_days', 'indefinite', 'resume']")
     expect(api).toContain("now()+interval '7 days'")
     expect(api).toContain("then 'active' else 'paused'")
+    expect(api).toContain('replaceAccountAccess')
   })
 
   it('automatically treats expired pauses as discoverable', () => {
     expect(read('server/api/profiles/[slug].get.ts')).toContain('u.paused_until<=now()')
     expect(read('server/api/activities/[slug]/people.get.ts')).toContain('u.paused_until<=now()')
     expect(read('server/api/account/pause.get.ts')).toContain("paused_until<=now() then 'active'")
+    expect(read('server/api/account/pause.get.ts')).toContain('replaceAccountAccess')
   })
 
   it('prevents paused users sending new interest while preserving existing match routes', () => {
