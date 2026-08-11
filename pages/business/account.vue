@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { AlertTriangle, Trash2 } from '@lucide/vue'
+import type { AccountDeletionResponse } from '~/types/api/accountDeletion'
 
 definePageMeta({ title: 'Business account · Lonely Radish', middleware: 'business-only' })
 
@@ -14,7 +15,9 @@ async function deleteAccount() {
   deleting.value = true
   errorMessage.value = ''
   try {
-    await $fetch('/api/account/v2', { method: 'DELETE', body: { confirm: confirmation.value } })
+    await $fetch<AccountDeletionResponse>('/api/account/v2', {
+      method: 'DELETE', body: { confirm: confirmation.value },
+    })
     window.location.assign('/api/auth/logout')
   } catch (error: any) {
     errorMessage.value = error?.data?.statusMessage || 'Account deletion could not be started.'

@@ -3,6 +3,7 @@ import { ArrowRight, CalendarDays, CheckCircle2, ChevronDown, Circle, MapPin, Sh
 import { raceEthnicityOptions, raceEthnicitySelfDescriptionLimit, usesRaceEthnicitySelfDescription } from '~/utils/raceEthnicity';
 import { genderIdentityOptions } from '~/utils/genderIdentity';
 import { sexualOrientationOptions } from '~/utils/sexualOrientation';
+import type { AccountDeletionResponse } from '~/types/api/accountDeletion';
 
 definePageMeta({
   title: "Account · Lonely Radish",
@@ -190,7 +191,9 @@ async function deleteAccount() {
   deletingAccount.value = true;
   deleteError.value = '';
   try {
-    await $fetch('/api/account/v2', { method: 'DELETE', body: { confirm: deleteConfirmInput.value } });
+    await $fetch<AccountDeletionResponse>('/api/account/v2', {
+      method: 'DELETE', body: { confirm: deleteConfirmInput.value },
+    });
     deletionQueued.value = true;
     window.setTimeout(() => { window.location.assign('/api/auth/logout'); }, 1200);
   } catch (error: any) {

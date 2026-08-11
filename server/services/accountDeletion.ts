@@ -4,12 +4,11 @@ import { db } from '~/server/repositories/db'
 import { redactIdentifier } from '~/server/utils/logging/redact'
 import { qstashDeliveryHeaders } from '~/server/utils/qstashDelivery'
 import { replaceAccountAccess } from '~/server/utils/accountAccess'
-
-type JobStatus = 'pending' | 'processing' | 'failed' | 'completed'
+import type { AccountDeletionJobStatus, AccountDeletionResponse } from '~/types/api/accountDeletion'
 
 type ExistingJobRow = {
   id: number | string
-  status: JobStatus
+  status: AccountDeletionJobStatus
   started_at: string | null
 }
 
@@ -29,14 +28,14 @@ function required(name: 'SITE_URL' | 'QSTASH_TOKEN') {
   return value
 }
 
-export async function queueAccountDeletion(userId: string, options: QueueOptions) {
+export async function queueAccountDeletion(userId: string, options: QueueOptions): Promise<AccountDeletionResponse> {
   const workerUrl = `${required('SITE_URL').replace(/\/+$/, '')}/api/account/v2/worker-delete`
   const client = await db.connect()
   let jobId: number | null = null
   let alreadyInProgress = false
   let createdNewJob = false
   let shouldPublish = false
-  let jobStatus: JobStatus = 'pending'
+  let jobStatus: AccountDeletionJobStatus = 'pending'
 
   try {
     await client.query('BEGIN')

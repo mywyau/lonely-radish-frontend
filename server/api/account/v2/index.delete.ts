@@ -1,8 +1,7 @@
 import { assertMethod, createError, readBody, setResponseStatus } from 'h3'
 import { useAuthSession } from '~/server/utils/authSession'
 import { queueAccountDeletion } from '~/server/services/accountDeletion'
-
-type DeleteBody = { confirm?: string }
+import type { AccountDeletionRequest } from '~/types/api/accountDeletion'
 
 export default defineEventHandler(async (event) => {
   assertMethod(event, 'DELETE')
@@ -10,7 +9,7 @@ export default defineEventHandler(async (event) => {
   const userId = session.data.user?.sub
   if (!userId) throw createError({ statusCode: 401, statusMessage: 'Unauthenticated' })
 
-  const body = await readBody<DeleteBody>(event)
+  const body = await readBody<AccountDeletionRequest>(event)
   if (body?.confirm?.trim().toLowerCase() !== 'delete') {
     throw createError({ statusCode: 400, statusMessage: 'Confirmation text did not match' })
   }

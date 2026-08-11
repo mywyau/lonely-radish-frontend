@@ -4,6 +4,7 @@ import { openRaceEthnicityPreferenceLabel, raceEthnicityOptions, raceEthnicitySe
 import { genderIdentityOptions } from '~/utils/genderIdentity'
 import { sexualOrientationOptions, sexualOrientationPreferenceOptions } from '~/utils/sexualOrientation'
 import { trackProductEvent } from '~/utils/productAnalytics'
+import type { OnboardingBootstrapResponse, OnboardingSelectedActivity } from '~/types/api/onboarding'
 
 definePageMeta({ title: 'Set up your profile · Lonely Radish', middleware: 'logged-in' })
 
@@ -47,7 +48,7 @@ const activityGroups = [
   { name: 'Community', options: ['Volunteering', 'Community events', 'Charity activities', 'Environmental projects', 'Community gardening', 'Local causes'] },
 ]
 const activityGroupIcons: Record<string, any> = { Sports: Trophy, Gaming: Gamepad2, Learning: Brain, Wellness: HeartPulse, Nightlife: MoonStar, Explore: Compass, Community: HandHeart }
-type SelectedActivity = { name: string; category: string; custom: boolean }
+type SelectedActivity = OnboardingSelectedActivity
 const selectedActivities = ref<SelectedActivity[]>([])
 const openActivityGroups = ref<Set<string>>(new Set([activityGroups[0].name]))
 const customActivityInputs = reactive<Record<string, string>>(Object.fromEntries(activityGroups.map(group => [group.name, ''])))
@@ -159,23 +160,20 @@ function createProfileSlug() {
 
 async function load() {
   await resolve()
-  const [status, profileData, activityData, general, dating, schedule, savedLocation] = await Promise.all([
-    $fetch<any>('/api/onboarding/status'), $fetch<any>('/api/profile/me'),
-    $fetch<any>('/api/preferences/activities'), $fetch<any>('/api/preferences/general'), $fetch<any>('/api/preferences/dating'),
-    $fetch<any>('/api/preferences/schedule'), $fetch<any>('/api/profile/location'),
-  ])
+  const bootstrap = await $fetch<OnboardingBootstrapResponse>('/api/onboarding/bootstrap')
+  const { status, activities: activityData, general, dating, schedule, location: savedLocation } = bootstrap
   if (status.complete) return router.replace('/')
   step.value = status.nextStep
   photoCount.value = status.photoCount || 0
   profile.firstName = user.value?.firstName || ''
   profile.lastName = user.value?.lastName || ''
-  if (profileData.profile) Object.assign(profile, {
-    displayName: profileData.profile.displayName || '', slug: profileData.profile.slug || '',
-    genderIdentity: profileData.profile.genderIdentity || '', sexualOrientation: profileData.profile.sexualOrientation || '',
-    raceEthnicity: profileData.profile.raceEthnicity || '', raceEthnicitySelfDescription: profileData.profile.raceEthnicitySelfDescription || '',
-    dateOfBirth: profileData.profile.dateOfBirth?.slice(0, 10) || '', pronouns: profileData.profile.pronouns || '', bio: profileData.profile.bio || '',
-    heightCm: profileData.profile.heightCm || null, weightKg: profileData.profile.weightKg || null,
-    drinking: profileData.profile.drinking || '', smoking: profileData.profile.smoking || '', dailyRhythm: profileData.profile.dailyRhythm || '',
+  if (bootstrap.profile) Object.assign(profile, {
+    displayName: bootstrap.profile.displayName || '', slug: bootstrap.profile.slug || '',
+    genderIdentity: bootstrap.profile.genderIdentity || '', sexualOrientation: bootstrap.profile.sexualOrientation || '',
+    raceEthnicity: bootstrap.profile.raceEthnicity || '', raceEthnicitySelfDescription: bootstrap.profile.raceEthnicitySelfDescription || '',
+    dateOfBirth: bootstrap.profile.dateOfBirth?.slice(0, 10) || '', pronouns: bootstrap.profile.pronouns || '', bio: bootstrap.profile.bio || '',
+    heightCm: bootstrap.profile.heightCm || null, weightKg: bootstrap.profile.weightKg || null,
+    drinking: bootstrap.profile.drinking || '', smoking: bootstrap.profile.smoking || '', dailyRhythm: bootstrap.profile.dailyRhythm || '',
   })
   if (profile.dateOfBirth) {
     const [year, month, day] = profile.dateOfBirth.split('-')

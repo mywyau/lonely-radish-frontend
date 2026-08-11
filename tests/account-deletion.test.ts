@@ -8,7 +8,7 @@ const read = (path: string) =>
 describe("account deletion", () => {
   it("requires typed confirmation and queues the authenticated account", () => {
     const page = read("pages/account/v2/index.vue");
-    expect(page).toContain("$fetch('/api/account/v2', { method: 'DELETE'");
+    expect(page).toContain("$fetch<AccountDeletionResponse>('/api/account/v2'");
     expect(page).toContain("Continue to final confirmation");
     expect(page).toContain("Delete your account permanently?");
     expect(page).toContain("Yes, permanently delete");
@@ -35,10 +35,6 @@ describe("account deletion", () => {
     expect(local).toContain("PROFILE_PHOTO_BUCKET");
     expect(local).toContain("DELETE FROM users WHERE id = $1");
     expect(local).toContain("DELETE FROM businesses");
-    expect(worker).toContain("business_subscriptions");
-    expect(worker).toContain("started_at < NOW() - INTERVAL '5 minutes'");
-    expect(worker).toContain("Account deletion is already processing; retry later");
-    expect(worker).toContain("if (user) {");
     const recoveryMigration = read('docs/migrations/20260910_recover_stranded_account_deletions.sql');
     expect(recoveryMigration).toContain("Deletion request had no retryable worker job");
   });

@@ -5,32 +5,11 @@ import type { H3Event } from "h3";
 
 import { db } from "~/server/repositories/db";
 import { stripe } from "~/server/services/billing/stripeClient";
+import { claimAccountDeletionJob } from "~/server/services/accountDeletionWorker";
 import { deleteAuth0User } from "@/server/utils/auth0";
 import { deleteUserData } from "@/server/utils/deleteUserData";
 import { invalidateAccountAccess } from "@/server/utils/accountAccess";
-
-type WorkerBody = {
-  jobId: number;
-  userId: string;
-};
-
-type JobRow = {
-  id: number | string;
-  user_id: string;
-  status: "pending" | "processing" | "failed" | "completed";
-  attempt_count: number | string;
-};
-
-type UserRow = {
-  id: string;
-  stripe_customer_id: string | null;
-};
-
-type OwnedBusinessRow = {
-  id: string;
-  stripe_customer_id: string | null;
-  has_other_members: boolean;
-};
+import type { AccountDeletionWorkerRequest, AccountDeletionWorkerResponse } from "~/types/api/accountDeletion";
 
 function requiredEnv(name: string): string {
   const value = process.env[name];
@@ -85,7 +64,7 @@ async function verifyQStashRequest(
   }
 }
 
-function parseWorkerBody(rawBody: string): WorkerBody {
+function parseWorkerBody(rawBody: string): AccountDeletionWorkerRequest {
   let body: unknown;
 
   try {
@@ -127,7 +106,7 @@ function parseWorkerBody(rawBody: string): WorkerBody {
   };
 }
 
-export default defineEventHandler(async (event) => {
+export default defineEventHandler(async (event): Promise<AccountDeletionWorkerResponse> => {
   const rawBody = await readRawBody(event, "utf8");
 
   if (!rawBody) {
@@ -148,101 +127,22 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  const client = await db.connect();
   let claimed = false;
 
   try {
-    await client.query("BEGIN");
-
-    const claimRes = await client.query<JobRow>(
-      `
-      UPDATE account_deletion_jobs
-      SET status = 'processing',
-          attempt_count = attempt_count + 1,
-          started_at = NOW(),
-          last_error = NULL
-      WHERE id = $1
-        AND user_id = $2
-        AND (
-          status IN ('pending', 'failed')
-          OR (status = 'processing' AND started_at < NOW() - INTERVAL '5 minutes')
-        )
-      RETURNING id, user_id, status, attempt_count
-      `,
-      [body.jobId, body.userId]
-    );
-
-    if (claimRes.rowCount === 0) {
-      const existing = await client.query<{ status: JobRow['status'] }>(
-        `SELECT status FROM account_deletion_jobs WHERE id = $1 AND user_id = $2`,
-        [body.jobId, body.userId],
-      );
-      await client.query("ROLLBACK");
-      if (existing.rows[0]?.status === 'completed') {
-        return { success: true, completed: true, skipped: true };
-      }
-      if (existing.rows[0]?.status === 'processing') {
-        throw createError({
-          statusCode: 503,
-          statusMessage: 'Account deletion is already processing; retry later',
-        });
-      }
-      return {
-        success: true,
-        skipped: true,
-      };
-    }
+    const work = await claimAccountDeletionJob(db, body);
+    if (work.state === 'completed') return { success: true, completed: true, skipped: true };
+    if (work.state === 'skipped') return { success: true, skipped: true };
     claimed = true;
-
-    await client.query(
-      `
-      UPDATE users
-      SET deletion_status = 'processing'
-      WHERE id = $1
-      `,
-      [body.userId]
-    );
-
-    const userRes = await client.query<UserRow>(
-      `
-      SELECT id, stripe_customer_id
-      FROM users
-      WHERE id = $1
-      `,
-      [body.userId]
-    );
-
-    const user = userRes.rows[0] || null;
-
-    const ownedBusinesses = user ? await client.query<OwnedBusinessRow>(
-      `
-      SELECT b.id,
-             bs.stripe_customer_id,
-             EXISTS (
-               SELECT 1 FROM business_members other
-               WHERE other.business_id = b.id AND other.user_id <> $1
-             ) AS has_other_members
-      FROM business_members owner
-      JOIN businesses b ON b.id = owner.business_id
-      LEFT JOIN business_subscriptions bs
-        ON bs.business_id = b.id
-       AND bs.subscription_status NOT IN ('canceled', 'incomplete_expired')
-      WHERE owner.user_id = $1
-        AND owner.role = 'owner'
-      `,
-      [body.userId],
-    ) : { rows: [] as OwnedBusinessRow[] };
-
-    if (ownedBusinesses.rows.some(business => business.has_other_members)) {
+    const { user, ownedBusinesses } = work;
+    if (ownedBusinesses.some(business => business.has_other_members)) {
       throw new Error("Transfer ownership or remove the other business members before deleting this account");
     }
-
-    await client.query("COMMIT");
 
     // 1. Cancel Stripe first
     const stripeCustomerIds = [...new Set([
       user?.stripe_customer_id,
-      ...ownedBusinesses.rows.map(business => business.stripe_customer_id),
+      ...ownedBusinesses.map(business => business.stripe_customer_id),
     ].filter((value): value is string => Boolean(value)))];
 
     for (const stripeCustomerId of stripeCustomerIds) {
@@ -271,7 +171,7 @@ export default defineEventHandler(async (event) => {
 
     // 3. Delete local app data last
     if (user) {
-      await deleteUserData(body.userId, ownedBusinesses.rows.map(business => business.id));
+      await deleteUserData(body.userId, ownedBusinesses.map(business => business.id));
     }
     await invalidateAccountAccess(body.userId);
 
@@ -293,12 +193,6 @@ export default defineEventHandler(async (event) => {
     };
   } catch (err: any) {
     const message = String(err?.message ?? err);
-
-    try {
-      await client.query("ROLLBACK");
-    } catch {
-      // The initial transaction may already be committed.
-    }
 
     if (claimed) await db.query(
       `
@@ -326,7 +220,5 @@ export default defineEventHandler(async (event) => {
     });
 
     throw err;
-  } finally {
-    client.release();
   }
 });

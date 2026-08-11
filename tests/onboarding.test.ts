@@ -10,6 +10,7 @@ describe('first-login onboarding', () => {
     expect(read('middleware/logged-in.ts')).toContain('onboardingComplete.value')
     expect(read('middleware/logged-in.ts')).not.toContain('/api/onboarding/status')
     expect(read('server/api/bootstrap.get.ts')).toContain('as "onboardingComplete"')
+    expect(read('pages/onboarding.vue')).toContain("$fetch<OnboardingBootstrapResponse>('/api/onboarding/bootstrap')")
     expect(read('pages/onboarding.vue')).toContain("step.value = status.nextStep")
     expect(read('pages/onboarding.vue')).toContain('watch(step')
     expect(read('pages/onboarding.vue')).toContain('setOnboardingComplete()')

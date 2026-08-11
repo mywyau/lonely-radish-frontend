@@ -1,11 +1,24 @@
 import { setHeader } from 'h3'
 import { db } from '~/server/repositories/db'
+import { resolveOnboardingStatus } from '~/server/services/onboardingBootstrap'
 import { requireUser } from '~/server/utils/requireUser'
+import type { OnboardingStatusResponse } from '~/types/api/onboarding'
 
-export default defineEventHandler(async (event) => {
+type StatusRow = {
+  completedAt: string | null
+  profileComplete: boolean
+  racialIdentityComplete: boolean
+  activityCount: number | string
+  photoCount: number | string
+  locationComplete: boolean
+  preferencesComplete: boolean
+  datingComplete: boolean
+}
+
+export default defineEventHandler(async (event): Promise<OnboardingStatusResponse> => {
   setHeader(event, 'Cache-Control', 'private, no-store')
   const { sub } = await requireUser(event)
-  const { rows } = await db.query(`select u.onboarding_completed_at as "completedAt",
+  const { rows } = await db.query<StatusRow>(`select u.onboarding_completed_at::text as "completedAt",
     (nullif(trim(u.first_name),'') is not null and nullif(trim(u.last_name),'') is not null
       and p.user_id is not null and p.gender_identity is not null and p.sexual_orientation is not null
       and p.date_of_birth is not null and nullif(trim(p.bio),'') is not null) as "profileComplete",
@@ -20,18 +33,8 @@ export default defineEventHandler(async (event) => {
     from users u left join profiles p on p.user_id=u.id
     left join match_preferences mp on mp.user_id=u.id where u.id=$1`, [sub])
   const state = rows[0]
-  if (!state) return { complete: false, nextStep: 1, profileComplete: false, activityCount: 0, photoCount: 0, preferencesComplete: false }
-  const profileComplete = state.profileComplete === true
-  const racialIdentityComplete = state.racialIdentityComplete === true
-  const activityCount = Number(state.activityCount || 0)
-  const preferencesComplete = state.preferencesComplete === true
-  const datingComplete = state.datingComplete === true
-  const photoCount = Number(state.photoCount || 0)
-  const locationComplete = state.locationComplete === true
-  const nextStep = !profileComplete ? 1 : !racialIdentityComplete ? 2 : activityCount < 1 ? 3
-    : !preferencesComplete || !locationComplete ? 4 : !datingComplete ? 5 : 6
-  const complete = Boolean(state.completedAt) && profileComplete && racialIdentityComplete
-    && activityCount > 0 && preferencesComplete && datingComplete && locationComplete
-  return { complete, completedAt: state.completedAt, nextStep, profileComplete, racialIdentityComplete,
-    activityCount, photoCount, preferencesComplete, datingComplete, locationComplete }
+  if (!state) return resolveOnboardingStatus({ completedAt: null, profileComplete: false,
+    racialIdentityComplete: false, activityCount: 0, photoCount: 0, preferencesComplete: false,
+    datingComplete: false, locationComplete: false })
+  return resolveOnboardingStatus(state)
 })
