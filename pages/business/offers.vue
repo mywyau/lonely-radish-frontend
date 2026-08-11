@@ -5,7 +5,7 @@ definePageMeta({ title: 'Business offers · Lonely Radish', middleware: 'busines
 
 type VenueScope = 'single' | 'selected' | 'all'
 type Venue = { id: string; name: string; city: string; postcode: string; status: 'pending' | 'active' | 'paused' }
-type Business = { plan: 'standard' | 'featured' | null; venues: Venue[] }
+type Business = { status: 'draft' | 'pending' | 'active' | 'suspended'; plan: 'standard' | 'featured' | null; venues: Venue[] }
 type Offer = {
     id: string
     title: string
@@ -18,6 +18,8 @@ type Offer = {
     venueScope: VenueScope
     venueIds: string[]
     venueCount: number
+    redemptionLimitTotal: number | null
+    redemptionLimitPerUser: number
 }
 
 const business = ref<Business | null>(null)
@@ -36,7 +38,8 @@ const form = reactive({
     discountType: 'percentage' as 'percentage' | 'fixed',
     discountValue: 10,
     terms: '',
-    active: false,
+    redemptionLimitTotal: null as number | null,
+    redemptionLimitPerUser: 1,
 })
 
 const offerLimit = computed(() => business.value?.plan === 'featured' ? 10 : business.value?.plan === 'standard' ? 5 : 1)
@@ -64,6 +67,10 @@ function locationLabel(offer: Offer) {
     return selected[0]?.name || 'One location'
 }
 
+function canPublish(offer: Offer) {
+    return business.value?.status === 'active' && offer.approvalStatus === 'approved' && offer.venueCount > 0
+}
+
 function resetForm() {
     Object.assign(form, {
         venueScope: 'single',
@@ -74,7 +81,8 @@ function resetForm() {
         discountType: 'percentage',
         discountValue: 10,
         terms: '',
-        active: false,
+        redemptionLimitTotal: null,
+        redemptionLimitPerUser: 1,
     })
 }
 
@@ -157,8 +165,11 @@ onMounted(() => load()
                                 </span>
                                 <p v-if="offer.rejectionNote" class="mt-2 text-xs text-[#8F1839]">Review note: {{
                                     offer.rejectionNote }}</p>
+                                <p class="mt-2 text-xs text-[#6E4D58]">Limit: {{ offer.redemptionLimitTotal || 'Unlimited' }} total · {{ offer.redemptionLimitPerUser }} per customer</p>
                             </div>
-                            <button type="button" class="rounded-lg px-4 py-2 text-sm font-semibold hover:brightness-90"
+                            <button type="button" :disabled="!offer.active && !canPublish(offer)"
+                                :title="!offer.active && !canPublish(offer) ? 'Business, offer and venue approval are required before publishing' : undefined"
+                                class="rounded-lg px-4 py-2 text-sm font-semibold hover:brightness-90 disabled:cursor-not-allowed disabled:opacity-50"
                                 :class="offer.active ? 'bg-[#EAF2DE] text-[#52713A]' : 'bg-[#F3E8DA] text-[#8F1839]'"
                                 @click="toggleOffer(offer)">
                                 {{ offer.active ? 'Active · Pause' : 'Inactive · Activate' }}
@@ -265,11 +276,17 @@ onMounted(() => load()
                                 placeholder="For example: Monday–Thursday, dine-in only, cannot be combined."></textarea>
                             <span class="counter">{{ form.terms.length }}/500</span>
                         </label>
-                        <label class="flex items-start gap-3 rounded-lg bg-[#EAF2DE] p-4 text-sm sm:col-span-2">
-                            <input v-model="form.active" type="checkbox" class="mt-1 size-4 accent-[#B4234A]">
-                            <span><strong class="block">Mark ready for review</strong>The campaign becomes public only
-                                after all required approvals.</span>
+                        <label class="text-sm font-semibold">Maximum total redemptions
+                            <input v-model.number="form.redemptionLimitTotal" type="number" min="1" max="1000000"
+                                class="field" placeholder="Unlimited">
+                            <span class="mt-1 block text-xs font-normal text-[#6E4D58]">Leave empty for no campaign-wide cap.</span>
                         </label>
+                        <label class="text-sm font-semibold">Maximum per customer
+                            <input v-model.number="form.redemptionLimitPerUser" type="number" min="1" max="100"
+                                required class="field">
+                            <span class="mt-1 block text-xs font-normal text-[#6E4D58]">Applies across all of their confirmed dates.</span>
+                        </label>
+                        <p class="rounded-lg bg-[#EAF2DE] p-4 text-sm sm:col-span-2"><strong class="block">Approval before publication</strong>The offer is submitted inactive. After the business, participating venue and offer are approved, activate it above.</p>
                     </div>
                     <button type="submit" :disabled="saving || offers.length >= offerLimit || !locationSelectionValid"
                         class="mt-5 rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white disabled:opacity-50">

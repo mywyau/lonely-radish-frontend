@@ -47,7 +47,7 @@ describe("multi-venue offer campaigns", () => {
   });
 
   it("records and reports the branch that actually redeemed the claim", () => {
-    const redeem = read("server/api/business/offer-claims/redeem.post.ts");
+    const redeem = read("server/services/offerRedemption.ts");
     const history = read("server/api/business/offer-claims/index.get.ts");
     expect(redeem).toContain("redeemed_venue_id=$3");
     expect(redeem).toContain("venue_name=$4");

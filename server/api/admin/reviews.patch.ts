@@ -25,15 +25,31 @@ export default defineEventHandler(async (event) => {
       result = await client.query(`update businesses set status=$2,reviewed_by=$3,
         reviewed_at=case when $2='pending' then null else now() end,updated_at=now()
         where id=$1 returning id,status`, [entityId,status,admin.sub])
+      if (status !== 'active') {
+        await client.query(`update business_offers set active=false,updated_at=now()
+          where business_id=$1 and active=true`, [entityId])
+      }
     } else if (entityType === 'venue') {
       const status = decision === 'approved' ? 'active' : decision === 'rejected' ? 'paused' : 'pending'
       result = await client.query(`update business_venues set status=$2,reviewed_by=$3,
         reviewed_at=case when $2='pending' then null else now() end,updated_at=now()
-        where id=$1 returning id,status`, [entityId,status,admin.sub])
+        where id=$1 returning id,status,business_id as "businessId"`, [entityId,status,admin.sub])
+      if (status !== 'active' && result.rows[0]) {
+        await client.query(`update business_offers offer set active=false,updated_at=now()
+          where offer.business_id=$1 and offer.active=true and not exists(
+            select 1 from business_venues venue
+            where venue.business_id=offer.business_id and venue.status='active' and (
+              offer.venue_scope='all'
+              or (offer.venue_scope='single' and venue.id=offer.venue_id)
+              or (offer.venue_scope='selected' and exists(select 1 from business_offer_venues selected
+                where selected.offer_id=offer.id and selected.venue_id=venue.id))
+            ))`, [result.rows[0].businessId])
+      }
     } else {
       result = await client.query(`update business_offers set approval_status=$2,reviewed_by=$3,
         reviewed_at=case when $2='pending' then null else now() end,
-        rejection_note=case when $2='rejected' then $4 else null end,updated_at=now()
+        rejection_note=case when $2='rejected' then $4 else null end,
+        active=case when $2='approved' then active else false end,updated_at=now()
         where id=$1 returning id,approval_status as "approvalStatus"`, [entityId,decision,admin.sub,note])
     }
     if (!result.rows[0]) throw createError({ statusCode: 404, statusMessage: 'Review target not found' })

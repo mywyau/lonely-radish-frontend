@@ -2,6 +2,7 @@
 import { BadgeCheck, Camera, CameraOff, History, MapPin, ScanLine, ShieldCheck } from '@lucide/vue'
 import type QrScanner from 'qr-scanner'
 import { trackProductEvent } from '~/utils/productAnalytics'
+import type { OfferRedemptionResponse } from '~/types/api/offers'
 
 definePageMeta({ title: 'Redeem offers · Lonely Radish', middleware: 'business-only' })
 
@@ -47,6 +48,7 @@ const activeVenues = computed(() => business.value?.venues.filter(venue => venue
 const selectedVenue = computed(() => activeVenues.value.find(venue => venue.id === selectedVenueId.value) || null)
 let scanner: QrScanner | null = null
 let scanHandled = false
+let redemptionAttempt: { signature: string; key: string } | null = null
 
 function discountLabel(item: Pick<Redemption, 'discountType' | 'discountValue'>) {
     return item.discountType === 'percentage' ? `${item.discountValue}% off` : `£${item.discountValue} off`
@@ -179,11 +181,17 @@ async function redeem() {
     errorMessage.value = ''
     redemption.value = null
     try {
-        const result = await $fetch<{ redemption: Redemption }>('/api/business/offer-claims/redeem', {
-            method: 'POST', body: { code: code.value, venueId: selectedVenueId.value },
+        const signature = `${selectedVenueId.value}:${code.value.trim().toUpperCase()}`
+        if (redemptionAttempt?.signature !== signature) {
+            redemptionAttempt = { signature, key: crypto.randomUUID() }
+        }
+        const result = await $fetch<OfferRedemptionResponse>('/api/business/offer-claims/redeem', {
+            method: 'POST', body: { code: code.value, venueId: selectedVenueId.value,
+                idempotencyKey: redemptionAttempt.key },
         })
         redemption.value = result.redemption
         code.value = ''
+        redemptionAttempt = null
         trackProductEvent('Offer Redeemed')
         await loadRedemptions()
     } catch (error: any) {

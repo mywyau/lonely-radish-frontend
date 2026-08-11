@@ -3,6 +3,7 @@ import { db } from "~/server/repositories/db";
 import { requireBusiness } from "~/server/utils/requireBusiness";
 import {
   boolean,
+  integer,
   objectBody,
   stringArray,
   text,
@@ -60,6 +61,18 @@ export default defineEventHandler(async (event) => {
   const discountValue = Number(body.discountValue);
   const terms = text(body.terms, "Terms", 500);
   const active = body.active == null ? false : boolean(body.active, "Active");
+  if (active) {
+    throw createError({
+      statusCode: 409,
+      statusMessage: "Create the offer for review, then publish it after approval",
+    });
+  }
+  const redemptionLimitTotal = body.redemptionLimitTotal == null || body.redemptionLimitTotal === ""
+    ? null
+    : integer(body.redemptionLimitTotal, "Total redemption limit", 1, 1000000);
+  const redemptionLimitPerUser = body.redemptionLimitPerUser == null
+    ? 1
+    : integer(body.redemptionLimitPerUser, "Per-customer redemption limit", 1, 100);
   if (
     !["percentage", "fixed"].includes(discountType) ||
     !Number.isFinite(discountValue) ||
@@ -123,10 +136,12 @@ export default defineEventHandler(async (event) => {
     const primaryVenueId = requestedVenueIds[0] || venues.rows[0].id;
     const { rows } = await client.query(
       `insert into business_offers(business_id,venue_id,venue_scope,title,description,
-        discount_type,discount_value,terms,active)
-      values($1,$2,$3,$4,$5,$6,$7,$8,$9)
+        discount_type,discount_value,terms,active,redemption_limit_total,redemption_limit_per_user)
+      values($1,$2,$3,$4,$5,$6,$7,$8,false,$9,$10)
       returning id,title,description,discount_type as "discountType",discount_value::float as "discountValue",
-        terms,active,approval_status as "approvalStatus",venue_scope as "venueScope"`,
+        terms,active,approval_status as "approvalStatus",venue_scope as "venueScope",
+        redemption_limit_total as "redemptionLimitTotal",
+        redemption_limit_per_user as "redemptionLimitPerUser"`,
       [
         business.id,
         primaryVenueId,
@@ -136,7 +151,8 @@ export default defineEventHandler(async (event) => {
         discountType,
         discountValue,
         terms,
-        active,
+        redemptionLimitTotal,
+        redemptionLimitPerUser,
       ],
     );
 

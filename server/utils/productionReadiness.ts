@@ -1,6 +1,6 @@
 type Environment = Record<string, string | undefined>
 
-export const latestRequiredMigration = '20260910_recover_stranded_account_deletions.sql'
+export const latestRequiredMigration = '20260911_harden_offer_redemptions.sql'
 
 const placeholderPrefixes = [
   'your-',

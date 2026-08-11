@@ -76,14 +76,14 @@ describe("offer claims and redemptions", () => {
     expect(claim).toContain("enforceRateLimit");
     expect(claim).toContain("pg_advisory_xact_lock");
     expect(redeem).toContain("requireBusiness(event)");
-    expect(redeem).toContain("for update of c");
-    expect(redeem).toContain("set status='redeemed'");
+    expect(redeem).toContain("redeemOfferClaim");
   });
 
   it("allows a code only at a participating active venue", () => {
-    const redeem = read("server/api/business/offer-claims/redeem.post.ts");
+    const redeem = read("server/services/offerRedemption.ts");
+    const endpoint = read("server/api/business/offer-claims/redeem.post.ts");
     const page = read("pages/business/redeem.vue");
-    expect(redeem).toContain('text(body.venueId, "Venue"');
+    expect(endpoint).toContain('text(body.venueId, "Venue"');
     expect(redeem).toContain("o.venue_scope='all'");
     expect(redeem).toContain("o.venue_scope='selected'");
     expect(redeem).toContain("redeemed_venue_id=$3");
