@@ -223,7 +223,7 @@ function toggleSummaryCounts() {
 
 async function loadMatches() {
   if (import.meta.dev) previewRejected.value = Boolean(window.localStorage.getItem('lonely-radish-preview-rejected-match'))
-  const result = await $fetch<{ matches: MatchCard[]; totalMatches: number; activeMatchCount: number; manualMatchCount: number; manualMatchLimit: number; interestReceivedCount: number; activeMatchLimit: number }>('/api/matches')
+  const result = await $fetch<{ matches: MatchCard[]; totalMatches: number; activeMatchCount: number; manualMatchCount: number; manualMatchLimit: number; interestReceivedCount: number; activeMatchLimit: number; notifications: MatchNotification[]; unreadNotificationCount: number }>('/api/matches?includeNotifications=true')
   matches.value = result.matches
   totalMatches.value = result.totalMatches
   activeMatchCount.value = result.activeMatchCount
@@ -231,15 +231,12 @@ async function loadMatches() {
   manualMatchLimit.value = result.manualMatchLimit
   interestReceivedCount.value = result.interestReceivedCount
   activeMatchLimit.value = result.activeMatchLimit
+  notifications.value = result.notifications
+  setUnreadNotificationCount(result.unreadNotificationCount)
   if (import.meta.dev && !previewRejected.value) {
     matches.value = [previewMatch, ...matches.value.filter(match => match.id !== previewMatch.id)].slice(0, activeMatchLimit.value)
     totalMatches.value += 1
   }
-}
-async function loadNotifications() {
-  const result = await $fetch<{ notifications: MatchNotification[]; unreadCount: number }>('/api/notifications')
-  notifications.value = result.notifications
-  setUnreadNotificationCount(result.unreadCount)
 }
 async function dismissNotification(id: string) {
   await $fetch(`/api/notifications/${id}/read`, { method: 'POST' })
@@ -281,12 +278,15 @@ async function loadDashboard() {
   errorMessage.value = ''
   updatesError.value = ''
   showSummaryCounts.value = window.localStorage.getItem('lonely-radish-show-match-counts') !== 'false'
-  const [matchResult, notificationResult] = await Promise.allSettled([loadMatches(), loadNotifications()])
+  const matchResult = await Promise.resolve(loadMatches()).then(
+    () => ({ status: 'fulfilled' as const }),
+    (reason: unknown) => ({ status: 'rejected' as const, reason }),
+  )
   if (matchResult.status === 'rejected') {
     const error: any = matchResult.reason
     errorMessage.value = error?.data?.statusMessage || 'Your matches could not be loaded.'
   }
-  if (notificationResult.status === 'rejected') updatesError.value = 'Match updates could not be loaded.'
+  if (matchResult.status === 'rejected') updatesError.value = 'Match updates could not be loaded.'
   loading.value = false
 }
 

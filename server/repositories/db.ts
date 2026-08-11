@@ -99,6 +99,25 @@ const pool = process.env.DATABASE_URL
 
 export const db: Database = pool ? createPostgresDb(pool) : createMockDb()
 
+/**
+ * Run a group of related queries through one checked-out connection.
+ *
+ * This deliberately does not start a transaction: read-only handlers can keep
+ * their queries small and independent without making the pool acquire a new
+ * client for every query.
+ */
+export async function withDatabaseClient<Result>(
+  work: (client: DatabaseClient) => Promise<Result>,
+  database: Database = db,
+): Promise<Result> {
+  const client = await database.connect()
+  try {
+    return await work(client)
+  } finally {
+    client.release()
+  }
+}
+
 if (pool) {
   attachDatabasePool(pool)
 }

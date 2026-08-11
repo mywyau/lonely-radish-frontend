@@ -1,5 +1,5 @@
 import { setHeader } from 'h3'
-import { db } from '~/server/repositories/db'
+import { withDatabaseClient } from '~/server/repositories/db'
 import { requireUser } from '~/server/utils/requireUser'
 import { signedPhotoUrls } from '~/server/utils/supabaseStorage'
 import { getActiveMatchLimit } from '~/server/utils/planLimits'
@@ -7,7 +7,8 @@ import { getActiveMatchLimit } from '~/server/utils/planLimits'
 export default defineEventHandler(async (event) => {
   setHeader(event, 'Cache-Control', 'private, no-store')
   const { sub } = await requireUser(event)
-  const [{ rows }, active, activeMatchLimit, pendingAction, inboxState] = await Promise.all([db.query(`select di.id,di.created_at as "createdAt",p.slug,p.display_name as name,
+  const result = await withDatabaseClient(async (database) => {
+    const interestsResult = await database.query(`select di.id,di.created_at as "createdAt",p.slug,p.display_name as name,
     extract(year from age(current_date,p.date_of_birth))::int as age,p.neighbourhood as place,
     photo.storage_key as "photoStorageKey",photo.public_url as "legacyPhotoUrl",
     case when matched.status='unmatched' and di.created_at>matched.ended_at then null else matched.status end as "matchStatus",
@@ -31,17 +32,19 @@ export default defineEventHandler(async (event) => {
         where man.match_id=ended.id and man.sender_id=di.sender_id and man.created_at>ended.ended_at
           and ((di.sender_id=ended.ended_by and man.message_type='apology')
             or (di.sender_id is distinct from ended.ended_by and man.message_type='contact')))))
-    order by di.created_at asc limit 5`, [sub]),
-    db.query(`select count(*)::int as count from matches where status='active'
-      and (user_one_id=$1 or user_two_id=$1)`, [sub]),
-    getActiveMatchLimit(sub),
-    db.query(`select m.id,p.display_name as name from matches m join profiles p
+    order by di.created_at asc limit 5`, [sub])
+    const active = await database.query(`select count(*)::int as count from matches where status='active'
+      and (user_one_id=$1 or user_two_id=$1)`, [sub])
+    const activeMatchLimit = await getActiveMatchLimit(sub, database)
+    const pendingAction = await database.query(`select m.id,p.display_name as name from matches m join profiles p
       on p.user_id=case when m.user_one_id=$1 then m.user_two_id else m.user_one_id end
       where m.status='active' and m.action_required_by=$1 and m.action_completed_at is null
-      order by m.matched_at limit 1`, [sub]),
-    db.query(`select interest_inbox_reopens_at as "inboxReopensAt"
-      from users where id=$1`, [sub]),
-  ])
+      order by m.matched_at limit 1`, [sub])
+    const inboxState = await database.query(`select interest_inbox_reopens_at as "inboxReopensAt"
+      from users where id=$1`, [sub])
+    return { rows: interestsResult.rows, active, activeMatchLimit, pendingAction, inboxState }
+  })
+  const { rows, active, activeMatchLimit, pendingAction, inboxState } = result
   const photoUrls = await signedPhotoUrls(rows.map(row => row.photoStorageKey).filter(Boolean))
   const interests = rows.map(row => ({
     id: row.id, slug: row.slug, name: row.name, age: row.age, place: row.place || 'Nearby',

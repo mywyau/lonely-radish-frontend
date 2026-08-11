@@ -1,12 +1,15 @@
-import { setHeader } from 'h3'
-import { db } from '~/server/repositories/db'
+import { getQuery, setHeader } from 'h3'
+import { withDatabaseClient } from '~/server/repositories/db'
+import { listNotifications } from '~/server/repositories/notifications'
 import { requireUser } from '~/server/utils/requireUser'
 import { signedPhotoUrls } from '~/server/utils/supabaseStorage'
 
 export default defineEventHandler(async (event) => {
   setHeader(event, 'Cache-Control', 'private, no-store')
   const { sub } = await requireUser(event)
-  const { rows } = await db.query(`with member_matches as materialized (
+  const includeNotifications = getQuery(event).includeNotifications === 'true'
+  const { rows, notificationPage } = await withDatabaseClient(async (database) => {
+    const matchResult = await database.query(`with member_matches as materialized (
     select m.* from matches m
     where m.user_one_id=$1 and m.status in ('active','queued')
     union all
@@ -79,6 +82,11 @@ export default defineEventHandler(async (event) => {
   left join date_follow_ups their_followup
     on their_followup.proposal_id=limited."proposalId" and their_followup.user_id<>$1
   order by (limited.status='active') desc,limited."sortAt" desc`, [sub])
+    const notificationPage = includeNotifications
+      ? await listNotifications(database, sub)
+      : null
+    return { rows: matchResult.rows, notificationPage }
+  })
 
   const summary = rows[0]
   const matchRows = rows.filter(row => row.id)
@@ -106,5 +114,10 @@ export default defineEventHandler(async (event) => {
     activeMatchCount: summary?.activeMatchCount || 0,
     manualMatchCount: summary?.manualMatchCount || 0, manualMatchLimit: 1,
     interestReceivedCount: summary?.interestReceivedCount || 0,
-    activeMatchLimit: summary?.activeMatchLimit || 3 }
+    activeMatchLimit: summary?.activeMatchLimit || 3,
+    ...(notificationPage ? {
+      notifications: notificationPage.notifications,
+      unreadNotificationCount: notificationPage.unreadCount,
+    } : {}),
+  }
 })

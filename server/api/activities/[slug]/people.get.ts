@@ -1,5 +1,5 @@
 import { createError, getQuery, getRouterParam, setHeader } from 'h3'
-import { db } from '~/server/repositories/db'
+import { withDatabaseClient } from '~/server/repositories/db'
 import { requireUser } from '~/server/utils/requireUser'
 import { signedPhotoUrls } from '~/server/utils/supabaseStorage'
 import { discoveryCategory } from '~/utils/activityDiscovery'
@@ -15,8 +15,8 @@ export default defineEventHandler(async (event) => {
   const cursor = decodeCursor(getQuery(event).cursor)
   const pageSize = 20
 
-  const [candidates, preferenceResult] = await Promise.all([
-    db.query(`select p.slug,p.display_name as name,p.updated_at::text as "sortAt",
+  const { candidates, preferenceResult } = await withDatabaseClient(async (database) => {
+    const candidates = await database.query(`select p.slug,p.display_name as name,p.updated_at::text as "sortAt",
     extract(year from age(current_date,p.date_of_birth))::int as age,
     coalesce(p.location_label,p.postcode_area,p.neighbourhood) as place,p.bio as detail,
     photo.storage_key as "photoStorageKey",photo.public_url as "legacyPhotoUrl",
@@ -48,14 +48,15 @@ export default defineEventHandler(async (event) => {
       ${viewerDiscoveryWhere}
       ${recipientInterestAvailabilityWhere}
       and ($3::timestamptz is null or (p.updated_at,p.slug)<($3::timestamptz,$4::text))
-    order by p.updated_at desc,p.slug desc limit $5`, [category.databaseCategories,sub,cursor?.sortAt || null,cursor?.tieBreaker || null,pageSize+1,category.customOnly === true]),
-    db.query(`select mp.minimum_age as "minimumAge",mp.maximum_age as "maximumAge",
+    order by p.updated_at desc,p.slug desc limit $5`, [category.databaseCategories,sub,cursor?.sortAt || null,cursor?.tieBreaker || null,pageSize+1,category.customOnly === true])
+    const preferenceResult = await database.query(`select mp.minimum_age as "minimumAge",mp.maximum_age as "maximumAge",
       mp.max_distance_km as "distance",mp.open_to_everyone as "openToEveryone",
       mp.interested_genders as genders,mp.no_orientation_preference as "noOrientationPreference",
       mp.interested_orientations as orientations,mp.no_ethnicity_preference as "noRacePreference",
       p.location_label as "locationLabel",p.postcode_area as "postcodeArea"
-      from profiles p left join match_preferences mp on mp.user_id=p.user_id where p.user_id=$1`, [sub]),
-  ])
+      from profiles p left join match_preferences mp on mp.user_id=p.user_id where p.user_id=$1`, [sub])
+    return { candidates, preferenceResult }
+  })
 
   const page = pageRows(candidates.rows, pageSize, row => ({ sortAt: row.sortAt, tieBreaker: row.slug }))
   const photoUrls = await signedPhotoUrls(page.items.map(person => person.photoStorageKey).filter(Boolean))

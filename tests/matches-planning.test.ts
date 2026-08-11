@@ -7,7 +7,7 @@ const read = (path: string) => readFileSync(resolve(process.cwd(), path), 'utf8'
 describe('matches and date planning dashboard', () => {
   it('groups persisted matches by their next action', () => {
     const page = read('pages/matches/index.vue')
-    expect(page).toContain("'/api/matches'")
+    expect(page).toContain("'/api/matches?includeNotifications=true'")
     expect(page).toContain("return 'Start planning'")
     expect(page).toContain("return 'View date plan'")
     expect(page).toContain("return 'View reschedule'")
@@ -88,7 +88,8 @@ describe('matches and date planning dashboard', () => {
     expect(matchesEndpoint).toContain('from summary cross join settings')
     expect(matchesEndpoint).toContain('interest_inbox_state')
     expect(matchesEndpoint).not.toContain('count(distinct di.sender_id)::int as count')
-    expect(matchesEndpoint.match(/db\.query/g)).toHaveLength(1)
+    expect(matchesEndpoint.match(/database\.query/g)).toHaveLength(1)
+    expect(matchesEndpoint).toContain('listNotifications(database, sub)')
     expect(read('pages/matches/index.vue')).toContain('New matches, plans in progress and confirmed dates all count')
     expect(read('pages/matches/index.vue')).toContain('class="summary-icon"')
     expect(read('pages/matches/index.vue')).toContain('summary-confirmed')

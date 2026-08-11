@@ -19,7 +19,9 @@ describe('cursor pagination', () => {
     ['server/api/matches/past.get.ts', 'pages/matches/past.vue', 'Load more past connections'],
   ]) {
     it(`paginates ${endpoint}`, () => {
-      const api = read(endpoint)
+      const api = endpoint === 'server/api/notifications.get.ts'
+        ? `${read(endpoint)}\n${read('server/repositories/notifications.ts')}`
+        : read(endpoint)
       const view = read(page)
       expect(api).toContain('decodeCursor')
       expect(api).toContain('pageRows')

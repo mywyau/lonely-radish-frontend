@@ -38,7 +38,7 @@ describe('match momentum', () => {
     expect(endpoint).toContain('action_required_by=$1 and action_completed_at is null')
     expect(endpoint).toContain("count(*) filter(where status='active')")
     expect(endpoint).toContain('interest_inbox_state')
-    expect(endpoint.match(/db\.query/g)).toHaveLength(1)
+    expect(endpoint.match(/database\.query/g)).toHaveLength(1)
     expect(endpoint).toContain('manualMatchLimit: 1')
     expect(page).toContain('{{ activeMatchCount }}/{{ activeMatchLimit }}')
     expect(page).toContain('{{ manualMatchCount }}/{{ manualMatchLimit }}')

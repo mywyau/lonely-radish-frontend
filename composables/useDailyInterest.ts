@@ -8,6 +8,8 @@ export type DailyInterest = {
 
 const storageKey = 'lonely-radish-daily-interest'
 const dailyInterestLimit = 5
+const interestFreshnessMs = 30_000
+let pendingInterestLoad: Promise<void> | null = null
 
 function localDateKey(date = new Date()) {
   const year = date.getFullYear()
@@ -24,6 +26,7 @@ export function useDailyInterest() {
   const { adjustMatchCount } = useMeStateV2()
   const interests = useState<DailyInterest[]>('daily-interests', () => [])
   const loaded = useState<boolean>('daily-interest-loaded', () => false)
+  const loadedAt = useState<number>('daily-interest-loaded-at', () => 0)
   const errorMessage = useState<string | null>('daily-interest-error', () => null)
   const successMessage = useState<string | null>('daily-interest-success', () => null)
   const sending = useState<boolean>('daily-interest-sending', () => false)
@@ -35,9 +38,8 @@ export function useDailyInterest() {
   const hasUsedDailyInterest = computed(() => todaysInterests.value.length >= dailyInterestLimit)
   const atMatchLimit = computed(() => activeMatchCount.value >= activeMatchLimit.value)
 
-  async function loadInterest() {
+  async function performInterestLoad() {
     if (!import.meta.client) return
-    loaded.value = true
     successMessage.value = null
 
     try {
@@ -45,10 +47,14 @@ export function useDailyInterest() {
       interests.value = response.interests.map(normaliseInterest)
       activeMatchCount.value = response.activeMatchCount
       activeMatchLimit.value = response.activeMatchLimit
+      loaded.value = true
+      loadedAt.value = Date.now()
       return
     } catch {
       // Keep the local fallback for the three fictional prototype profiles.
     }
+    loaded.value = true
+    loadedAt.value = Date.now()
     const stored = window.localStorage.getItem(storageKey)
     if (!stored) return
 
@@ -58,9 +64,19 @@ export function useDailyInterest() {
       interests.value = savedInterests.filter((interest): interest is DailyInterest =>
         typeof interest.profileSlug === 'string' && typeof interest.profileName === 'string' && typeof interest.date === 'string'
       ).map(normaliseInterest)
+      loaded.value = true
+      loadedAt.value = Date.now()
     } catch {
       window.localStorage.removeItem(storageKey)
     }
+  }
+
+  async function loadInterest(force = false) {
+    if (!import.meta.client) return
+    if (!force && loaded.value && Date.now() - loadedAt.value < interestFreshnessMs) return
+    if (!force && pendingInterestLoad) return pendingInterestLoad
+    pendingInterestLoad = performInterestLoad().finally(() => { pendingInterestLoad = null })
+    return pendingInterestLoad
   }
 
   async function showInterest(profileSlug: string, profileName: string, replaceTodaysInterest = false) {

@@ -9,7 +9,7 @@ definePageMeta({
   middleware: "logged-in",
 });
 
-const { user } = useMeStateV2();
+const { user, resolve } = useMeStateV2();
 const profile = reactive({ firstName: "", lastName: "", displayName: "", genderIdentity: "", pronouns: "", raceEthnicity: "", raceEthnicitySelfDescription: "", sexualOrientation: "" });
 
 const savingAccountDetails = ref(false);
@@ -233,34 +233,19 @@ async function saveContactDetails() {
 }
 
 onMounted(async () => {
-  const identityRequest = $fetch<{ firstName: string | null; lastName: string | null }>('/api/meV2', { timeout: requestTimeoutMs })
-  const contactRequest = $fetch<ContactDetails>('/api/profile/contact', { timeout: requestTimeoutMs })
-    .then((details) => applyContactDetails(details))
-    .catch((error) => {
-      contactLoadError.value = requestMessage(error, 'Existing contact details could not be loaded. You can still enter and save them again.')
-    })
-    .finally(() => { contactLoading.value = false })
-  const profileRequest = $fetch<any>('/api/profile/me', { timeout: requestTimeoutMs })
-  const readinessRequest = loadReadiness()
-  const supportingResults = Promise.allSettled([profileRequest, readinessRequest])
-
   try {
-    const identity = await identityRequest
-    profile.firstName = identity.firstName || ''
-    profile.lastName = identity.lastName || ''
-    if (user.value) {
-      user.value.firstName = identity.firstName
-      user.value.lastName = identity.lastName
-    }
-  } catch (error: any) {
+    await resolve()
     profile.firstName = user.value?.firstName || ''
     profile.lastName = user.value?.lastName || ''
+  } catch (error: any) {
     accountLoadError.value = requestMessage(error, 'Your account name could not be loaded. Refresh the page and try again.')
   } finally {
     accountIdentityLoading.value = false
   }
 
-  await contactRequest
+  const profileRequest = $fetch<any>('/api/profile/me', { timeout: requestTimeoutMs })
+  const readinessRequest = loadReadiness()
+  const supportingResults = Promise.allSettled([profileRequest, readinessRequest])
   const [profileResult] = await supportingResults
   if (profileResult.status === 'fulfilled') {
     const result = profileResult.value
@@ -270,9 +255,12 @@ onMounted(async () => {
     profile.genderIdentity = result.profile?.genderIdentity || '';
     profile.pronouns = result.profile?.pronouns || '';
     profile.displayName = result.profile?.displayName || '';
+    applyContactDetails(result.contactDetails)
   } else {
     accountLoadError.value ||= requestMessage(profileResult.reason, 'Some account details could not be loaded. Refresh the page and try again.')
+    contactLoadError.value = requestMessage(profileResult.reason, 'Existing contact details could not be loaded. You can still enter and save them again.')
   }
+  contactLoading.value = false
 });
 </script>
 

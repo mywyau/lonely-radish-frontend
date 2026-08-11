@@ -16,8 +16,10 @@ describe('measured read-path query amplification', () => {
   })
 
   it('loads notification rows and the unread total with one endpoint query', () => {
-    const notifications = read('server/api/notifications.get.ts')
-    expect(notifications.match(/db\.query/g)).toHaveLength(1)
+    const endpoint = read('server/api/notifications.get.ts')
+    const notifications = read('server/repositories/notifications.ts')
+    expect(endpoint).toContain('listNotifications(db, sub')
+    expect(notifications.match(/database\.query/g)).toHaveLength(1)
     expect(notifications).toContain('with notification_page as materialized')
     expect(notifications).toContain('from unread left join notification_page on true')
   })

@@ -1,10 +1,11 @@
-import { db } from "~/server/repositories/db";
+import { db, type DatabaseQueryable } from "~/server/repositories/db";
 import type { Entitlement } from "~/types/auth/entitlements";
 
 export async function getUserEntitlement(
   userId: string,
+  database: DatabaseQueryable = db,
 ): Promise<Entitlement | null> {
-  const { rows } = await db.query<Entitlement>(
+  const { rows } = await database.query<Entitlement>(
     `
     SELECT
       plan,
