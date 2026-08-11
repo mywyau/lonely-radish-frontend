@@ -23,6 +23,7 @@ describe('sent interest feedback and history', () => {
     expect(page).toContain("interest.queued ? 'Match waiting'")
     expect(page).toContain("interest.matched || interest.queued ? '/matches'")
     expect(page).toContain('DailyInterestCounter')
+    expect(page).toContain('They can see that you showed interest')
   })
 
   it('prevents sending interest to the same person twice', () => {

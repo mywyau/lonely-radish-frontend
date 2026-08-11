@@ -29,8 +29,9 @@ describe('notification centre', () => {
     expect(read('server/api/proposals/[id]/respond.post.ts')).toContain("'date_confirmed'")
     expect(read('server/api/dates/[id]/follow-up.post.ts')).toContain("'follow_up_ready'")
     expect(read('server/api/matches/[id]/apology.post.ts')).toContain("'match_apology'")
-    expect(read('server/api/matches/[id]/contact.post.ts')).toContain("'match_contact'")
+    expect(read('server/api/matches/[id]/contact.post.ts')).toContain('statusCode: 410')
     expect(read('pages/notifications.vue')).toContain('sent you an apology note')
+    // Historical contact notifications remain readable even though no new ones can be created.
     expect(read('pages/notifications.vue')).toContain('sent you a private message')
   })
 

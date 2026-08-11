@@ -93,8 +93,8 @@ export class InterestRepository {
     const { rows } = await this.client.query<EndedPairMatch>(`select
         m.id,m.ended_by as "endedBy",m.ended_at as "endedAt",
         exists(select 1 from match_apology_notes man where man.match_id=m.id and man.sender_id=$1
-          and man.created_at>m.ended_at and ((m.ended_by=$1 and man.message_type='apology')
-            or (m.ended_by is distinct from $1 and man.message_type='contact'))) as "secondChanceAvailable"
+          and man.created_at>m.ended_at and m.ended_by=$1
+          and man.message_type='apology') as "secondChanceAvailable"
       from matches m where m.status='unmatched' and
         ((m.user_one_id=$1 and m.user_two_id=$2) or (m.user_one_id=$2 and m.user_two_id=$1))
       limit 1`, [senderId,recipientId])

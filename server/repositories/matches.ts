@@ -42,12 +42,11 @@ export class MatchRepository {
         and not exists(select 1 from matches ended where ended.status='unmatched'
           and ((ended.user_one_id=$2 and ended.user_two_id=di.sender_id) or
             (ended.user_two_id=$2 and ended.user_one_id=di.sender_id))
-          and (di.created_at<=ended.ended_at or not exists(
+          and (di.sender_id is distinct from ended.ended_by or di.created_at<=ended.ended_at or not exists(
             select 1 from match_apology_notes man
             where man.match_id=ended.id and man.sender_id=di.sender_id
-              and man.created_at>ended.ended_at
-              and ((di.sender_id=ended.ended_by and man.message_type='apology')
-                or (di.sender_id is distinct from ended.ended_by and man.message_type='contact')))))
+              and man.created_at>ended.ended_at and di.sender_id=ended.ended_by
+              and man.message_type='apology')))
       for update`, [interestId,recipientId])
     return rows[0] ?? null
   }

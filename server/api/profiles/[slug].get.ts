@@ -16,18 +16,14 @@ export default defineEventHandler(async (event) => {
     (relationship.status='unmatched' and relationship.ended_by is distinct from $2) as "wasUnmatched",
     exists(select 1 from match_apology_notes man where man.match_id=relationship.id and man.sender_id=$2
       and man.message_type='apology' and man.created_at>relationship.ended_at) as "apologySent",
-    exists(select 1 from match_apology_notes man where man.match_id=relationship.id and man.sender_id=$2
-      and man.message_type='contact' and man.created_at>relationship.ended_at) as "contactSent",
     exists(select 1 from match_apology_notes man where man.match_id=relationship.id
       and man.sender_id=$2 and man.created_at>relationship.ended_at
-      and ((relationship.ended_by=$2 and man.message_type='apology')
-        or (relationship.ended_by is distinct from $2 and man.message_type='contact'))) as "secondChanceAvailable",
+      and relationship.ended_by=$2 and man.message_type='apology') as "secondChanceAvailable",
     exists(select 1 from daily_interests di where di.sender_id=$2 and di.recipient_id=p.user_id
       and (relationship.status is distinct from 'unmatched' or (di.created_at>relationship.ended_at
         and exists(select 1 from match_apology_notes man where man.match_id=relationship.id
           and man.sender_id=$2 and man.created_at>relationship.ended_at
-          and ((relationship.ended_by=$2 and man.message_type='apology')
-            or (relationship.ended_by is distinct from $2 and man.message_type='contact')))))) as "interestSent"
+          and relationship.ended_by=$2 and man.message_type='apology'))))) as "interestSent"
     ,coalesce(mp.availability_visible_before_match,false) as "availabilityVisibleBeforeMatch",
     coalesce(photos.items,'[]'::json) as photos,
     coalesce(activity_rows.items,'[]'::json) as "activityRows",

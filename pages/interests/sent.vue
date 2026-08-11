@@ -25,7 +25,7 @@ onMounted(async () => {
     <section class="mx-auto max-w-3xl">
       <p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">People you chose</p>
       <h1 class="mt-2 text-4xl font-semibold">Your sent interests</h1>
-      <p class="mt-3 max-w-2xl text-[#6E4D58]">They won’t know unless they choose you too or decide to accept your interest.</p>
+      <p class="mt-3 max-w-2xl text-[#6E4D58]">They can see that you showed interest and choose whether to accept, pass, or take no action.</p>
       <DailyInterestCounter class="mt-6" :count="todaysInterests.length" :limit="dailyInterestLimit" />
       <div v-if="loading" class="mt-8 rounded-lg bg-white p-8 text-center text-[#6E4D58]">Loading sent interests…</div>
       <div v-else-if="errorMessage" class="mt-8 rounded-lg bg-[#FCE3E8] p-4 text-sm font-semibold text-[#8F1839]" role="alert"><p>{{ errorMessage }}</p><button type="button" class="mt-3 rounded-lg bg-white px-4 py-2" @click="loadSentInterests">Try again</button></div>
