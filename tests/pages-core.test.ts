@@ -57,6 +57,10 @@ describe("core page contracts", () => {
       resolve(process.cwd(), "components/ProfileActivityPanel.vue"),
       "utf8",
     );
+    const availabilityCard = readFileSync(
+      resolve(process.cwd(), "components/ProfileAvailabilityContactCard.vue"),
+      "utf8",
+    );
     const plan = readPage("plans/[slug].vue");
     const matches = readPage("matches/index.vue");
     const nav = readFileSync(
@@ -101,7 +105,7 @@ describe("core page contracts", () => {
     expect(profile).toContain("route.query.connection !== 'past'");
     expect(profile).toContain("hasSharedContactDetails");
     expect(profile).toContain("availabilityContactFlipped");
-    expect(profile).toContain("Show shared contact details");
+    expect(availabilityCard).toContain("Show shared contact details");
     expect(profile).toContain("profileInterests");
     expect(profileActivityPanel).toContain(".profile-flip-card:hover");
     expect(profile).toContain("useDailyInterest()");
@@ -137,6 +141,10 @@ describe("core page contracts", () => {
       resolve(process.cwd(), "components/ProfileActivityPanel.vue"),
       "utf8",
     );
+    const availabilityCard = readFileSync(
+      resolve(process.cwd(), "components/ProfileAvailabilityContactCard.vue"),
+      "utf8",
+    );
     const nav = readFileSync(
       resolve(process.cwd(), "components/BlankNavBar.vue"),
       "utf8",
@@ -162,8 +170,8 @@ describe("core page contracts", () => {
       "Preview only — these controls are not active here.",
     );
     expect(preview).toContain("Report profile");
-    expect(preview).toContain("Show saved contact details");
-    expect(preview).toContain("Preview only — these saved details are currently hidden from matches.");
+    expect(availabilityCard).toContain("Show saved contact details");
+    expect(availabilityCard).toContain("Preview only — these saved details are currently hidden from matches.");
     expect(preview).not.toContain(
       "People see your selected interests when they discover you",
     );

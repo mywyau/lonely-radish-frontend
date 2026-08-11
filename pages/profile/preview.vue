@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { AtSign, CalendarDays, ChevronDown, ChevronLeft, ChevronRight, Expand, Eye, HeartHandshake, ImagePlus, Mail, MapPin, Phone, RefreshCw, ShieldCheck, UserRound, X } from '@lucide/vue';
+import { AtSign, ChevronDown, ChevronLeft, ChevronRight, Expand, Eye, HeartHandshake, ImagePlus, Mail, MapPin, Phone, RefreshCw, ShieldCheck, UserRound, X } from '@lucide/vue';
 import { profileDetails } from '~/utils/profileDetails';
 import { genderIdentityLabel } from '~/utils/genderIdentity';
 
@@ -245,57 +245,9 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleGalleryKeydown
               </div>
             </div>
 
-            <div v-if="data.availability?.length"
-              class="availability-contact-flip order-4" :class="availabilityContactFlipped && 'is-flipped'">
-              <div class="availability-contact-inner">
-                <section
-                  class="availability-contact-face availability-contact-front rounded-lg bg-white p-5 shadow-[0_10px_24px_rgba(180,35,74,0.08)] sm:p-6"
-                  :aria-hidden="availabilityContactFlipped" :inert="availabilityContactFlipped || undefined">
-                  <div class="flex items-start justify-between gap-3">
-                    <div class="flex items-center gap-2">
-                      <CalendarDays class="size-5 shrink-0 text-[#B4234A]" />
-                      <h3 class="text-xl font-semibold">Usually free</h3>
-                    </div>
-                    <button v-if="hasContactDetails" type="button"
-                      class="inline-flex shrink-0 items-center gap-2 rounded-full bg-[#FCE3E8] px-3 py-2 text-xs font-semibold text-[#8F1839] hover:brightness-95"
-                      aria-label="Show saved contact details" @click="availabilityContactFlipped = true">
-                      <RefreshCw class="size-3.5" aria-hidden="true" />Contact details
-                    </button>
-                  </div>
-                  <div class="mt-4 flex flex-wrap gap-2"><span v-for="time in data.availability" :key="time"
-                      class="rounded-full bg-[#F3E8DA] px-3 py-2 text-sm font-semibold text-[#4D2F39]">{{ time }}</span></div>
-                </section>
-
-                <section v-if="hasContactDetails && data.contactDetails"
-                  class="availability-contact-face availability-contact-back rounded-lg bg-white p-5 shadow-[0_10px_24px_rgba(180,35,74,0.08)] sm:p-6"
-                  :aria-hidden="!availabilityContactFlipped" :inert="!availabilityContactFlipped || undefined">
-                  <div class="flex items-start justify-between gap-3">
-                    <div>
-                      <h3 class="text-xl font-semibold">Contact details</h3>
-                      <p class="mt-2 text-xs leading-5 text-[#6E4D58]">{{ data.contactDetails.shareWithMatches
-                        ? 'This is how your details appear to an active match.'
-                        : 'Preview only — these saved details are currently hidden from matches.' }}</p>
-                    </div>
-                    <button type="button"
-                      class="inline-flex shrink-0 items-center gap-2 rounded-full bg-[#F3E8DA] px-3 py-2 text-xs font-semibold text-[#8F1839] hover:brightness-95"
-                      aria-label="Show usual availability" @click="availabilityContactFlipped = false">
-                      <RefreshCw class="size-3.5" aria-hidden="true" />Usually free
-                    </button>
-                  </div>
-                  <div class="mt-4 space-y-3 text-sm">
-                    <p v-if="data.contactDetails.phoneNumber" class="flex items-center gap-2 font-semibold text-[#8F1839]"><Phone class="size-4 shrink-0" aria-hidden="true" />{{ data.contactDetails.phoneNumber }}</p>
-                    <p v-if="data.contactDetails.contactEmail" class="flex items-center gap-2 break-all font-semibold text-[#8F1839]"><Mail class="size-4 shrink-0" aria-hidden="true" />{{ data.contactDetails.contactEmail }}</p>
-                    <p v-if="data.contactDetails.socialHandle" class="flex items-center gap-2 font-semibold text-[#4D2F39]"><AtSign class="size-4 shrink-0 text-[#8F1839]" aria-hidden="true" /><span class="break-all">{{ data.contactDetails.socialHandle }}</span></p>
-                  </div>
-                  <div class="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-[#E8D8C4] pt-4">
-                    <span class="rounded-full px-3 py-1.5 text-xs font-bold"
-                      :class="data.contactDetails.shareWithMatches ? 'bg-[#EAF2DE] text-[#52713A]' : 'bg-[#FFF1C7] text-[#694C00]'">{{
-                        data.contactDetails.shareWithMatches ? 'Shared with active matches' : 'Currently hidden' }}</span>
-                    <NuxtLink to="/account/v2" class="text-xs font-semibold text-[#8F1839] hover:underline">Manage sharing →</NuxtLink>
-                  </div>
-                </section>
-              </div>
-            </div>
+            <ProfileAvailabilityContactCard v-if="data.availability?.length"
+              v-model:flipped="availabilityContactFlipped" class="order-4" :availability="data.availability"
+              :contact-details="hasContactDetails ? data.contactDetails : null" heading-level="h3" owner-preview />
 
             <section v-if="hasContactDetails && data.contactDetails && !data.availability?.length"
               class="order-5 rounded-lg bg-white p-5 shadow-[0_10px_24px_rgba(180,35,74,0.08)] sm:p-6">
@@ -396,36 +348,6 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleGalleryKeydown
   pointer-events: none;
 }
 
-.availability-contact-flip {
-  perspective: 1200px;
-}
-
-.availability-contact-inner {
-  display: grid;
-  min-width: 0;
-  transform-style: preserve-3d;
-  transition: transform .55s cubic-bezier(.2, .7, .2, 1);
-}
-
-.availability-contact-flip.is-flipped .availability-contact-inner {
-  transform: rotateY(180deg);
-}
-
-.availability-contact-face {
-  grid-area: 1 / 1;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-}
-
-.availability-contact-back {
-  transform: rotateY(180deg);
-}
-
-.availability-contact-flip:not(.is-flipped) .availability-contact-back,
-.availability-contact-flip.is-flipped .availability-contact-front {
-  pointer-events: none;
-}
-
 .profile-flip-card {
   min-height: 13rem;
   border-radius: .5rem;
@@ -480,8 +402,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleGalleryKeydown
 
   .profile-flip-card,
   .profile-flip-inner,
-  .profile-summary-inner,
-  .availability-contact-inner {
+  .profile-summary-inner {
     transition: none;
   }
 
