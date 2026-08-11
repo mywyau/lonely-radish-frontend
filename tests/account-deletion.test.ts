@@ -22,6 +22,8 @@ describe("account deletion", () => {
     expect(service).toContain("account_deletion_jobs");
     expect(service).toContain("account_status='deleting'");
     expect(service).toContain("replaceAccountAccess(userId, { accountStatus: 'deleting'");
+    expect(service).toContain("set status='failed',last_error=$2");
+    expect(service).toContain("account_status='active',deleting_at=null");
   });
 
   it("removes external services, stored photos, and cascading database data", () => {
@@ -34,6 +36,11 @@ describe("account deletion", () => {
     expect(local).toContain("DELETE FROM users WHERE id = $1");
     expect(local).toContain("DELETE FROM businesses");
     expect(worker).toContain("business_subscriptions");
+    expect(worker).toContain("started_at < NOW() - INTERVAL '5 minutes'");
+    expect(worker).toContain("Account deletion is already processing; retry later");
+    expect(worker).toContain("if (user) {");
+    const recoveryMigration = read('docs/migrations/20260910_recover_stranded_account_deletions.sql');
+    expect(recoveryMigration).toContain("Deletion request had no retryable worker job");
   });
 
   it("offers deletion from the isolated business account area", () => {

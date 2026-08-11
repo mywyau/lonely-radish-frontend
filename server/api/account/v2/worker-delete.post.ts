@@ -149,6 +149,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const client = await db.connect();
+  let claimed = false;
 
   try {
     await client.query("BEGIN");
@@ -162,19 +163,36 @@ export default defineEventHandler(async (event) => {
           last_error = NULL
       WHERE id = $1
         AND user_id = $2
-        AND status IN ('pending', 'failed')
+        AND (
+          status IN ('pending', 'failed')
+          OR (status = 'processing' AND started_at < NOW() - INTERVAL '5 minutes')
+        )
       RETURNING id, user_id, status, attempt_count
       `,
       [body.jobId, body.userId]
     );
 
     if (claimRes.rowCount === 0) {
+      const existing = await client.query<{ status: JobRow['status'] }>(
+        `SELECT status FROM account_deletion_jobs WHERE id = $1 AND user_id = $2`,
+        [body.jobId, body.userId],
+      );
       await client.query("ROLLBACK");
+      if (existing.rows[0]?.status === 'completed') {
+        return { success: true, completed: true, skipped: true };
+      }
+      if (existing.rows[0]?.status === 'processing') {
+        throw createError({
+          statusCode: 503,
+          statusMessage: 'Account deletion is already processing; retry later',
+        });
+      }
       return {
         success: true,
         skipped: true,
       };
     }
+    claimed = true;
 
     await client.query(
       `
@@ -194,13 +212,9 @@ export default defineEventHandler(async (event) => {
       [body.userId]
     );
 
-    if (userRes.rowCount === 0) {
-      throw new Error("User not found");
-    }
+    const user = userRes.rows[0] || null;
 
-    const user = userRes.rows[0];
-
-    const ownedBusinesses = await client.query<OwnedBusinessRow>(
+    const ownedBusinesses = user ? await client.query<OwnedBusinessRow>(
       `
       SELECT b.id,
              bs.stripe_customer_id,
@@ -217,7 +231,7 @@ export default defineEventHandler(async (event) => {
         AND owner.role = 'owner'
       `,
       [body.userId],
-    );
+    ) : { rows: [] as OwnedBusinessRow[] };
 
     if (ownedBusinesses.rows.some(business => business.has_other_members)) {
       throw new Error("Transfer ownership or remove the other business members before deleting this account");
@@ -227,7 +241,7 @@ export default defineEventHandler(async (event) => {
 
     // 1. Cancel Stripe first
     const stripeCustomerIds = [...new Set([
-      user.stripe_customer_id,
+      user?.stripe_customer_id,
       ...ownedBusinesses.rows.map(business => business.stripe_customer_id),
     ].filter((value): value is string => Boolean(value)))];
 
@@ -256,7 +270,9 @@ export default defineEventHandler(async (event) => {
     await deleteAuth0User(body.userId);
 
     // 3. Delete local app data last
-    await deleteUserData(body.userId, ownedBusinesses.rows.map(business => business.id));
+    if (user) {
+      await deleteUserData(body.userId, ownedBusinesses.rows.map(business => business.id));
+    }
     await invalidateAccountAccess(body.userId);
 
     // 4. Mark job completed
@@ -278,7 +294,13 @@ export default defineEventHandler(async (event) => {
   } catch (err: any) {
     const message = String(err?.message ?? err);
 
-    await db.query(
+    try {
+      await client.query("ROLLBACK");
+    } catch {
+      // The initial transaction may already be committed.
+    }
+
+    if (claimed) await db.query(
       `
       UPDATE account_deletion_jobs
       SET status = 'failed',
@@ -288,7 +310,7 @@ export default defineEventHandler(async (event) => {
       [body.jobId, message]
     );
 
-    await db.query(
+    if (claimed) await db.query(
       `
       UPDATE users
       SET deletion_status = 'failed'

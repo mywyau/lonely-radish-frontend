@@ -70,7 +70,7 @@ export async function queueAccountDeletion(userId: string, options: QueueOptions
       from account_deletion_jobs where user_id=$1 order by created_at desc limit 1`, [userId])
     const existing = existingResult.rows[0]
 
-    if (!existing || (existing.status === 'failed' && options.retryFailed === true)) {
+    if (!existing || (existing.status === 'failed' && (options.retryFailed === true || options.source === 'self'))) {
       const inserted = await client.query<{ id: number | string }>(`insert into account_deletion_jobs
         (user_id,status,attempt_count,requested_by,request_source,request_reason,report_id,created_at)
         values($1,'pending',0,$2,$3,$4,$5,now()) returning id`,
@@ -108,8 +108,14 @@ export async function queueAccountDeletion(userId: string, options: QueueOptions
         createdNewJob, requestSource: options.source, publishResult,
       })
     } catch (error) {
-      await db.query(`update account_deletion_jobs set last_error=$2 where id=$1 and status='pending'`,
-        [jobId, String((error as Error)?.message || error)])
+      await db.query(`update account_deletion_jobs set status='failed',last_error=$2
+        where id=$1 and status='pending'`, [jobId, String((error as Error)?.message || error)])
+      if (options.source === 'self') {
+        await db.query(`update users set account_status='active',deleting_at=null,
+          deletion_requested_at=null,deletion_status='failed',updated_at=now()
+          where id=$1 and account_status='deleting' and deletion_status='pending'`, [userId])
+        await replaceAccountAccess(userId, { accountStatus: 'active', suspendedUntil: null })
+      }
       console.error('Failed to publish account deletion job', {
         userHash: redactIdentifier(userId), jobId, workerUrl, requestSource: options.source, error,
       })
