@@ -5,6 +5,7 @@ import { IdempotencyRepository } from '~/server/repositories/idempotency'
 import { InterestRepository } from '~/server/repositories/interests'
 import { OutboxRepository } from '~/server/repositories/outbox'
 import { activateMatchOrQueue } from '~/server/utils/matchQueue'
+import { expirePendingInterests } from '~/server/utils/interestLifecycle'
 import { requestOutboxProcessing } from '../outbox/requestOutboxProcessing'
 
 export interface SendInterestInput {
@@ -57,6 +58,9 @@ export class InterestService {
       activateMatch,
       requestOutboxProcessing: requestProcessing,
     } = this.dependencies
+    // Commit overdue closures before eligibility reads. A rejected send must
+    // not roll back expiry and leave the recipient's inbox falsely full.
+    await expirePendingInterests(database)
     const client = await database.connect()
     const repository = interests(client)
     const requests = idempotency(client)

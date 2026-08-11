@@ -4,7 +4,9 @@ import { trackProductEvent } from '~/utils/productAnalytics'
 
 definePageMeta({ title: 'Received interests · Lonely Radish', middleware: 'logged-in' })
 type ReceivedInterest = { id: string; slug: string; name: string; age: number; place: string; createdAt: string; activityTags: string[]; matchStatus: string | null; photoUrl?: string }
+type ClosedInterest = { id: string; slug: string; name: string; createdAt: string; resolvedAt: string; resolution: 'expired' | 'withdrawn'; photoUrl?: string }
 const interests = ref<ReceivedInterest[]>([])
+const closedInterests = ref<ClosedInterest[]>([])
 const loading = ref(true)
 const errorMessage = ref('')
 const successMessage = ref('')
@@ -29,8 +31,9 @@ async function loadReceivedInterests() {
   loading.value = true
   errorMessage.value = ''
   try {
-    const result = await $fetch<{ interests: ReceivedInterest[]; pendingInterestCount: number; interestLimit: number; hasMore: boolean; inboxReopensAt: string | null; activeMatchCount: number; activeMatchLimit: number; yourMoveMatch: { id: string; name: string } | null }>('/api/interests/received')
+    const result = await $fetch<{ interests: ReceivedInterest[]; closedInterests: ClosedInterest[]; pendingInterestCount: number; interestLimit: number; hasMore: boolean; inboxReopensAt: string | null; activeMatchCount: number; activeMatchLimit: number; yourMoveMatch: { id: string; name: string } | null }>('/api/interests/received')
     interests.value = result.interests
+    closedInterests.value = result.closedInterests
     pendingInterestCount.value = result.pendingInterestCount
     interestLimit.value = result.interestLimit
     hasMore.value = result.hasMore
@@ -91,7 +94,7 @@ async function declineInterest(person: ReceivedInterest) {
 
 <template>
   <main class="min-h-screen bg-[#FBF7F1] px-5 py-10 text-[#2A1520] sm:px-8"><section class="mx-auto max-w-3xl">
-    <p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">People who chose you</p><h1 class="mt-2 text-4xl font-semibold">Who’s interested?</h1><p class="mt-3 max-w-2xl leading-6 text-[#6E4D58]">Take your time. These are people who chose to meet you.</p>
+    <p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">People who chose you</p><h1 class="mt-2 text-4xl font-semibold">Who’s interested?</h1><p class="mt-3 max-w-2xl leading-6 text-[#6E4D58]">Take your time. Pending interests stay open for 14 days unless the sender withdraws them.</p>
     <!-- <section class="mt-5 rounded-lg bg-[#F3E8DA] p-4 text-sm leading-6 text-[#4D2F39]" aria-labelledby="manual-match-rules">
       <h2 id="manual-match-rules" class="font-semibold">A maximum of {{ interestLimit }} at a time</h2>
       <p class="mt-1">When {{ interestLimit }} people are waiting, your profile pauses incoming interest while you consider them. Passing is final and does not reveal a replacement straight away.</p>
@@ -111,6 +114,18 @@ async function declineInterest(person: ReceivedInterest) {
     <div v-else-if="interests.length" class="mt-7 grid gap-3"><article v-for="person in interests" :key="person.id" class="rounded-lg bg-white p-5 shadow-[0_8px_20px_rgba(180,35,74,.07)]"><div class="flex items-start gap-4"><img v-if="person.photoUrl" :src="person.photoUrl" :alt="`${person.name}'s profile photo`" class="size-16 shrink-0 rounded-full object-cover"><div v-else class="flex size-16 shrink-0 items-center justify-center rounded-full bg-[#FCE3E8] text-xl font-semibold text-[#B4234A]">{{ person.name.charAt(0) }}</div><div class="min-w-0 flex-1"><h2 class="text-xl font-semibold">{{ person.name }}, {{ person.age }}</h2><p class="mt-1 flex items-center gap-1 text-xs text-[#6E4D58]"><MapPin class="size-3.5" />{{ person.place }}</p><div v-if="person.activityTags.length" class="mt-3 flex flex-wrap gap-1.5"><span v-for="tag in person.activityTags" :key="tag" class="rounded-full bg-[#F3E8DA] px-2.5 py-1 text-xs font-semibold text-[#6E4D58]">{{ tag }}</span></div></div></div><div class="mt-5 flex flex-wrap gap-2"><NuxtLink :to="`/profiles/${person.slug}`" class="rounded-lg bg-[#F3E8DA] px-4 py-2.5 text-sm font-semibold text-[#8F1839]">View profile</NuxtLink><NuxtLink v-if="person.matchStatus === 'active' || person.matchStatus === 'queued'" to="/matches" class="rounded-lg bg-[#EAF2DE] px-4 py-2.5 text-sm font-semibold text-[#4D2F39]">{{ person.matchStatus === 'queued' ? 'Match waiting' : 'Already matched' }}</NuxtLink><span v-else-if="person.matchStatus" class="rounded-lg bg-[#FCE3E8] px-4 py-2.5 text-sm font-semibold text-[#8F1839]">Connection ended</span><template v-else><button type="button" class="inline-flex items-center gap-2 rounded-lg bg-[#B4234A] px-4 py-2.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50" :disabled="Boolean(yourMoveMatch)" :title="yourMoveMatch ? `Take action on your match with ${yourMoveMatch.name} first` : undefined" @click="pending = person"><HeartHandshake class="size-4" />Accept and match</button><button type="button" class="rounded-lg border border-[#B4234A]/30 px-4 py-2.5 text-sm font-semibold text-[#8F1839] disabled:opacity-50" :disabled="declining === person.id" @click="declineInterest(person)">{{ declining === person.id ? 'Passing…' : 'Pass' }}</button></template></div></article></div>
     <div v-else-if="!errorMessage && pendingInterestCount" class="mt-7 rounded-lg bg-white p-8 text-center"><UserRound class="mx-auto size-8 text-[#B4234A]" /><h2 class="mt-3 text-xl font-semibold">That’s enough decisions for today</h2><p class="mt-2 text-sm leading-6 text-[#6E4D58]">You’ve reviewed the current group. Any older interests will wait until your next review.</p></div>
     <div v-else-if="!errorMessage" class="mt-7 rounded-lg bg-white p-8 text-center"><UserRound class="mx-auto size-8 text-[#B4234A]" /><h2 class="mt-3 text-xl font-semibold">Nobody here yet</h2><p class="mt-2 text-sm text-[#6E4D58]">When someone shows interest in you, you’ll find them here.</p></div>
+    <section v-if="!loading && closedInterests.length" class="mt-10" aria-labelledby="closed-interests-title">
+      <h2 id="closed-interests-title" class="text-xl font-semibold">Recently closed</h2>
+      <p class="mt-1 text-sm text-[#6E4D58]">Expired and withdrawn interests are kept here for clarity. They no longer use inbox space.</p>
+      <div class="mt-4 grid gap-3">
+        <article v-for="interest in closedInterests" :key="interest.id" class="flex items-center gap-4 rounded-lg bg-white p-4">
+          <img v-if="interest.photoUrl" :src="interest.photoUrl" :alt="`${interest.name}'s profile photo`" class="size-12 rounded-full object-cover">
+          <div v-else class="flex size-12 items-center justify-center rounded-full bg-[#FCE3E8] font-semibold text-[#B4234A]">{{ interest.name.charAt(0) }}</div>
+          <div class="min-w-0 flex-1"><h3 class="font-semibold">{{ interest.name }}</h3><p class="mt-1 text-xs text-[#6E4D58]">Closed {{ new Date(interest.resolvedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) }}</p></div>
+          <span class="rounded-full bg-[#FCE3E8] px-3 py-2 text-xs font-semibold text-[#8F1839]">{{ interest.resolution === 'expired' ? 'Expired' : 'Withdrawn by sender' }}</span>
+        </article>
+      </div>
+    </section>
   </section>
   <div v-if="pending" class="fixed inset-0 z-50 flex items-center justify-center bg-[#2A1520]/55 p-5" @click.self="pending = null"><section role="alertdialog" aria-modal="true" aria-labelledby="accept-title" class="w-full max-w-md rounded-xl bg-white p-6"><h2 id="accept-title" class="text-2xl font-semibold">Match with {{ pending.name }}?</h2><p class="mt-3 text-sm leading-6 text-[#6E4D58]">We’ll let you both know. If there’s room in both match lists, you can start making a plan straight away.</p><p v-if="atMatchLimit" class="mt-3 rounded-lg bg-[#FFF1C7] p-3 text-sm font-semibold text-[#694C00]">Your match list is full. This match will wait for you, and you can start planning once there’s room.</p><div class="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end"><button class="rounded-lg bg-[#F3E8DA] px-4 py-2.5 text-sm font-semibold" :disabled="accepting" @click="pending = null">Not now</button><button class="rounded-lg bg-[#B4234A] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50" :disabled="accepting" @click="acceptInterest">{{ accepting ? 'Matching…' : 'Yes, match with them' }}</button></div></section></div>
   </main>

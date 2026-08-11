@@ -37,6 +37,10 @@ const sections = [
         answer: 'The person you choose can see your interest and decide whether to accept or pass. If you’ve both independently shown interest, you’ll match automatically.',
       },
       {
+        question: 'How long does an interest last?',
+        answer: 'A pending interest lasts for 14 days. You can withdraw your own interest before it is accepted. Expired and withdrawn interests stay labelled in both histories, but we do not send an alert when an interest quietly expires. An expired, withdrawn or passed interest is final and cannot be sent again to the same person.',
+      },
+      {
         question: 'Why can I receive only five interests at a time?',
         answer: 'The limit gives you a small group to consider without an endless queue. When five people are waiting, your profile pauses incoming interest. Passing is final and new interest does not replace that person immediately. You can still choose people yourself, and a mutual interest can become a direct match.',
       },

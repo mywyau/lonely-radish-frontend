@@ -1,6 +1,6 @@
 type Environment = Record<string, string | undefined>
 
-export const latestRequiredMigration = '20260907_tighten_second_chances.sql'
+export const latestRequiredMigration = '20260908_add_interest_lifecycle.sql'
 
 const placeholderPrefixes = [
   'your-',

@@ -37,6 +37,7 @@ export class MatchRepository {
       join profiles p on p.user_id=di.sender_id
       join users u on u.id=di.sender_id
       where di.id=$1 and di.recipient_id=$2 and di.resolved_at is null
+        and di.created_at>now()-interval '14 days'
         and p.visibility='active' and (u.account_status='active' or
           (u.account_status='paused' and u.paused_until is not null and u.paused_until<=now()))
         and not exists(select 1 from matches ended where ended.status='unmatched'

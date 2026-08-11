@@ -2,11 +2,15 @@ import { setHeader } from 'h3'
 import { db } from '~/server/repositories/db'
 import { requireUser } from '~/server/utils/requireUser'
 import { signedPhotoUrls } from '~/server/utils/supabaseStorage'
+import { expirePendingInterests } from '~/server/utils/interestLifecycle'
 
 export default defineEventHandler(async (event) => {
   setHeader(event, 'Cache-Control', 'private, no-store')
   const { sub } = await requireUser(event)
+  await expirePendingInterests(db, { senderId: sub })
   const { rows } = await db.query(`select di.id,di.sender_day as "sentOn",di.created_at as "createdAt",
+    di.resolution,di.resolved_at as "resolvedAt",
+    di.created_at+interval '14 days' as "expiresAt",
     p.slug,p.display_name as name,p.neighbourhood as place,matched.status as "matchStatus",
     photo.storage_key as "photoStorageKey",photo.public_url as "legacyPhotoUrl"
     from daily_interests di join profiles p on p.user_id=di.recipient_id

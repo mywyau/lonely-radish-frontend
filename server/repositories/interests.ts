@@ -1,5 +1,6 @@
 import type { DatabaseClient } from '~/server/repositories/db'
 import { viewerDiscoveryJoins, viewerDiscoveryWhere } from '~/server/utils/discoveryFilters'
+import { expirePendingInterests } from '~/server/utils/interestLifecycle'
 
 export interface InterestSender {
   accountStatus: string
@@ -74,6 +75,7 @@ export class InterestRepository {
   }
 
   async recipientInboxAcceptingInterests(recipientId: string) {
+    await expirePendingInterests(this.client, { recipientId })
     const { rows } = await this.client.query(`select 1 from users u join interest_inbox_state inbox
       on inbox.user_id=u.id where u.id=$1
       and (u.interest_inbox_reopens_at is null or u.interest_inbox_reopens_at<=now())

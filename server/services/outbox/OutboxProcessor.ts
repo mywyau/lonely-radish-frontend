@@ -60,7 +60,10 @@ async function deliverEvent(client: DatabaseClient, event: {
     const payload = interestSentPayload(event.payload)
     await client.query(`insert into notifications(
         recipient_id,actor_id,kind,source_outbox_event_id
-      ) values($1,$2,'interest_received',$3)
+      ) select $1,$2,'interest_received',$3
+      where exists(select 1 from daily_interests di
+        where di.sender_id=$2 and di.recipient_id=$1 and di.resolved_at is null
+          and di.created_at>now()-interval '14 days')
       on conflict(source_outbox_event_id,recipient_id)
         where source_outbox_event_id is not null do nothing`,
     [payload.recipientId,payload.senderId,event.id])

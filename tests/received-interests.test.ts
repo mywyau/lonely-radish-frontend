@@ -16,8 +16,8 @@ describe('received interests', () => {
     expect(read('server/api/matches/index.get.ts')).toContain('interest_inbox_state')
     expect(read('pages/interests/received.vue')).toContain('Accept and match')
     expect(read('pages/interests/received.vue')).toContain('Pass')
-    expect(read('pages/interests/received.vue')).toContain('Passing is final')
-    expect(read('pages/interests/received.vue')).toContain('does not reveal a replacement straight away')
+    expect(read('pages/interests/received.vue')).toContain('Pending interests stay open for 14 days')
+    expect(read('pages/interests/received.vue')).toContain('Recently closed')
     expect(read('pages/faq.vue')).toContain('Why can I receive only five interests at a time?')
   })
   it('allows the recipient to deliberately create a match', () => {

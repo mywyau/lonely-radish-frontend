@@ -13,6 +13,9 @@ vi.mock('~/server/repositories/interests', () => ({ InterestRepository: class {}
 vi.mock('~/server/repositories/matches', () => ({ MatchRepository: class {} }))
 vi.mock('~/server/repositories/outbox', () => ({ OutboxRepository: class {} }))
 vi.mock('~/server/utils/matchQueue', () => ({ activateMatchOrQueue: vi.fn() }))
+vi.mock('~/server/utils/interestLifecycle', () => ({
+  expirePendingInterests: vi.fn((database: Database) => database.query('expire pending interests')),
+}))
 vi.mock('../server/services/outbox/requestOutboxProcessing', () => ({
   requestOutboxProcessing: vi.fn(),
 }))
@@ -68,7 +71,7 @@ describe('interest and match services', () => {
     expect(repository.lockSender).toHaveBeenCalledWith('user-a')
     expect(repository.getSenderForUpdate).not.toHaveBeenCalled()
     expect(requests.complete).not.toHaveBeenCalled()
-    expect(query.mock.calls.map(([sql]) => sql)).toEqual(['begin', 'commit'])
+    expect(query.mock.calls.map(([sql]) => sql).slice(-2)).toEqual(['begin', 'commit'])
     expect(client.release).toHaveBeenCalledOnce()
   })
 
