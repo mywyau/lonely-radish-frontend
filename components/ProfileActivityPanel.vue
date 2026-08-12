@@ -49,7 +49,7 @@ const emit = defineEmits<{ toggle: [] }>()
         <span class="panel-heading">
           <span class="panel-icon panel-icon-interest"><Sparkles class="size-5" aria-hidden="true" /></span>
           <span class="min-w-0 flex-1">
-            <span class="panel-kicker">Beyond the date</span>
+            <span class="panel-kicker">A little about me</span>
             <span class="panel-title">{{ props.preview ? 'My personal interests' : 'Personal interests' }}</span>
           </span>
           <span class="panel-count panel-count-interest">{{ props.personalInterests.length }}</span>
