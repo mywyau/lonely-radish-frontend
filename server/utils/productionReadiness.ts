@@ -1,6 +1,6 @@
 type Environment = Record<string, string | undefined>
 
-export const latestRequiredMigration = '20260913_remove_consumer_limit_paywalls.sql'
+export const latestRequiredMigration = '20260914_add_incognito_discovery.sql'
 
 const placeholderPrefixes = [
   'your-',

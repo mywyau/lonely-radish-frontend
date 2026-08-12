@@ -5,6 +5,7 @@ import { signedPhotoUrls } from '~/server/utils/supabaseStorage'
 import { discoveryCategory } from '~/utils/activityDiscovery'
 import { discoveryDistanceSelect, recipientInterestAvailabilityWhere, viewerDiscoveryJoins, viewerDiscoveryWhere } from '~/server/utils/discoveryFilters'
 import { decodeCursor, pageRows } from '~/server/utils/cursorPagination'
+import { candidateDiscoveryVisibilityWhere } from '~/server/utils/profileVisibility'
 
 export default defineEventHandler(async (event) => {
   setHeader(event, 'Cache-Control', 'private, no-store')
@@ -45,6 +46,7 @@ export default defineEventHandler(async (event) => {
         (b.blocker_id=$2 and b.blocked_id=p.user_id) or (b.blocker_id=p.user_id and b.blocked_id=$2))
       and not exists(select 1 from matches m where m.status in ('active','queued') and
         ((m.user_one_id=$2 and m.user_two_id=p.user_id) or (m.user_two_id=$2 and m.user_one_id=p.user_id)))
+      ${candidateDiscoveryVisibilityWhere}
       ${viewerDiscoveryWhere}
       ${recipientInterestAvailabilityWhere}
       and ($3::timestamptz is null or (p.updated_at,p.slug)<($3::timestamptz,$4::text))

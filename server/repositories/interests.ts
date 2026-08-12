@@ -1,6 +1,7 @@
 import type { DatabaseClient } from '~/server/repositories/db'
 import { viewerDiscoveryJoins, viewerDiscoveryWhere } from '~/server/utils/discoveryFilters'
 import { expirePendingInterests } from '~/server/utils/interestLifecycle'
+import { directProfileVisibilityWhere } from '~/server/utils/profileVisibility'
 
 export interface InterestSender {
   accountStatus: string
@@ -69,6 +70,7 @@ export class InterestRepository {
         and not exists(select 1 from blocks b where
           (b.blocker_id=$2 and b.blocked_id=p.user_id) or
           (b.blocker_id=p.user_id and b.blocked_id=$2))
+        ${directProfileVisibilityWhere}
         ${viewerDiscoveryWhere}
       `, [profileSlug,senderId])
     return rows[0] ?? null

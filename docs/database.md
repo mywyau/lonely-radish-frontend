@@ -26,7 +26,7 @@ only counters that actually changed.
 
 ## Product data
 
-- `users`: Auth0 identity, account role (`member`, `moderator`, or `admin`), timezone, and lifecycle state.
+- `users`: Auth0 identity, account role (`member`, `moderator`, or `admin`), timezone, lifecycle state, and standard/incognito discovery mode.
 - `profiles`: public dating/activity profile and discoverability state.
 - `profile_photos`: up to six ordered image records. Image bytes belong in object storage; this table stores their URLs and metadata.
 
@@ -69,3 +69,4 @@ Keep `DATABASE_URL` out of client runtime configuration and never prefix it with
 - `20260723_add_match_end_history.sql`: match-ending actor, reason, timestamp, and past-connections history support.
 - `20260828_explicit_date_rescheduling.sql`: linked replacement proposals that preserve the confirmed date until a reschedule is accepted.
 - `20260829_structured_meeting_locations.sql`: public venue addresses and normalized UK postcodes for clearer meetup details.
+- `20260914_add_incognito_discovery.sql`: member-controlled incognito discovery with an indexed active-interest visibility path.
