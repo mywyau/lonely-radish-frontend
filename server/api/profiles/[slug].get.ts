@@ -2,6 +2,7 @@ import { createError, getRouterParam, setHeader } from 'h3'
 import { db } from '~/server/repositories/db'
 import { requireUser } from '~/server/utils/requireUser'
 import { signedPhotoUrls } from '~/server/utils/supabaseStorage'
+import { directProfileVisibilityWhere } from '~/server/utils/profileVisibility'
 
 export default defineEventHandler(async (event) => {
   setHeader(event, 'Cache-Control', 'private, no-store')
@@ -52,7 +53,8 @@ export default defineEventHandler(async (event) => {
     where p.slug=$1 and u.onboarding_completed_at is not null and p.visibility='active' and (u.account_status='active' or
       (u.account_status='paused' and u.paused_until is not null and u.paused_until<=now()))
       and p.user_id<>$2 and not exists(select 1 from blocks b where
-        (b.blocker_id=$2 and b.blocked_id=p.user_id) or (b.blocker_id=p.user_id and b.blocked_id=$2))`, [slug,viewer.sub])
+        (b.blocker_id=$2 and b.blocked_id=p.user_id) or (b.blocker_id=p.user_id and b.blocked_id=$2))
+      ${directProfileVisibilityWhere}`, [slug,viewer.sub])
   const profile = rows[0]
   if (!profile) throw createError({ statusCode: 404, statusMessage: 'Profile not found' })
   const { photos, activityRows, ...profileData } = profile

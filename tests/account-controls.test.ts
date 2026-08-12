@@ -11,6 +11,7 @@ describe('account controls page', () => {
     expect(account).toContain('to="/account/controls"')
     expect(controls).toContain('Your membership')
     expect(controls).toContain('Take a break')
+    expect(controls).toContain('Only people I choose')
     expect(controls).toContain('Your attendance history')
     expect(controls).toContain("middleware: 'logged-in'")
     expect(controls).toContain('Promise.allSettled')

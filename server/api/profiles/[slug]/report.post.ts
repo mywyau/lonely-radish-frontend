@@ -3,6 +3,7 @@ import { db } from '~/server/repositories/db'
 import { blockUser } from '~/server/utils/blockUser'
 import { requireUser } from '~/server/utils/requireUser'
 import { boolean, objectBody, text } from '~/server/utils/productValidation'
+import { directProfileVisibilityWhere } from '~/server/utils/profileVisibility'
 
 const categories = new Set(['spam', 'harassment', 'safety', 'impersonation', 'other'])
 
@@ -21,7 +22,8 @@ export default defineEventHandler(async (event) => {
   const client = await db.connect()
   try {
     await client.query('begin')
-    const target = await client.query('select user_id from profiles where slug=$1 and user_id<>$2', [slug,sub])
+    const target = await client.query(`select p.user_id from profiles p join users u on u.id=p.user_id
+      where p.slug=$1 and p.user_id<>$2 ${directProfileVisibilityWhere}`, [slug,sub])
     if (!target.rows[0]) throw createError({ statusCode: 404, statusMessage: 'Profile not found' })
     const reportedId = target.rows[0].user_id
     let relatedInterestId: string | null = null

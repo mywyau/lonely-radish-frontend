@@ -49,6 +49,10 @@ const sections = [
         answer: 'Everyone can have up to five active matches. A new match, a plan in progress and a confirmed date each use one space. A waiting match does not count until you activate it. Paying never changes your visibility, ranking or ability to meet and make a plan.',
       },
       {
+        question: 'Can I browse without appearing in discovery?',
+        answer: 'Yes. Turn on “Only people I choose” in your account controls. You can browse normally, but your profile appears only after you show interest in someone. Existing interests, matches and plans keep working. This privacy option is available to everyone and is separate from pausing your profile.',
+      },
+      {
         question: 'What is a manual match?',
         answer: 'This simply means you accepted an interest from someone you had not already chosen. A mutual match happens automatically when you both show interest independently.',
       },
