@@ -102,7 +102,7 @@ export default defineEventHandler(async (event) => {
           ? 5
           : 1;
     const count = await client.query(
-      "select count(*)::int as count from business_offers where business_id=$1",
+      "select count(*)::int as count from business_offers where business_id=$1 and approval_status<>'archived'",
       [business.id],
     );
     if (count.rows[0].count >= limit) {
@@ -136,8 +136,8 @@ export default defineEventHandler(async (event) => {
     const primaryVenueId = requestedVenueIds[0] || venues.rows[0].id;
     const { rows } = await client.query(
       `insert into business_offers(business_id,venue_id,venue_scope,title,description,
-        discount_type,discount_value,terms,active,redemption_limit_total,redemption_limit_per_user)
-      values($1,$2,$3,$4,$5,$6,$7,$8,false,$9,$10)
+        discount_type,discount_value,terms,active,redemption_limit_total,redemption_limit_per_user,submitted_at)
+      values($1,$2,$3,$4,$5,$6,$7,$8,false,$9,$10,now())
       returning id,title,description,discount_type as "discountType",discount_value::float as "discountValue",
         terms,active,approval_status as "approvalStatus",venue_scope as "venueScope",
         redemption_limit_total as "redemptionLimitTotal",

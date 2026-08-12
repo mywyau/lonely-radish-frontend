@@ -74,8 +74,8 @@ export default defineEventHandler(async (event) => {
     }
     const { rows } = await client.query(
       `insert into business_venues
-      (business_id,name,category,address_line,city,postcode)
-      values($1,$2,$3,$4,$5,$6)
+      (business_id,name,category,address_line,city,postcode,submitted_at)
+      values($1,$2,$3,$4,$5,$6,now())
       returning id,name,category,address_line as "addressLine",city,postcode,status`,
       [business.id, name, category, addressLine, city, normalizedPostcode],
     );

@@ -15,6 +15,7 @@ const form = reactive({
 })
 const planLabel = computed(() => business.value?.plan === 'featured' ? 'Featured' :
   business.value?.plan === 'standard' ? 'Standard' : 'Free')
+const visibleVenues = computed(() => business.value?.venues?.filter((venue: any) => venue.status !== 'archived') || [])
 const offerLimit = computed(() => business.value?.plan === 'featured' ? 10 : business.value?.plan === 'standard' ? 5 : 1)
 const heroTitle = computed(() => business.value?.name || 'Welcome people who have already made a date plan.')
 const heroDescription = computed(() => business.value
@@ -76,7 +77,7 @@ onMounted(() => load().catch((error: any) => { errorMessage.value = error?.data?
           <article class="rounded-lg bg-[#EAF2DE] p-6 shadow-[0_10px_24px_rgba(110,139,82,0.1)]">
             <Store class="size-6 text-[#52713A]" />
             <p class="mt-4 text-xs font-bold uppercase tracking-wide text-[#52713A]">Venues</p>
-            <h2 class="mt-1 text-xl font-semibold">{{ business.venues.length }}</h2>
+            <h2 class="mt-1 text-xl font-semibold">{{ visibleVenues.length }}</h2>
             <p class="mt-2 text-sm text-[#4D2F39]">An offer can cover one location, a selection or all of them.</p>
           </article>
         </div>
@@ -87,7 +88,7 @@ onMounted(() => load().catch((error: any) => { errorMessage.value = error?.data?
             <NuxtLink to="/business/venues" class="text-sm font-semibold text-[#8F1839] hover:underline">Manage
               locations</NuxtLink>
           </div>
-          <div v-for="venue in business.venues" :key="venue.id"
+          <div v-for="venue in visibleVenues" :key="venue.id"
             class="mt-4 flex items-start gap-3 rounded-lg bg-[#FBF7F1] p-4">
             <MapPin class="mt-0.5 size-5 shrink-0 text-[#B4234A]" />
             <div>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { Building2, MapPin, Plus, ShieldCheck } from '@lucide/vue'
+import { Archive, Building2, MapPin, Pencil, Plus, RotateCcw, ShieldCheck, X } from '@lucide/vue'
+import type { BusinessVenueStatus } from '~/types/api/businessSubmissions'
 
 definePageMeta({ title: 'Business venues · Lonely Radish', middleware: 'business-only' })
 
@@ -10,7 +11,10 @@ type Venue = {
     addressLine: string
     city: string
     postcode: string
-    status: 'pending' | 'active' | 'paused'
+    status: BusinessVenueStatus
+    rejectionNote: string | null
+    revision: number
+    archivedAt: string | null
 }
 type Business = {
     id: string
@@ -25,6 +29,8 @@ const loading = ref(true)
 const saving = ref(false)
 const errorMessage = ref('')
 const successMessage = ref('')
+const editingVenueId = ref<string | null>(null)
+const lifecycleSavingId = ref('')
 const form = reactive({
     name: '',
     category: 'cafe',
@@ -33,6 +39,18 @@ const form = reactive({
     postcode: '',
 })
 const canManage = computed(() => business.value?.role === 'owner' || business.value?.role === 'manager')
+
+function resetForm() {
+    editingVenueId.value = null
+    Object.assign(form, { name: '', category: 'cafe', addressLine: '', city: '', postcode: '' })
+}
+
+function editVenue(venue: Venue) {
+    editingVenueId.value = venue.id
+    Object.assign(form, { name: venue.name, category: venue.category, addressLine: venue.addressLine,
+        city: venue.city, postcode: venue.postcode })
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })
+}
 
 async function load() {
     const result = await $fetch<{ business: Business | null }>('/api/business/me')
@@ -44,15 +62,36 @@ async function addVenue() {
     errorMessage.value = ''
     successMessage.value = ''
     try {
-        await $fetch('/api/business/venues', { method: 'POST', body: form })
-        Object.assign(form, { name: '', category: 'cafe', addressLine: '', city: '', postcode: '' })
-        successMessage.value = 'Location added and submitted for venue approval.'
+        const wasEditing = Boolean(editingVenueId.value)
+        const endpoint = editingVenueId.value ? `/api/business/venues/${editingVenueId.value}` : '/api/business/venues'
+        const result = await $fetch<{ approvalReset?: boolean }>(endpoint, {
+            method: editingVenueId.value ? 'PATCH' : 'POST', body: form,
+        })
+        resetForm()
+        successMessage.value = wasEditing
+            ? result.approvalReset ? 'Location changes saved as a draft. Resubmit it when ready.' : 'No location changes were needed.'
+            : 'Location added and submitted for venue approval.'
         await load()
     } catch (error: any) {
-        errorMessage.value = error?.data?.statusMessage || 'The location could not be added.'
+        errorMessage.value = error?.data?.statusMessage || 'The location could not be saved.'
     } finally {
         saving.value = false
     }
+}
+
+async function lifecycleAction(venue: Venue, action: 'archive' | 'resubmit') {
+    if (action === 'archive' && !window.confirm(`Archive “${venue.name}”? Offers with no other approved location will be paused.`)) return
+    lifecycleSavingId.value = venue.id
+    errorMessage.value = ''
+    successMessage.value = ''
+    try {
+        await $fetch(`/api/business/venues/${venue.id}/${action}`, { method: 'POST' })
+        if (editingVenueId.value === venue.id) resetForm()
+        successMessage.value = action === 'archive' ? 'Location archived.' : 'Location submitted for review.'
+        await load()
+    } catch (error: any) {
+        errorMessage.value = error?.data?.statusMessage || 'The location lifecycle could not be updated.'
+    } finally { lifecycleSavingId.value = '' }
 }
 
 onMounted(() => load()
@@ -74,7 +113,7 @@ onMounted(() => load()
                         class="rounded-lg bg-white p-5 shadow-[0_10px_24px_rgba(180,35,74,0.08)]">
                         <div class="flex items-start gap-3">
                             <MapPin class="mt-0.5 size-5 shrink-0 text-[#B4234A]" />
-                            <div>
+                            <div class="min-w-0 flex-1">
                                 <h2 class="text-lg font-semibold">{{ venue.name }}</h2>
                                 <p class="mt-1 text-sm leading-6 text-[#6E4D58]">{{ venue.addressLine }}, {{ venue.city
                                     }},
@@ -84,16 +123,30 @@ onMounted(() => load()
                                         class="rounded-full bg-[#F3E8DA] px-2.5 py-1 text-xs font-semibold capitalize">{{
                                         venue.category }}</span>
                                     <span class="rounded-full px-2.5 py-1 text-xs font-semibold capitalize"
-                                        :class="venue.status === 'active' ? 'bg-[#EAF2DE] text-[#52713A]' : venue.status === 'paused' ? 'bg-[#FCE3E8] text-[#8F1839]' : 'bg-[#FFF1C7] text-[#694C00]'">
+                                        :class="venue.status === 'active' ? 'bg-[#EAF2DE] text-[#52713A]' : ['paused','rejected','archived'].includes(venue.status) ? 'bg-[#FCE3E8] text-[#8F1839]' : 'bg-[#FFF1C7] text-[#694C00]'">
                                         {{ venue.status }}
                                     </span>
+                                </div>
+                                <p v-if="venue.rejectionNote" class="mt-2 text-xs font-semibold text-[#8F1839]">Review note: {{ venue.rejectionNote }}</p>
+                                <div v-if="canManage" class="mt-4 flex flex-wrap gap-2">
+                                    <button v-if="venue.status !== 'archived'" type="button"
+                                        class="rounded-lg bg-[#F3E8DA] px-3 py-2 text-xs font-semibold"
+                                        @click="editVenue(venue)"><Pencil class="mr-1 inline size-3.5" />Edit</button>
+                                    <button v-if="['draft','rejected','archived'].includes(venue.status)" type="button"
+                                        :disabled="lifecycleSavingId === venue.id || business.status !== 'active'"
+                                        class="rounded-lg bg-[#FFF1C7] px-3 py-2 text-xs font-semibold text-[#694C00] disabled:opacity-50"
+                                        @click="lifecycleAction(venue, 'resubmit')"><RotateCcw class="mr-1 inline size-3.5" />Resubmit</button>
+                                    <button v-if="venue.status !== 'archived'" type="button"
+                                        :disabled="lifecycleSavingId === venue.id"
+                                        class="rounded-lg bg-[#FCE3E8] px-3 py-2 text-xs font-semibold text-[#8F1839] disabled:opacity-50"
+                                        @click="lifecycleAction(venue, 'archive')"><Archive class="mr-1 inline size-3.5" />Archive</button>
                                 </div>
                             </div>
                         </div>
                     </article>
                 </div>
 
-                <section v-if="business.status !== 'active'"
+                <section v-if="business.status !== 'active' && !editingVenueId"
                     class="mt-6 rounded-lg bg-[#FFF1C7] p-5 text-sm text-[#694C00]">
                     <ShieldCheck class="size-5" />
                     <p class="mt-2 font-semibold">The initial business review must be completed first.</p>
@@ -105,7 +158,9 @@ onMounted(() => load()
                     @submit.prevent="addVenue">
                     <div class="flex items-center gap-2">
                         <Plus class="size-5 text-[#B4234A]" />
-                        <h2 class="text-xl font-semibold">Add another location</h2>
+                        <h2 class="text-xl font-semibold">{{ editingVenueId ? 'Edit location' : 'Add another location' }}</h2>
+                        <button v-if="editingVenueId" type="button" class="ml-auto text-sm font-semibold text-[#8F1839]"
+                            @click="resetForm"><X class="mr-1 inline size-4" />Cancel edit</button>
                     </div>
                     <p class="mt-2 text-sm text-[#6E4D58]">Once approved, this location will automatically join any offers that apply everywhere.</p>
                     <div class="mt-5 grid gap-4 sm:grid-cols-2">
@@ -144,7 +199,7 @@ onMounted(() => load()
                     </label>
                     <button type="submit" :disabled="saving"
                         class="mt-5 rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white disabled:opacity-50">
-                        {{ saving ? 'Adding location…' : 'Add location for review' }}
+                        {{ saving ? 'Saving location…' : editingVenueId ? 'Save location changes' : 'Add location for review' }}
                     </button>
                 </form>
 

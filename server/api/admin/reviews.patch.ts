@@ -30,10 +30,11 @@ export default defineEventHandler(async (event) => {
           where business_id=$1 and active=true`, [entityId])
       }
     } else if (entityType === 'venue') {
-      const status = decision === 'approved' ? 'active' : decision === 'rejected' ? 'paused' : 'pending'
+      const status = decision === 'approved' ? 'active' : decision === 'rejected' ? 'rejected' : 'pending'
       result = await client.query(`update business_venues set status=$2,reviewed_by=$3,
-        reviewed_at=case when $2='pending' then null else now() end,updated_at=now()
-        where id=$1 returning id,status,business_id as "businessId"`, [entityId,status,admin.sub])
+        reviewed_at=case when $2='pending' then null else now() end,
+        rejection_note=case when $2='rejected' then $4 else null end,updated_at=now()
+        where id=$1 and status<>'archived' returning id,status,business_id as "businessId"`, [entityId,status,admin.sub,note])
       if (status !== 'active' && result.rows[0]) {
         await client.query(`update business_offers offer set active=false,updated_at=now()
           where offer.business_id=$1 and offer.active=true and not exists(
@@ -50,7 +51,8 @@ export default defineEventHandler(async (event) => {
         reviewed_at=case when $2='pending' then null else now() end,
         rejection_note=case when $2='rejected' then $4 else null end,
         active=case when $2='approved' then active else false end,updated_at=now()
-        where id=$1 returning id,approval_status as "approvalStatus"`, [entityId,decision,admin.sub,note])
+        where id=$1 and approval_status<>'archived'
+        returning id,approval_status as "approvalStatus"`, [entityId,decision,admin.sub,note])
     }
     if (!result.rows[0]) throw createError({ statusCode: 404, statusMessage: 'Review target not found' })
     await client.query(`insert into admin_review_events(reviewer_id,entity_type,entity_id,decision,note)

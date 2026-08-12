@@ -9,7 +9,8 @@ export default defineEventHandler(async (event) => {
     o.active,o.approval_status as "approvalStatus",o.rejection_note as "rejectionNote",
     o.redemption_limit_total as "redemptionLimitTotal",
     o.redemption_limit_per_user as "redemptionLimitPerUser",
-    o.reviewed_at as "reviewedAt",o.venue_scope as "venueScope",v.name as "venueName",v.id as "venueId",
+    o.reviewed_at as "reviewedAt",o.submitted_at as "submittedAt",o.archived_at as "archivedAt",
+    o.revision,o.venue_scope as "venueScope",v.name as "venueName",v.id as "venueId",
     case when o.venue_scope='single' then json_build_array(o.venue_id)
       when o.venue_scope='selected' then coalesce((select json_agg(ov.venue_id order by ov.venue_id)
         from business_offer_venues ov where ov.offer_id=o.id),'[]'::json)

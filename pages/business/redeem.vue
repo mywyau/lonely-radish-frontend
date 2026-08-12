@@ -3,6 +3,7 @@ import { BadgeCheck, Camera, CameraOff, History, MapPin, ScanLine, ShieldCheck }
 import type QrScanner from 'qr-scanner'
 import { trackProductEvent } from '~/utils/productAnalytics'
 import type { OfferRedemptionResponse } from '~/types/api/offers'
+import type { BusinessVenueStatus } from '~/types/api/businessSubmissions'
 
 definePageMeta({ title: 'Redeem offers · Lonely Radish', middleware: 'business-only' })
 
@@ -22,7 +23,7 @@ type Venue = {
     addressLine: string
     city: string
     postcode: string
-    status: 'pending' | 'active' | 'paused'
+    status: BusinessVenueStatus
 }
 
 type Business = {

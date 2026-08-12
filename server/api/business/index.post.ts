@@ -32,8 +32,8 @@ export default defineEventHandler(async (event) => {
     const business = await client.query(`insert into businesses(name,slug,contact_email)
       values($1,$2,$3) returning id,name,slug,status,contact_email as "contactEmail"`, [businessName,slug,contactEmail])
     await client.query(`insert into business_members(business_id,user_id,role) values($1,$2,'owner')`, [business.rows[0].id,sub])
-    const venue = await client.query(`insert into business_venues(business_id,name,category,address_line,city,postcode)
-      values($1,$2,$3,$4,$5,$6) returning id,name,category,address_line as "addressLine",city,postcode,status`,
+    const venue = await client.query(`insert into business_venues(business_id,name,category,address_line,city,postcode,submitted_at)
+      values($1,$2,$3,$4,$5,$6,now()) returning id,name,category,address_line as "addressLine",city,postcode,status`,
     [business.rows[0].id,venueName,category,addressLine,city,postcode.toUpperCase()])
     await client.query('commit')
     return { business: business.rows[0], venue: venue.rows[0] }

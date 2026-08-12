@@ -1,25 +1,29 @@
 <script setup lang="ts">
-import { BadgePercent, MapPin, Plus, Store } from '@lucide/vue'
+import { Archive, BadgePercent, MapPin, Pencil, Plus, RotateCcw, Store, X } from '@lucide/vue'
+import type { BusinessOfferApprovalStatus, BusinessVenueStatus } from '~/types/api/businessSubmissions'
 
 definePageMeta({ title: 'Business offers · Lonely Radish', middleware: 'business-only' })
 
 type VenueScope = 'single' | 'selected' | 'all'
-type Venue = { id: string; name: string; city: string; postcode: string; status: 'pending' | 'active' | 'paused' }
-type Business = { status: 'draft' | 'pending' | 'active' | 'suspended'; plan: 'standard' | 'featured' | null; venues: Venue[] }
+type Venue = { id: string; name: string; city: string; postcode: string; status: BusinessVenueStatus }
+type Business = { status: 'draft' | 'pending' | 'active' | 'suspended'; role: 'owner' | 'manager' | 'staff'; plan: 'standard' | 'featured' | null; venues: Venue[] }
 type Offer = {
     id: string
     title: string
     description: string | null
+    terms: string | null
     discountType: 'percentage' | 'fixed'
     discountValue: number
     active: boolean
-    approvalStatus: 'pending' | 'approved' | 'rejected'
+    approvalStatus: BusinessOfferApprovalStatus
     rejectionNote: string | null
     venueScope: VenueScope
     venueIds: string[]
     venueCount: number
     redemptionLimitTotal: number | null
     redemptionLimitPerUser: number
+    revision: number
+    archivedAt: string | null
 }
 
 const business = ref<Business | null>(null)
@@ -28,6 +32,8 @@ const loading = ref(true)
 const saving = ref(false)
 const errorMessage = ref('')
 const successMessage = ref('')
+const editingOfferId = ref<string | null>(null)
+const lifecycleSavingId = ref('')
 const venueSearch = ref('')
 const form = reactive({
     venueScope: 'single' as VenueScope,
@@ -43,21 +49,24 @@ const form = reactive({
 })
 
 const offerLimit = computed(() => business.value?.plan === 'featured' ? 10 : business.value?.plan === 'standard' ? 5 : 1)
+const availableVenues = computed(() => business.value?.venues.filter(venue => venue.status !== 'archived') || [])
+const countedOffers = computed(() => offers.value.filter(offer => offer.approvalStatus !== 'archived').length)
+const canManage = computed(() => business.value?.role === 'owner' || business.value?.role === 'manager')
 const filteredVenues = computed(() => {
     const query = venueSearch.value.trim().toLowerCase()
-    if (!query) return business.value?.venues || []
-    return business.value?.venues.filter(venue =>
+    if (!query) return availableVenues.value
+    return availableVenues.value.filter(venue =>
         `${venue.name} ${venue.city} ${venue.postcode}`.toLowerCase().includes(query)) || []
 })
 const locationSelectionValid = computed(() => {
-    if (form.venueScope === 'all') return Boolean(business.value?.venues.length)
+    if (form.venueScope === 'all') return Boolean(availableVenues.value.length)
     if (form.venueScope === 'selected') return form.venueIds.length > 0
     return Boolean(form.venueId)
 })
 const submitLabel = computed(() => {
     if (saving.value) return 'Creating…'
-    if (offers.value.length >= offerLimit.value) return 'Offer limit reached'
-    return 'Create campaign'
+    if (!editingOfferId.value && countedOffers.value >= offerLimit.value) return 'Offer limit reached'
+    return editingOfferId.value ? 'Save changes' : 'Create campaign'
 })
 
 function locationLabel(offer: Offer) {
@@ -72,9 +81,10 @@ function canPublish(offer: Offer) {
 }
 
 function resetForm() {
+    editingOfferId.value = null
     Object.assign(form, {
         venueScope: 'single',
-        venueId: business.value?.venues[0]?.id || '',
+        venueId: availableVenues.value[0]?.id || '',
         venueIds: [],
         title: '',
         description: '',
@@ -86,6 +96,23 @@ function resetForm() {
     })
 }
 
+function editOffer(offer: Offer) {
+    editingOfferId.value = offer.id
+    Object.assign(form, {
+        venueScope: offer.venueScope,
+        venueId: offer.venueScope === 'single' ? offer.venueIds[0] || '' : '',
+        venueIds: offer.venueScope === 'selected' ? [...offer.venueIds] : [],
+        title: offer.title,
+        description: offer.description || '',
+        discountType: offer.discountType,
+        discountValue: offer.discountValue,
+        terms: offer.terms || '',
+        redemptionLimitTotal: offer.redemptionLimitTotal,
+        redemptionLimitPerUser: offer.redemptionLimitPerUser,
+    })
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })
+}
+
 async function load() {
     const [me, result] = await Promise.all([
         $fetch<{ business: Business | null }>('/api/business/me'),
@@ -93,7 +120,7 @@ async function load() {
     ])
     business.value = me.business
     offers.value = result.offers
-    form.venueId ||= business.value?.venues[0]?.id || ''
+    form.venueId ||= availableVenues.value[0]?.id || ''
 }
 
 async function addOffer() {
@@ -101,17 +128,37 @@ async function addOffer() {
     errorMessage.value = ''
     successMessage.value = ''
     try {
-        await $fetch('/api/business/offers', { method: 'POST', body: { ...form, venueIds: [...form.venueIds] } })
-        successMessage.value = form.venueScope === 'all'
+        const wasEditing = Boolean(editingOfferId.value)
+        const endpoint = editingOfferId.value ? `/api/business/offers/${editingOfferId.value}` : '/api/business/offers'
+        const result = await $fetch<{ approvalReset?: boolean }>(endpoint, { method: editingOfferId.value ? 'PATCH' : 'POST',
+            body: { ...form, venueIds: [...form.venueIds] } })
+        successMessage.value = wasEditing
+            ? result.approvalReset ? 'Material changes saved as a draft. Resubmit the offer when ready.' : 'Offer settings saved without changing its approval.'
+            : form.venueScope === 'all'
             ? 'Offer created for every current and future approved location.'
             : 'Offer created and sent through the normal review process.'
         resetForm()
         await load()
     } catch (error: any) {
-        errorMessage.value = error?.data?.statusMessage || 'The offer could not be created.'
+        errorMessage.value = error?.data?.statusMessage || 'The offer could not be saved.'
     } finally {
         saving.value = false
     }
+}
+
+async function lifecycleAction(offer: Offer, action: 'archive' | 'resubmit') {
+    if (action === 'archive' && !window.confirm(`Archive “${offer.title}”? It will stop being public immediately.`)) return
+    lifecycleSavingId.value = offer.id
+    errorMessage.value = ''
+    successMessage.value = ''
+    try {
+        await $fetch(`/api/business/offers/${offer.id}/${action}`, { method: 'POST' })
+        if (editingOfferId.value === offer.id) resetForm()
+        successMessage.value = action === 'archive' ? 'Offer archived.' : 'Offer submitted for review.'
+        await load()
+    } catch (error: any) {
+        errorMessage.value = error?.data?.statusMessage || 'The offer lifecycle could not be updated.'
+    } finally { lifecycleSavingId.value = '' }
 }
 
 async function toggleOffer(offer: Offer) {
@@ -160,29 +207,43 @@ onMounted(() => load()
                                 </p>
                                 <p v-if="offer.description" class="mt-2 text-sm">{{ offer.description }}</p>
                                 <span class="mt-3 inline-flex rounded-full px-3 py-1 text-xs font-bold capitalize"
-                                    :class="offer.approvalStatus === 'approved' ? 'bg-[#EAF2DE] text-[#52713A]' : offer.approvalStatus === 'rejected' ? 'bg-[#FCE3E8] text-[#8F1839]' : 'bg-[#FFF1C7] text-[#694C00]'">
-                                    {{ offer.approvalStatus }} review
+                                    :class="offer.approvalStatus === 'approved' ? 'bg-[#EAF2DE] text-[#52713A]' : ['rejected','archived'].includes(offer.approvalStatus) ? 'bg-[#FCE3E8] text-[#8F1839]' : 'bg-[#FFF1C7] text-[#694C00]'">
+                                    {{ offer.approvalStatus }}
                                 </span>
                                 <p v-if="offer.rejectionNote" class="mt-2 text-xs text-[#8F1839]">Review note: {{
                                     offer.rejectionNote }}</p>
                                 <p class="mt-2 text-xs text-[#6E4D58]">Limit: {{ offer.redemptionLimitTotal || 'Unlimited' }} total · {{ offer.redemptionLimitPerUser }} per customer</p>
                             </div>
-                            <button type="button" :disabled="!offer.active && !canPublish(offer)"
-                                :title="!offer.active && !canPublish(offer) ? 'Business, offer and venue approval are required before publishing' : undefined"
-                                class="rounded-lg px-4 py-2 text-sm font-semibold hover:brightness-90 disabled:cursor-not-allowed disabled:opacity-50"
-                                :class="offer.active ? 'bg-[#EAF2DE] text-[#52713A]' : 'bg-[#F3E8DA] text-[#8F1839]'"
-                                @click="toggleOffer(offer)">
-                                {{ offer.active ? 'Active · Pause' : 'Inactive · Activate' }}
-                            </button>
+                            <div v-if="canManage" class="flex flex-wrap justify-end gap-2">
+                                <button v-if="offer.approvalStatus !== 'archived'" type="button"
+                                    class="rounded-lg bg-[#F3E8DA] px-3 py-2 text-sm font-semibold text-[#4D2F39]"
+                                    @click="editOffer(offer)"><Pencil class="mr-1 inline size-4" />Edit</button>
+                                <button v-if="['draft','rejected','archived'].includes(offer.approvalStatus)" type="button"
+                                    :disabled="lifecycleSavingId === offer.id"
+                                    class="rounded-lg bg-[#FFF1C7] px-3 py-2 text-sm font-semibold text-[#694C00] disabled:opacity-50"
+                                    @click="lifecycleAction(offer, 'resubmit')"><RotateCcw class="mr-1 inline size-4" />Resubmit</button>
+                                <button v-if="offer.approvalStatus === 'approved' || offer.active" type="button"
+                                    :disabled="!offer.active && !canPublish(offer)"
+                                    :title="!offer.active && !canPublish(offer) ? 'Business, offer and venue approval are required before publishing' : undefined"
+                                    class="rounded-lg px-3 py-2 text-sm font-semibold hover:brightness-90 disabled:cursor-not-allowed disabled:opacity-50"
+                                    :class="offer.active ? 'bg-[#EAF2DE] text-[#52713A]' : 'bg-[#F3E8DA] text-[#8F1839]'"
+                                    @click="toggleOffer(offer)">{{ offer.active ? 'Active · Pause' : 'Activate' }}</button>
+                                <button v-if="offer.approvalStatus !== 'archived'" type="button"
+                                    :disabled="lifecycleSavingId === offer.id"
+                                    class="rounded-lg bg-[#FCE3E8] px-3 py-2 text-sm font-semibold text-[#8F1839] disabled:opacity-50"
+                                    @click="lifecycleAction(offer, 'archive')"><Archive class="mr-1 inline size-4" />Archive</button>
+                            </div>
                         </div>
                     </article>
                 </div>
 
-                <form class="mt-6 rounded-lg bg-white p-6 shadow-[0_12px_28px_rgba(180,35,74,0.08)]"
+                <form v-if="canManage" class="mt-6 rounded-lg bg-white p-6 shadow-[0_12px_28px_rgba(180,35,74,0.08)]"
                     @submit.prevent="addOffer">
                     <div class="flex items-center gap-2">
                         <Plus class="size-5 text-[#B4234A]" />
-                        <h2 class="text-xl font-semibold">Create an offer</h2>
+                        <h2 class="text-xl font-semibold">{{ editingOfferId ? 'Edit offer' : 'Create an offer' }}</h2>
+                        <button v-if="editingOfferId" type="button" class="ml-auto text-sm font-semibold text-[#8F1839]"
+                            @click="resetForm"><X class="mr-1 inline size-4" />Cancel edit</button>
                     </div>
                     <div class="mt-5 grid gap-4 sm:grid-cols-2">
                         <label class="text-sm font-semibold">Offer title
@@ -288,11 +349,11 @@ onMounted(() => load()
                         </label>
                         <p class="rounded-lg bg-[#EAF2DE] p-4 text-sm sm:col-span-2"><strong class="block">Approval before publication</strong>The offer is submitted inactive. After the business, participating venue and offer are approved, activate it above.</p>
                     </div>
-                    <button type="submit" :disabled="saving || offers.length >= offerLimit || !locationSelectionValid"
+                    <button type="submit" :disabled="saving || (!editingOfferId && countedOffers >= offerLimit) || !locationSelectionValid"
                         class="mt-5 rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white disabled:opacity-50">
                         {{ submitLabel }}
                     </button>
-                    <NuxtLink v-if="offers.length >= offerLimit && offerLimit < 10" to="/business/pricing"
+                    <NuxtLink v-if="countedOffers >= offerLimit && offerLimit < 10" to="/business/pricing"
                         class="ml-3 text-sm font-semibold text-[#8F1839] hover:underline">Compare plans</NuxtLink>
                 </form>
             </template>

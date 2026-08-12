@@ -11,13 +11,13 @@ const ageFilters = new Set(['all', 'day', 'week', 'month'])
 function databaseStatus(entityType: string, status: string) {
   if (status === 'all') return null
   if (entityType === 'business') return status === 'approved' ? 'active' : status === 'rejected' ? 'suspended' : 'pending'
-  if (entityType === 'venue') return status === 'approved' ? 'active' : status === 'rejected' ? 'paused' : 'pending'
+  if (entityType === 'venue') return status === 'approved' ? 'active' : status === 'rejected' ? 'rejected' : 'pending'
   return status
 }
 
 function normalizedStatus(entityType: string, status: string) {
   if (entityType === 'business') return status === 'active' ? 'approved' : status === 'suspended' ? 'rejected' : 'pending'
-  if (entityType === 'venue') return status === 'active' ? 'approved' : status === 'paused' ? 'rejected' : 'pending'
+  if (entityType === 'venue') return status === 'active' ? 'approved' : status === 'rejected' ? 'rejected' : 'pending'
   return status
 }
 
@@ -64,8 +64,8 @@ export default defineEventHandler(async (event) => {
     ;({ rows } = await db.query(`select b.id,b.name,b.slug,b.contact_email as "contactEmail",
       b.status as "databaseStatus",b.created_at as "createdAt",b.reviewed_at as "reviewedAt",
       reviewer.email as "reviewedBy",
-      (select count(*)::int from business_venues v where v.business_id=b.id) as "venueCount",
-      (select count(*)::int from business_offers o where o.business_id=b.id) as "offerCount",
+      (select count(*)::int from business_venues v where v.business_id=b.id and v.status<>'archived') as "venueCount",
+      (select count(*)::int from business_offers o where o.business_id=b.id and o.approval_status<>'archived') as "offerCount",
       latest.note as "latestReviewNote"
       from businesses b
       left join users reviewer on reviewer.id=b.reviewed_by
@@ -88,7 +88,8 @@ export default defineEventHandler(async (event) => {
       left join users reviewer on reviewer.id=v.reviewed_by
       left join lateral (select e.note from admin_review_events e
         where e.entity_type='venue' and e.entity_id=v.id order by e.created_at desc limit 1) latest on true
-      where ($1::text is null or concat_ws(' ',v.name,v.address_line,v.city,v.postcode,b.name,b.contact_email) ilike '%'||$1||'%')
+      where v.status not in ('draft','archived')
+        and ($1::text is null or concat_ws(' ',v.name,v.address_line,v.city,v.postcode,b.name,b.contact_email) ilike '%'||$1||'%')
         and ($2::text is null or v.status=$2)
         and ($3::timestamptz is null or v.created_at >= $3)
         and ($4::timestamptz is null or (v.created_at,v.id::text)<($4,$5::text))
@@ -110,7 +111,8 @@ export default defineEventHandler(async (event) => {
       left join users reviewer on reviewer.id=o.reviewed_by
       left join lateral (select e.note from admin_review_events e
         where e.entity_type='offer' and e.entity_id=o.id order by e.created_at desc limit 1) latest on true
-      where ($1::text is null or concat_ws(' ',o.title,o.description,o.terms,b.name,b.contact_email,v.name,v.city,v.postcode) ilike '%'||$1||'%')
+      where o.approval_status not in ('draft','archived')
+        and ($1::text is null or concat_ws(' ',o.title,o.description,o.terms,b.name,b.contact_email,v.name,v.city,v.postcode) ilike '%'||$1||'%')
         and ($2::text is null or o.approval_status=$2)
         and ($3::timestamptz is null or o.created_at >= $3)
         and ($4::timestamptz is null or (o.created_at,o.id::text)<($4,$5::text))
