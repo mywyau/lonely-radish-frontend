@@ -3,6 +3,7 @@ import { withDatabaseClient } from '~/server/repositories/db'
 import { listNotifications } from '~/server/repositories/notifications'
 import { requireUser } from '~/server/utils/requireUser'
 import { signedPhotoUrls } from '~/server/utils/supabaseStorage'
+import { MEMBER_ACTIVE_MATCH_LIMIT } from '~/server/utils/memberLimits'
 
 export default defineEventHandler(async (event) => {
   setHeader(event, 'Cache-Control', 'private, no-store')
@@ -27,9 +28,7 @@ export default defineEventHandler(async (event) => {
         as "manualMatchCount"
     from member_matches
   ), settings as (
-    select case when exists(select 1 from entitlements e where e.user_id=$1
-      and e.plan in ('monthly','quarterly','yearly')
-      and e.subscription_status in ('active','trialing','past_due')) then 5 else 3 end as "activeMatchLimit",
+    select ${MEMBER_ACTIVE_MATCH_LIMIT}::int as "activeMatchLimit",
       coalesce((select pending_count from interest_inbox_state where user_id=$1),0)::int as "interestReceivedCount"
   ), prepared as (
     select m.*,proposal.id as "proposalId",proposal.status as "proposalStatus",
@@ -114,7 +113,7 @@ export default defineEventHandler(async (event) => {
     activeMatchCount: summary?.activeMatchCount || 0,
     manualMatchCount: summary?.manualMatchCount || 0, manualMatchLimit: 1,
     interestReceivedCount: summary?.interestReceivedCount || 0,
-    activeMatchLimit: summary?.activeMatchLimit || 3,
+    activeMatchLimit: summary?.activeMatchLimit || MEMBER_ACTIVE_MATCH_LIMIT,
     ...(notificationPage ? {
       notifications: notificationPage.notifications,
       unreadNotificationCount: notificationPage.unreadCount,

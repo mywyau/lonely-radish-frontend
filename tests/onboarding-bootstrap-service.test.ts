@@ -16,7 +16,7 @@ describe('onboarding bootstrap service', () => {
       {
         completedAt: '2026-08-12T08:00:00.000Z', profileUserId: 'member-1',
         profileComplete: true, racialIdentityComplete: true, activityCount: 2, photoCount: 1,
-        locationComplete: true, preferencesComplete: true, datingComplete: true, paidAccess: true,
+        locationComplete: true, preferencesComplete: true, datingComplete: true,
         slug: 'alex-123', displayName: 'Alex', genderIdentity: 'non_binary', sexualOrientation: 'bisexual',
         raceEthnicity: 'Mixed or multiple backgrounds', raceEthnicitySelfDescription: null,
         dateOfBirth: '1992-04-03', pronouns: 'they/them', bio: 'Hello', heightCm: 175,
@@ -52,7 +52,7 @@ describe('onboarding bootstrap service', () => {
         completedAt: null, profileUserId: null, profileComplete: false,
         racialIdentityComplete: false, activityCount: 0, photoCount: 0,
         locationComplete: false, preferencesComplete: false, datingComplete: false,
-        paidAccess: false, postcodeArea: null, locationLabel: null,
+        postcodeArea: null, locationLabel: null,
       },
     ], [], []])
 
@@ -60,7 +60,7 @@ describe('onboarding bootstrap service', () => {
 
     expect(result.status).toMatchObject({ complete: false, nextStep: 1 })
     expect(result.profile).toBeNull()
-    expect(result.activities).toEqual({ selected: [], selectionLimit: 5 })
+    expect(result.activities).toEqual({ selected: [], selectionLimit: 10 })
     expect(result.general).toEqual({ distance: 10, minimumAge: 18, maximumAge: 80, timing: [], publicOnly: true })
     expect(result.dating).toEqual({ genders: [], orientations: [], noOrientationPreference: true,
       openToEveryone: true, raceEthnicities: [], noRaceEthnicityPreference: true })

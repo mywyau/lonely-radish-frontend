@@ -1,6 +1,6 @@
 type Environment = Record<string, string | undefined>
 
-export const latestRequiredMigration = '20260912_add_business_submission_lifecycle.sql'
+export const latestRequiredMigration = '20260913_remove_consumer_limit_paywalls.sql'
 
 const placeholderPrefixes = [
   'your-',

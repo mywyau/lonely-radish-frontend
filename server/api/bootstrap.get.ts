@@ -1,6 +1,7 @@
 import { setHeader } from 'h3'
 import { db } from '~/server/repositories/db'
 import { requireUser } from '~/server/utils/requireUser'
+import { MEMBER_ACTIVE_MATCH_LIMIT } from '~/server/utils/memberLimits'
 
 export default defineEventHandler(async (event) => {
   setHeader(event, 'Cache-Control', 'private, no-store')
@@ -13,8 +14,7 @@ export default defineEventHandler(async (event) => {
       +(select count(*) from matches m where m.user_two_id=u.id and m.status in ('active','queued')))::int as "matchCount",
     (select count(*)::int from notifications n where n.recipient_id=u.id and n.read_at is null)
       as "unreadNotificationCount",
-    case when e.plan in ('monthly','quarterly','yearly')
-      and e.subscription_status in ('active','trialing','past_due') then 5 else 3 end as "activeMatchLimit",
+    ${MEMBER_ACTIVE_MATCH_LIMIT}::int as "activeMatchLimit",
     (u.onboarding_completed_at is not null
       and nullif(trim(u.first_name),'') is not null and nullif(trim(u.last_name),'') is not null
       and exists(select 1 from profiles p where p.user_id=u.id and p.gender_identity is not null
@@ -47,7 +47,7 @@ export default defineEventHandler(async (event) => {
     onboardingComplete: row.onboardingComplete === true,
     matchCount: Number(row.matchCount || 0),
     unreadNotificationCount: Number(row.unreadNotificationCount || 0),
-    activeMatchLimit: Number(row.activeMatchLimit || 3),
+    activeMatchLimit: Number(row.activeMatchLimit || MEMBER_ACTIVE_MATCH_LIMIT),
     refreshedAt: new Date().toISOString(),
   }
 })

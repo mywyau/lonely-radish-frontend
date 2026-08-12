@@ -63,7 +63,7 @@ describe('match momentum', () => {
     const page = read('pages/interests/received.vue')
     expect(page).toContain('You can still view profiles, pass and show interest in other people.')
     expect(page).toContain('A maximum of {{ interestLimit }} at a time')
-    expect(page).toContain('Free accounts have room for 3 active matches; paid accounts have room for 5')
+    expect(page).toContain('Everyone has room for 5 active matches')
     expect(page).toContain('declineInterest(person)')
     expect(read('server/api/interests/[id].delete.ts')).toContain('declined_at=now()')
   })

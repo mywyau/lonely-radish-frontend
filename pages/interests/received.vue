@@ -15,7 +15,7 @@ const pending = ref<ReceivedInterest | null>(null)
 const accepting = ref(false)
 const declining = ref<string | null>(null)
 const activeMatchCount = ref(0)
-const activeMatchLimit = ref(3)
+const activeMatchLimit = ref(5)
 const pendingInterestCount = ref(0)
 const interestLimit = ref(5)
 const hasMore = ref(false)
@@ -99,7 +99,7 @@ async function declineInterest(person: ReceivedInterest) {
       <h2 id="manual-match-rules" class="font-semibold">A maximum of {{ interestLimit }} at a time</h2>
       <p class="mt-1">When {{ interestLimit }} people are waiting, your profile pauses incoming interest while you consider them. Passing is final and does not reveal a replacement straight away.</p>
       <p class="mt-2">After you accept someone, either start making a plan or close the match before accepting another. Someone you choose yourself can still become a direct match when the interest is mutual.</p>
-      <p class="mt-2 text-xs text-[#6E4D58]">If either match list is full, the new match will wait until you both have room. Free accounts have room for 3 active matches; paid accounts have room for 5.</p>
+      <p class="mt-2 text-xs text-[#6E4D58]">If either match list is full, the new match will wait until you both have room. Everyone has room for 5 active matches.</p>
     </section> -->
     <div v-if="pendingInterestCount" class="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[#E8D8C4] bg-white p-4 text-sm">
       <p><strong>{{ Math.min(pendingInterestCount, interestLimit) }} of {{ interestLimit }}</strong> current interests</p>

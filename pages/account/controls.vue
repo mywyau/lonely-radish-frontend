@@ -14,7 +14,7 @@ const billingError = ref('')
 const loading = ref(true)
 const controlsLoadError = ref('')
 const pauseLoaded = ref(false)
-const planLabel = computed(() => entitlement.value?.plan === 'yearly' ? 'Yearly plan' : entitlement.value?.plan === 'quarterly' ? 'Three-month plan' : entitlement.value?.plan === 'monthly' ? 'Monthly plan' : 'Free plan')
+const planLabel = computed(() => entitlement.value?.plan === 'yearly' ? 'Yearly supporter membership' : entitlement.value?.plan === 'quarterly' ? 'Three-month supporter membership' : entitlement.value?.plan === 'monthly' ? 'Monthly supporter membership' : 'Free core membership')
 const isPaidPlan = computed(() => ['monthly','quarterly','yearly'].includes(entitlement.value?.plan || ''))
 
 async function updatePause(choice = pauseChoice.value) {
@@ -64,8 +64,8 @@ onMounted(async () => {
     <section class="mx-auto max-w-3xl">
       <NuxtLink to="/account/v2" class="inline-flex items-center gap-2 text-sm font-semibold text-[#8F1839] hover:underline"><ArrowLeft class="size-4" />Back to account details</NuxtLink>
       <p class="mt-7 text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">Account</p>
-      <h1 class="mt-2 text-4xl font-semibold">Your plan and privacy</h1>
-      <p class="mt-3 text-[#6E4D58]">Manage your subscription, take a break from meeting new people and review your private attendance history.</p>
+      <h1 class="mt-2 text-4xl font-semibold">Your membership and privacy</h1>
+      <p class="mt-3 text-[#6E4D58]">Manage an optional supporter membership, take a break from meeting new people and review your private attendance history.</p>
       <p v-if="loading" class="mt-8 rounded-lg bg-white p-6 text-center text-sm text-[#6E4D58]">Loading account controls…</p>
 
       <div v-else class="mt-8 space-y-5">
@@ -74,10 +74,11 @@ onMounted(async () => {
         </div>
         <section class="rounded-lg bg-[#2A1520] p-6 text-white shadow-[0_14px_32px_rgba(42,21,32,0.16)]">
           <HeartHandshake class="size-6 text-[#F7B7C4]" />
-          <div class="mt-4 flex items-center gap-2"><h2 class="text-xl font-semibold">Your subscription</h2><span class="rounded-full px-2.5 py-1 text-xs font-bold" :class="isPaidPlan ? 'bg-[#EAF2DE] text-[#4D2F39]' : 'bg-white/15 text-white'">{{ isPaidPlan ? 'Paid' : 'Free' }}</span></div>
+          <div class="mt-4 flex items-center gap-2"><h2 class="text-xl font-semibold">Your membership</h2><span class="rounded-full px-2.5 py-1 text-xs font-bold" :class="isPaidPlan ? 'bg-[#EAF2DE] text-[#4D2F39]' : 'bg-white/15 text-white'">{{ isPaidPlan ? 'Supporter' : 'Core' }}</span></div>
           <p class="mt-2 text-sm text-white/75">You are currently on the <strong class="text-white">{{ planLabel }}</strong>.</p>
-          <button v-if="isPaidPlan" type="button" class="mt-5 rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-[#8F1839] disabled:opacity-60" :disabled="openingBillingPortal" @click="managePlan">{{ openingBillingPortal ? 'Opening Stripe…' : 'Manage plan' }}</button>
-          <NuxtLink v-else to="/upgrade" class="mt-5 inline-flex rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-[#8F1839]">View paid plans</NuxtLink>
+          <p class="mt-2 text-sm text-white/75">Supporting never changes who can see you, your ranking, match capacity, planning tools or safety controls.</p>
+          <button v-if="isPaidPlan" type="button" class="mt-5 rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-[#8F1839] disabled:opacity-60" :disabled="openingBillingPortal" @click="managePlan">{{ openingBillingPortal ? 'Opening Stripe…' : 'Manage support' }}</button>
+          <NuxtLink v-else to="/upgrade" class="mt-5 inline-flex rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-[#8F1839]">Support Lonely Radish</NuxtLink>
           <p v-if="billingError" class="mt-3 text-sm font-semibold text-[#F7B7C4]" role="alert">{{ billingError }}</p>
         </section>
 

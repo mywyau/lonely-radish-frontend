@@ -81,7 +81,7 @@ export function useMeStateV2() {
   const onboardingComplete = computed(() => bootstrap.value?.onboardingComplete === true)
   const matchCount = computed(() => bootstrap.value?.matchCount || 0)
   const unreadNotificationCount = computed(() => bootstrap.value?.unreadNotificationCount || 0)
-  const activeMatchLimit = computed(() => bootstrap.value?.activeMatchLimit || 3)
+  const activeMatchLimit = computed(() => bootstrap.value?.activeMatchLimit || 5)
   const isCanceling = computed(() => entitlement.value?.cancel_at_period_end === true)
   const currentPeriodEnd = computed<Date | null>(() => entitlement.value?.current_period_end ? new Date(entitlement.value.current_period_end) : null)
 

@@ -9,7 +9,7 @@ describe('account controls page', () => {
     const account = read('pages/account/v2/index.vue')
     const controls = read('pages/account/controls.vue')
     expect(account).toContain('to="/account/controls"')
-    expect(controls).toContain('Your subscription')
+    expect(controls).toContain('Your membership')
     expect(controls).toContain('Take a break')
     expect(controls).toContain('Your attendance history')
     expect(controls).toContain("middleware: 'logged-in'")

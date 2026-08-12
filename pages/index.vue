@@ -119,9 +119,9 @@ const intentionRules = [
     icon: Sparkles,
   },
   {
-    label: 'Three or five matches',
+    label: 'Five active matches',
     title: 'Keep room for a real conversation',
-    description: 'Free accounts can have 3 active matches and paid accounts can have 5. If your list is full, any new matches will wait for you.',
+    description: 'Everyone can have up to 5 active matches. If your list is full, any new matches will wait while you focus on the people already there.',
     icon: HeartHandshake,
   },
   {

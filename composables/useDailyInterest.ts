@@ -31,7 +31,7 @@ export function useDailyInterest() {
   const successMessage = useState<string | null>('daily-interest-success', () => null)
   const sending = useState<boolean>('daily-interest-sending', () => false)
   const activeMatchCount = useState<number>('active-match-count', () => 0)
-  const activeMatchLimit = useState<number>('active-match-limit', () => 3)
+  const activeMatchLimit = useState<number>('active-match-limit', () => 5)
 
   const todaysInterests = computed(() => interests.value.filter(interest => interest.date === localDateKey()))
   const todaysInterest = computed(() => todaysInterests.value[0] ?? null)
@@ -118,7 +118,7 @@ export function useDailyInterest() {
           : status === 409 && failure.data?.statusMessage?.includes('already matched')
           ? 'You have already matched with this person.'
           : status === 409 && failure.data?.statusMessage?.includes('active match limit')
-          ? `One of you has reached their active match limit. Your plan allows ${activeMatchLimit.value}.`
+          ? `One of you has reached the shared limit of ${activeMatchLimit.value} active matches.`
           : status === 409 && failure.data?.statusMessage?.includes('not accepting new interests')
           ? 'This person isn’t accepting new interests right now.'
           : status === 409 ? 'You have reached today’s limit of 5 interests.'

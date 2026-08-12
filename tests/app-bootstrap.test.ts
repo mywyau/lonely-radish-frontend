@@ -13,6 +13,8 @@ describe('authenticated application bootstrap', () => {
     expect(endpoint).toContain('as "unreadNotificationCount"')
     expect(endpoint).toContain('as "onboardingComplete"')
     expect(endpoint).toContain('as "activeMatchLimit"')
+    expect(endpoint).toContain('MEMBER_ACTIVE_MATCH_LIMIT')
+    expect(endpoint).not.toContain("then 5 else 3")
     expect(endpoint.match(/db\.query/g)).toHaveLength(1)
   })
 

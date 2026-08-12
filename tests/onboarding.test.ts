@@ -72,7 +72,7 @@ describe('first-login onboarding', () => {
     expect(page).toContain('customActivityCount(group.name)')
     expect(page).toContain('We’ll use them to help the right people find you')
     expect(page).toContain('activities: selectedActivities.value')
-    expect(page).toContain('activitySelectionLimit.value = activityData.selectionLimit || 5')
+    expect(page).toContain('activitySelectionLimit.value = activityData.selectionLimit || 10')
     expect(page).toContain('selectedActivities.length }}/{{ activitySelectionLimit')
     expect(page.indexOf('Your interests ({{ selectedActivities.length')).toBeLessThan(page.indexOf('v-for="group in activityGroups"'))
     expect(page).not.toContain('When are you usually free?')

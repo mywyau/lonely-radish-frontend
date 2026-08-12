@@ -12,7 +12,7 @@ describe("useMeStateV2 authenticated state", () => {
       user: { id: "auth0|user", email: "member@example.com", firstName: "Maya", lastName: "Lee",
         entitlement: { plan: "free", subscription_status: "active", cancel_at_period_end: false } },
       accountType: "personal", sessionMode: "personal", hasBusiness: false, isAdmin: false,
-      onboardingComplete: true, matchCount: 2, unreadNotificationCount: 3, activeMatchLimit: 3,
+      onboardingComplete: true, matchCount: 2, unreadNotificationCount: 3, activeMatchLimit: 5,
       refreshedAt: new Date().toISOString(),
     }));
     const { state, authReady, isLoggedIn, isLoggedOut, user, entitlement, matchCount,

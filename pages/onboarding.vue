@@ -52,7 +52,7 @@ type SelectedActivity = OnboardingSelectedActivity
 const selectedActivities = ref<SelectedActivity[]>([])
 const openActivityGroups = ref<Set<string>>(new Set([activityGroups[0].name]))
 const customActivityInputs = reactive<Record<string, string>>(Object.fromEntries(activityGroups.map(group => [group.name, ''])))
-const activitySelectionLimit = ref(5)
+const activitySelectionLimit = ref(10)
 const activityLimitReached = computed(() => selectedActivities.value.length >= activitySelectionLimit.value)
 const preferences = reactive({ distance: 10, minimumAge: 24, maximumAge: 40, timing: [] as string[], publicOnly: true,
   genders: [] as string[], openToEveryone: false, orientations: [] as string[], noOrientationPreference: false,
@@ -182,7 +182,7 @@ async function load() {
   selectedActivities.value = activityData.selected
   const selectedGroups = selectedActivities.value.map(activity => activity.category)
   openActivityGroups.value = new Set(selectedGroups.length ? selectedGroups : [activityGroups[0].name])
-  activitySelectionLimit.value = activityData.selectionLimit || 5
+  activitySelectionLimit.value = activityData.selectionLimit || 10
   Object.assign(preferences, general, dating)
   Object.assign(onboardingLocation, savedLocation)
   preferences.publicOnly = schedule.publicOnly ?? preferences.publicOnly

@@ -2,17 +2,16 @@ import { createError, readBody } from 'h3'
 import { db } from '~/server/repositories/db'
 import { requireUser } from '~/server/utils/requireUser'
 import { badRequest, objectBody, text } from '~/server/utils/productValidation'
-import { getUserEntitlement } from '~/server/utils/getEntitlement'
-import { hasPaidAccess } from '~/utils/paidAccess'
+import { MEMBER_ACTIVITY_SELECTION_LIMIT } from '~/server/utils/memberLimits'
 
 const categories = new Set(['Culture','Food and drink','Outdoors','Sports','Gaming','Learning','Wellness','Nightlife','Explore','Community'])
 
 export default defineEventHandler(async (event) => {
   const { sub } = await requireUser(event)
   const body = objectBody(await readBody(event))
-  const selectionLimit = hasPaidAccess(await getUserEntitlement(sub)) ? 10 : 5
+  const selectionLimit = MEMBER_ACTIVITY_SELECTION_LIMIT
   if (!Array.isArray(body.activities) || body.activities.length > selectionLimit) {
-    badRequest(`Your plan allows up to ${selectionLimit} activity interests`)
+    badRequest(`Choose up to ${selectionLimit} activity interests`)
   }
   const requested = body.activities.map((value) => {
     if (typeof value === 'string') return { name: text(value, 'Activity', 100, true)!, category: null }

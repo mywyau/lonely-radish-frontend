@@ -46,7 +46,7 @@ const sections = [
       },
       {
         question: 'How do active match limits work?',
-        answer: 'Free accounts can have up to three active matches and paid accounts can have up to five. A new match, a plan in progress and a confirmed date each use one space. A waiting match does not count until you activate it.',
+        answer: 'Everyone can have up to five active matches. A new match, a plan in progress and a confirmed date each use one space. A waiting match does not count until you activate it. Paying never changes your visibility, ranking or ability to meet and make a plan.',
       },
       {
         question: 'What is a manual match?',

@@ -20,7 +20,7 @@ type SelectedActivity = { name: string; category: string; custom: boolean }
 const selected = ref<SelectedActivity[]>([])
 const customInputs = reactive<Record<string, string>>(Object.fromEntries(groups.map(group => [group.name, ''])))
 const saved = ref(false)
-const selectionLimit = ref(5)
+const selectionLimit = ref(10)
 const customActivityLimit = 100
 const limitReached = computed(() => selected.value.length >= selectionLimit.value)
 const openGroups = ref<Set<string>>(new Set())
@@ -69,8 +69,6 @@ onMounted(async () => {
 
       <form class="mt-5 space-y-5" @submit.prevent="save">
         <section v-if="selected.length" class="rounded-lg bg-[#FCE3E8] p-5"><h2 class="font-semibold">Your interests ({{ selected.length }}/{{ selectionLimit }})</h2><p v-if="limitReached" class="mt-1 text-sm font-semibold text-[#8F1839]">You have selected the maximum of {{ selectionLimit }} interests.</p><div class="mt-3 flex flex-wrap gap-2"><button v-for="activity in selected" :key="activity.name" type="button" class="rounded-full bg-white px-3 py-2 text-sm font-semibold text-[#8F1839]" :aria-label="`Remove ${activity.name}`" @click="toggle(activity.name, activity.category, activity.custom)">{{ activity.name }} ×</button></div></section>
-
-        <p v-if="selectionLimit === 5" class="text-sm text-[#6E4D58]"><NuxtLink to="/upgrade" class="font-semibold text-[#8F1839] hover:underline">Paid plans</NuxtLink> allow up to 10 activity interests.</p>
 
         <section v-for="group in groups" :key="group.name" class="overflow-hidden rounded-lg bg-white shadow-[0_10px_24px_rgba(180,35,74,0.08)]">
           <h2>

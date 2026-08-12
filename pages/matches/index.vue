@@ -20,7 +20,7 @@ const errorMessage = ref('')
 const updatesError = ref('')
 const matches = ref<MatchCard[]>([])
 const totalMatches = ref(0)
-const activeMatchLimit = ref(3)
+const activeMatchLimit = ref(5)
 const activeMatchCount = ref(0)
 const manualMatchLimit = ref(1)
 const manualMatchCount = ref(0)
@@ -315,7 +315,7 @@ onMounted(async () => {
       <div v-if="showSummaryCounts" class="mt-4 grid gap-3 text-xs leading-5 sm:grid-cols-2">
         <section class="rounded-lg bg-white/70 p-4">
           <h2 class="font-bold text-[#4D2F39]">Room for {{ activeMatchLimit }} active matches</h2>
-          <p class="mt-1 text-[#6E4D58]">New matches, plans in progress and confirmed dates all count. Waiting matches do not. <span v-if="activeMatchLimit === 3"><NuxtLink to="/upgrade" class="font-semibold text-[#8F1839] hover:underline"> Paid accounts have room for 5.</NuxtLink></span></p>
+          <p class="mt-1 text-[#6E4D58]">New matches, plans in progress and confirmed dates all count. Waiting matches do not. The same limit applies to everyone so the focus stays on making a real plan.</p>
         </section>
         <section class="rounded-lg bg-white/70 p-4">
           <h2 class="font-bold text-[#4D2F39]">Accepted interests waiting on you: {{ manualMatchCount }}/{{ manualMatchLimit }}</h2>

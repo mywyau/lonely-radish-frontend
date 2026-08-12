@@ -141,7 +141,7 @@ onBeforeUnmount(() => {
             class="w-full flex items-center rounded-lg px-3 py-2 text-sm font-semibold hover:bg-[#F3E8DA] transition"
             @click="closeMenu">
 
-            <span class="text-[#B4234A]">Upgrade</span>
+            <span class="text-[#B4234A]">Support us</span>
           </NuxtLink>
           <div v-if="isLoggedIn" class="my-2 h-px bg-[#E8D8C4]" />
           <button v-if="isLoggedIn" type="button" class="w-full rounded-lg px-3 py-2 text-left text-sm font-semibold text-[#8F1839] hover:bg-[#FCE3E8]" @click="handleLogout">Log out</button>

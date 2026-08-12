@@ -47,19 +47,19 @@ const isSubscribed = computed(() =>
           </p>
 
           <p class="text-sm text-[#6E4D58]">
-            If you’d like to try again, please choose a plan below.
+            If you would still like to support Lonely Radish, choose an option below. All core dating features remain available either way.
           </p>
 
           <div class="space-y-3 pt-4">
             <p class="text-sm text-[#6E4D58]">
-              Choose a plan
+              Choose a support option
             </p>
 
             <button class="block w-full rounded-lg bg-[#FCE3E8] px-3 py-3 font-medium transition shadow-sm"
               :class="isSubscribed
                 ? 'opacity-60 cursor-not-allowed'
                 : 'hover:bg-[#F7D4DC] active:scale-[0.98]'" :disabled="isSubscribed" @click="upgrade('monthly')">
-              <span class="block">Monthly plan · £{{ monthlyPrice }}</span>
+              <span class="block">Monthly support · £{{ monthlyPrice }}</span>
               <span class="mt-0.5 block text-xs text-[#6E4D58]">Flexible month-to-month billing</span>
             </button>
 
@@ -67,20 +67,20 @@ const isSubscribed = computed(() =>
               :class="isSubscribed
                 ? 'opacity-60 cursor-not-allowed'
                 : 'hover:bg-[#E8D8C4] active:scale-[0.98]'" :disabled="isSubscribed" @click="upgrade('quarterly')">
-              <span class="block">Three-month plan · £{{ quarterlyPrice }}</span>
+              <span class="block">Three-month support · £{{ quarterlyPrice }}</span>
               <span class="mt-0.5 block text-xs text-[#6E4D58]">≈ £{{ quarterlyMonthlyEquivalent }}/mo · Save £{{ quarterlySavings }}</span>
             </button>
 
             <button class="block w-full rounded-lg bg-[#B4234A] px-3 py-3 font-medium text-white transition shadow-[0_12px_26px_rgba(180,35,74,0.18)]" :class="isSubscribed
               ? 'opacity-60 cursor-not-allowed'
               : 'hover:bg-[#8F1839] active:scale-[0.98]'" :disabled="isSubscribed" @click="upgrade('yearly')">
-              <span class="block">Yearly plan · £{{ yearlyPrice }}</span>
+              <span class="block">Yearly support · £{{ yearlyPrice }}</span>
               <span class="mt-0.5 block text-xs text-white/80">≈ £{{ yearlyMonthlyEquivalent }}/mo · Save £{{ yearlySavings }}</span>
             </button>
           </div>
 
           <NuxtLink to="/matches" class="block pt-4 text-sm text-[#6E4D58] hover:text-[#B4234A] hover:underline">
-            Continue without upgrading
+            Continue with all core features
           </NuxtLink>
 
           <p class="pt-4 text-sm font-bold text-[#7C5963]">

@@ -57,7 +57,7 @@ onMounted(() => {
         <template>
           <NuxtLink v-if="entitlement?.plan === 'free' || entitlement?.subscription_status !== 'active'" to="/upgrade"
             class="font-medium text-[#B4234A] transition hover:text-[#8F1839]">
-            Plus
+            Support us
           </NuxtLink>
 
           <NuxtLink to="/account/v2" class="nav-link hover:text-gray-600">
@@ -107,7 +107,7 @@ onMounted(() => {
           <NuxtLink v-if="entitlement?.plan === 'free' || entitlement?.subscription_status !== 'active'" to="/upgrade"
             class="mobile-secondary block font-medium text-[#B4234A] transition hover:text-[#8F1839]"
             @click="closeMobile">
-            Plus
+            Support us
           </NuxtLink>
 
           <NuxtLink to="/account/v2" class="mobile-secondary block" @click="closeMobile">

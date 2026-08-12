@@ -18,8 +18,8 @@ export const publicSeoByPath: Readonly<Record<string, PublicSeo>> = Object.freez
     description: 'Learn how interests, match limits, date planning, rescheduling, privacy and safety work on Lonely Radish.',
   },
   '/upgrade': {
-    title: 'Membership plans and features',
-    description: 'Compare Lonely Radish dating membership options, active match limits and features before choosing a paid plan.',
+    title: 'Support Lonely Radish',
+    description: 'Support a calmer dating app without paying for visibility, ranking, matches, planning or safety features.',
   },
   '/contact': {
     title: 'Contact Lonely Radish',

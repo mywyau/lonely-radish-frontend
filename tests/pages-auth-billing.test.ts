@@ -36,14 +36,16 @@ describe("auth and billing page contracts", () => {
     expect(cancel).toContain('const quarterlyPrice = 19.99');
     expect(cancel).toContain('const yearlyPrice = 55.99');
 
-    expect(upgrade).toContain("Want a little more room?");
-    expect(upgrade).toContain('Free and paid plan limits');
-    expect(upgrade).toContain('Up to 5 active activity interests');
-    expect(upgrade).toContain('Up to 3 active matches');
-    expect(upgrade).toContain('Up to 10 active activity interests');
+    expect(upgrade).toContain("Support a calmer dating app");
+    expect(upgrade).toContain('Included for everyone');
+    expect(upgrade).toContain('Up to 10 activity interests');
     expect(upgrade).toContain('Up to 5 active matches');
+    expect(upgrade).toContain('does not sell better visibility, priority or access to people');
+    expect(upgrade).toContain('Safety and privacy controls are never reserved for supporters');
+    expect(upgrade).not.toContain('Advanced matching options and filters');
+    expect(upgrade).not.toContain('Incognito discovery');
     expect(upgrade).toContain("upgrade('quarterly')");
-    expect(upgrade).toContain('Three-month plan');
+    expect(upgrade).toContain('Three-month support');
     expect(upgrade).toContain('Your current plan:')
     expect(upgrade).toMatch(/Current\s+plan/)
     expect(upgrade).toContain("currentPlan === 'free'")
@@ -82,9 +84,9 @@ describe("auth and billing page contracts", () => {
     expect(account).toContain("Save profile");
     const controls = readPage("account/controls.vue");
     expect(controls).toContain("const planLabel = computed")
-    expect(controls).toContain("{{ isPaidPlan ? 'Paid' : 'Free' }}")
+    expect(controls).toContain("{{ isPaidPlan ? 'Supporter' : 'Core' }}")
     expect(controls).toContain("'/api/stripe/portal'")
-    expect(controls.indexOf('Your subscription')).toBeLessThan(controls.indexOf('Take a break'))
+    expect(controls.indexOf('Your membership')).toBeLessThan(controls.indexOf('Take a break'))
     expect(account).toContain('to="/account/controls"')
     expect(account).not.toContain("useMockProfile()");
     expect(account).not.toContain("persistProfile()");
@@ -113,19 +115,19 @@ describe("auth and billing page contracts", () => {
     expect(preferences.indexOf('id="location-and-age"')).toBeLessThan(preferences.indexOf('to="/preferences/activities"'));
     expect(activityPreferences).toContain("title: 'Activity Interests · Lonely Radish'");
     expect(activityPreferences).toContain("Add your own {{ group.name.toLowerCase() }} activity");
-    expect(activityPreferences).toContain("const selectionLimit = ref(5)");
-    expect(activityPreferences).toContain("allow up to 10 activity interests");
+    expect(activityPreferences).toContain("const selectionLimit = ref(10)");
+    expect(activityPreferences).not.toContain("Paid plans");
     expect(activityPreferences).toContain("add up to 3 of your own activities inside each category");
     expect(schedulePreferences).toContain('class="mt-6 grid gap-3 md:grid-cols-2"');
     expect(activityPreferences).toContain("!limitReached.value");
     expect(activityPreferences).toContain("Save activity interests");
-    expect(activityPreferences.indexOf('Your interests ({{ selected.length }}/{{ selectionLimit }})')).toBeLessThan(activityPreferences.indexOf('allow up to 10 activity interests'));
-    expect(activityPreferences.indexOf('allow up to 10 activity interests')).toBeLessThan(activityPreferences.indexOf('v-for="group in groups"'));
+    expect(activityPreferences.indexOf('Your interests ({{ selected.length }}/{{ selectionLimit }})')).toBeLessThan(activityPreferences.indexOf('v-for="group in groups"'));
     expect(activityPreferences).toContain("name: 'Sports'");
     expect(activityPreferences).toContain('customCount(group.name)')
     expect(activityPreferences).toContain('activities: selected.value')
     const activityApi = readFileSync(resolve(process.cwd(), 'server/api/preferences/activities.put.ts'), 'utf8')
-    expect(activityApi).toContain('hasPaidAccess')
+    expect(activityApi).toContain('MEMBER_ACTIVITY_SELECTION_LIMIT')
+    expect(activityApi).not.toContain('hasPaidAccess')
     expect(activityApi).toContain('selectionLimit')
     expect(activityApi).toContain('length > selectionLimit')
     expect(activityApi).toContain('length > 3')

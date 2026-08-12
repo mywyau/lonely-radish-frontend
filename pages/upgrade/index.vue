@@ -3,7 +3,7 @@
 definePageMeta({ layout: 'default' })
 
 import { useUpgrade } from '@/composables/useUpgrade';
-import { CalendarDays, ChevronDown, HeartHandshake, MapPin, ShieldCheck, SlidersHorizontal, Sparkles, Tags } from '@lucide/vue';
+import { ChevronDown, HeartHandshake, ShieldCheck, Sparkles } from '@lucide/vue';
 import { markRaw } from 'vue';
 import { useMeStateV2 } from '~/composables/useMeStateV2';
 import { hasPaidAccess } from '~/utils/paidAccess';
@@ -38,13 +38,9 @@ const upgradeError = ref('')
 const showPaidPlans = ref(false)
 
 const benefits = [
-  { icon: markRaw(CalendarDays), text: 'See past connections' },
-  { icon: markRaw(HeartHandshake), text: 'Send a private note before asking a past match to reconnect' },
-  // { icon: markRaw(Sparkles), text: 'Get deals with partners and brand discounts' },
-  // { icon: markRaw(MapPin), text: 'Incognitio Discovery' },
-  { icon: markRaw(ShieldCheck), text: 'New safety and privacy options when they become available' },
-  { icon: markRaw(Tags), text: 'Try new paid features as they are released' },
-  // { icon: markRaw(Sparkles), text: 'Profile polish tools for clearer first impressions' },
+  { icon: markRaw(HeartHandshake), text: 'Meeting, matching and planning remain available without subscribing' },
+  { icon: markRaw(ShieldCheck), text: 'Safety and privacy controls are never reserved for supporters' },
+  { icon: markRaw(Sparkles), text: 'Your support helps fund a calmer app that is designed to help people leave it' },
 ]
 
 // Already paid → manage subscription instead
@@ -84,11 +80,11 @@ onMounted(() => resolve())
 
         <!-- Title -->
         <h1 class="text-2xl font-semibold">
-          Want a little more room?
+          Support a calmer dating app
         </h1>
 
         <p class="mx-auto max-w-xl text-[#6E4D58]">
-          A paid plan gives you more active matches, more activity interests and access to the paid features below.
+          Lonely Radish does not sell better visibility, priority or access to people. An optional membership supports the service while the complete dating journey remains available to everyone.
         </p>
 
         <!-- <p v-if="authReady && currentPlan"
@@ -108,21 +104,27 @@ onMounted(() => resolve())
         </div>
 
         <section class="mx-auto grid w-full max-w-3xl gap-3 text-left sm:grid-cols-2"
-          aria-labelledby="plan-limits-title">
-          <h2 id="plan-limits-title" class="sr-only">Free and paid plan limits</h2>
+          aria-labelledby="membership-principles-title">
+          <h2 id="membership-principles-title" class="sr-only">What everyone receives and what a supporter membership means</h2>
           <div class="relative rounded-lg border bg-white p-5"
             :class="currentPlan === 'free' ? 'border-[#B4234A] ring-2 ring-[#F7B7C4]' : 'border-[#E8D8C4]'">
             <span v-if="currentPlan === 'free'"
               class="absolute right-4 top-4 rounded-full bg-[#B4234A] px-2.5 py-1 text-[11px] font-bold text-white">Current
               plan</span>
-            <p class="text-xs font-extrabold uppercase tracking-widest text-[#6E4D58]">Free plan</p>
-            <h3 class="mt-2 text-lg font-semibold">Everything you need to get started</h3>
+            <p class="text-xs font-extrabold uppercase tracking-widest text-[#6E4D58]">Included for everyone</p>
+            <h3 class="mt-2 text-lg font-semibold">The complete route to a real date</h3>
             <ul class="mt-4 space-y-2 text-sm text-[#4D2F39]">
               <li class="flex items-center gap-2">
-                <Tags class="size-4 text-[#B4234A]" />Up to 5 active activity interests
+                <Sparkles class="size-4 text-[#B4234A]" />Up to 10 activity interests
               </li>
               <li class="flex items-center gap-2">
-                <HeartHandshake class="size-4 text-[#B4234A]" />Up to 3 active matches
+                <HeartHandshake class="size-4 text-[#B4234A]" />Up to 5 active matches
+              </li>
+              <li class="flex items-center gap-2">
+                <HeartHandshake class="size-4 text-[#B4234A]" />Interests, matching, planning and second chances
+              </li>
+              <li class="flex items-center gap-2">
+                <ShieldCheck class="size-4 text-[#B4234A]" />Every safety and privacy control
               </li>
             </ul>
           </div>
@@ -130,27 +132,21 @@ onMounted(() => resolve())
             class="rounded-lg border bg-[#FCE3E8] p-5 text-left shadow-[0_10px_24px_rgba(180,35,74,0.08)] transition hover:border-[#B4234A] hover:bg-[#F7D4DC] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B4234A] focus-visible:ring-offset-2"
             :class="showPaidPlans ? 'border-[#B4234A] ring-2 ring-[#F7B7C4]' : 'border-[#E6A8B8]'"
             :aria-expanded="showPaidPlans" aria-controls="paid-plan-options" @click="showPaidPlans = !showPaidPlans">
-            <p class="text-xs font-extrabold uppercase tracking-widest text-[#8F1839]">All paid plans</p>
-            <h3 class="mt-2 text-lg font-semibold">More people and more date ideas</h3>
+            <p class="text-xs font-extrabold uppercase tracking-widest text-[#8F1839]">Optional supporter membership</p>
+            <h3 class="mt-2 text-lg font-semibold">Fund the app, not an advantage</h3>
             <div class="mt-4 space-y-2 text-sm text-[#4D2F39]">
               <p class="flex items-center gap-2">
-                <Tags class="size-4 text-[#B4234A]" />Up to 10 active activity interests
+                <HeartHandshake class="size-4 text-[#B4234A]" />The same 5-match limit as everyone else
               </p>
               <p class="flex items-center gap-2">
-                <HeartHandshake class="size-4 text-[#B4234A]" />Up to 5 active matches
+                <Sparkles class="size-4 text-[#B4234A]" />Helps pay for hosting, moderation and continued development
               </p>
               <p class="flex items-center gap-2">
-                <SlidersHorizontal class="size-4 text-[#B4234A]" />Advanced matching options and filters
-              </p>
-              <p class="flex items-center gap-2">
-                <Sparkles class="size-4 text-[#B4234A]" />Get discounts for dates with selected partners and brands
-              </p>
-              <p class="flex items-center gap-2">
-                <MapPin class="size-4 text-[#B4234A]" />Incognito discovery
+                <ShieldCheck class="size-4 text-[#B4234A]" />No boost, priority placement or hidden safety features
               </p>
             </div>
             <span class="mt-5 flex items-center justify-between text-sm font-semibold text-[#8F1839]">
-              {{ showPaidPlans ? 'Hide pricing options' : 'View pricing options' }}
+              {{ showPaidPlans ? 'Hide support options' : 'View support options' }}
               <ChevronDown class="size-5 transition-transform" :class="showPaidPlans && 'rotate-180'"
                 aria-hidden="true" />
             </span>
@@ -161,7 +157,7 @@ onMounted(() => resolve())
         <div v-show="showPaidPlans" id="paid-plan-options"
           class="mx-auto grid w-full max-w-3xl gap-3 pt-4 sm:grid-cols-3">
           <p class="text-sm text-[#6E4D58] sm:col-span-3">
-            Choose a plan
+            Choose how long you would like to support Lonely Radish
           </p>
 
           <button class="block w-full rounded-lg bg-[#FCE3E8] px-3 py-3 font-medium text-[#2A1520] transition shadow-sm"
@@ -172,7 +168,7 @@ onMounted(() => resolve())
             <span v-if="isCurrentPlan('monthly')"
               class="mb-1 inline-flex rounded-full bg-white px-2 py-0.5 text-[11px] font-bold text-[#8F1839]">Current
               plan</span>
-            <span class="block">{{ upgradingPlan === 'monthly' ? 'Opening secure checkout…' : `Monthly plan ·
+            <span class="block">{{ upgradingPlan === 'monthly' ? 'Opening secure checkout…' : `Monthly support ·
               £${monthlyPrice}` }}</span>
             <span class="mt-0.5 block text-xs text-[#6E4D58]">Flexible month-to-month billing</span>
           </button>
@@ -185,7 +181,7 @@ onMounted(() => resolve())
             <span v-if="isCurrentPlan('quarterly')"
               class="mb-1 inline-flex rounded-full bg-white px-2 py-0.5 text-[11px] font-bold text-[#8F1839]">Current
               plan</span>
-            <span class="block">{{ upgradingPlan === 'quarterly' ? 'Opening secure checkout…' : `Three-month plan ·
+            <span class="block">{{ upgradingPlan === 'quarterly' ? 'Opening secure checkout…' : `Three-month support ·
               £${quarterlyPrice}` }}</span>
             <span class="mt-0.5 block text-xs text-[#6E4D58]">≈ £{{ quarterlyMonthlyEquivalent }}/mo · Save £{{
               quarterlySavings }}</span>
@@ -200,7 +196,7 @@ onMounted(() => resolve())
             <span v-if="isCurrentPlan('yearly')"
               class="mb-1 inline-flex rounded-full bg-white px-2 py-0.5 text-[11px] font-bold text-[#8F1839]">Current
               plan</span>
-            <span class="block">{{ upgradingPlan === 'yearly' ? 'Opening secure checkout…' : `Yearly plan ·
+            <span class="block">{{ upgradingPlan === 'yearly' ? 'Opening secure checkout…' : `Yearly support ·
               £${yearlyPrice}` }}</span>
             <span class="mt-0.5 block text-xs text-white/80">≈ £{{ yearlyMonthlyEquivalent }}/mo · Save £{{
               yearlySavings }}</span>
@@ -212,7 +208,7 @@ onMounted(() => resolve())
 
         <!-- Subscribed -->
         <p v-if="isSubscribed" class="text-sm text-[#6E4D58]">
-          You’re already subscribed.
+          You’re already supporting Lonely Radish.
           <NuxtLink to="/account/v2" class="text-[#B4234A] hover:underline">
             Manage your plan
           </NuxtLink>
@@ -221,7 +217,7 @@ onMounted(() => resolve())
         <!-- Continue without upgrading -->
         <p v-if="!isSubscribed" class="text-sm text-[#6E4D58]">
           <NuxtLink to="/matches" class="hover:text-[#B4234A] hover:underline">
-            Continue without upgrading
+            Continue with all core features
           </NuxtLink>
         </p>
 
@@ -232,7 +228,7 @@ onMounted(() => resolve())
         </p>
 
         <p class="pt-4 text-xs text-[#7C5963]">
-          You can cancel your plan at any time.
+          Supporting is optional. You can cancel at any time, and your dating experience will not be reduced.
         </p>
 
       </div>

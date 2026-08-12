@@ -6,6 +6,7 @@ import type {
   OnboardingStatusResponse,
 } from '../../types/api/onboarding'
 import { groupSexualOrientationPreferences } from '../../utils/sexualOrientation'
+import { MEMBER_ACTIVITY_SELECTION_LIMIT } from '../utils/memberLimits'
 
 type CoreRow = {
   completedAt: string | null
@@ -17,7 +18,6 @@ type CoreRow = {
   locationComplete: boolean
   preferencesComplete: boolean
   datingComplete: boolean
-  paidAccess: boolean
   slug: string | null
   displayName: string | null
   genderIdentity: string | null
@@ -91,8 +91,6 @@ export async function loadOnboardingBootstrap(
     (mp.user_id is not null and mp.dating_preferences_set=true
       and (mp.open_to_everyone=true or cardinality(mp.interested_genders)>0)
       and mp.no_orientation_preference=false and cardinality(mp.interested_orientations)>0) as "datingComplete",
-    exists(select 1 from entitlements e where e.user_id=u.id and e.plan<>'free'
-      and e.subscription_status in ('active','trialing','past_due')) as "paidAccess",
     p.slug,p.display_name as "displayName",p.gender_identity as "genderIdentity",
     p.sexual_orientation as "sexualOrientation",p.race_ethnicity as "raceEthnicity",
     p.race_ethnicity_self_description as "raceEthnicitySelfDescription",
@@ -131,7 +129,7 @@ export async function loadOnboardingBootstrap(
   return {
     status: resolveOnboardingStatus(core),
     profile,
-    activities: { selected: activitiesResult.rows, selectionLimit: core.paidAccess ? 10 : 5 },
+    activities: { selected: activitiesResult.rows, selectionLimit: MEMBER_ACTIVITY_SELECTION_LIMIT },
     general: {
       distance: Number(core.distance ?? 10), minimumAge: Number(core.minimumAge ?? 18),
       maximumAge: Number(core.maximumAge ?? 80), timing: core.timing || [], publicOnly: core.publicOnly ?? true,

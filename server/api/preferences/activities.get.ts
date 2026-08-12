@@ -1,20 +1,18 @@
 import { setHeader } from 'h3'
 import { withDatabaseClient } from '~/server/repositories/db'
 import { requireUser } from '~/server/utils/requireUser'
-import { getUserEntitlement } from '~/server/utils/getEntitlement'
-import { hasPaidAccess } from '~/utils/paidAccess'
+import { MEMBER_ACTIVITY_SELECTION_LIMIT } from '~/server/utils/memberLimits'
 
 export default defineEventHandler(async (event) => {
   setHeader(event, 'Cache-Control', 'private, no-store')
   const { sub } = await requireUser(event)
-  const { catalog, selected, entitlement } = await withDatabaseClient(async (database) => {
+  const { catalog, selected } = await withDatabaseClient(async (database) => {
     const catalog = await database.query(`select id, name, category from activities where is_active=true order by category,name`)
     const selected = await database.query(`select coalesce(a.name, pa.custom_label) as name,pa.activity_id is null as custom,
       coalesce(a.category,pa.custom_category) as category
       from profile_activities pa left join activities a on a.id=pa.activity_id
       where pa.user_id=$1 order by pa.position`, [sub])
-    const entitlement = await getUserEntitlement(sub, database)
-    return { catalog, selected, entitlement }
+    return { catalog, selected }
   })
-  return { catalog: catalog.rows, selected: selected.rows, selectionLimit: hasPaidAccess(entitlement) ? 10 : 5 }
+  return { catalog: catalog.rows, selected: selected.rows, selectionLimit: MEMBER_ACTIVITY_SELECTION_LIMIT }
 })
