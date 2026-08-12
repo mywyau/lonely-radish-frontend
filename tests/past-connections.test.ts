@@ -5,6 +5,20 @@ import { describe, expect, it } from 'vitest'
 const read = (path: string) => readFileSync(resolve(process.cwd(), path), 'utf8')
 
 describe('past connections', () => {
+  it('keeps the other-profile query parentheses balanced', () => {
+    const endpoint = read('server/api/profiles/[slug].get.ts')
+    const query = endpoint.match(/db\.query\(`([\s\S]*?)`, \[slug,viewer\.sub\]\)/)?.[1]
+    expect(query).toBeDefined()
+
+    let depth = 0
+    for (const character of query!) {
+      if (character === '(') depth += 1
+      if (character === ')') depth -= 1
+      expect(depth).toBeGreaterThanOrEqual(0)
+    }
+    expect(depth).toBe(0)
+  })
+
   it('records why and when a match ended', () => {
     expect(read('server/api/matches/[id].delete.ts')).toContain("ended_reason='removed'")
     expect(read('server/api/dates/[id]/follow-up.post.ts')).toContain("ended_reason='post_date'")
