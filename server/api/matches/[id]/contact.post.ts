@@ -5,6 +5,6 @@ export default defineEventHandler(async (event) => {
   await requireUser(event)
   throw createError({
     statusCode: 410,
-    statusMessage: 'Past-connection messages are no longer available. Only the person who ended the match can send an apology and ask to reconnect',
+    statusMessage: 'This connection is closed. Only the person who ended it can send one note and ask to reconnect',
   })
 })

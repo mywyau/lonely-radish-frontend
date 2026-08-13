@@ -6,7 +6,7 @@ import { objectBody, text } from '~/server/utils/productValidation'
 export default defineEventHandler(async (event) => {
   const { sub } = await requireUser(event)
   const id = getRouterParam(event, 'id')
-  const message = text(objectBody(await readBody(event)).message, 'Apology note', 240, true)
+  const message = text(objectBody(await readBody(event)).message, 'Note', 240, true)
   const client = await db.connect()
   try {
     await client.query('begin')

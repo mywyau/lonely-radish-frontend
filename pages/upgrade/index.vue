@@ -104,7 +104,7 @@ onMounted(() => resolve())
                 <HeartHandshake class="size-4 text-[#B4234A]" />Up to 5 active matches
               </li>
               <li class="flex items-center gap-2">
-                <HeartHandshake class="size-4 text-[#B4234A]" />Interests, matching, planning and second chances
+                <HeartHandshake class="size-4 text-[#B4234A]" />Interests, matching, planning and reconnecting
               </li>
               <li class="flex items-center gap-2">
                 <ShieldCheck class="size-4 text-[#B4234A]" />Every safety and privacy control

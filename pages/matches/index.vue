@@ -87,7 +87,7 @@ function actionLabel(match: MatchCard) {
   if (match.stage === 'fresh') return 'Start planning'
   if (match.stage === 'confirmed' && match.dateHasPassed) {
     if (match.followUpResult === 'mutual') return 'Plan another date'
-    return match.hasFollowedUp ? 'View date follow-up' : 'Would you meet again?'
+    return match.hasFollowedUp ? 'See your date check-in' : 'Share how your date went'
   }
   if (match.stage === 'confirmed') return 'View date plan'
   if (match.isReschedule && match.needsResponse) return 'Review new date'
@@ -148,7 +148,7 @@ function notificationCopy(notification: MatchNotification) {
     date_attendance_confirmed: `${actor} confirmed they are still going.`,
     date_reschedule_requested: `${actor} needs to reschedule your date.`,
     date_cancelled: `${actor} cancelled your date. You remain matched.`,
-    match_apology: `${actor} sent you an apology through Past connections.`,
+    match_apology: `${actor} sent you a note through Past connections and may ask to reconnect.`,
     match_contact: `${actor} sent you a private message through Past connections. No response is required.`,
     match_queued: `You matched with ${actor}. Planning can begin when you both have an available match space.`,
     date_outcome_needed: 'Your private attendance check is ready after your date.',

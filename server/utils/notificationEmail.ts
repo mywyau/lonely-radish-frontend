@@ -72,7 +72,7 @@ function message(kind: string, actorName?: string | null) {
     proposal_declined: `${actor} declined the proposed date plan.`,
     follow_up_ready: `${actor} completed their post-date check-in. Your answer remains private until you respond.`,
     match_ended: `${actor} ended your match.`,
-    date_follow_up_closed: 'Your post-date answers were different, so the connection has closed.',
+    date_follow_up_closed: 'You did not both choose another date, so the connection has closed.',
     date_follow_up_changed: `${actor} changed their answer and would like to meet again.`,
     match_apology: `${actor} sent you a note through Past connections.`,
     match_contact: `${actor} sent you a private message through Past connections. You do not need to respond.`,

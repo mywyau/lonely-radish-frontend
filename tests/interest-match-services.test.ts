@@ -182,7 +182,7 @@ describe('interest and match services', () => {
       senderId: 'user-a', profileSlug: 'alex', idempotencyKey: 'request-key-ended-1',
     })).rejects.toMatchObject({
       statusCode: 409,
-      statusMessage: 'This person ended the connection, so you cannot contact them or re-offer interest',
+      statusMessage: 'This connection was ended by the other person, so it cannot be reopened from your side',
     })
     expect(repository.findInterest).not.toHaveBeenCalled()
     expect(repository.createInterest).not.toHaveBeenCalled()
@@ -220,7 +220,7 @@ describe('interest and match services', () => {
       senderId: 'user-a', profileSlug: 'alex', idempotencyKey: 'request-key-ended-2',
     })).rejects.toMatchObject({
       statusCode: 409,
-      statusMessage: 'Send a brief apology before asking for a second chance',
+      statusMessage: 'Send a brief note before asking to reconnect',
     })
     expect(repository.findInterest).not.toHaveBeenCalled()
     expect(query.mock.calls.at(-1)?.[0]).toBe('rollback')

@@ -52,6 +52,15 @@ describe("core journey recovery", () => {
     );
   });
 
+  it("explains unavailable profiles without revealing another member’s private state", () => {
+    const profile = read("pages/profiles/[slug].vue");
+    expect(profile).toContain("This profile is no longer available to you");
+    expect(profile).toContain("changes their privacy, pauses or removes their profile");
+    expect(profile).toContain("We don’t show which one applies");
+    expect(profile).toContain("We can’t open this profile right now");
+    expect(profile).toContain("Try again");
+  });
+
   it("tracks aggregate funnel events without member identifiers", () => {
     const analytics = read("utils/productAnalytics.ts");
     expect(analytics).toContain("track(name, properties)");

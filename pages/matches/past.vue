@@ -22,7 +22,7 @@ async function sendApology(connection: Connection) {
   try {
     await $fetch(`/api/matches/${connection.id}/apology`, { method: 'POST', body: { message: apologyMessage.value } })
     connection.apologySent = true; apologyFor.value = null; apologyMessage.value = ''
-  } catch (error: any) { errorMessage.value = error?.data?.statusMessage || 'Your apology could not be sent.' }
+  } catch (error: any) { errorMessage.value = error?.data?.statusMessage || 'Your note could not be sent.' }
   finally { apologySending.value = false }
 }
 async function loadConnections(loadMore = false) {
@@ -69,12 +69,12 @@ onMounted(() => loadConnections())
             <NuxtLink v-if="connection.canViewProfile" :to="{ path: `/profiles/${connection.slug}`, query: { connection: 'past' } }" class="rounded-lg bg-[#F3E8DA] px-4 py-2.5 text-sm font-semibold text-[#8F1839]">View their profile</NuxtLink>
             <NuxtLink v-if="connection.canReconsider && connection.proposalId" :to="`/dates/${connection.proposalId}/follow-up`" class="rounded-lg bg-[#B4234A] px-4 py-2.5 text-sm font-semibold text-white">Review your answer</NuxtLink>
             <button v-if="connection.endedByMe && !connection.apologySent" type="button" class="rounded-lg bg-[#FCE3E8] px-4 py-2.5 text-sm font-semibold text-[#8F1839]" @click="apologyFor = connection.id; apologyMessage = ''">Send a note</button>
-            <span v-else-if="connection.apologySent" class="rounded-lg bg-[#EAF2DE] px-4 py-2.5 text-sm font-semibold text-[#4D2F39]">Apology sent</span>
-            <NuxtLink v-if="connection.apologySent" :to="{ path: `/profiles/${connection.slug}`, query: { connection: 'past' } }" class="rounded-lg bg-[#B4234A] px-4 py-2.5 text-sm font-semibold text-white">Re-offer interest</NuxtLink>
+            <span v-else-if="connection.apologySent" class="rounded-lg bg-[#EAF2DE] px-4 py-2.5 text-sm font-semibold text-[#4D2F39]">Note sent</span>
+            <NuxtLink v-if="connection.apologySent" :to="{ path: `/profiles/${connection.slug}`, query: { connection: 'past' } }" class="rounded-lg bg-[#B4234A] px-4 py-2.5 text-sm font-semibold text-white">Ask to reconnect</NuxtLink>
             <p v-if="connection.wasUnmatched && !connection.canViewProfile" class="text-xs leading-5 text-[#6E4D58]">They ended this connection, so it remains closed unless they choose to ask for another chance.</p>
             <p v-else-if="!connection.canViewProfile" class="text-xs leading-5 text-[#6E4D58]">Their profile is no longer available from this connection.</p>
           </div>
-          <form v-if="apologyFor === connection.id" class="mt-4 rounded-lg bg-[#FBF7F1] p-4" @submit.prevent="sendApology(connection)"><label class="text-sm font-semibold">Private note <span class="font-normal text-[#6E4D58]">(one for this ended match)</span><textarea v-model="apologyMessage" maxlength="500" rows="3" class="mt-2 w-full rounded-lg border border-[#D8C8B6] bg-white p-3 font-normal" placeholder="Keep it brief, respectful, and without pressure." /></label><p class="mt-2 text-xs text-[#6E4D58]">After sending this, you can view their profile and show interest again. They still choose whether to reconnect.</p><div class="mt-3 flex gap-2"><button type="submit" :disabled="apologySending || !apologyMessage.trim()" class="rounded-lg bg-[#8F1839] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">{{ apologySending ? 'Sending…' : 'Send privately' }}</button><button type="button" class="px-3 py-2 text-sm font-semibold text-[#6E4D58]" @click="apologyFor = null">Cancel</button></div></form>
+          <form v-if="apologyFor === connection.id" class="mt-4 rounded-lg bg-[#FBF7F1] p-4" @submit.prevent="sendApology(connection)"><label class="text-sm font-semibold">Note to {{ connection.name }}<textarea v-model="apologyMessage" maxlength="500" rows="3" class="mt-2 w-full rounded-lg border border-[#D8C8B6] bg-white p-3 font-normal" placeholder="Keep it brief, respectful, and without pressure." /></label><p class="mt-2 text-xs leading-5 text-[#6E4D58]">They will receive this note. Afterward, you may ask to reconnect once; they can ignore or decline that request.</p><div class="mt-3 flex gap-2"><button type="submit" :disabled="apologySending || !apologyMessage.trim()" class="rounded-lg bg-[#8F1839] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">{{ apologySending ? 'Sending…' : 'Send note' }}</button><button type="button" class="px-3 py-2 text-sm font-semibold text-[#6E4D58]" @click="apologyFor = null">Cancel</button></div></form>
         </article>
         <button v-if="hasMore" type="button" :disabled="loadingMore" class="mx-auto mt-3 rounded-lg bg-[#4D2F39] px-5 py-3 text-sm font-semibold text-white disabled:opacity-50" @click="loadConnections(true)">{{ loadingMore ? 'Loading…' : 'Load more past connections' }}</button>
         <p v-if="errorMessage" class="text-center text-sm font-semibold text-[#8F1839]" role="alert">{{ errorMessage }}</p>

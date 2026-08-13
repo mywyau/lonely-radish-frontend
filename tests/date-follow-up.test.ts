@@ -10,13 +10,13 @@ describe('private post-date follow-up', () => {
     expect(get).toContain('theirChoice: bothResponded ? date.theirChoice : null')
     expect(get).toContain('theirMessage: bothResponded ? date.theirMessage : null')
     expect(get).toContain('const closed = bothResponded && !mutual')
-    expect(read('pages/dates/[id]/follow-up.vue')).toContain('’s answer')
+    expect(read('pages/dates/[id]/follow-up.vue')).toContain('’s choice')
   })
 
   it('allows a respectful note with either answer', () => {
     expect(read('server/api/dates/[id]/follow-up.post.ts')).toContain("text(body.message, 'Message', 240)")
     const page = read('pages/dates/[id]/follow-up.vue')
-    expect(page).toContain('Your note can accompany either answer')
+    expect(page).toContain('Your note can accompany either choice')
     expect(page).toContain('Thank you for meeting me. I wish you all the best')
   })
 
@@ -26,15 +26,25 @@ describe('private post-date follow-up', () => {
     expect(post).toContain('bool_and(meet_again) as mutual')
     expect(post).toContain('for update of dp')
     expect(post).toContain("'date_follow_up_closed'")
-    expect(read('pages/dates/[id]/follow-up.vue')).toContain('Your answers were different.')
+    expect(read('pages/dates/[id]/follow-up.vue')).toContain('You didn’t both choose another date.')
   })
 
-  it('allows a one-time no-to-yes reconsideration with an apology note', () => {
+  it('explains a one-time no-to-yes change before it reopens the connection', () => {
     const reconsider = read('server/api/dates/[id]/follow-up/reconsider.post.ts')
     expect(reconsider).toContain('mine.meet_again=false')
     expect(reconsider).toContain('theirs.meet_again=true')
     expect(reconsider).toContain("'date_follow_up_changed'")
-    expect(read('pages/dates/[id]/follow-up.vue')).toContain('Change to yes and send note')
+    const page = read('pages/dates/[id]/follow-up.vue')
+    expect(page).toContain('doing so reopens the connection and sends them your note')
+    expect(page).toContain('Change my answer to yes')
+  })
+
+  it('explains what each private choice will do before submission', () => {
+    const page = read('pages/dates/[id]/follow-up.vue')
+    expect(page).toContain('The connection stays open only if you both choose another date.')
+    expect(page).toContain('If {{ date.personName }} also chooses yes')
+    expect(page).toContain('the connection will close')
+    expect(page).toContain('Save my choice')
   })
 
   it('offers a development-only completed date preview', () => {

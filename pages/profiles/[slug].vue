@@ -108,7 +108,7 @@ async function sendApology() {
     if (databaseProfile.value) Object.assign(databaseProfile.value, { apologySent: true, secondChanceAvailable: true })
     else Object.assign(profiles[profileSlug.value], { apologySent: true, secondChanceAvailable: true })
     apologyMessage.value = ''
-  } catch (error: any) { apologyError.value = error?.data?.statusMessage || 'Your apology could not be sent.' }
+  } catch (error: any) { apologyError.value = error?.data?.statusMessage || 'Your note could not be sent.' }
   finally { apologySending.value = false }
 }
 
@@ -164,7 +164,7 @@ async function loadProfile() {
   } catch (error: any) {
     const status = error?.statusCode || error?.response?.status || error?.data?.statusCode
     allowDemoProfile.value = import.meta.dev && status === 404 && Boolean(profiles[profileSlug.value])
-    if (status !== 404) profileLoadError.value = 'We could not load this profile. Please try again.'
+    if (status !== 404) profileLoadError.value = 'We couldn’t open this profile right now.'
     else if (allowDemoProfile.value && profileSlug.value === 'nina' && window.localStorage.getItem('lonely-radish-preview-rejected-match')) {
       profiles.nina.isMatched = false
       Object.assign(profiles.nina, { relationshipStatus: 'unmatched', endedByMe: true, apologySent: false })
@@ -306,7 +306,7 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
                   @click="sendProfileInterest">
                   <HeartHandshake class="size-4" />{{ sending ? 'Sending…' : profile.isMatched ? `Already matched with ${profile.name}` : profile.relationshipStatus === 'queued' ? `Matched with ${profile.name}` : profile.interestSent || (profile.relationshipStatus !== 'unmatched' &&
                     isTodaysChoice(profileSlug)) ? 'Interest already sent' : profile.relationshipStatus === 'unmatched' &&
-                      profile.secondChanceAvailable ? `Show interest in ${profile.name} again` : profile.relationshipStatus
+                      profile.secondChanceAvailable ? `Ask ${profile.name} to reconnect` : profile.relationshipStatus
                         === 'unmatched' ? `Unmatched from ${profile.name}` :
                   isTodaysChoice(profileSlug) ? `Interest sent to ${profile.name}` : 'Show interest' }}
                 </button>
@@ -318,29 +318,27 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
                   class="mt-3 rounded-lg bg-[#F3E8DA] p-3 text-xs leading-5 text-[#4D2F39]" role="status">
                   <p>You and {{ profile.name }} are no longer matched.</p>
                   <form v-if="profile.endedByMe && !profile.apologySent" class="mt-3" @submit.prevent="sendApology">
-                    <label class="font-semibold">Send a private message for this ended match<textarea
+                    <label class="font-semibold">Send a note before asking to reconnect<textarea
                         v-model="apologyMessage" maxlength="500" rows="3"
                         class="mt-1 w-full rounded-lg border border-[#D8C8B6] bg-white p-3 font-normal"
                         placeholder="Keep it brief, respectful, and without pressure." /><span
                         class="mt-1 block text-right font-normal text-[#6E4D58]">{{ apologyMessage.length
                         }}/500</span></label><button type="submit" :disabled="apologySending || !apologyMessage.trim()"
                       class="mt-2 rounded-lg bg-[#8F1839] px-3 py-2 font-semibold text-white disabled:opacity-50">{{
-                        apologySending ? 'Sending…' : 'Send message' }}</button>
+                        apologySending ? 'Sending…' : 'Send note' }}</button>
                     <p v-if="apologyError" class="mt-2 font-semibold text-[#8F1839]" role="alert">{{ apologyError }}</p>
                   </form>
-                  <p v-else-if="profile.apologySent" class="mt-2 font-semibold text-[#6E8B52]">Your private note has
-                    been
-                    sent. You can now show interest again.</p>
-                  <p v-else-if="profile.secondChanceAvailable" class="mt-2 font-semibold text-[#6E8B52]">A second chance
-                    is available because you ended this match and sent an apology. {{ profile.name }} still chooses
-                    whether to accept your renewed interest.</p>
-                  <p v-else class="mt-2 text-[#6E4D58]">The person who ended a match is the only person who can ask
-                    for a second chance. This keeps an ended connection closed unless they choose to reopen it.</p>
+                  <p v-else-if="profile.apologySent" class="mt-2 font-semibold text-[#6E8B52]">Your note was sent. You
+                    can now ask {{ profile.name }} if they would like to reconnect.</p>
+                  <p v-else-if="profile.secondChanceAvailable" class="mt-2 font-semibold text-[#6E8B52]">Your note was
+                    sent. You can ask {{ profile.name }} to reconnect, but there is no pressure on them to accept.</p>
+                  <p v-else class="mt-2 text-[#6E4D58]">Because the other person ended this connection, it stays
+                    closed from your side.</p>
                 </div>
                 <p v-else-if="profile.interestSent || (profile.relationshipStatus !== 'unmatched' && isTodaysChoice(profileSlug))"
                   class="mt-3 rounded-lg bg-[#EAF2DE] p-3 text-xs leading-5 text-[#4D2F39]" role="status"><template
-                    v-if="profile.relationshipStatus === 'unmatched'">You have re-offered interest to {{ profile.name
-                    }}. They can choose whether to reconnect.</template><template v-else>You have shown interest in {{
+                    v-if="profile.relationshipStatus === 'unmatched'">You asked {{ profile.name
+                    }} to reconnect. It’s up to them whether to accept.</template><template v-else>You have shown interest in {{
                     profile.name }}.</template></p>
                 <p v-else-if="atMatchLimit" class="mt-3 rounded-lg bg-[#FFF1C7] p-3 text-xs leading-5 text-[#694C00]"
                   role="status">You already have {{ activeMatchLimit }} active matches. You can still send interest; any new mutual match remains visible until both people have space.
@@ -444,12 +442,12 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
 
     <section v-else class="mx-auto max-w-xl rounded-lg bg-white p-8 text-center">
       <UserRound class="mx-auto size-8 text-[#B4234A]" />
-      <h1 class="mt-4 text-2xl font-semibold">{{ profileLoadError ? 'Profile unavailable' : 'Profile not found' }}</h1>
-      <p class="mt-2 text-sm text-[#6E4D58]">{{ profileLoadError || 'This profile may no longer be available.' }}</p>
+      <h1 class="mt-4 text-2xl font-semibold">{{ profileLoadError ? 'We can’t open this profile right now' : 'This profile is no longer available to you' }}</h1>
+      <p class="mt-2 text-sm leading-6 text-[#6E4D58]">{{ profileLoadError || 'This can happen when someone changes their privacy, pauses or removes their profile, or when a connection changes. We don’t show which one applies.' }}</p>
       <button v-if="profileLoadError" type="button" class="mt-5 rounded-lg bg-[#F3E8DA] px-5 py-3 text-sm font-semibold text-[#8F1839]" @click="loadProfile">Try again</button>
       <NuxtLink to="/matches"
         class="mt-5 inline-flex rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white">
-        Browse matches</NuxtLink>
+        Back to matches</NuxtLink>
     </section>
 
     <Teleport to="body">

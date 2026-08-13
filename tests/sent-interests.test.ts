@@ -25,10 +25,12 @@ describe('sent interest feedback and history', () => {
     expect(api).toContain("queued: row.matchStatus === 'queued'")
     const page = read('pages/interests/sent.vue')
     expect(page).toContain("'/api/interests/sent'")
-    expect(page).toContain("if (interest.queued) return 'Match waiting'")
+    expect(page).toContain("if (interest.queued) return 'Waiting for space to open'")
     expect(page).toContain("interest.matched || interest.queued ? '/matches'")
     expect(page).toContain('DailyInterestCounter')
-    expect(page).toContain('A pending interest expires after 14 days')
+    expect(page).toContain('If someone does not respond within 14 days')
+    expect(page).toContain('Waiting for ${interest.name}')
+    expect(page).toContain('Take back')
   })
 
   it('prevents sending interest to the same person twice', () => {

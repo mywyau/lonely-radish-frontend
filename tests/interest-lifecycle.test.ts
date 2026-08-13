@@ -33,13 +33,15 @@ describe('interest lifecycle', () => {
     expect(outbox).toContain("interval '14 days'")
   })
 
-  it('labels closed interests in sender and recipient histories', () => {
+  it('explains closed interests in human language in both histories', () => {
     const sent = read('pages/interests/sent.vue')
     const received = read('pages/interests/received.vue')
-    expect(sent).toContain("return 'Expired'")
-    expect(sent).toContain("return 'Withdrawn'")
-    expect(received).toContain('Withdrawn by sender')
-    expect(received).toContain('Recently closed')
+    expect(sent).toContain("return 'No response after 14 days'")
+    expect(sent).toContain("return 'You took this back'")
+    expect(sent).toContain('return `Waiting for ${interest.name}`')
+    expect(received).toContain('Closed after 14 days')
+    expect(received).toContain('took this back')
+    expect(received).toContain('Earlier interest')
     expect(received).toContain('ProfileSafetyActions')
   })
 })

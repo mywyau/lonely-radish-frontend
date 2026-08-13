@@ -109,7 +109,7 @@ export function useDailyInterest() {
       } else {
         errorMessage.value = status === 409 && failure.data?.statusMessage?.includes('Resume your profile')
           ? 'Your profile is paused. Resume discovery in Account before sending new interest.'
-          : status === 409 && (failure.data?.statusMessage?.includes('apology') || failure.data?.statusMessage?.includes('private message'))
+          : status === 409 && (failure.data?.statusMessage?.includes('before asking to reconnect') || failure.data?.statusMessage?.includes('cannot be reopened'))
           ? failure.data.statusMessage
           : status === 409 && failure.data?.statusMessage?.includes('already sent interest')
           ? 'You have already sent interest to this person.'

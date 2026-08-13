@@ -38,7 +38,7 @@ const sections = [
       },
       {
         question: 'How long does an interest last?',
-        answer: 'A pending interest lasts for 14 days. You can withdraw your own interest before it is accepted. Expired and withdrawn interests stay labelled in both histories, but we do not send an alert when an interest quietly expires. An expired, withdrawn or passed interest is final and cannot be sent again to the same person.',
+        answer: 'Someone has 14 days to respond to your interest. You can take it back before they accept it. If there is no response, it closes quietly without sending either person an alert. Your histories explain whether you were still waiting, took it back or reached the end of the 14 days. Once an interest closes, it cannot be sent again to the same person.',
       },
       {
         question: 'Why can I receive only five interests at a time?',
@@ -66,7 +66,7 @@ const sections = [
       },
       {
         question: 'Can I remove a match?',
-        answer: 'Yes. Removing a match ends the connection. Only the person who ended it may later send one apology and re-offer interest; the other person still decides whether to reconnect. Blocking goes further: neither of you will be shown to the other while the block remains in place.',
+        answer: 'Yes. Removing a match ends the connection. If you ended it, you may later send one respectful note and ask to reconnect once. The other person does not have to respond or accept. If they ended it, you cannot reopen it from your side. Blocking goes further: neither of you will be shown to the other while the block remains in place.',
       },
     ],
   },
@@ -116,7 +116,7 @@ const sections = [
       },
       {
         question: 'What happens after a date?',
-        answer: 'We’ll privately ask whether the date happened and whether you’d like to meet again. Your answer and optional note stay hidden until both people respond, then you can each see what the other chose. If you both want another date, the connection continues; otherwise it closes. Cancelling in advance is treated differently from not turning up.',
+        answer: 'First, we privately ask whether the date happened. We then ask whether you would like another date. Your choice and optional note stay hidden until both people answer, so neither person is influenced by the other. If you both choose another date, the connection stays open; if either person chooses no, it closes. Cancelling in advance is treated differently from not turning up.',
       },
     ],
   },
