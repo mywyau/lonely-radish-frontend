@@ -18,7 +18,7 @@ definePageMeta({
       </h1>
 
       <p class="text-sm text-gray-500">
-        Last updated: <time datetime="2026-07-30">30 July 2026</time>
+        Last updated: <time datetime="2026-08-13">13 August 2026</time>
       </p>
     </header>
 
@@ -32,7 +32,8 @@ definePageMeta({
       <p>
         Lonely Radish is a web application for casual activity-date discovery. We only collect information
         that is needed to provide the service, manage accounts, process subscriptions,
-        improve reliability, and support matching, messaging, safety, and date-planning features.
+        improve reliability, and support matching, structured date-planning communication,
+        safety, and date-planning features.
       </p>
     </section>
 
@@ -66,20 +67,17 @@ definePageMeta({
         </li>
 
         <li>
-          <strong>Prototype account information:</strong> local mock profile settings used
-          while authentication is disabled.
-        </li>
-
-        <li>
           <strong>Dating profile and preference information:</strong> such as profile text,
-          activity preferences, availability windows, prompts, optional contact details and
-          sharing settings, likes, matches, and related interaction data.
+          photos, age, gender, sexual orientation, racial or ethnic identity, activity and
+          dating preferences, availability windows, optional contact details and sharing
+          settings, interests, matches, and related interaction data. Some of this may be
+          special-category personal data under data protection law.
         </li>
 
         <li>
-          <strong>Communication and safety data:</strong> such as messages, reports,
-          moderation signals, blocks, and safety-related interactions where those features
-          are available.
+          <strong>Communication and safety data:</strong> such as date-planning notes,
+          follow-up notes, apology notes, reports, moderation signals, blocks, and
+          safety-related interactions.
         </li>
 
         <li>
@@ -107,8 +105,8 @@ definePageMeta({
       <ul class="list-disc pl-6 space-y-2 text-gray-700">
         <li>To create and manage your account</li>
         <li>To log you in and keep your account secure</li>
-        <li>To provide access to free and paid features</li>
-        <li>To support profiles, matching, availability, messaging, and date planning</li>
+        <li>To provide personal features, optional supporter memberships and paid business tools</li>
+        <li>To support profiles, matching, availability, structured date-planning communication and date planning</li>
         <li>To support safety, moderation, reporting, and blocking features</li>
         <li>To process subscriptions, billing and account upgrades</li>
         <li>To prevent abuse, fraud or misuse of the service</li>
@@ -127,8 +125,8 @@ definePageMeta({
       <ul class="list-disc pl-6 space-y-2 text-gray-700">
         <li>
           <strong>Contract:</strong> to provide the Lonely Radish service you sign up for,
-          including account access, paid features, matching, messaging and subscription
-          management.
+          including account access, personal features, business tools, matching, structured
+          date-planning communication and subscription management.
         </li>
 
         <li>
@@ -177,13 +175,32 @@ definePageMeta({
 
       <ul class="list-disc pl-6 space-y-2 text-gray-700">
         <li>
+          <strong>Auth0:</strong> authentication and account identity.
+        </li>
+
+        <li>
+          <strong>Vercel:</strong> application hosting and aggregate analytics.
+        </li>
+
+        <li>
+          <strong>Supabase:</strong> database and profile-photo storage.
+        </li>
+
+        <li>
+          <strong>Upstash:</strong> caching and background-job delivery through Redis and QStash.
+        </li>
+
+        <li>
           <strong>Stripe:</strong> payment processing, subscriptions, invoices and billing.
         </li>
 
         <li>
-          <strong>Hosting, database, storage and infrastructure providers:</strong>
-          to host the app, store content, run background jobs,
-          cache data, monitor reliability and protect the service.
+          <strong>Resend:</strong> transactional account and service email.
+        </li>
+
+        <li>
+          <strong>OpenCage:</strong> postcode geocoding used to derive location coordinates
+          and a postcode area for matching.
         </li>
       </ul>
 
@@ -228,13 +245,13 @@ definePageMeta({
 
             <tr class="border-b border-gray-100 align-top">
               <td class="py-2 pr-4">
-                Preference cookies
+                Browser storage
               </td>
               <td class="py-2 pr-4">
-                Used to remember choices you make in the app, such as saved preferences.
+                Local or session storage used to remember app and journey choices on your device.
               </td>
               <td class="py-2 pr-4">
-                App preference cookies
+                Saved app state
               </td>
             </tr>
 
@@ -244,8 +261,9 @@ definePageMeta({
               </td>
               <td class="py-2 pr-4">
                 We do not use advertising cookies. We use aggregate page-view and product-journey
-                analytics to understand whether core flows work. Analytics events exclude profile
-                names, account IDs, report references, free text, and dating preferences.
+                analytics to understand whether core flows work. We do not intentionally add profile
+                names, account IDs, report references, free text or dating preferences to custom
+                product events. Automatic page-view analytics may process the page path.
               </td>
               <td class="py-2 pr-4">
                 Aggregate usage analytics
@@ -256,8 +274,8 @@ definePageMeta({
       </div>
 
       <p class="text-gray-700">
-        Preference cookies are used only to keep your chosen settings across pages and are
-        not used for advertising or tracking across other websites.
+        Browser storage is used only to keep app state and choices on your device. It is not
+        used for advertising or tracking across other websites.
       </p>
 
       <p class="text-gray-700">
@@ -280,8 +298,8 @@ definePageMeta({
         </li>
 
         <li>
-          Profile, preference, match, message, and safety data is kept while your account
-          is active, unless deleted earlier or retained where legally required.
+          Profile, preference, match, date-planning communication and safety data is kept
+          while your account is active, unless deleted earlier or retained where legally required.
         </li>
 
         <li>

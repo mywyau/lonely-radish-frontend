@@ -58,11 +58,4 @@ export async function syncEntitlementFromBillingSubscription(
       billingSubscription.user_id,
     ],
   );
-
-  if (entitlementPlan === "free") {
-    await db.query(
-      `delete from profile_activities where user_id=$1 and position>5`,
-      [billingSubscription.user_id],
-    );
-  }
 }

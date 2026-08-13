@@ -17,7 +17,7 @@ definePageMeta({
       </h1>
 
       <p class="text-sm text-gray-500">
-        Last updated: <time datetime="2026-07-30">30 July 2026</time>
+        Last updated: <time datetime="2026-08-13">13 August 2026</time>
       </p>
     </header>
 
@@ -48,8 +48,11 @@ definePageMeta({
     <section class="space-y-3">
       <FooterPageSectionHeading :icon="CreditCard">Subscriptions and payments</FooterPageSectionHeading>
       <p class="text-gray-700">
-        Some features of Lonely Radish may require a paid subscription.
-        Payments are processed by third-party providers such as Stripe.
+        Personal dating features are available without a paid consumer membership. An
+        optional supporter membership helps fund the service without changing visibility,
+        ranking, matching or access to safety controls. Separate business subscriptions may
+        provide higher offer limits or priority placement. Payments are processed by
+        third-party providers such as Stripe.
       </p>
 
       <p class="text-gray-700">

@@ -27,12 +27,18 @@ describe('equal member limits', () => {
     }
   })
 
-  it('keeps payment out of visibility, ranking, matching, planning and safety promises', () => {
+  it('does not remove profile activities when a supporter membership ends', () => {
+    const entitlementSync = read('server/services/billing/syncEntitlementFromBillingSubscription.ts')
+    expect(entitlementSync).not.toContain('delete from profile_activities')
+    expect(entitlementSync).not.toContain('position>5')
+  })
+
+  it('describes support plainly without advertising a dating advantage', () => {
     const membership = read('pages/upgrade/index.vue')
-    expect(membership).toContain('does not sell better visibility, priority or access to people')
-    expect(membership).toContain('Meeting, matching and planning remain available without subscribing')
-    expect(membership).toContain('Safety and privacy controls are never reserved for supporters')
-    expect(membership).toContain('No boost, priority placement or hidden safety features')
+    expect(membership).toContain('All the core features stay free')
+    expect(membership).toContain('No change to your matches or visibility')
+    expect(membership).toContain('Helps cover hosting and development')
     expect(membership).not.toContain('Advanced matching options and filters')
+    expect(membership).not.toContain('priority placement')
   })
 })

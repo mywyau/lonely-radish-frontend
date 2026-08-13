@@ -38,7 +38,7 @@ async function deleteAccount() {
           <span class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-[#FCE3E8]"><Trash2 class="size-5 text-[#B4234A]" /></span>
           <div>
             <h2 class="text-xl font-semibold">Delete business account</h2>
-            <p class="mt-2 text-sm leading-6 text-[#6E4D58]">This permanently removes your business, venues, offers, dating profile data and login. Any active subscription will be cancelled.</p>
+            <p class="mt-2 text-sm leading-6 text-[#6E4D58]">If you are the only business member, this permanently removes your business, venues, offers, dating profile data and login. Transfer ownership or remove other business members before deleting. Any active subscription will be cancelled when deletion completes.</p>
           </div>
         </div>
         <button type="button" class="mt-6 rounded-lg border border-[#B4234A] px-4 py-2.5 text-sm font-semibold text-[#B4234A] hover:bg-[#FCE3E8]" @click="showConfirmation = true">Delete account</button>
@@ -49,7 +49,7 @@ async function deleteAccount() {
       <section class="w-full max-w-lg rounded-xl bg-white p-6 shadow-2xl sm:p-8" role="dialog" aria-modal="true" aria-labelledby="delete-business-title">
         <AlertTriangle class="size-9 text-[#B4234A]" />
         <h2 id="delete-business-title" class="mt-4 text-2xl font-semibold">Permanently delete this account?</h2>
-        <p class="mt-3 text-sm leading-6 text-[#6E4D58]">This cannot be undone. Type <strong>delete</strong> to confirm.</p>
+        <p class="mt-3 text-sm leading-6 text-[#6E4D58]">This cannot be undone. Deletion cannot complete while another business member remains. Type <strong>delete</strong> to confirm.</p>
         <label class="mt-5 block text-sm font-semibold">Confirmation
           <input v-model="confirmation" autocomplete="off" class="mt-2 w-full rounded-lg border border-[#D8C5B2] px-4 py-3 outline-none focus:border-[#B4234A] focus:ring-2 focus:ring-[#FCE3E8]" placeholder="Type delete">
         </label>

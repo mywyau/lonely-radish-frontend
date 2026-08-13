@@ -24,7 +24,7 @@ definePageMeta({
       </h1>
 
       <p class="text-sm text-gray-500">
-        Last updated: <time datetime="2026-07-30">30 July 2026</time>
+        Last updated: <time datetime="2026-08-13">13 August 2026</time>
       </p>
     </header>
 
@@ -70,8 +70,9 @@ definePageMeta({
       </ul>
 
       <p class="text-gray-700">
-        A Lonely Radish subscription pays only for access to app features. It is never
-        a payment to another user, payment for a date, or payment for access to a person.
+        A supporter membership helps fund Lonely Radish, and a business subscription pays
+        for business tools. Neither is ever a payment to another user, payment for a date,
+        or payment for access to a person.
       </p>
     </section>
 

@@ -4,7 +4,6 @@ definePageMeta({ layout: 'default' })
 
 import { useUpgrade } from '@/composables/useUpgrade';
 import { ChevronDown, HeartHandshake, ShieldCheck, Sparkles } from '@lucide/vue';
-import { markRaw } from 'vue';
 import { useMeStateV2 } from '~/composables/useMeStateV2';
 import { hasPaidAccess } from '~/utils/paidAccess';
 
@@ -36,12 +35,6 @@ const yearlyMonthlyEquivalent = (yearlyPrice / 12).toFixed(2)
 const upgradingPlan = ref<'monthly' | 'quarterly' | 'yearly' | null>(null)
 const upgradeError = ref('')
 const showPaidPlans = ref(false)
-
-const benefits = [
-  { icon: markRaw(HeartHandshake), text: 'Meeting, matching and planning remain available without subscribing' },
-  { icon: markRaw(ShieldCheck), text: 'Safety and privacy controls are never reserved for supporters' },
-  { icon: markRaw(Sparkles), text: 'Your support helps fund a calmer app that is designed to help people leave it' },
-]
 
 // Already paid → manage subscription instead
 async function upgrade(plan: 'monthly' | 'quarterly' | 'yearly') {
@@ -80,11 +73,11 @@ onMounted(() => resolve())
 
         <!-- Title -->
         <h1 class="text-2xl font-semibold">
-          Support a calmer dating app
+          Support Lonely Radish
         </h1>
 
         <p class="mx-auto max-w-xl text-[#6E4D58]">
-          Lonely Radish does not sell better visibility, priority or access to people. An optional membership supports the service while the complete dating journey remains available to everyone.
+          If you enjoy using Lonely Radish, an optional membership helps us keep it running. All the core features stay free.
         </p>
 
         <!-- <p v-if="authReady && currentPlan"
@@ -92,16 +85,6 @@ onMounted(() => resolve())
           role="status">
           Your current plan: <strong>{{ currentPlanLabel }}</strong>
         </p> -->
-
-        <!-- Benefits -->
-        <div class="mx-auto max-w-xl rounded-lg bg-[#FBF7F1] p-5 md:p-6">
-          <ul class="space-y-3 text-left leading-relaxed text-[#4D2F39]">
-            <li v-for="benefit in benefits" :key="benefit.text" class="flex items-start gap-3">
-              <component :is="benefit.icon" class="mt-0.5 h-4 w-4 shrink-0 text-[#B4234A]" aria-hidden="true" />
-              <span>{{ benefit.text }}</span>
-            </li>
-          </ul>
-        </div>
 
         <section class="mx-auto grid w-full max-w-3xl gap-3 text-left sm:grid-cols-2"
           aria-labelledby="membership-principles-title">
@@ -112,10 +95,10 @@ onMounted(() => resolve())
               class="absolute right-4 top-4 rounded-full bg-[#B4234A] px-2.5 py-1 text-[11px] font-bold text-white">Current
               plan</span>
             <p class="text-xs font-extrabold uppercase tracking-widest text-[#6E4D58]">Included for everyone</p>
-            <h3 class="mt-2 text-lg font-semibold">The complete route to a real date</h3>
+            <h3 class="mt-2 text-lg font-semibold">Use Lonely Radish for free</h3>
             <ul class="mt-4 space-y-2 text-sm text-[#4D2F39]">
               <li class="flex items-center gap-2">
-                <Sparkles class="size-4 text-[#B4234A]" />Up to 10 activity interests
+                <Sparkles class="size-4 text-[#B4234A]" />Up to 10 date activities on your profile
               </li>
               <li class="flex items-center gap-2">
                 <HeartHandshake class="size-4 text-[#B4234A]" />Up to 5 active matches
@@ -132,17 +115,17 @@ onMounted(() => resolve())
             class="rounded-lg border bg-[#FCE3E8] p-5 text-left shadow-[0_10px_24px_rgba(180,35,74,0.08)] transition hover:border-[#B4234A] hover:bg-[#F7D4DC] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B4234A] focus-visible:ring-offset-2"
             :class="showPaidPlans ? 'border-[#B4234A] ring-2 ring-[#F7B7C4]' : 'border-[#E6A8B8]'"
             :aria-expanded="showPaidPlans" aria-controls="paid-plan-options" @click="showPaidPlans = !showPaidPlans">
-            <p class="text-xs font-extrabold uppercase tracking-widest text-[#8F1839]">Optional supporter membership</p>
-            <h3 class="mt-2 text-lg font-semibold">Fund the app, not an advantage</h3>
+            <p class="text-xs font-extrabold uppercase tracking-widest text-[#8F1839]">Optional membership</p>
+            <h3 class="mt-2 text-lg font-semibold">Help us keep it running</h3>
             <div class="mt-4 space-y-2 text-sm text-[#4D2F39]">
               <p class="flex items-center gap-2">
-                <HeartHandshake class="size-4 text-[#B4234A]" />The same 5-match limit as everyone else
+                <HeartHandshake class="size-4 text-[#B4234A]" />No change to your matches or visibility
               </p>
               <p class="flex items-center gap-2">
-                <Sparkles class="size-4 text-[#B4234A]" />Helps pay for hosting, moderation and continued development
+                <Sparkles class="size-4 text-[#B4234A]" />Helps cover hosting and development
               </p>
               <p class="flex items-center gap-2">
-                <ShieldCheck class="size-4 text-[#B4234A]" />No boost, priority placement or hidden safety features
+                <ShieldCheck class="size-4 text-[#B4234A]" />Cancel whenever you like
               </p>
             </div>
             <span class="mt-5 flex items-center justify-between text-sm font-semibold text-[#8F1839]">
@@ -228,7 +211,7 @@ onMounted(() => resolve())
         </p>
 
         <p class="pt-4 text-xs text-[#7C5963]">
-          Supporting is optional. You can cancel at any time, and your dating experience will not be reduced.
+          Membership is optional. You can cancel at any time.
         </p>
 
       </div>
