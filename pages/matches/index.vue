@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { BadgePercent, Bell, CalendarCheck, CalendarDays, CheckCheck, ChevronDown, ChevronRight, Clock3, Eye, EyeOff, HeartHandshake, History, MapPin, ShieldCheck, Sparkles, UsersRound, X } from '@lucide/vue'
+import { BadgePercent, Bell, CalendarCheck, CalendarDays, CheckCheck, ChevronDown, ChevronRight, Clock3, HeartHandshake, History, MapPin, ShieldCheck, Sparkles, X } from '@lucide/vue'
+import { trackProductEvent } from '~/utils/productAnalytics'
 
 definePageMeta({ title: 'Matches & Plans · Lonely Radish', middleware: 'logged-in' })
 
@@ -22,8 +23,7 @@ const matches = ref<MatchCard[]>([])
 const totalMatches = ref(0)
 const activeMatchLimit = ref(5)
 const activeMatchCount = ref(0)
-const manualMatchLimit = ref(1)
-const manualMatchCount = ref(0)
+const acceptedInterestNeedsActionCount = ref(0)
 const interestReceivedCount = ref(0)
 const notifications = ref<MatchNotification[]>([])
 const { adjustMatchCount, setUnreadNotificationCount, adjustUnreadNotificationCount } = useMeStateV2()
@@ -36,7 +36,6 @@ const previewRejected = ref(false)
 const attendanceUpdating = ref<string | null>(null)
 const activatingMatch = ref<string | null>(null)
 const activationError = reactive<Record<string, string>>({})
-const showSummaryCounts = ref(true)
 const route = useRoute()
 const previewMatch: MatchCard = {
   id: 'preview-post-date', name: 'Nina', slug: 'nina', place: 'Hackney',
@@ -46,21 +45,29 @@ const previewMatch: MatchCard = {
   matchedAt: '2026-07-18T12:00:00.000Z', dateHasPassed: true, hasFollowedUp: false,
 }
 
-const sectionDefinitions = [
-  { key: 'queued', title: 'Matches waiting', description: 'You matched, but one of you needs room in their match list before you can make a plan.', icon: Clock3, tone: 'bg-[#FFF1C7]' },
-  { key: 'fresh', title: 'New matches', description: 'You both said yes. Now you can suggest something to do together.', icon: HeartHandshake, tone: 'bg-[#FCE3E8]' },
-  { key: 'planning', title: 'Making plans', description: 'There’s a date suggestion to finish or respond to.', icon: Clock3, tone: 'bg-[#F3E8DA]' },
-  { key: 'confirmed', title: 'Dates coming up', description: 'You’ve both agreed what you’re doing, when and where to meet.', icon: CalendarCheck, tone: 'bg-[#EAF2DE]' },
+type JourneySection = 'respond' | 'make-plan' | 'follow-up' | 'upcoming' | 'in-progress' | 'waiting'
+
+const sectionDefinitions: Array<{ key: JourneySection; title: string; description: string; icon: any; tone: string }> = [
+  { key: 'respond', title: 'Reply to a plan', description: 'Someone has suggested a date and is waiting for your answer.', icon: HeartHandshake, tone: 'bg-[#FFF1C7]' },
+  { key: 'make-plan', title: 'Make a plan', description: 'You both want to meet. Choose something you would enjoy doing together.', icon: Sparkles, tone: 'bg-[#FCE3E8]' },
+  { key: 'follow-up', title: 'After your date', description: 'Complete your private check-in or see what happens next.', icon: HeartHandshake, tone: 'bg-[#F3E8DA]' },
+  { key: 'upcoming', title: 'Upcoming dates', description: 'Everything you have both agreed, in one place.', icon: CalendarCheck, tone: 'bg-[#EAF2DE]' },
+  { key: 'in-progress', title: 'Plans in progress', description: 'Continue a draft or check a suggestion you have already sent.', icon: Clock3, tone: 'bg-[#F3E8DA]' },
+  { key: 'waiting', title: 'Waiting to start', description: 'You chose each other. This connection can start when you both have room.', icon: Clock3, tone: 'bg-[#FFF1C7]' },
 ] as const
 
+function journeySection(match: MatchCard): JourneySection {
+  if (match.stage === 'queued') return 'waiting'
+  if (match.stage === 'fresh') return 'make-plan'
+  if (match.stage === 'planning') return match.needsResponse ? 'respond' : 'in-progress'
+  return match.dateHasPassed ? 'follow-up' : 'upcoming'
+}
+
 const sections = computed(() => sectionDefinitions.map(section => ({ ...section,
-  items: matches.value.filter(match => match.stage === section.key),
-})))
-const counts = computed(() => ({ fresh: matches.value.filter(match => match.stage === 'fresh').length,
-  planning: matches.value.filter(match => match.stage === 'planning').length,
-  confirmed: matches.value.filter(match => match.stage === 'confirmed').length,
-  queued: matches.value.filter(match => match.stage === 'queued').length }))
+  items: matches.value.filter(match => journeySection(match) === section.key),
+})).filter(section => section.items.length))
 const additionalMatches = computed(() => Math.max(0, totalMatches.value - matches.value.length))
+const connectionListFull = computed(() => activeMatchCount.value >= activeMatchLimit.value)
 const visibleNotifications = computed(() => showAllMatchUpdates.value ? notifications.value : notifications.value.slice(0, 4))
 const hiddenNotificationCount = computed(() => Math.max(0, notifications.value.length - visibleNotifications.value.length))
 const notificationGroups = computed(() => {
@@ -75,7 +82,7 @@ const notificationGroups = computed(() => {
 })
 
 function actionLabel(match: MatchCard) {
-  if (match.stage === 'queued') return 'Activate match'
+  if (match.stage === 'queued') return 'See if you can start'
   if (match.proposalStatus === 'cancelled') return 'Plan another date'
   if (match.stage === 'fresh') return 'Start planning'
   if (match.stage === 'confirmed' && match.dateHasPassed) {
@@ -88,8 +95,8 @@ function actionLabel(match: MatchCard) {
   return match.needsResponse ? 'Review proposal' : 'Edit proposal'
 }
 function statusLabel(match: MatchCard) {
-  if (match.stage === 'queued') return 'Waiting for space'
-  if (match.yourMove) return 'Your move'
+  if (match.stage === 'queued') return 'Ready when there’s room'
+  if (match.yourMove) return 'Choose what happens next'
   if (match.proposalStatus === 'cancelled') return 'Date cancelled — ready to plan again'
   if (match.stage === 'fresh') return 'Ready to plan'
   if (match.stage === 'planning') {
@@ -115,9 +122,10 @@ async function activateQueuedMatch(match: MatchCard) {
   activationError[match.id] = ''
   try {
     await $fetch(`/api/matches/${match.id}/activate`, { method: 'POST' })
+    trackProductEvent('Waiting Connection Started')
     match.stage = 'fresh'
     activeMatchCount.value += 1
-    if (match.yourMove) manualMatchCount.value += 1
+    if (match.yourMove) acceptedInterestNeedsActionCount.value += 1
   } catch (error: any) {
     activationError[match.id] = error?.data?.statusMessage || 'This match could not be activated yet.'
   } finally { activatingMatch.value = null }
@@ -216,19 +224,13 @@ async function confirmAttendance(match: MatchCard) {
   } finally { attendanceUpdating.value = null }
 }
 
-function toggleSummaryCounts() {
-  showSummaryCounts.value = !showSummaryCounts.value
-  window.localStorage.setItem('lonely-radish-show-match-counts', String(showSummaryCounts.value))
-}
-
 async function loadMatches() {
   if (import.meta.dev) previewRejected.value = Boolean(window.localStorage.getItem('lonely-radish-preview-rejected-match'))
   const result = await $fetch<{ matches: MatchCard[]; totalMatches: number; activeMatchCount: number; manualMatchCount: number; manualMatchLimit: number; interestReceivedCount: number; activeMatchLimit: number; notifications: MatchNotification[]; unreadNotificationCount: number }>('/api/matches?includeNotifications=true')
   matches.value = result.matches
   totalMatches.value = result.totalMatches
   activeMatchCount.value = result.activeMatchCount
-  manualMatchCount.value = result.manualMatchCount
-  manualMatchLimit.value = result.manualMatchLimit
+  acceptedInterestNeedsActionCount.value = result.manualMatchCount
   interestReceivedCount.value = result.interestReceivedCount
   activeMatchLimit.value = result.activeMatchLimit
   notifications.value = result.notifications
@@ -237,6 +239,13 @@ async function loadMatches() {
     matches.value = [previewMatch, ...matches.value.filter(match => match.id !== previewMatch.id)].slice(0, activeMatchLimit.value)
     totalMatches.value += 1
   }
+  trackProductEvent('Connections Dashboard Viewed', {
+    receivedInterests: interestReceivedCount.value,
+    needsReply: matches.value.filter(match => journeySection(match) === 'respond').length,
+    needsPlan: matches.value.filter(match => journeySection(match) === 'make-plan').length,
+    upcomingDates: matches.value.filter(match => journeySection(match) === 'upcoming').length,
+    waiting: matches.value.filter(match => journeySection(match) === 'waiting').length,
+  })
 }
 async function dismissNotification(id: string) {
   await $fetch(`/api/notifications/${id}/read`, { method: 'POST' })
@@ -257,19 +266,21 @@ async function markAllUpdatesSeen() {
 }
 async function rejectMatch() {
   if (!pendingReject.value) return
+  const connection = pendingReject.value
   rejecting.value = true; rejectError.value = ''
   try {
-    if (pendingReject.value.id === previewMatch.id) {
+    if (connection.id === previewMatch.id) {
       previewRejected.value = true
       window.localStorage.setItem('lonely-radish-preview-rejected-match', JSON.stringify({ endedAt: new Date().toISOString() }))
     }
     else {
-      await $fetch(`/api/matches/${pendingReject.value.id}`, { method: 'DELETE' })
+      await $fetch(`/api/matches/${connection.id}`, { method: 'DELETE' })
+      trackProductEvent('Connection Closed', { stage: connection.stage })
       adjustMatchCount(-1)
     }
     pendingReject.value = null
     await loadMatches()
-  } catch (error: any) { rejectError.value = error?.data?.statusMessage || 'This match could not be removed.' }
+  } catch (error: any) { rejectError.value = error?.data?.statusMessage || 'This connection could not be closed.' }
   finally { rejecting.value = false }
 }
 
@@ -277,7 +288,6 @@ async function loadDashboard() {
   loading.value = true
   errorMessage.value = ''
   updatesError.value = ''
-  showSummaryCounts.value = window.localStorage.getItem('lonely-radish-show-match-counts') !== 'false'
   const matchResult = await Promise.resolve(loadMatches()).then(
     () => ({ status: 'fulfilled' as const }),
     (reason: unknown) => ({ status: 'rejected' as const, reason }),
@@ -298,81 +308,19 @@ onMounted(async () => {
 <template>
   <main class="min-h-screen bg-[#FBF7F1] px-5 py-10 text-[#2A1520] sm:px-8">
     <section class="mx-auto max-w-5xl">
-      <p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">Your matches</p>
-      <h1 class="mt-2 text-4xl font-semibold sm:text-5xl">Who are you making plans with?</h1>
-      <p class="mt-4 max-w-2xl leading-7 text-[#6E4D58]">Pick up a new match, reply to a suggestion or check the details of a date that’s coming up.</p>
+      <p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">Your connections</p>
+      <h1 class="mt-2 text-4xl font-semibold sm:text-5xl">What would you like to do next?</h1>
+      <p class="mt-4 max-w-2xl leading-7 text-[#6E4D58]">Reply to someone, make a plan or check the details of a date that’s coming up.</p>
       <NuxtLink to="/matches/past" class="mt-4 inline-flex text-sm font-semibold text-[#8F1839] hover:underline">View past connections →</NuxtLink>
 
-      <div class="mt-6 flex justify-end"><button type="button" class="inline-flex items-center gap-1.5 text-sm font-semibold text-[#8F1839] hover:underline" :aria-pressed="!showSummaryCounts" @click="toggleSummaryCounts"><EyeOff v-if="showSummaryCounts" class="size-4" aria-hidden="true" /><Eye v-else class="size-4" aria-hidden="true" />{{ showSummaryCounts ? 'Hide counts' : 'Show counts' }}</button></div>
-      <div v-if="showSummaryCounts" class="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-6 sm:gap-4">
-        <NuxtLink to="/interests/received" class="summary-card summary-interested col-span-2 sm:col-span-1 hover:brightness-90"><HeartHandshake class="summary-icon" /><strong>{{ interestReceivedCount }}</strong><span>Interested</span></NuxtLink>
-        <div class="summary-card summary-total"><UsersRound class="summary-icon" /><strong>{{ activeMatchCount }}/{{ activeMatchLimit }}</strong><span>Matches</span></div>
-        <div class="summary-card summary-manual"><HeartHandshake class="summary-icon" /><strong>{{ manualMatchCount }}/{{ manualMatchLimit }}</strong><span>Manual matches</span></div>
-        <div class="summary-card summary-new"><Sparkles class="summary-icon" /><strong>{{ counts.fresh }}</strong><span>New</span></div>
-        <div class="summary-card summary-planning"><Clock3 class="summary-icon" /><strong>{{ counts.planning }}</strong><span>Planning</span></div>
-        <div class="summary-card summary-confirmed"><CalendarCheck class="summary-icon" /><strong>{{ counts.confirmed }}</strong><span>Confirmed</span></div>
-      </div>
-      <div v-if="showSummaryCounts" class="mt-4 grid gap-3 text-xs leading-5 sm:grid-cols-2">
-        <section class="rounded-lg bg-white/70 p-4">
-          <h2 class="font-bold text-[#4D2F39]">Room for {{ activeMatchLimit }} active matches</h2>
-          <p class="mt-1 text-[#6E4D58]">New matches, plans in progress and confirmed dates all count. Waiting matches do not. The same limit applies to everyone so the focus stays on making a real plan.</p>
-        </section>
-        <section class="rounded-lg bg-white/70 p-4">
-          <h2 class="font-bold text-[#4D2F39]">Accepted interests waiting on you: {{ manualMatchCount }}/{{ manualMatchLimit }}</h2>
-          <p class="mt-1 text-[#6E4D58]">After accepting someone, either start a plan or close the match before accepting another interest. This doesn’t affect matches where you had already chosen each other.</p>
-        </section>
-      </div>
-
-      <section v-if="notifications.length" class="updates-panel mt-7" aria-labelledby="match-updates-title">
-        <div class="flex flex-col gap-4 border-b border-[#E8D8C4] px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
-          <div class="flex items-start gap-3">
-            <span class="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#FCE3E8] text-[#B4234A]"><Bell class="size-4.5" aria-hidden="true" /></span>
-            <div>
-              <div class="flex flex-wrap items-center gap-2"><h2 id="match-updates-title" class="font-semibold">Recent updates</h2><span class="rounded-full bg-[#B4234A] px-2 py-0.5 text-[10px] font-extrabold text-white">{{ notifications.length }}</span></div>
-              <p class="mt-1 text-xs text-[#6E4D58]">Things that may still need a reply or a quick look.</p>
-            </div>
-          </div>
-          <div class="flex flex-wrap items-center gap-3 text-xs font-semibold">
-            <button type="button" class="inline-flex items-center gap-1.5 text-[#6E4D58] hover:text-[#8F1839]" :disabled="markingAllUpdatesSeen" @click="markAllUpdatesSeen"><CheckCheck class="size-4" />{{ markingAllUpdatesSeen ? 'Marking…' : 'Mark all seen' }}</button>
-            <NuxtLink to="/notifications" class="inline-flex items-center gap-1.5 text-[#8F1839] hover:underline"><History class="size-4" />Full history</NuxtLink>
-          </div>
-        </div>
-
-        <div class="px-4 py-2 sm:px-5">
-          <section v-for="group in notificationGroups" :key="group.label" class="update-group">
-            <h3 class="update-day">{{ group.label }}</h3>
-            <ol class="update-timeline">
-              <li v-for="notification in group.notifications" :key="notification.id" class="update-item">
-                <span class="update-icon" :class="notificationTone(notification.kind)">
-                  <component :is="notificationIcon(notification.kind)" class="size-4" aria-hidden="true" />
-                </span>
-                <div class="min-w-0 flex-1 pb-4">
-                  <div class="flex items-start justify-between gap-3">
-                    <div class="min-w-0">
-                      <p class="text-[10px] font-extrabold uppercase tracking-wider text-[#8F1839]">{{ notificationCategory(notification.kind) }}</p>
-                      <p class="mt-1 text-sm leading-6 text-[#4D2F39]">{{ notificationCopy(notification) }}</p>
-                    </div>
-                    <time :datetime="notification.createdAt" class="shrink-0 text-[11px] font-semibold text-[#8A6A74]">{{ notificationTime(notification.createdAt) }}</time>
-                  </div>
-                  <div class="mt-2 flex flex-wrap items-center gap-3 text-xs">
-                    <NuxtLink v-if="notification.kind !== 'match_ended'" :to="notificationUrl(notification)" class="font-bold text-[#8F1839]" @click="dismissNotification(notification.id)">Review update</NuxtLink>
-                    <button type="button" class="inline-flex items-center gap-1 text-[#6E4D58] hover:text-[#8F1839]" :aria-label="`Mark ${notificationCategory(notification.kind).toLowerCase()} update as seen`" @click="dismissNotification(notification.id)"><X class="size-3.5" />Mark seen</button>
-                  </div>
-                </div>
-              </li>
-            </ol>
-          </section>
-        </div>
-
-        <button v-if="hiddenNotificationCount" type="button" class="flex w-full items-center justify-center gap-1.5 border-t border-[#E8D8C4] px-4 py-3 text-xs font-bold text-[#8F1839]" @click="showAllMatchUpdates = true">
-          Show {{ hiddenNotificationCount }} older {{ hiddenNotificationCount === 1 ? 'update' : 'updates' }} <ChevronDown class="size-4" />
-        </button>
-        <button v-else-if="showAllMatchUpdates && notifications.length > 4" type="button" class="flex w-full items-center justify-center gap-1.5 border-t border-[#E8D8C4] px-4 py-3 text-xs font-bold text-[#8F1839]" @click="showAllMatchUpdates = false">
-          Show recent only <ChevronDown class="size-4 rotate-180" />
-        </button>
+      <section v-if="interestReceivedCount" class="mt-7 flex flex-col gap-4 rounded-lg bg-[#FCE3E8] p-5 sm:flex-row sm:items-center sm:justify-between">
+        <div><h2 class="font-semibold">{{ interestReceivedCount === 1 ? 'Someone would like to meet you' : `${interestReceivedCount} people would like to meet you` }}</h2><p class="mt-1 text-sm leading-6 text-[#6E4D58]">Have a look when you feel ready. You do not need to decide immediately.</p></div>
+        <NuxtLink to="/interests/received" class="shrink-0 rounded-lg bg-[#B4234A] px-4 py-2.5 text-center text-sm font-semibold text-white">View interests</NuxtLink>
       </section>
+      <p v-if="acceptedInterestNeedsActionCount" class="mt-4 rounded-lg bg-[#FFF1C7] p-4 text-sm leading-6 text-[#694C00]" role="status"><strong>One new connection needs your attention.</strong> Make a plan with them or close the connection before accepting another interest.</p>
+      <p v-if="connectionListFull" class="mt-4 rounded-lg border border-[#E8D8C4] bg-white/75 p-4 text-sm leading-6 text-[#6E4D58]" role="status">You currently have {{ activeMatchLimit }} active connections. Any waiting connection can start after an active one closes.</p>
 
-      <p v-if="additionalMatches" class="mt-6 rounded-lg bg-[#FFF1C7] px-4 py-3 text-sm font-semibold text-[#694C00]">You have {{ additionalMatches }} more {{ additionalMatches === 1 ? 'match' : 'matches' }} waiting. Finish planning or remove a match to see who is next.</p>
+      <p v-if="additionalMatches" class="mt-6 rounded-lg bg-[#FFF1C7] px-4 py-3 text-sm font-semibold text-[#694C00]">You have {{ additionalMatches }} more {{ additionalMatches === 1 ? 'connection' : 'connections' }} not shown here. Close or complete an active connection to bring the next one into view.</p>
 
       <div v-if="loading" class="mt-9 rounded-lg bg-white p-8 text-center text-sm text-[#6E4D58]">Loading your matches and plans…</div>
       <section v-else-if="errorMessage" class="mt-9 rounded-lg bg-[#FCE3E8] p-5 text-sm font-semibold text-[#8F1839]" role="alert">
@@ -386,7 +334,7 @@ onMounted(async () => {
           {{ updatesError }} <button type="button" class="underline" @click="loadDashboard">Try again</button>
         </div>
         <section v-for="section in sections" :key="section.title">
-          <div class="flex items-center gap-2"><component :is="section.icon" class="size-5 text-[#B4234A]" /><h2 class="text-2xl font-semibold">{{ section.title }}</h2><span class="rounded-full bg-white px-2.5 py-1 text-xs font-bold text-[#8F1839]">{{ section.items.length }}</span></div>
+          <div class="flex items-center gap-2"><component :is="section.icon" class="size-5 text-[#B4234A]" /><h2 class="text-2xl font-semibold">{{ section.title }}</h2></div>
           <p class="mt-1 text-sm leading-6 text-[#6E4D58]">{{ section.description }}</p>
           <div v-if="section.items.length" class="mt-4 grid gap-3">
             <article v-for="match in section.items" :key="match.id" class="rounded-lg p-5 shadow-[0_10px_24px_rgba(180,35,74,0.08)]" :class="section.tone">
@@ -402,7 +350,7 @@ onMounted(async () => {
                 <button v-if="match.stage === 'queued'" type="button" class="group inline-flex items-center justify-center gap-2 rounded-lg bg-[#B4234A] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#8F1839] disabled:opacity-50" :disabled="activatingMatch === match.id" @click="activateQueuedMatch(match)">{{ activatingMatch === match.id ? 'Checking space…' : actionLabel(match) }}<ChevronRight class="size-4 transition group-hover:translate-x-1" /></button>
                 <NuxtLink v-else :to="planUrl(match)" class="group inline-flex items-center justify-center gap-2 rounded-lg bg-[#B4234A] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#8F1839]">{{ actionLabel(match) }}<ChevronRight class="size-4 transition group-hover:translate-x-1" /></NuxtLink>
                 <NuxtLink :to="`/profiles/${match.slug}`" class="inline-flex items-center justify-center rounded-lg bg-white/75 px-4 py-2.5 text-sm font-semibold text-[#8F1839] transition hover:bg-white">View {{ match.name }}’s profile</NuxtLink>
-                <button type="button" class="inline-flex items-center justify-center rounded-lg border border-[#B4234A]/30 px-4 py-2.5 text-sm font-semibold text-[#8F1839] transition hover:bg-white/70" @click="pendingReject = match; rejectError = ''">Remove match</button>
+                <button type="button" class="inline-flex items-center justify-center rounded-lg border border-[#B4234A]/30 px-4 py-2.5 text-sm font-semibold text-[#8F1839] transition hover:bg-white/70" @click="pendingReject = match; rejectError = ''">Close connection</button>
               </div>
               <p v-if="activationError[match.id]" class="mt-3 text-xs font-semibold text-[#8F1839]" role="alert">{{ activationError[match.id] }}</p>
               <div v-if="match.stage === 'confirmed' && !match.dateHasPassed" class="mt-4 rounded-lg bg-white/65 p-4">
@@ -424,21 +372,64 @@ onMounted(async () => {
               </div>
             </article>
           </div>
-          <div v-else class="mt-4 rounded-lg border border-dashed border-[#D8C8B6] bg-white/55 px-5 py-6 text-sm text-[#6E4D58]">No {{ section.title.toLowerCase() }} right now.</div>
+        </section>
+        <section v-if="!sections.length" class="rounded-lg bg-white p-8 text-center">
+          <HeartHandshake class="mx-auto size-8 text-[#B4234A]" />
+          <h2 class="mt-3 text-xl font-semibold">No active connections yet</h2>
+          <p class="mt-2 text-sm leading-6 text-[#6E4D58]">Browse date ideas and choose someone you would genuinely like to meet.</p>
         </section>
       </div>
 
-      <NuxtLink to="/activities" class="mt-9 inline-flex items-center gap-2 rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white"><CalendarDays class="size-4" />Discover another date idea</NuxtLink>
+      <section v-if="notifications.length" class="updates-panel mt-10" aria-labelledby="match-updates-title">
+        <div class="flex flex-col gap-4 border-b border-[#E8D8C4] px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+          <div class="flex items-start gap-3">
+            <span class="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#FCE3E8] text-[#B4234A]"><Bell class="size-4.5" aria-hidden="true" /></span>
+            <div>
+              <div class="flex flex-wrap items-center gap-2"><h2 id="match-updates-title" class="font-semibold">Earlier updates</h2><span class="rounded-full bg-[#B4234A] px-2 py-0.5 text-[10px] font-extrabold text-white">{{ notifications.length }}</span></div>
+              <p class="mt-1 text-xs text-[#6E4D58]">A history of recent changes to your connections and plans.</p>
+            </div>
+          </div>
+          <div class="flex flex-wrap items-center gap-3 text-xs font-semibold">
+            <button type="button" class="inline-flex items-center gap-1.5 text-[#6E4D58] hover:text-[#8F1839]" :disabled="markingAllUpdatesSeen" @click="markAllUpdatesSeen"><CheckCheck class="size-4" />{{ markingAllUpdatesSeen ? 'Marking…' : 'Mark all seen' }}</button>
+            <NuxtLink to="/notifications" class="inline-flex items-center gap-1.5 text-[#8F1839] hover:underline"><History class="size-4" />Full history</NuxtLink>
+          </div>
+        </div>
+
+        <div class="px-4 py-2 sm:px-5">
+          <section v-for="group in notificationGroups" :key="group.label" class="update-group">
+            <h3 class="update-day">{{ group.label }}</h3>
+            <ol class="update-timeline">
+              <li v-for="notification in group.notifications" :key="notification.id" class="update-item">
+                <span class="update-icon" :class="notificationTone(notification.kind)"><component :is="notificationIcon(notification.kind)" class="size-4" aria-hidden="true" /></span>
+                <div class="min-w-0 flex-1 pb-4">
+                  <div class="flex items-start justify-between gap-3">
+                    <div class="min-w-0"><p class="text-[10px] font-extrabold uppercase tracking-wider text-[#8F1839]">{{ notificationCategory(notification.kind) }}</p><p class="mt-1 text-sm leading-6 text-[#4D2F39]">{{ notificationCopy(notification) }}</p></div>
+                    <time :datetime="notification.createdAt" class="shrink-0 text-[11px] font-semibold text-[#8A6A74]">{{ notificationTime(notification.createdAt) }}</time>
+                  </div>
+                  <div class="mt-2 flex flex-wrap items-center gap-3 text-xs">
+                    <NuxtLink v-if="notification.kind !== 'match_ended'" :to="notificationUrl(notification)" class="font-bold text-[#8F1839]" @click="dismissNotification(notification.id)">Review update</NuxtLink>
+                    <button type="button" class="inline-flex items-center gap-1 text-[#6E4D58] hover:text-[#8F1839]" :aria-label="`Mark ${notificationCategory(notification.kind).toLowerCase()} update as seen`" @click="dismissNotification(notification.id)"><X class="size-3.5" />Mark seen</button>
+                  </div>
+                </div>
+              </li>
+            </ol>
+          </section>
+        </div>
+        <button v-if="hiddenNotificationCount" type="button" class="flex w-full items-center justify-center gap-1.5 border-t border-[#E8D8C4] px-4 py-3 text-xs font-bold text-[#8F1839]" @click="showAllMatchUpdates = true">Show {{ hiddenNotificationCount }} older {{ hiddenNotificationCount === 1 ? 'update' : 'updates' }} <ChevronDown class="size-4" /></button>
+        <button v-else-if="showAllMatchUpdates && notifications.length > 4" type="button" class="flex w-full items-center justify-center gap-1.5 border-t border-[#E8D8C4] px-4 py-3 text-xs font-bold text-[#8F1839]" @click="showAllMatchUpdates = false">Show recent only <ChevronDown class="size-4 rotate-180" /></button>
+      </section>
+
+      <NuxtLink to="/activities" class="mt-9 inline-flex items-center gap-2 rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white"><CalendarDays class="size-4" />Browse date ideas</NuxtLink>
     </section>
 
     <div v-if="pendingReject" class="fixed inset-0 z-50 flex items-center justify-center bg-[#2A1520]/55 p-5" role="presentation" @click.self="pendingReject = null">
       <section role="alertdialog" aria-modal="true" aria-labelledby="reject-title" class="w-full max-w-md rounded-xl bg-white p-6 shadow-2xl">
-        <h2 id="reject-title" class="text-2xl font-semibold">Remove your match with {{ pendingReject.name }}?</h2>
-        <p class="mt-3 text-sm leading-6 text-[#6E4D58]">This cannot be undone. {{ pendingReject.name }} will be notified that the match ended, and any plans will no longer appear in your match list.</p>
+        <h2 id="reject-title" class="text-2xl font-semibold">Close your connection with {{ pendingReject.name }}?</h2>
+        <p class="mt-3 text-sm leading-6 text-[#6E4D58]">This cannot be undone. {{ pendingReject.name }} will be told that the connection ended, and any plans will no longer appear here.</p>
         <p v-if="rejectError" class="mt-3 text-sm font-semibold text-[#8F1839]" role="alert">{{ rejectError }}</p>
         <div class="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-          <button type="button" class="rounded-lg bg-[#F3E8DA] px-4 py-2.5 text-sm font-semibold" :disabled="rejecting" @click="pendingReject = null">Keep match</button>
-          <button type="button" class="rounded-lg bg-[#B4234A] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50" :disabled="rejecting" @click="rejectMatch">{{ rejecting ? 'Removing…' : 'Yes, remove match' }}</button>
+          <button type="button" class="rounded-lg bg-[#F3E8DA] px-4 py-2.5 text-sm font-semibold" :disabled="rejecting" @click="pendingReject = null">Keep connection</button>
+          <button type="button" class="rounded-lg bg-[#B4234A] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50" :disabled="rejecting" @click="rejectMatch">{{ rejecting ? 'Closing…' : 'Yes, close connection' }}</button>
         </div>
       </section>
     </div>
@@ -446,16 +437,6 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-.summary-card { display: flex; min-width: 0; flex-direction: column; align-items: center; border-radius: .5rem; background: white; padding: 1rem .5rem; box-shadow: 0 8px 20px rgba(180,35,74,.07); }
-.summary-icon { width: 1.1rem; height: 1.1rem; color: #8F1839; margin-bottom: .2rem; }
-.summary-card strong { color: #000; font-size: 1.5rem; }
-.summary-card span { color: #6E4D58; font-size: .75rem; font-weight: 650; }
-.summary-interested { background: #FCE3E8; }
-.summary-total { background: #F3E8DA; }
-.summary-manual { background: #F8E8EE; }
-.summary-new { background: #FFF1C7; }
-.summary-planning { background: #E8E4F4; }
-.summary-confirmed { background: #EAF2DE; }
 .updates-panel { overflow: hidden; border: 1px solid rgba(180,35,74,.12); border-radius: .75rem; background: rgba(255,255,255,.78); box-shadow: 0 10px 26px rgba(180,35,74,.07); }
 .update-group + .update-group { border-top: 1px solid #E8D8C4; }
 .update-day { padding: .8rem 0 .45rem; color: #6E4D58; font-size: .68rem; font-weight: 850; letter-spacing: .08em; text-transform: uppercase; }

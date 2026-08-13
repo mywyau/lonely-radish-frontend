@@ -65,8 +65,9 @@ Keep `DATABASE_URL` out of client runtime configuration and never prefix it with
 - `20260722_allow_follow_up_reconsideration.sql`: answer reveal and one-time no-to-yes reconsideration support.
 - `20260722_enforce_five_active_matches.sql`: concurrency-safe five-person active match limit.
 - `20260723_add_notification_center.sql`: actionable match, planning, and post-date notification types.
-- `20260723_prevent_duplicate_interests.sql`: one permanent outgoing interest per pair.
+- `20260723_prevent_duplicate_interests.sql`: prevents duplicate outgoing interests within the original interest lifecycle.
 - `20260723_add_match_end_history.sql`: match-ending actor, reason, timestamp, and past-connections history support.
 - `20260828_explicit_date_rescheduling.sql`: linked replacement proposals that preserve the confirmed date until a reschedule is accepted.
 - `20260829_structured_meeting_locations.sql`: public venue addresses and normalized UK postcodes for clearer meetup details.
 - `20260914_add_incognito_discovery.sql`: member-controlled incognito discovery with an indexed active-interest visibility path.
+- `20260915_preserve_second_chance_interest_history.sql`: retains completed interest and quota history while allowing one pending interest per pair in a later connection lifecycle.

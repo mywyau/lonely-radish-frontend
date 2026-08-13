@@ -23,7 +23,7 @@ export class MatchRepository {
       [`match-momentum:${recipientId}`])
   }
 
-  async hasPendingManualMatch(recipientId: string) {
+  async hasAcceptedInterestAwaitingAction(recipientId: string) {
     const { rows } = await this.client.query(`select 1 from matches
       where status='active' and action_required_by=$1 and action_completed_at is null
       limit 1`, [recipientId])

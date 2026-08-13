@@ -7,9 +7,14 @@ const read = (path: string) => readFileSync(resolve(process.cwd(), path), 'utf8'
 describe('sent interest feedback and history', () => {
   it('confirms a successful interest immediately', () => {
     const composable = read('composables/useDailyInterest.ts')
+    const profile = read('pages/profiles/[slug].vue')
     expect(composable).toContain('Interest sent to ${profileName}')
     expect(composable).toContain("const sending = useState<boolean>")
-    expect(read('pages/profiles/[slug].vue')).toContain('View sent interests')
+    expect(composable).toContain('interests.value.push(normaliseInterest(response.interest))')
+    expect(composable).not.toContain('interests.value.filter(interest => interest.profileSlug !== profileSlug)')
+    expect(profile).toContain('databaseProfile.value.interestSent = true')
+    expect(profile).toContain('@click="sendProfileInterest"')
+    expect(profile).toContain('View sent interests')
   })
 
   it('lists persisted interests and match outcomes', () => {
@@ -33,5 +38,8 @@ describe('sent interest feedback and history', () => {
     expect(read('pages/profiles/[slug].vue')).toContain('Interest already sent')
     const migration = read('docs/migrations/20260723_prevent_duplicate_interests.sql')
     expect(migration).toContain('daily_interests_sender_recipient_unique')
+    const lifecycleMigration = read('docs/migrations/20260915_preserve_second_chance_interest_history.sql')
+    expect(lifecycleMigration).toContain('where resolved_at is null')
+    expect(lifecycleMigration).not.toContain('delete from daily_interests')
   })
 })

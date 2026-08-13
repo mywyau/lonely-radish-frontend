@@ -80,8 +80,8 @@ export class MatchService {
         return request.response
       }
 
-      if (await repository.hasPendingManualMatch(input.recipientId)) {
-        throw conflict('Take action on your current new match before accepting another interest')
+      if (await repository.hasAcceptedInterestAwaitingAction(input.recipientId)) {
+        throw conflict('Make a plan with your new connection or close it before accepting another interest')
       }
 
       const incoming = await repository.findIncomingInterestForUpdate(
