@@ -226,6 +226,96 @@ describe('interest and match services', () => {
     expect(query.mock.calls.at(-1)?.[0]).toBe('rollback')
   })
 
+  it('preserves the earlier interest when sending one apology-led second chance', async () => {
+    const { database, query } = databaseClient()
+    const resolvePairInterestsThrough = vi.fn()
+    const countSentToday = vi.fn().mockResolvedValue(1)
+    const createInterest = vi.fn().mockResolvedValue({
+      id: 'interest-second-chance', date: '2026-08-30',
+    })
+    const repository = {
+      lockSender: vi.fn(),
+      getSenderForUpdate: vi.fn().mockResolvedValue({
+        accountStatus: 'active', pausedUntil: null, discoveryRestrictedUntil: null,
+      }),
+      findEligibleTarget: vi.fn().mockResolvedValue({ userId: 'user-b', displayName: 'Alex' }),
+      lockPair: vi.fn(),
+      findCurrentMatch: vi.fn().mockResolvedValue(null),
+      findEndedMatch: vi.fn().mockResolvedValue({
+        id: 'match-1', endedBy: 'user-a', endedAt: '2026-08-01T12:00:00.000Z',
+        secondChanceAvailable: true,
+      }),
+      findInterest: vi.fn().mockResolvedValue({ createdAt: '2026-07-30T12:00:00.000Z' }),
+      resolvePairInterestsThrough,
+      countSentToday,
+      hasReverseInterest: vi.fn().mockResolvedValue(false),
+      recipientInboxAcceptingInterests: vi.fn().mockResolvedValue(true),
+      createInterest,
+    } as unknown as InterestRepository
+    const service = new InterestService({
+      database,
+      interests: () => repository,
+      idempotency: () => ({
+        removeExpired: vi.fn(), claim: vi.fn().mockResolvedValue({ claimed: true }), complete: vi.fn(),
+      }) as unknown as IdempotencyRepository,
+      outbox: () => ({ publish: vi.fn() }) as unknown as OutboxRepository,
+      activateMatch: vi.fn(),
+      requestOutboxProcessing: vi.fn(),
+    })
+
+    await expect(service.sendInterest({
+      senderId: 'user-a', profileSlug: 'alex', idempotencyKey: 'request-key-ended-3',
+    })).resolves.toMatchObject({ matched: false, queued: false })
+
+    expect(resolvePairInterestsThrough).toHaveBeenCalledWith(
+      'user-a', 'user-b', '2026-08-01T12:00:00.000Z',
+    )
+    expect(resolvePairInterestsThrough.mock.invocationCallOrder[0])
+      .toBeLessThan(countSentToday.mock.invocationCallOrder[0])
+    expect(createInterest).toHaveBeenCalledOnce()
+    expect(query.mock.calls.at(-1)?.[0]).toBe('commit')
+  })
+
+  it('rejects another interest in the same ended-match lifecycle', async () => {
+    const { database, query } = databaseClient()
+    const resolvePairInterestsThrough = vi.fn()
+    const repository = {
+      lockSender: vi.fn(),
+      getSenderForUpdate: vi.fn().mockResolvedValue({
+        accountStatus: 'active', pausedUntil: null, discoveryRestrictedUntil: null,
+      }),
+      findEligibleTarget: vi.fn().mockResolvedValue({ userId: 'user-b', displayName: 'Alex' }),
+      lockPair: vi.fn(),
+      findCurrentMatch: vi.fn().mockResolvedValue(null),
+      findEndedMatch: vi.fn().mockResolvedValue({
+        id: 'match-1', endedBy: 'user-a', endedAt: '2026-08-01T12:00:00.000Z',
+        secondChanceAvailable: true,
+      }),
+      findInterest: vi.fn().mockResolvedValue({ createdAt: '2026-08-02T12:00:00.000Z' }),
+      resolvePairInterestsThrough,
+      createInterest: vi.fn(),
+    } as unknown as InterestRepository
+    const service = new InterestService({
+      database,
+      interests: () => repository,
+      idempotency: () => ({
+        removeExpired: vi.fn(), claim: vi.fn().mockResolvedValue({ claimed: true }), complete: vi.fn(),
+      }) as unknown as IdempotencyRepository,
+      outbox: () => ({ publish: vi.fn() }) as unknown as OutboxRepository,
+      activateMatch: vi.fn(),
+      requestOutboxProcessing: vi.fn(),
+    })
+
+    await expect(service.sendInterest({
+      senderId: 'user-a', profileSlug: 'alex', idempotencyKey: 'request-key-ended-4',
+    })).rejects.toMatchObject({
+      statusCode: 409, statusMessage: 'You have already sent interest to this person',
+    })
+    expect(resolvePairInterestsThrough).not.toHaveBeenCalled()
+    expect(repository.createInterest).not.toHaveBeenCalled()
+    expect(query.mock.calls.at(-1)?.[0]).toBe('rollback')
+  })
+
   it('does not admit a one-sided interest when the recipient inbox is unavailable', async () => {
     const { database, query } = databaseClient()
     const repository = {
@@ -337,7 +427,7 @@ describe('interest and match services', () => {
     })
     const repository = {
       lockRecipientMomentum,
-      hasPendingManualMatch: vi.fn().mockResolvedValue(false),
+      hasAcceptedInterestAwaitingAction: vi.fn().mockResolvedValue(false),
       findIncomingInterestForUpdate,
       lockPair: vi.fn(),
       isBlocked: vi.fn().mockResolvedValue(false),

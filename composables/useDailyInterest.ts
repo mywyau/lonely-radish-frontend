@@ -79,10 +79,9 @@ export function useDailyInterest() {
     return pendingInterestLoad
   }
 
-  async function showInterest(profileSlug: string, profileName: string, replaceTodaysInterest = false) {
-    if (!import.meta.client || (hasUsedDailyInterest.value && !replaceTodaysInterest)) return false
-    const interestAlreadyCountedToday = replaceTodaysInterest && isTodaysChoice(profileSlug)
-    const remainingAfterSend = Math.max(0, dailyInterestLimit - todaysInterests.value.length - (interestAlreadyCountedToday ? 0 : 1))
+  async function showInterest(profileSlug: string, profileName: string) {
+    if (!import.meta.client || hasUsedDailyInterest.value) return false
+    const remainingAfterSend = Math.max(0, dailyInterestLimit - todaysInterests.value.length - 1)
     const confirmed = window.confirm(`Show interest in ${profileName}? This will use 1 of your 5 daily interests. You will have ${remainingAfterSend} ${remainingAfterSend === 1 ? 'interest' : 'interests'} remaining today.`)
     if (!confirmed) return false
     errorMessage.value = null
@@ -94,7 +93,6 @@ export function useDailyInterest() {
         headers: { 'Idempotency-Key': crypto.randomUUID() },
         body: { profileSlug },
       })
-      interests.value = interests.value.filter(interest => interest.profileSlug !== profileSlug)
       interests.value.push(normaliseInterest(response.interest))
       if (response.matched) adjustMatchCount(1)
       if (response.matched && !response.queued) activeMatchCount.value += 1

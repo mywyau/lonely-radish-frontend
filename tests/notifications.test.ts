@@ -35,15 +35,16 @@ describe('notification centre', () => {
     expect(read('pages/notifications.vue')).toContain('sent you a private message')
   })
 
-  it('presents match updates as an ordered, collapsible timeline', () => {
+  it('presents earlier updates as a secondary ordered, collapsible timeline', () => {
     const page = read('pages/matches/index.vue')
-    expect(page).toContain('Recent updates')
-    expect(page).toContain('Things that may still need a reply or a quick look.')
+    expect(page).toContain('Earlier updates')
+    expect(page).toContain('A history of recent changes to your connections and plans.')
     expect(page).toContain('notificationGroups')
     expect(page).toContain('notificationDayLabel')
     expect(page).toContain('Show {{ hiddenNotificationCount }} older')
     expect(page).toContain('Full history')
     expect(page).toContain("'/api/notifications/read-all'")
+    expect(page.indexOf('v-for="section in sections"')).toBeLessThan(page.indexOf('Earlier updates'))
     expect(page).not.toContain('You have a new match or date-plan update.')
   })
 

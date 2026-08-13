@@ -124,7 +124,7 @@ export class InterestService {
         throw conflict('You have already sent interest to this person')
       }
       if (endedMatch) {
-        await repository.deletePairInterestsThrough(
+        await repository.resolvePairInterestsThrough(
           input.senderId,
           target.userId,
           endedMatch.endedAt,

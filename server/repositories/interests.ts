@@ -108,12 +108,14 @@ export class InterestRepository {
   async findInterest(senderId: string, recipientId: string) {
     const { rows } = await this.client.query<ExistingInterest>(`select
         created_at as "createdAt" from daily_interests
-      where sender_id=$1 and recipient_id=$2 limit 1`, [senderId,recipientId])
+      where sender_id=$1 and recipient_id=$2
+      order by created_at desc limit 1`, [senderId,recipientId])
     return rows[0] ?? null
   }
 
-  async deletePairInterestsThrough(senderId: string, recipientId: string, endedAt: string) {
-    await this.client.query(`delete from daily_interests where
+  async resolvePairInterestsThrough(senderId: string, recipientId: string, endedAt: string) {
+    await this.client.query(`update daily_interests set
+      resolution='expired',resolved_at=now() where resolved_at is null and
       ((sender_id=$1 and recipient_id=$2) or (sender_id=$2 and recipient_id=$1))
       and created_at<=$3`, [senderId,recipientId,endedAt])
   }

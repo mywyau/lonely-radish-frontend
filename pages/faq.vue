@@ -53,8 +53,8 @@ const sections = [
         answer: 'Yes. Turn on “Only people I choose” in your account controls. You can browse normally, but your profile appears only after you show interest in someone. Existing interests, matches and plans keep working. This privacy option is available to everyone and is separate from pausing your profile.',
       },
       {
-        question: 'What is a manual match?',
-        answer: 'This simply means you accepted an interest from someone you had not already chosen. A mutual match happens automatically when you both show interest independently.',
+        question: 'What happens when I accept an interest?',
+        answer: 'You create a new connection and can start making a date plan. If you had already chosen each other, the connection happens automatically.',
       },
       {
         question: 'Why can I accept only one interest at a time?',
@@ -62,7 +62,7 @@ const sections = [
       },
       {
         question: 'What happens when a match is waiting?',
-        answer: 'If either person’s match list is full, the new match waits until you both have room. It stays visible under “Matches waiting” and does not use an active space.',
+        answer: 'If either person’s connection list is full, the new connection waits until you both have room. It stays visible under “Waiting to start” and does not use an active space.',
       },
       {
         question: 'Can I remove a match?',

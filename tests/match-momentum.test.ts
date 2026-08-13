@@ -10,7 +10,7 @@ describe('match momentum', () => {
     const service = read('server/services/matches/MatchService.ts')
     expect(repository).toContain('action_required_by=$2')
     expect(repository).toContain('action_required_by=$1 and action_completed_at is null')
-    expect(service).toContain('Take action on your current new match before accepting another interest')
+    expect(service).toContain('Make a plan with your new connection or close it before accepting another interest')
   })
 
   it('keeps reciprocal interests automatic and free of a required action', () => {
@@ -25,14 +25,14 @@ describe('match momentum', () => {
     const page = read('pages/matches/index.vue')
     expect(read('server/api/proposals/index.post.ts')).toContain('set action_completed_at=now()')
     expect(read('server/api/matches/[id].delete.ts')).toContain("status='unmatched'")
-    expect(page).toContain("if (match.yourMove) return 'Your move'")
+    expect(page).toContain("if (match.yourMove) return 'Choose what happens next'")
     expect(page).toContain("match.yourMove")
     expect(page).toContain("bg-[#FFF1C7] text-[#694C00]")
     expect(page).toContain(':class="statusBadgeClass(match)"')
     expect(page).not.toContain('opening-note')
   })
 
-  it('shows separate total and manual match capacity counters', () => {
+  it('keeps capacity state without exposing internal counters to members', () => {
     const endpoint = read('server/api/matches/index.get.ts')
     const page = read('pages/matches/index.vue')
     expect(endpoint).toContain('action_required_by=$1 and action_completed_at is null')
@@ -40,10 +40,10 @@ describe('match momentum', () => {
     expect(endpoint).toContain('interest_inbox_state')
     expect(endpoint.match(/database\.query/g)).toHaveLength(1)
     expect(endpoint).toContain('manualMatchLimit: 1')
-    expect(page).toContain('{{ activeMatchCount }}/{{ activeMatchLimit }}')
-    expect(page).toContain('{{ manualMatchCount }}/{{ manualMatchLimit }}')
-    expect(page).toContain('Accepted interests waiting on you: {{ manualMatchCount }}/{{ manualMatchLimit }}')
-    expect(page).toContain('This doesn’t affect matches where you had already chosen each other')
+    expect(page).toContain('acceptedInterestNeedsActionCount.value = result.manualMatchCount')
+    expect(page).toContain('v-if="acceptedInterestNeedsActionCount"')
+    expect(page).toContain('v-if="connectionListFull"')
+    expect(page).not.toContain('Manual matches')
   })
 
   it('uses bounded participant lookups and enriches only the visible match page', () => {
@@ -62,8 +62,8 @@ describe('match momentum', () => {
   it('allows received interests to remain visible and be passed on', () => {
     const page = read('pages/interests/received.vue')
     expect(page).toContain('You can still view profiles, pass and show interest in other people.')
-    expect(page).toContain('A maximum of {{ interestLimit }} at a time')
-    expect(page).toContain('Everyone has room for 5 active matches')
+    expect(page).toContain("'people are' }} waiting for your answer")
+    expect(page).not.toContain('manual-match-rules')
     expect(page).toContain('declineInterest(person)')
     expect(read('server/api/interests/[id].delete.ts')).toContain('declined_at=now()')
   })
@@ -93,7 +93,7 @@ describe('match momentum', () => {
     expect(discovery).toContain("m.status in ('active','queued')")
     expect(navigation).toContain("status in ('active','queued')")
     expect(emails).toContain("match_queued: 'matches'")
-    expect(page).toContain("title: 'Matches waiting'")
+    expect(page).toContain("title: 'Waiting to start'")
     expect(page).toContain('activateQueuedMatch(match)')
     expect(migration).toContain("'active','queued','unmatched','blocked'")
     expect(migration).toContain("'match_queued'")

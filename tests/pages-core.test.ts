@@ -112,10 +112,10 @@ describe("core page contracts", () => {
     expect(activityMatches).not.toContain("useDailyInterest()");
     expect(activityMatches).toContain(':to="`/profiles/${person.slug}`"');
     expect(matches).toContain("title: 'Matches & Plans · Lonely Radish'");
-    expect(matches).toContain("Who are you making plans with?");
-    expect(matches).toContain("title: 'New matches'");
-    expect(matches).toContain("title: 'Making plans'");
-    expect(matches).toContain("title: 'Dates coming up'");
+    expect(matches).toContain("What would you like to do next?");
+    expect(matches).toContain("title: 'Reply to a plan'");
+    expect(matches).toContain("title: 'Make a plan'");
+    expect(matches).toContain("title: 'Upcoming dates'");
     expect(matches).toContain("`/profiles/${match.slug}`");
     expect(matches).toContain("View {{ match.name }}’s profile");
     expect(plan).toContain("Plan a date with {{ personName }}");

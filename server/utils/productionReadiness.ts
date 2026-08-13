@@ -1,6 +1,6 @@
 type Environment = Record<string, string | undefined>
 
-export const latestRequiredMigration = '20260914_add_incognito_discovery.sql'
+export const latestRequiredMigration = '20260915_preserve_second_chance_interest_history.sql'
 
 const placeholderPrefixes = [
   'your-',

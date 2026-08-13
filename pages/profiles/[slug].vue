@@ -112,6 +112,14 @@ async function sendApology() {
   finally { apologySending.value = false }
 }
 
+async function sendProfileInterest() {
+  if (!profile.value) return
+  const sent = await showInterest(profileSlug.value, profile.value.name)
+  if (!sent) return
+  if (databaseProfile.value) databaseProfile.value.interestSent = true
+  else if (profiles[profileSlug.value]) profiles[profileSlug.value].interestSent = true
+}
+
 function selectPhoto(index: number) {
   activePhotoIndex.value = index
 }
@@ -293,9 +301,9 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
                 </div>
                 <DailyInterestCounter class="mt-5" :count="todaysInterests.length" :limit="dailyInterestLimit" />
                 <button type="button"
-                  :disabled="sending || profile.isMatched || profile.relationshipStatus === 'queued' || (profile.relationshipStatus === 'unmatched' && !profile.secondChanceAvailable) || profile.interestSent || (profile.relationshipStatus !== 'unmatched' && isTodaysChoice(profileSlug)) || (hasUsedDailyInterest && !(profile.relationshipStatus === 'unmatched' && isTodaysChoice(profileSlug)))"
+                  :disabled="sending || profile.isMatched || profile.relationshipStatus === 'queued' || (profile.relationshipStatus === 'unmatched' && !profile.secondChanceAvailable) || profile.interestSent || (profile.relationshipStatus !== 'unmatched' && isTodaysChoice(profileSlug)) || hasUsedDailyInterest"
                   class="mt-5 inline-flex w-full min-w-0 items-center justify-center gap-2 whitespace-normal break-words rounded-lg bg-[#B4234A] px-3 py-3 text-center text-sm font-semibold text-white transition hover:bg-[#8F1839] disabled:cursor-not-allowed disabled:bg-[#D7A7B3] min-[360px]:px-5"
-                  @click="showInterest(profileSlug, profile.name, profile.relationshipStatus === 'unmatched' && isTodaysChoice(profileSlug))">
+                  @click="sendProfileInterest">
                   <HeartHandshake class="size-4" />{{ sending ? 'Sending…' : profile.isMatched ? `Already matched with ${profile.name}` : profile.relationshipStatus === 'queued' ? `Matched with ${profile.name}` : profile.interestSent || (profile.relationshipStatus !== 'unmatched' &&
                     isTodaysChoice(profileSlug)) ? 'Interest already sent' : profile.relationshipStatus === 'unmatched' &&
                       profile.secondChanceAvailable ? `Show interest in ${profile.name} again` : profile.relationshipStatus
