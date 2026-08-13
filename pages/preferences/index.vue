@@ -54,9 +54,9 @@ onMounted(async () => {
   <main class="min-h-screen bg-[#FBF7F1] px-5 py-10 text-[#2A1520] sm:px-8">
     <section class="mx-auto max-w-6xl">
       <div class="max-w-2xl">
-        <p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">Who you’d like to meet</p>
-        <h1 class="mt-2 text-4xl font-semibold">Your preferences</h1>
-        <p class="mt-3 leading-6 text-[#6E4D58]">Change what you’re looking for, where you’d like to meet and when you’re usually free.</p>
+        <p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">Optional fine-tuning</p>
+        <h1 class="mt-2 text-4xl font-semibold">Match preferences</h1>
+        <p class="mt-3 leading-6 text-[#6E4D58]">You can discover people without completing these settings. Use them whenever you want to narrow who appears, where you would like to meet or when you are usually free.</p>
       </div>
 
       <div class="mt-8 grid items-start gap-6 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">

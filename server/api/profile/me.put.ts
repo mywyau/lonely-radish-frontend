@@ -4,11 +4,12 @@ import { requireUser } from '~/server/utils/requireUser'
 import { objectBody, stringArray, text } from '~/server/utils/productValidation'
 import { isRaceEthnicity, raceEthnicitySelfDescriptionLimit, usesRaceEthnicitySelfDescription } from '~/utils/raceEthnicity'
 import { sexualOrientationValues } from '~/utils/sexualOrientation'
+import { PROFILE_NAME_LIMIT } from '~/utils/profileName'
 
 export default defineEventHandler(async (event) => {
   const { sub } = await requireUser(event)
   const body = objectBody(await readBody(event))
-  const displayName = text(body.displayName, 'Display name', 80, true)
+  const displayName = text(body.displayName, 'Display name', PROFILE_NAME_LIMIT, true)
   const genderIdentity = text(body.genderIdentity, 'Gender identity', 20, true)
   if (!['man', 'woman', 'neither'].includes(genderIdentity as string)) throw createError({ statusCode: 400, statusMessage: 'Select a valid gender identity' })
   const sexualOrientation = text(body.sexualOrientation, 'Sexual orientation', 30, true)

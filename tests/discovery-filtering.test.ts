@@ -39,13 +39,13 @@ describe('scalable discovery filtering', () => {
     expect(migration).toContain('profiles_discovery_birth_date_idx')
   })
 
-  it('offers location controls in onboarding and match preferences', () => {
+  it('collects only location during onboarding and keeps distance in match preferences', () => {
     const onboarding = read('pages/onboarding.vue')
     const preferences = read('pages/preferences/index.vue')
     const endpoint = read('server/api/preferences/general.put.ts')
     const distanceMigration = read('docs/migrations/20260804_increase_maximum_match_distance.sql')
     expect(onboarding).toContain("'/api/profile/location'")
-    expect(onboarding).toContain('type="number" min="1" max="500"')
+    expect(onboarding).not.toContain('type="number" min="1" max="500"')
     expect(preferences).toContain('UK postcode')
     expect(preferences).toContain('type="number" min="1" max="500"')
     expect(endpoint).toContain("'Maximum distance', 1, 500")

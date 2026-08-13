@@ -1,12 +1,13 @@
 import { createError, readBody } from 'h3'
 import { db } from '~/server/repositories/db'
 import { requireUser } from '~/server/utils/requireUser'
+import { PROFILE_NAME_LIMIT } from '~/utils/profileName'
 import { objectBody, text } from '~/server/utils/productValidation'
 
 export default defineEventHandler(async (event) => {
   const { sub } = await requireUser(event)
   const body = objectBody(await readBody(event))
-  const displayName = text(body.displayName, 'Profile name', 80, true)!
+  const displayName = text(body.displayName, 'Profile name', PROFILE_NAME_LIMIT, true)!
 
   const { rows } = await db.query(
     `update profiles

@@ -10,6 +10,22 @@ describe('editable profile name', () => {
     expect(page).toContain('Profile name')
     expect(page).toContain('/api/profile/basics')
     expect(page).toContain('does not change your private first or last name')
+    expect(page).toContain(':maxlength="profileNameLimit"')
+    expect(page).toContain('{{ profile.displayName.length }}/{{ profileNameLimit }}')
+  })
+
+  it('uses the same concise limit in every profile-name entry point', () => {
+    expect(read('utils/profileName.ts')).toContain('PROFILE_NAME_LIMIT = 30')
+    expect(read('pages/onboarding.vue')).toContain('const displayNameLimit = PROFILE_NAME_LIMIT')
+    for (const endpoint of [
+      'server/api/profile/me.put.ts',
+      'server/api/profile/basics.put.ts',
+      'server/api/profile/display-name.put.ts',
+      'server/api/profile/name-availability.get.ts',
+    ]) {
+      expect(read(endpoint)).toContain("from '~/utils/profileName'")
+      expect(read(endpoint)).toContain('PROFILE_NAME_LIMIT')
+    }
   })
 
   it('enforces case-insensitive uniqueness without changing the profile slug', () => {

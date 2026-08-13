@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { ArrowLeft, ArrowRight, Brain, Check, ChevronDown, Compass, Gamepad2, HandHeart, HeartHandshake, HeartPulse, ImagePlus, MoonStar, Sparkles, Trophy, UserRound, UsersRound } from '@lucide/vue'
-import { openRaceEthnicityPreferenceLabel, raceEthnicityOptions, raceEthnicitySelfDescriptionLimit, usesRaceEthnicitySelfDescription } from '~/utils/raceEthnicity'
+import { ArrowLeft, ArrowRight, Brain, Check, ChevronDown, Compass, Gamepad2, HandHeart, HeartPulse, ImagePlus, MapPin, MoonStar, Sparkles, Trophy, UserRound } from '@lucide/vue'
 import { genderIdentityOptions } from '~/utils/genderIdentity'
-import { sexualOrientationOptions, sexualOrientationPreferenceOptions } from '~/utils/sexualOrientation'
+import { sexualOrientationOptions } from '~/utils/sexualOrientation'
 import { trackProductEvent } from '~/utils/productAnalytics'
+import { PROFILE_NAME_LIMIT } from '~/utils/profileName'
 import type { OnboardingBootstrapResponse, OnboardingSelectedActivity } from '~/types/api/onboarding'
 
 definePageMeta({ title: 'Set up your profile · Lonely Radish', middleware: 'logged-in' })
@@ -14,7 +14,7 @@ const { user, resolve, setOnboardingComplete } = useMeStateV2()
 const loading = ref(true)
 const saving = ref(false)
 const errorMessage = ref('')
-const step = ref(1)
+const step = ref<1 | 2 | 3>(1)
 const photoCount = ref(0)
 
 watch(step, async (currentStep, previousStep) => {
@@ -24,17 +24,22 @@ watch(step, async (currentStep, previousStep) => {
 })
 
 const nameLimit = 80
-const displayNameLimit = 80
+const displayNameLimit = PROFILE_NAME_LIMIT
 const pronounsLimit = 40
 const bioLimit = 1000
 const customActivityLimit = 100
-const profile = reactive({ firstName: '', lastName: '', displayName: '', genderIdentity: '', sexualOrientation: '',
-  raceEthnicity: '', raceEthnicitySelfDescription: '', slug: '', dateOfBirth: '', pronouns: '', bio: '', heightCm: null as number | null,
-  weightKg: null as number | null, drinking: '', smoking: '', dailyRhythm: '' })
+const minimumOnboardingActivities = 3
+const onboardingActivityLimit = 3
+const profile = reactive({
+  firstName: '', lastName: '', displayName: '', genderIdentity: '', sexualOrientation: '', slug: '',
+  dateOfBirth: '', pronouns: '', bio: '', raceEthnicity: '', raceEthnicitySelfDescription: '',
+  heightCm: null as number | null, weightKg: null as number | null, drinking: '', smoking: '', dailyRhythm: '',
+})
 const birthDate = reactive({ day: '', month: '', year: '' })
 const profileNameStatus = ref<'idle' | 'checking' | 'available' | 'taken'>('idle')
 const onboardingLocation = reactive({ postcode: '', postcodeArea: '', label: '', hasLocation: false })
 let profileNameCheck = 0
+
 const activityGroups = [
   { name: 'Culture', options: ['Gallery walks', 'Museums', 'Theatre', 'Indie films', 'Live music', 'Comedy nights'] },
   { name: 'Food and drink', options: ['Markets', 'Casual food spots', 'Cooking classes', 'Dessert crawl', 'Picnics', 'Restaurants'] },
@@ -52,23 +57,9 @@ type SelectedActivity = OnboardingSelectedActivity
 const selectedActivities = ref<SelectedActivity[]>([])
 const openActivityGroups = ref<Set<string>>(new Set([activityGroups[0].name]))
 const customActivityInputs = reactive<Record<string, string>>(Object.fromEntries(activityGroups.map(group => [group.name, ''])))
-const activitySelectionLimit = ref(10)
-const activityLimitReached = computed(() => selectedActivities.value.length >= activitySelectionLimit.value)
-const preferences = reactive({ distance: 10, minimumAge: 24, maximumAge: 40, timing: [] as string[], publicOnly: true,
-  genders: [] as string[], openToEveryone: false, orientations: [] as string[], noOrientationPreference: false,
-  raceEthnicities: [] as string[], noRaceEthnicityPreference: true })
-const availabilityDays = reactive([
-  { weekday: 0, name: 'Monday', enabled: false, startTime: '18:00', endTime: '21:00' },
-  { weekday: 1, name: 'Tuesday', enabled: false, startTime: '18:00', endTime: '21:00' },
-  { weekday: 2, name: 'Wednesday', enabled: false, startTime: '18:00', endTime: '21:00' },
-  { weekday: 3, name: 'Thursday', enabled: false, startTime: '18:00', endTime: '21:00' },
-  { weekday: 4, name: 'Friday', enabled: false, startTime: '18:00', endTime: '22:00' },
-  { weekday: 5, name: 'Saturday', enabled: false, startTime: '10:00', endTime: '18:00' },
-  { weekday: 6, name: 'Sunday', enabled: false, startTime: '10:00', endTime: '18:00' },
-])
-const selectedAvailabilityCount = computed(() => availabilityDays.filter(day => day.enabled).length)
-const invalidAvailabilityDay = computed(() => availabilityDays.find(day => day.enabled && day.startTime >= day.endTime))
-const genderOptions = ['Women', 'Men', 'Non-binary']
+const activityLimitReached = computed(() => selectedActivities.value.length >= onboardingActivityLimit)
+const activitiesReady = computed(() => selectedActivities.value.length >= minimumOnboardingActivities)
+const setupReady = computed(() => activitiesReady.value && photoCount.value >= 1)
 const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 const birthYears = Array.from({ length: 83 }, (_, index) => new Date().getFullYear() - 18 - index)
 const birthDays = computed(() => {
@@ -93,32 +84,6 @@ async function checkProfileName() {
     const result = await $fetch<{ available: boolean }>('/api/profile/name-availability', { query: { name } })
     if (request === profileNameCheck) profileNameStatus.value = result.available ? 'available' : 'taken'
   } catch { if (request === profileNameCheck) profileNameStatus.value = 'idle' }
-}
-
-function toggle(list: string[], value: string, limit = 10) {
-  const index = list.indexOf(value)
-  if (index >= 0) list.splice(index, 1)
-  else if (list.length < limit) list.push(value)
-}
-function toggleRaceEthnicity(value: string) {
-  preferences.noRaceEthnicityPreference = false
-  toggle(preferences.raceEthnicities, value, raceEthnicityOptions.length)
-  if (!preferences.raceEthnicities.length) preferences.noRaceEthnicityPreference = true
-}
-function selectNoRacePreference() {
-  preferences.noRaceEthnicityPreference = true
-  preferences.raceEthnicities.splice(0)
-}
-function selectEveryone() {
-  preferences.openToEveryone = true
-  preferences.genders.splice(0)
-}
-function toggleGenderPreference(value: string) {
-  preferences.openToEveryone = false
-  toggle(preferences.genders, value)
-}
-function toggleOrientationPreference(value: string) {
-  toggle(preferences.orientations, value, sexualOrientationPreferenceOptions.length)
 }
 
 function activityIsSelected(name: string) {
@@ -161,7 +126,7 @@ function createProfileSlug() {
 async function load() {
   await resolve()
   const bootstrap = await $fetch<OnboardingBootstrapResponse>('/api/onboarding/bootstrap')
-  const { status, activities: activityData, general, dating, schedule, location: savedLocation } = bootstrap
+  const { status, activities: activityData, location: savedLocation } = bootstrap
   if (status.complete) return router.replace('/')
   step.value = status.nextStep
   photoCount.value = status.photoCount || 0
@@ -171,25 +136,18 @@ async function load() {
     displayName: bootstrap.profile.displayName || '', slug: bootstrap.profile.slug || '',
     genderIdentity: bootstrap.profile.genderIdentity || '', sexualOrientation: bootstrap.profile.sexualOrientation || '',
     raceEthnicity: bootstrap.profile.raceEthnicity || '', raceEthnicitySelfDescription: bootstrap.profile.raceEthnicitySelfDescription || '',
-    dateOfBirth: bootstrap.profile.dateOfBirth?.slice(0, 10) || '', pronouns: bootstrap.profile.pronouns || '', bio: bootstrap.profile.bio || '',
-    heightCm: bootstrap.profile.heightCm || null, weightKg: bootstrap.profile.weightKg || null,
+    dateOfBirth: bootstrap.profile.dateOfBirth?.slice(0, 10) || '', pronouns: bootstrap.profile.pronouns || '',
+    bio: bootstrap.profile.bio || '', heightCm: bootstrap.profile.heightCm || null, weightKg: bootstrap.profile.weightKg || null,
     drinking: bootstrap.profile.drinking || '', smoking: bootstrap.profile.smoking || '', dailyRhythm: bootstrap.profile.dailyRhythm || '',
   })
   if (profile.dateOfBirth) {
     const [year, month, day] = profile.dateOfBirth.split('-')
     Object.assign(birthDate, { year, month, day })
   }
-  selectedActivities.value = activityData.selected
+  selectedActivities.value = activityData.selected.slice(0, onboardingActivityLimit)
   const selectedGroups = selectedActivities.value.map(activity => activity.category)
   openActivityGroups.value = new Set(selectedGroups.length ? selectedGroups : [activityGroups[0].name])
-  activitySelectionLimit.value = activityData.selectionLimit || 10
-  Object.assign(preferences, general, dating)
   Object.assign(onboardingLocation, savedLocation)
-  preferences.publicOnly = schedule.publicOnly ?? preferences.publicOnly
-  for (const window of schedule.windows || []) {
-    const day = availabilityDays.find(item => item.weekday === window.weekday)
-    if (day) { day.enabled = true; day.startTime = window.startTime.slice(0, 5); day.endTime = window.endTime.slice(0, 5) }
-  }
   loading.value = false
 }
 
@@ -204,97 +162,60 @@ async function saveBasics() {
     const account = await $fetch<any>('/api/account/v2/profile', { method: 'POST', body: { firstName: profile.firstName, lastName: profile.lastName } })
     if (user.value) { user.value.firstName = account.firstName; user.value.lastName = account.lastName }
     profile.slug ||= createProfileSlug()
-    await $fetch('/api/profile/me', { method: 'PUT', body: { displayName: profile.displayName, genderIdentity: profile.genderIdentity,
-      sexualOrientation: profile.sexualOrientation, raceEthnicity: profile.raceEthnicity || null,
-      raceEthnicitySelfDescription: profile.raceEthnicitySelfDescription, slug: profile.slug,
-      dateOfBirth: profile.dateOfBirth, pronouns: profile.pronouns, bio: profile.bio, heightCm: profile.heightCm,
-      weightKg: profile.weightKg, drinking: profile.drinking, smoking: profile.smoking, dailyRhythm: profile.dailyRhythm, availability: [] } })
+    await $fetch('/api/profile/me', { method: 'PUT', body: {
+      displayName: profile.displayName, genderIdentity: profile.genderIdentity, sexualOrientation: profile.sexualOrientation,
+      raceEthnicity: profile.raceEthnicity || null, raceEthnicitySelfDescription: profile.raceEthnicitySelfDescription,
+      slug: profile.slug, dateOfBirth: profile.dateOfBirth, pronouns: profile.pronouns, bio: profile.bio,
+      heightCm: profile.heightCm, weightKg: profile.weightKg, drinking: profile.drinking, smoking: profile.smoking,
+      dailyRhythm: profile.dailyRhythm, availability: [],
+    } })
     step.value = 2
   } catch (error: any) { errorMessage.value = error?.data?.statusMessage || 'We could not save your profile.' }
   finally { saving.value = false }
 }
 
-async function saveRacialIdentity() {
+async function saveLocation() {
   errorMessage.value = ''
-  if (!profile.raceEthnicity) { errorMessage.value = 'Choose the option that best describes how you identify.'; return }
-  if (usesRaceEthnicitySelfDescription(profile.raceEthnicity) && !profile.raceEthnicitySelfDescription.trim()) {
-    errorMessage.value = 'Describe your racial or ethnic identity.'; return
-  }
-  saving.value = true
-  try {
-    await $fetch('/api/profile/me', { method: 'PUT', body: { displayName: profile.displayName, genderIdentity: profile.genderIdentity, sexualOrientation: profile.sexualOrientation,
-      raceEthnicity: profile.raceEthnicity, raceEthnicitySelfDescription: profile.raceEthnicitySelfDescription,
-      slug: profile.slug, dateOfBirth: profile.dateOfBirth,
-      pronouns: profile.pronouns, bio: profile.bio, heightCm: profile.heightCm, weightKg: profile.weightKg,
-      drinking: profile.drinking, smoking: profile.smoking, dailyRhythm: profile.dailyRhythm, availability: [] } })
-    step.value = 3
-  } catch (error: any) { errorMessage.value = error?.data?.statusMessage || 'We could not save how you identify.' }
-  finally { saving.value = false }
-}
-
-async function saveActivities() {
-  errorMessage.value = ''
-  if (!selectedActivities.value.length) { errorMessage.value = 'Choose at least one activity.'; return }
-  saving.value = true
-  try { await $fetch('/api/preferences/activities', { method: 'PUT', body: { activities: selectedActivities.value } }); step.value = 4 }
-  catch (error: any) { errorMessage.value = error?.data?.statusMessage || 'We could not save your activities.' }
-  finally { saving.value = false }
-}
-
-async function savePreferences() {
-  errorMessage.value = ''; saving.value = true
   if (!onboardingLocation.hasLocation && !onboardingLocation.postcode.trim()) {
-    errorMessage.value = 'Add your UK postcode so distance matching is accurate.'
-    saving.value = false
-    return
+    errorMessage.value = 'Add your UK postcode so we can show people nearby.'; return
   }
-  if (invalidAvailabilityDay.value) {
-    errorMessage.value = `${invalidAvailabilityDay.value.name} end time must be after its start time.`
-    saving.value = false
-    return
-  }
+  saving.value = true
   try {
     if (onboardingLocation.postcode.trim()) {
       Object.assign(onboardingLocation, await $fetch('/api/profile/location', {
         method: 'PUT', body: { postcode: onboardingLocation.postcode },
       }), { postcode: '' })
     }
-    await Promise.all([
-      $fetch('/api/preferences/general', { method: 'PUT', body: { distance: preferences.distance, minimumAge: preferences.minimumAge,
-        maximumAge: preferences.maximumAge, timing: preferences.timing, publicOnly: preferences.publicOnly } }),
-      $fetch('/api/preferences/schedule', { method: 'PUT', body: { publicOnly: preferences.publicOnly,
-        availabilityVisibleBeforeMatch: false, windows: availabilityDays.filter(day => day.enabled)
-          .map(({ weekday, startTime, endTime }) => ({ weekday, startTime, endTime })) } }),
-    ])
-    step.value = 5
-  } catch (error: any) { errorMessage.value = error?.data?.statusMessage || 'We could not save your preferences.' }
+    step.value = 3
+  } catch (error: any) { errorMessage.value = error?.data?.statusMessage || 'We could not save that location.' }
   finally { saving.value = false }
 }
 
-async function saveDatingPreferences() {
+async function openPhotoSetup() {
   errorMessage.value = ''
-  if (!preferences.openToEveryone && !preferences.genders.length) { errorMessage.value = 'Choose at least one type of person you are open to meeting.'; return }
-  if (!preferences.orientations.length) { errorMessage.value = 'Choose at least one sexual orientation you are open to dating.'; return }
   saving.value = true
   try {
-    await $fetch('/api/preferences/dating', { method: 'PUT', body: { genders: preferences.genders,
-      openToEveryone: preferences.openToEveryone, orientations: preferences.orientations,
-      noOrientationPreference: preferences.noOrientationPreference, raceEthnicities: preferences.raceEthnicities,
-      noRaceEthnicityPreference: preferences.noRaceEthnicityPreference } })
-    step.value = 6
-  } catch (error: any) { errorMessage.value = error?.data?.statusMessage || 'We could not save who you are open to meeting.' }
+    // Persist the member's activity choices before leaving onboarding so the
+    // photo round-trip never discards progress made on this final stage.
+    await $fetch('/api/preferences/activities', { method: 'PUT', body: { activities: selectedActivities.value } })
+    await router.push('/photos?onboarding=1')
+  } catch (error: any) { errorMessage.value = error?.data?.statusMessage || 'We could not save your activities.' }
   finally { saving.value = false }
 }
 
 async function finish() {
-  errorMessage.value = ''; saving.value = true
+  errorMessage.value = ''
+  if (!activitiesReady.value) { errorMessage.value = `Choose ${minimumOnboardingActivities} activities to continue.`; return }
+  if (!photoCount.value) { errorMessage.value = 'Add one profile photo before you start discovering people.'; return }
+  saving.value = true
   try {
+    await $fetch('/api/preferences/activities', { method: 'PUT', body: { activities: selectedActivities.value } })
     await $fetch('/api/onboarding/complete', { method: 'POST' })
     setOnboardingComplete()
-    trackProductEvent('Onboarding Completed', { photoCount: photoCount.value })
+    trackProductEvent('Onboarding Completed', { photoCount: photoCount.value, activityCount: selectedActivities.value.length })
     const redirect = typeof route.query.redirect === 'string' && route.query.redirect.startsWith('/') && !route.query.redirect.startsWith('//')
-      ? route.query.redirect : '/'
-    await router.push(redirect === '/onboarding' ? '/' : redirect)
+      ? route.query.redirect : '/activities'
+    await router.push(redirect === '/onboarding' ? '/activities' : redirect)
   } catch (error: any) { errorMessage.value = error?.data?.statusMessage || 'We could not complete onboarding.' }
   finally { saving.value = false }
 }
@@ -306,109 +227,72 @@ onMounted(() => { load().catch(() => { errorMessage.value = 'We could not load o
   <main class="min-h-screen bg-[#FBF7F1] px-5 py-8 text-[#2A1520] sm:px-8 sm:py-12">
     <section class="mx-auto max-w-3xl">
       <div class="mb-7 flex items-center justify-between gap-4">
-        <div><p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">Set up your profile</p><h1 class="mt-2 text-3xl font-semibold sm:text-4xl">Help people get a feel for who you are.</h1></div>
-        <span class="shrink-0 rounded-full bg-[#FCE3E8] px-3 py-2 text-sm font-semibold text-[#8F1839]">{{ step }} of 6</span>
+        <div><p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">A quick start</p><h1 class="mt-2 text-3xl font-semibold sm:text-4xl">Create enough of your profile to meet someone.</h1></div>
+        <span class="shrink-0 rounded-full bg-[#FCE3E8] px-3 py-2 text-sm font-semibold text-[#8F1839]">{{ step }} of 3</span>
       </div>
-      <div class="mb-6 grid grid-cols-6 gap-2" aria-label="Onboarding progress"><span v-for="number in 6" :key="number" class="h-2 rounded-full" :class="number <= step ? 'bg-[#B4234A]' : 'bg-[#E8D8C4]'" /></div>
-      <p class="mb-6 rounded-lg bg-[#F3E8DA] px-4 py-3 text-sm text-[#4D2F39]">Nothing is set in stone. You can update your profile, activities, preferences and photos later from your account.</p>
+      <div class="mb-6 grid grid-cols-3 gap-2" aria-label="Onboarding progress"><span v-for="number in 3" :key="number" class="h-2 rounded-full" :class="number <= step ? 'bg-[#B4234A]' : 'bg-[#E8D8C4]'" /></div>
+      <p class="mb-6 rounded-lg bg-[#F3E8DA] px-4 py-3 text-sm leading-6 text-[#4D2F39]">We’ll ask only for what you need to get started. Age, distance, dating, lifestyle and schedule filters remain available later in <strong>Match preferences</strong>.</p>
 
       <div v-if="loading" class="rounded-lg bg-white p-8 text-center text-[#6E4D58]">Loading your profile…</div>
 
       <form v-else-if="step === 1" class="onboarding-card" @submit.prevent="saveBasics">
-        <div class="step-title"><UserRound class="size-5 text-[#B4234A]" /><div><h2>A little about you</h2><p>Start with the details people will see on your profile.</p></div></div>
+        <div class="step-title"><UserRound class="size-5 text-[#B4234A]" /><div><h2>About you</h2><p>Add the essentials people need to know before deciding whether they would like to meet.</p></div></div>
         <div class="mt-6 grid gap-4 sm:grid-cols-2">
           <label>First name <input v-model="profile.firstName" required :maxlength="nameLimit" autocomplete="given-name" placeholder="Your first name"></label>
           <label>Last name <input v-model="profile.lastName" required :maxlength="nameLimit" autocomplete="family-name" placeholder="Your last name"></label>
           <label class="sm:col-span-2">Profile name <input v-model="profile.displayName" required :maxlength="displayNameLimit" autocomplete="nickname" placeholder="Name shown to other members" @input="profileNameStatus = 'idle'" @blur="checkProfileName"><span v-if="profileNameStatus === 'checking'" class="field-hint">Checking availability…</span><span v-else-if="profileNameStatus === 'available'" class="field-hint success">Name available</span><span v-else-if="profileNameStatus === 'taken'" class="field-hint error">That name is already in use</span><span class="field-hint text-right">{{ profile.displayName.length }}/{{ displayNameLimit }}</span></label>
           <label>How do you identify?<select v-model="profile.genderIdentity" required><option value="" disabled>Select an option</option><option v-for="option in genderIdentityOptions" :key="option.value" :value="option.value">{{ option.label }}</option></select></label>
           <label>Sexual orientation<select v-model="profile.sexualOrientation" required><option value="" disabled>Select an option</option><option v-for="option in sexualOrientationOptions" :key="option.value" :value="option.value">{{ option.label }}</option></select></label>
-          <label>Pronouns <input v-model="profile.pronouns" :maxlength="pronounsLimit" autocomplete="off" placeholder="Optional"></label>
-          <fieldset class="dob-field sm:col-span-2"><legend>Date of birth</legend><p class="field-hint">You must be 18 or over. This is never shown publicly.</p><div class="dob-grid"><label><span>Day</span><select v-model="birthDate.day" required @change="updateDateOfBirth"><option value="" disabled>Day</option><option v-for="day in birthDays" :key="day" :value="String(day)">{{ day }}</option></select></label><label><span>Month</span><select v-model="birthDate.month" required @change="updateDateOfBirth"><option value="" disabled>Month</option><option v-for="(month, index) in months" :key="month" :value="String(index + 1)">{{ month }}</option></select></label><label><span>Year</span><select v-model="birthDate.year" required @change="updateDateOfBirth"><option value="" disabled>Year</option><option v-for="year in birthYears" :key="year" :value="String(year)">{{ year }}</option></select></label></div></fieldset>
-          <label class="sm:col-span-2">Short bio <textarea v-model="profile.bio" required :maxlength="bioLimit" rows="5" placeholder="What are you like, and how do you enjoy spending your time?" /><span class="field-hint text-right">{{ profile.bio.length }}/{{ bioLimit }}</span></label>
-          <label>Height <span class="font-normal text-[#6E4D58]">(optional)</span><input v-model.number="profile.heightCm" type="number" min="120" max="230" placeholder="Height in cm"></label>
-          <label>Weight <span class="font-normal text-[#6E4D58]">(optional)</span><input v-model.number="profile.weightKg" type="number" min="35" max="300" placeholder="Weight in kg"></label>
-          <label>Daily rhythm <span class="font-normal text-[#6E4D58]">(optional)</span><select v-model="profile.dailyRhythm"><option value="">Not set</option><option value="early_bird">Early bird — prefers mornings</option><option value="night_owl">Night owl — prefers evenings</option><option value="flexible">Flexible — mornings or evenings</option></select></label>
-          <label>Drinking <span class="font-normal text-[#6E4D58]">(optional)</span><select v-model="profile.drinking"><option value="">Not set</option><option value="never">Never</option><option value="socially">Socially</option><option value="regularly">Regularly</option><option value="prefer_not_to_say">Prefer not to say</option></select></label>
-          <label>Smoking <span class="font-normal text-[#6E4D58]">(optional)</span><select v-model="profile.smoking"><option value="">Not set</option><option value="never">Never</option><option value="socially">Socially</option><option value="regularly">Regularly</option><option value="prefer_not_to_say">Prefer not to say</option></select></label>
+          <label class="sm:col-span-2">Pronouns <span class="font-normal text-[#6E4D58]">(optional)</span><input v-model="profile.pronouns" :maxlength="pronounsLimit" autocomplete="off" placeholder="For example, she/her"></label>
+          <fieldset class="dob-field sm:col-span-2"><legend>Date of birth</legend><p class="field-hint">You must be 18 or over. Your birth date is never shown publicly.</p><div class="dob-grid"><label><span>Day</span><select v-model="birthDate.day" required @change="updateDateOfBirth"><option value="" disabled>Day</option><option v-for="day in birthDays" :key="day" :value="String(day)">{{ day }}</option></select></label><label><span>Month</span><select v-model="birthDate.month" required @change="updateDateOfBirth"><option value="" disabled>Month</option><option v-for="(month, index) in months" :key="month" :value="String(index + 1)">{{ month }}</option></select></label><label><span>Year</span><select v-model="birthDate.year" required @change="updateDateOfBirth"><option value="" disabled>Year</option><option v-for="year in birthYears" :key="year" :value="String(year)">{{ year }}</option></select></label></div></fieldset>
+          <label class="sm:col-span-2">Short introduction <textarea v-model="profile.bio" required :maxlength="bioLimit" rows="4" placeholder="What are you like, and what would you enjoy doing with someone new?" /><span class="field-hint text-right">{{ profile.bio.length }}/{{ bioLimit }}</span></label>
         </div>
         <p class="mt-3 text-xs text-[#6E4D58]">Your surname and date of birth are not displayed on your public profile.</p>
         <div class="actions"><button :disabled="saving" class="primary" type="submit">{{ saving ? 'Saving…' : 'Continue' }}<ArrowRight class="size-4" /></button></div>
       </form>
 
-      <form v-else-if="step === 2" class="onboarding-card" @submit.prevent="saveRacialIdentity">
-        <div class="step-title"><UserRound class="size-5 text-[#B4234A]" /><div><h2>How do you racially or ethnically identify?</h2><p>Choose the broad option that fits best. You can add your own words if needed and change this later.</p></div></div>
-        <fieldset class="meeting-preferences"><legend>Your identity</legend><div class="mt-3 grid gap-2 sm:grid-cols-2"><button v-for="option in raceEthnicityOptions" :key="option" type="button" class="meeting-choice" :class="profile.raceEthnicity === option && 'selected'" :aria-pressed="profile.raceEthnicity === option" @click="profile.raceEthnicity = option"><span class="choice-indicator" aria-hidden="true">{{ profile.raceEthnicity === option ? '✓' : '' }}</span><span>{{ option }}</span></button></div><label v-if="usesRaceEthnicitySelfDescription(profile.raceEthnicity)" class="mt-4 block">How do you describe your background?<input v-model="profile.raceEthnicitySelfDescription" class="mt-2 w-full" :maxlength="raceEthnicitySelfDescriptionLimit" required placeholder="Use the words that feel right to you"><span class="field-hint text-right">{{ profile.raceEthnicitySelfDescription.length }}/{{ raceEthnicitySelfDescriptionLimit }}</span></label></fieldset>
-        <div class="actions"><button class="secondary" type="button" @click="step = 1"><ArrowLeft class="size-4" />Back</button><button :disabled="saving || !profile.raceEthnicity || (usesRaceEthnicitySelfDescription(profile.raceEthnicity) && !profile.raceEthnicitySelfDescription.trim())" class="primary" type="submit">{{ saving ? 'Saving…' : 'Continue' }}<ArrowRight class="size-4" /></button></div>
-      </form>
-
-      <form v-else-if="step === 3" class="onboarding-card" @submit.prevent="saveActivities">
-        <div class="step-title"><Sparkles class="size-5 text-[#B4234A]" /><div><h2>What would you enjoy doing together?</h2><p>Choose up to {{ activitySelectionLimit }} ideas for a date. We’ll use them to help the right people find you.</p></div></div>
-        <section v-if="selectedActivities.length" class="mt-5 rounded-lg bg-[#FCE3E8] p-4"><h3 class="font-semibold">Your interests ({{ selectedActivities.length }}/{{ activitySelectionLimit }})</h3><p v-if="activityLimitReached" class="mt-1 text-sm font-semibold text-[#8F1839]">You have selected the maximum of {{ activitySelectionLimit }} interests.</p><div class="mt-3 flex flex-wrap gap-2"><button v-for="activity in selectedActivities" :key="activity.name" type="button" class="rounded-full bg-white px-3 py-2 text-sm font-semibold text-[#8F1839]" @click="toggleActivity(activity.name, activity.category, activity.custom)">{{ activity.name }} ×</button></div></section>
-        <div class="mt-6 space-y-4">
-          <section v-for="group in activityGroups" :key="group.name" class="activity-group overflow-hidden">
-            <h3>
-              <button type="button" class="flex w-full items-center gap-3 text-left" :aria-expanded="openActivityGroups.has(group.name)" :aria-controls="activityGroupId(group.name)" @click="toggleActivityGroup(group.name)">
-                <component :is="activityGroupIcons[group.name] || Sparkles" class="size-5 shrink-0 text-[#B4234A]" />
-                <span class="flex-1 font-semibold">{{ group.name }}</span>
-                <span v-if="selectedActivityCount(group.name)" class="rounded-full bg-[#FCE3E8] px-2.5 py-1 text-xs font-bold text-[#8F1839]">{{ selectedActivityCount(group.name) }} selected</span>
-                <ChevronDown class="size-5 shrink-0 text-[#6E4D58] transition-transform duration-200" :class="openActivityGroups.has(group.name) && 'rotate-180'" aria-hidden="true" />
-              </button>
-            </h3>
-            <div v-show="openActivityGroups.has(group.name)" :id="activityGroupId(group.name)" class="mt-4 border-t border-[#F3E8DA] pt-4">
-              <div class="flex flex-wrap gap-2"><button v-for="activity in group.options" :key="activity" type="button" class="choice" :class="activityIsSelected(activity) && 'selected'" :aria-pressed="activityIsSelected(activity)" :disabled="activityLimitReached && !activityIsSelected(activity)" @click="toggleActivity(activity, group.name)">{{ activity }}</button></div>
-              <div v-if="selectedActivities.some(activity => activity.custom && activity.category === group.name)" class="mt-3 flex flex-wrap gap-2"><button v-for="activity in selectedActivities.filter(activity => activity.custom && activity.category === group.name)" :key="activity.name" type="button" class="custom-choice" :aria-label="`Remove custom activity ${activity.name}`" @click="toggleActivity(activity.name, group.name, true)">{{ activity.name }} ×</button></div>
-              <label class="mt-4 block">Add your own {{ group.name.toLowerCase() }} activity <span class="font-normal text-[#6E4D58]">({{ customActivityCount(group.name) }}/3)</span></label>
-              <div class="mt-2 flex flex-col gap-2 sm:flex-row"><input v-model="customActivityInputs[group.name]" :maxlength="customActivityLimit" :disabled="activityLimitReached || customActivityCount(group.name) >= 3" class="min-w-0 flex-1" :placeholder="`Add something to ${group.name}`" @keydown.enter.prevent="addCustomActivity(group.name)"><button type="button" class="add-activity" :disabled="activityLimitReached || customActivityCount(group.name) >= 3 || !customActivityInputs[group.name].trim()" @click="addCustomActivity(group.name)">Add</button></div>
-            </div>
-          </section>
-        </div>
-        <div class="actions"><button class="secondary" type="button" @click="step = 2"><ArrowLeft class="size-4" />Back</button><button :disabled="saving || !selectedActivities.length" class="primary" type="submit">{{ saving ? 'Saving…' : 'Continue' }}<ArrowRight class="size-4" /></button></div>
-      </form>
-
-      <form v-else-if="step === 4" class="onboarding-card" @submit.prevent="savePreferences">
-        <div class="step-title"><HeartHandshake class="size-5 text-[#B4234A]" /><div><h2>Who would you like to meet?</h2><p>Choose a distance and age range that feel practical. You can change these later.</p></div></div>
-        <div class="mt-6 grid gap-5 sm:grid-cols-2">
-          <label>Maximum distance
-            <span class="field-with-suffix">
-              <input v-model.number="preferences.distance" class="field-with-suffix__input" type="number" min="1" max="500" required aria-describedby="onboarding-distance-unit">
-              <span id="onboarding-distance-unit" class="field-with-suffix__label">km</span>
-            </span>
-          </label>
-          <div class="grid grid-cols-2 gap-3"><label>Minimum age <input v-model.number="preferences.minimumAge" type="number" min="18" max="100"></label><label>Maximum age <input v-model.number="preferences.maximumAge" type="number" min="18" max="100"></label></div>
-        </div>
-        <section class="mt-5 rounded-lg bg-[#FBF7F1] p-4">
+      <form v-else-if="step === 2" class="onboarding-card" @submit.prevent="saveLocation">
+        <div class="step-title"><MapPin class="size-5 text-[#B4234A]" /><div><h2>Where should we look?</h2><p>We use an approximate location to show people nearby. Your full postcode is never stored or displayed.</p></div></div>
+        <section class="mt-6 rounded-lg bg-[#FBF7F1] p-5">
           <label>UK postcode <input v-model="onboardingLocation.postcode" maxlength="16" autocomplete="postal-code" :required="!onboardingLocation.hasLocation" :placeholder="onboardingLocation.hasLocation ? 'Enter a new postcode to update it' : 'For example, SW1A 1AA'"></label>
-          <p class="mt-2 text-xs font-normal leading-5 text-[#6E4D58]">Used to filter by your distance preference. We retain only an approximate point and postcode area, never your full postcode.</p>
-          <p v-if="onboardingLocation.hasLocation" class="mt-2 text-sm font-semibold text-[#52713A]">Location set: {{ onboardingLocation.label }} · {{ onboardingLocation.postcodeArea }}</p>
+          <p class="mt-2 text-xs font-normal leading-5 text-[#6E4D58]">We retain only an approximate point and postcode area.</p>
+          <p v-if="onboardingLocation.hasLocation" class="mt-3 text-sm font-semibold text-[#52713A]">Location set: {{ onboardingLocation.label }} · {{ onboardingLocation.postcodeArea }}</p>
         </section>
-        <fieldset><legend>Weekly availability</legend><p class="mt-1 text-sm font-normal leading-6 text-[#6E4D58]">Select the days you are generally free, then set the earliest and latest time that usually works. Matches can use this later when suggesting a date.</p><div class="mt-4 grid gap-3 md:grid-cols-2"><article v-for="day in availabilityDays" :key="day.weekday" class="availability-day" :class="day.enabled && 'enabled'"><div class="flex items-center justify-between gap-4"><label class="flex items-center gap-3"><input v-model="day.enabled" type="checkbox" class="size-4 accent-[#B4234A]">{{ day.name }}</label><span class="text-xs font-semibold text-[#6E4D58]">{{ day.enabled ? 'Available' : 'Not available' }}</span></div><div v-if="day.enabled" class="mt-4 grid grid-cols-2 gap-3"><label>From<input v-model="day.startTime" required type="time"></label><label>Until<input v-model="day.endTime" required type="time"></label></div></article></div><p class="mt-3 text-sm font-semibold text-[#6E4D58]">{{ selectedAvailabilityCount ? `${selectedAvailabilityCount} ${selectedAvailabilityCount === 1 ? 'day' : 'days'} selected` : 'No regular availability selected yet' }}</p></fieldset>
-        <label class="check mt-5"><input v-model="preferences.publicOnly" type="checkbox"> Only suggest public places for first meetings</label>
-        <div class="actions"><button class="secondary" type="button" @click="step = 3"><ArrowLeft class="size-4" />Back</button><button :disabled="saving || preferences.minimumAge > preferences.maximumAge || Boolean(invalidAvailabilityDay)" class="primary" type="submit">{{ saving ? 'Saving…' : 'Continue' }}<ArrowRight class="size-4" /></button></div>
-      </form>
-
-      <form v-else-if="step === 5" class="onboarding-card" @submit.prevent="saveDatingPreferences">
-        <div class="step-title"><UsersRound class="size-5 text-[#B4234A]" /><div><h2>Who are you open to dating?</h2><p>These choices stay private and affect who you see. You can change them whenever you like.</p></div></div>
-        <fieldset class="meeting-preferences"><legend>Gender preferences</legend><p class="mt-1 text-sm font-normal leading-6 text-[#6E4D58]">Choose everyone, or select one or more types of people you are open to dating.</p><div class="mt-4 grid gap-2 sm:grid-cols-2"><button type="button" class="meeting-choice sm:col-span-2" :class="preferences.openToEveryone && 'selected'" :aria-pressed="preferences.openToEveryone" @click="selectEveryone"><span class="choice-indicator" aria-hidden="true">{{ preferences.openToEveryone ? '✓' : '' }}</span><span>Everyone</span></button><button v-for="option in genderOptions" :key="option" type="button" class="meeting-choice" :class="preferences.genders.includes(option) && 'selected'" :aria-pressed="preferences.genders.includes(option)" @click="toggleGenderPreference(option)"><span class="choice-indicator" aria-hidden="true">{{ preferences.genders.includes(option) ? '✓' : '' }}</span><span>{{ option }}</span></button></div><p class="mt-3 text-xs font-semibold text-[#6E4D58]">{{ preferences.openToEveryone ? 'Everyone selected' : preferences.genders.length ? `${preferences.genders.length} selected` : 'Select at least one option' }}</p></fieldset>
-        <fieldset class="meeting-preferences"><legend>Sexual orientation preferences</legend><p class="mt-1 text-sm font-normal leading-6 text-[#6E4D58]">Choose one or more orientations you are open to dating, separately from gender.</p><div class="mt-4 grid gap-2 sm:grid-cols-3"><button v-for="option in sexualOrientationPreferenceOptions" :key="option.value" type="button" class="meeting-choice" :class="preferences.orientations.includes(option.value) && 'selected'" :aria-pressed="preferences.orientations.includes(option.value)" @click="toggleOrientationPreference(option.value)"><span class="choice-indicator" aria-hidden="true">{{ preferences.orientations.includes(option.value) ? '✓' : '' }}</span><span>{{ option.label }}</span></button></div><p class="mt-3 text-xs leading-5 text-[#6E4D58]">“Homosexual” includes people who describe themselves as gay or lesbian.</p><p class="mt-2 text-xs font-semibold text-[#6E4D58]">{{ preferences.orientations.length ? `${preferences.orientations.length} selected` : 'Select at least one orientation' }}</p></fieldset>
-        <fieldset class="meeting-preferences"><legend>Racial and ethnic preferences</legend><p class="mt-1 text-sm font-normal leading-6 text-[#6E4D58]">Optional. Choose one or more broad backgrounds, or keep your match pool open.</p><div class="mt-4 grid gap-2 sm:grid-cols-2"><button type="button" class="meeting-choice sm:col-span-2" :class="preferences.noRaceEthnicityPreference && 'selected'" :aria-pressed="preferences.noRaceEthnicityPreference" @click="selectNoRacePreference"><span class="choice-indicator" aria-hidden="true">{{ preferences.noRaceEthnicityPreference ? '✓' : '' }}</span><span>{{ openRaceEthnicityPreferenceLabel }}</span></button><button v-for="option in raceEthnicityOptions" :key="option" type="button" class="meeting-choice" :class="preferences.raceEthnicities.includes(option) && 'selected'" :aria-pressed="preferences.raceEthnicities.includes(option)" @click="toggleRaceEthnicity(option)"><span class="choice-indicator" aria-hidden="true">{{ preferences.raceEthnicities.includes(option) ? '✓' : '' }}</span><span>{{ option }}</span></button></div><p class="mt-3 text-xs leading-5 text-[#6E4D58]">Identity is personal and nuanced. These broad options are matching controls only.</p></fieldset>
-        <div class="actions"><button class="secondary" type="button" @click="step = 4"><ArrowLeft class="size-4" />Back</button><button :disabled="saving || (!preferences.openToEveryone && !preferences.genders.length) || !preferences.orientations.length" class="primary" type="submit">{{ saving ? 'Saving…' : 'Continue' }}<ArrowRight class="size-4" /></button></div>
+        <div class="mt-5 rounded-lg border border-[#E8D8C4] bg-white p-4 text-sm leading-6 text-[#4D2F39]"><strong>Start broad, fine-tune later.</strong> Discovery begins with inclusive defaults. You can change distance, age, gender, orientation and racial or ethnic preferences from Match preferences whenever you are ready.</div>
+        <div class="actions"><button class="secondary" type="button" @click="step = 1"><ArrowLeft class="size-4" />Back</button><button :disabled="saving" class="primary" type="submit">{{ saving ? 'Saving…' : 'Continue' }}<ArrowRight class="size-4" /></button></div>
       </form>
 
       <section v-else class="onboarding-card">
-        <div class="step-title"><ImagePlus class="size-5 text-[#B4234A]" /><div><h2>Add a profile photo</h2><p>A clear photo helps people know who they might meet, but you can add one later. You can add up to six.</p></div></div>
-        <div class="mt-6 rounded-lg bg-[#FBF7F1] p-5 text-sm leading-6 text-[#6E4D58]">
-          <p v-if="photoCount">You have {{ photoCount }} {{ photoCount === 1 ? 'photo' : 'photos' }} ready.</p>
-          <p v-else>You can upload a JPEG, PNG or WebP image now, or skip this step and add one from your account later.</p>
+        <div class="step-title"><Sparkles class="size-5 text-[#B4234A]" /><div><h2>What would you enjoy doing together?</h2><p>Choose three genuine date ideas and add one clear profile photo.</p></div></div>
+
+        <section class="mt-5 rounded-lg p-4" :class="activitiesReady ? 'bg-[#EAF2DE]' : 'bg-[#FCE3E8]'">
+          <h3 class="font-semibold">Your activities ({{ selectedActivities.length }}/{{ onboardingActivityLimit }})</h3>
+          <p class="mt-1 text-sm text-[#4D2F39]">{{ activitiesReady ? 'That gives people an easy place to begin.' : `Choose ${minimumOnboardingActivities - selectedActivities.length} more.` }}</p>
+          <div v-if="selectedActivities.length" class="mt-3 flex flex-wrap gap-2"><button v-for="activity in selectedActivities" :key="activity.name" type="button" class="rounded-full bg-white px-3 py-2 text-sm font-semibold text-[#8F1839]" @click="toggleActivity(activity.name, activity.category, activity.custom)">{{ activity.name }} ×</button></div>
+        </section>
+
+        <div class="mt-6 space-y-3">
+          <section v-for="group in activityGroups" :key="group.name" class="activity-group overflow-hidden">
+            <h3><button type="button" class="flex w-full items-center gap-3 text-left" :aria-expanded="openActivityGroups.has(group.name)" :aria-controls="activityGroupId(group.name)" @click="toggleActivityGroup(group.name)"><component :is="activityGroupIcons[group.name] || Sparkles" class="size-5 shrink-0 text-[#B4234A]" /><span class="flex-1 font-semibold">{{ group.name }}</span><span v-if="selectedActivityCount(group.name)" class="rounded-full bg-[#FCE3E8] px-2.5 py-1 text-xs font-bold text-[#8F1839]">{{ selectedActivityCount(group.name) }} selected</span><ChevronDown class="size-5 shrink-0 text-[#6E4D58] transition-transform duration-200" :class="openActivityGroups.has(group.name) && 'rotate-180'" /></button></h3>
+            <div v-show="openActivityGroups.has(group.name)" :id="activityGroupId(group.name)" class="mt-4 border-t border-[#F3E8DA] pt-4">
+              <div class="flex flex-wrap gap-2"><button v-for="activity in group.options" :key="activity" type="button" class="choice" :class="activityIsSelected(activity) && 'selected'" :aria-pressed="activityIsSelected(activity)" :disabled="activityLimitReached && !activityIsSelected(activity)" @click="toggleActivity(activity, group.name)">{{ activity }}</button></div>
+              <label class="mt-4 block">Add your own idea</label><div class="mt-2 flex flex-col gap-2 sm:flex-row"><input v-model="customActivityInputs[group.name]" :maxlength="customActivityLimit" :disabled="activityLimitReached" class="min-w-0 flex-1" :placeholder="`Add something to ${group.name}`" @keydown.enter.prevent="addCustomActivity(group.name)"><button type="button" class="add-activity" :disabled="activityLimitReached || !customActivityInputs[group.name].trim()" @click="addCustomActivity(group.name)">Add</button></div>
+            </div>
+          </section>
         </div>
-        <p class="mt-5 text-xs leading-5 text-[#6E4D58]">
-          By finishing setup, you agree to our
-          <NuxtLink to="/terms-of-service" class="font-semibold text-[#4D2F39] hover:text-[#B4234A] hover:underline">Terms of Service</NuxtLink>
-          and
-          <NuxtLink to="/acceptable-use" class="font-semibold text-[#4D2F39] hover:text-[#B4234A] hover:underline">Acceptable Use Policy</NuxtLink>.
-        </p>
-        <div class="actions"><button class="secondary" type="button" @click="step = 5"><ArrowLeft class="size-4" />Back</button><NuxtLink to="/photos?onboarding=1" class="secondary"><ImagePlus class="size-4" />{{ photoCount ? 'Manage photos' : 'Upload a photo' }}</NuxtLink><button :disabled="saving" class="primary" type="button" @click="finish"><Check class="size-4" />{{ saving ? 'Finishing…' : photoCount ? 'Finish setup' : 'Skip for now and finish' }}</button></div>
+
+        <section class="mt-6 rounded-lg border p-5" :class="photoCount ? 'border-[#C9D8B5] bg-[#EAF2DE]' : 'border-[#E8D8C4] bg-[#FBF7F1]'">
+          <div class="flex items-start gap-3"><ImagePlus class="mt-0.5 size-5 shrink-0 text-[#B4234A]" /><div class="min-w-0 flex-1"><h3 class="font-semibold">{{ photoCount ? 'Profile photo added' : 'Add one profile photo' }}</h3><p class="mt-1 text-sm leading-6 text-[#6E4D58]">{{ photoCount ? `You have ${photoCount} ${photoCount === 1 ? 'photo' : 'photos'}. You can add more later.` : 'A clear photo is required before your profile appears in discovery.' }}</p></div></div>
+          <button type="button" class="secondary mt-4" :disabled="saving" @click="openPhotoSetup"><ImagePlus class="size-4" />{{ saving ? 'Saving…' : photoCount ? 'Manage photos' : 'Upload a photo' }}</button>
+        </section>
+
+        <div class="mt-6 rounded-lg bg-[#F3E8DA] p-4 text-sm leading-6 text-[#4D2F39]"><strong>Everything else is optional.</strong> Add lifestyle details, more activities, availability and detailed filters later from your profile and Match preferences.</div>
+        <p class="mt-5 text-xs leading-5 text-[#6E4D58]">By finishing setup, you agree to our <NuxtLink to="/terms-of-service" class="font-semibold underline">Terms of Service</NuxtLink> and <NuxtLink to="/acceptable-use" class="font-semibold underline">Acceptable Use Policy</NuxtLink>.</p>
+        <div class="actions"><button class="secondary" type="button" @click="step = 2"><ArrowLeft class="size-4" />Back</button><button :disabled="saving || !setupReady" class="primary" type="button" @click="finish"><Check class="size-4" />{{ saving ? 'Finishing…' : 'Finish and discover people' }}</button></div>
+        <p v-if="!setupReady" class="mt-3 text-right text-xs font-semibold text-[#8F1839]">Add {{ activitiesReady ? 'a photo' : 'three activities' }}{{ !activitiesReady && !photoCount ? ' and a photo' : '' }} to finish.</p>
       </section>
-      <p v-if="errorMessage" class="mt-4 rounded-lg bg-[#FCE3E8] p-4 text-sm font-semibold text-[#8F1839]" role="alert">{{ errorMessage }}</p>
+
+      <p v-if="errorMessage" class="mt-5 rounded-lg bg-[#FCE3E8] p-4 text-sm font-semibold text-[#8F1839]" role="alert">{{ errorMessage }}</p>
     </section>
   </main>
 </template>
@@ -419,7 +303,7 @@ onMounted(() => { load().catch(() => { errorMessage.value = 'We could not load o
 .step-title h2 { font-size: 1.25rem; font-weight: 650; }
 .step-title p { margin-top: .25rem; color: #6E4D58; font-size: .875rem; line-height: 1.5; }
 label, legend { color: #4D2F39; font-size: .875rem; font-weight: 600; }
-input:not([type='checkbox']):not([type='range']), textarea, select { margin-top: .4rem; width: 100%; border: 1px solid #E8D8C4; border-radius: .5rem; background: #FBF7F1; padding: .75rem; outline: none; }
+input:not([type='checkbox']), textarea, select { margin-top: .4rem; width: 100%; border: 1px solid #E8D8C4; border-radius: .5rem; background: #FBF7F1; padding: .75rem; outline: none; }
 input:focus, textarea:focus, select:focus { border-color: #B4234A; box-shadow: 0 0 0 2px #F7B7C4; }
 .field-hint { display: block; margin-top: .35rem; color: #6E4D58; font-size: .75rem; font-weight: 500; }
 .field-hint.success { color: #52713A; }
@@ -428,30 +312,12 @@ input:focus, textarea:focus, select:focus { border-color: #B4234A; box-shadow: 0
 .dob-field legend { padding: 0 .35rem; }
 .dob-grid { display: grid; grid-template-columns: .7fr 1.4fr 1fr; gap: .65rem; margin-top: .7rem; }
 .dob-grid label span { font-size: .75rem; color: #6E4D58; }
-input[type='range'] { margin-top: .8rem; width: 100%; accent-color: #B4234A; }
-.value { float: right; color: #8F1839; }
-.field-with-suffix { position: relative; display: block; }
-.field-with-suffix__input { padding-right: 3rem !important; }
-.field-with-suffix__label { position: absolute; right: .85rem; top: 50%; transform: translateY(-38%); color: #6E4D58; font-size: .875rem; font-weight: 600; pointer-events: none; }
-fieldset { margin-top: 1.5rem; }
-.choices { margin-top: .75rem; display: flex; flex-wrap: wrap; gap: .5rem; }
+.activity-group { border: 1px solid #E8D8C4; border-radius: .65rem; background: #FFFDFC; padding: 1rem; }
 .choice { border-radius: 9999px; background: #FBF7F1; padding: .6rem .85rem; color: #4D2F39; font-size: .875rem; font-weight: 600; }
 .choice.selected { background: #B4234A; color: white; }
 .choice:disabled { cursor: not-allowed; opacity: .4; }
-.activity-group { border: 1px solid #E8D8C4; border-radius: .65rem; background: #FFFDFC; padding: 1rem; }
-.custom-choice { border-radius: 9999px; background: #EAF2DE; padding: .6rem .85rem; color: #4D2F39; font-size: .875rem; font-weight: 600; }
 .add-activity { min-height: 2.75rem; border-radius: .5rem; background: #4D2F39; padding: 0 1rem; color: white; font-size: .875rem; font-weight: 700; }
 .add-activity:disabled { cursor: not-allowed; opacity: .45; }
-.availability-day { border: 1px solid #E8D8C4; border-radius: .65rem; background: #FBF7F1; padding: 1rem; }
-.availability-day.enabled { border-color: #D7A7B3; background: rgba(252,227,232,.4); }
-.meeting-preferences { border: 1px solid #E8D8C4; border-radius: .65rem; background: #FFFDFC; padding: 1rem; }
-.meeting-preferences legend { padding: 0 .35rem; font-size: 1rem; color: #2A1520; }
-.meeting-choice { display: flex; min-height: 3.25rem; align-items: center; gap: .65rem; border: 1px solid #E8D8C4; border-radius: .6rem; background: #FBF7F1; padding: .75rem; color: #4D2F39; text-align: left; font-size: .875rem; font-weight: 700; }
-.meeting-choice.selected { border-color: #B4234A; background: #FCE3E8; color: #8F1839; }
-.choice-indicator { display: inline-flex; width: 1.25rem; height: 1.25rem; flex-shrink: 0; align-items: center; justify-content: center; border: 1px solid #D7A7B3; border-radius: 9999px; background: white; font-size: .7rem; }
-.meeting-choice.selected .choice-indicator { border-color: #B4234A; background: #B4234A; color: white; }
-.check { display: flex; align-items: center; gap: .6rem; font-weight: 600; }
-.check input { accent-color: #B4234A; }
 .actions { margin-top: 2rem; display: flex; flex-wrap: wrap; justify-content: space-between; gap: .75rem; }
 .primary, .secondary { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; border-radius: .5rem; padding: .75rem 1.1rem; font-size: .875rem; font-weight: 700; }
 .primary { margin-left: auto; background: #B4234A; color: white; }

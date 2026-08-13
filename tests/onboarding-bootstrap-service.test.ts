@@ -37,7 +37,7 @@ describe('onboarding bootstrap service', () => {
     const result = await loadOnboardingBootstrap(database, 'member-1')
 
     expect(query).toHaveBeenCalledTimes(3)
-    expect(result.status).toMatchObject({ complete: true, nextStep: 6, activityCount: 2, photoCount: 1 })
+    expect(result.status).toMatchObject({ complete: true, nextStep: 3, activityCount: 2, photoCount: 1 })
     expect(result.profile).toMatchObject({ slug: 'alex-123', displayName: 'Alex', dateOfBirth: '1992-04-03' })
     expect(result.activities).toMatchObject({ selectionLimit: 10 })
     expect(result.activities.selected).toHaveLength(2)
@@ -67,9 +67,12 @@ describe('onboarding bootstrap service', () => {
   })
 
   it('derives resumable steps from persisted state', () => {
-    const base = { completedAt: null, profileComplete: true, racialIdentityComplete: true,
-      activityCount: 1, photoCount: 0, locationComplete: true, preferencesComplete: true, datingComplete: false }
-    expect(resolveOnboardingStatus(base).nextStep).toBe(5)
-    expect(resolveOnboardingStatus({ ...base, datingComplete: true }).nextStep).toBe(6)
+    const base = { completedAt: null, profileComplete: false, racialIdentityComplete: false,
+      activityCount: 0, photoCount: 0, locationComplete: false, preferencesComplete: false, datingComplete: false }
+    expect(resolveOnboardingStatus(base).nextStep).toBe(1)
+    expect(resolveOnboardingStatus({ ...base, profileComplete: true }).nextStep).toBe(2)
+    expect(resolveOnboardingStatus({ ...base, profileComplete: true, locationComplete: true }).nextStep).toBe(3)
+    expect(resolveOnboardingStatus({ ...base, completedAt: '2026-08-12', profileComplete: true,
+      locationComplete: true, activityCount: 1 }).complete).toBe(true)
   })
 })

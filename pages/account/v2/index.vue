@@ -4,6 +4,7 @@ import { raceEthnicityOptions, raceEthnicitySelfDescriptionLimit, usesRaceEthnic
 import { genderIdentityOptions } from '~/utils/genderIdentity';
 import { sexualOrientationOptions } from '~/utils/sexualOrientation';
 import type { AccountDeletionResponse } from '~/types/api/accountDeletion';
+import { PROFILE_NAME_LIMIT } from '~/utils/profileName';
 
 definePageMeta({
   title: "Account · Lonely Radish",
@@ -31,6 +32,7 @@ const deleteError = ref("");
 const deletionQueued = ref(false);
 const contact = reactive({ phoneNumber: '', contactEmail: '', socialHandle: '', shareWithMatches: false });
 const accountNameLimit = 80;
+const profileNameLimit = PROFILE_NAME_LIMIT;
 const pronounsLimit = 40;
 const phoneNumberLimit = 30;
 const contactEmailLimit = 254;
@@ -64,12 +66,12 @@ function applyContactDetails(details: ContactDetails | null | undefined) {
 const readinessItems = computed(() => {
   const checks = readiness.value?.checks;
   return [
-    { key: 'profileBasics', label: 'Profile basics', detail: 'Name, bio and identity', to: '/account/v2' },
+    { key: 'profileBasics', label: 'Profile basics', detail: 'Name, introduction and identity', to: '/account/v2' },
     { key: 'photos', label: 'Profile photo', detail: `${readiness.value?.photoCount ?? 0} added · at least ${readiness.value?.photosRequired ?? 1} required`, to: '/photos' },
     { key: 'activities', label: 'Activity interests', detail: 'Choose what you would enjoy', to: '/preferences/activities' },
     { key: 'location', label: 'Approximate location', detail: 'Set a postcode for distance matching', to: '/preferences#location-and-age' },
-    { key: 'generalPreferences', label: 'Age and distance', detail: 'Set a practical matching range', to: '/preferences#location-and-age' },
-    { key: 'datingPreferences', label: 'Dating preferences', detail: 'Choose who appears for you', to: '/preferences/dating' },
+    { key: 'generalPreferences', label: 'Age and distance', detail: 'Optional · fine-tune your matching range', to: '/preferences#location-and-age' },
+    { key: 'datingPreferences', label: 'Dating preferences', detail: 'Optional · fine-tune who appears for you', to: '/preferences/dating' },
   ].map(item => ({ ...item, complete: checks?.[item.key as keyof ReadinessChecks] === true }));
 });
 
@@ -316,11 +318,11 @@ onMounted(async () => {
 
         <section class="rounded-lg bg-white p-6 shadow-[0_12px_28px_rgba(180,35,74,0.08)]">
           <div v-if="readinessLoading">
-            <p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">Your profile</p>
+            <p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">Profile and preferences</p>
             <p class="mt-2 text-sm text-[#6E4D58]" role="status">Checking your profile…</p>
           </div>
           <div v-else-if="readinessError">
-            <p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">Your profile</p>
+            <p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">Profile and preferences</p>
             <p class="mt-2 text-sm font-semibold text-[#8F1839]" role="alert">{{ readinessError }}</p>
             <div class="mt-3 flex flex-wrap gap-3">
               <button type="button" class="rounded-lg bg-[#F3E8DA] px-4 py-2 text-sm font-semibold text-[#4D2F39]" @click="loadReadiness">Try again</button>
@@ -329,12 +331,12 @@ onMounted(async () => {
           </div>
           <template v-else-if="readiness">
             <button type="button" class="flex w-full items-start justify-between gap-4 text-left" :aria-expanded="!readinessCollapsed" aria-controls="discovery-readiness-details" @click="readinessCollapsed = !readinessCollapsed">
-              <div><p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">Your profile</p><h2 class="mt-2 text-xl font-semibold">{{ readiness.percentage === 100 ? 'Ready to meet people' : 'A few things left to add' }}</h2></div>
+              <div><p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">Profile and preferences</p><h2 class="mt-2 text-xl font-semibold">{{ readiness.percentage === 100 ? 'Everything is set' : 'Optional ways to fine-tune' }}</h2></div>
               <span class="flex shrink-0 items-center gap-2"><span class="rounded-full bg-[#FCE3E8] px-3 py-2 text-sm font-bold text-[#8F1839]">{{ readiness.percentage }}%</span><ChevronDown class="mt-2 size-5 text-[#8F1839] transition-transform" :class="!readinessCollapsed && 'rotate-180'" aria-hidden="true" /></span>
             </button>
             <div class="mt-4 h-2 overflow-hidden rounded-full bg-[#F3E8DA]" aria-hidden="true"><div class="h-full rounded-full bg-[#B4234A] transition-[width] duration-300" :style="{ width: `${readiness.percentage}%` }" /></div>
             <div id="discovery-readiness-details" v-show="!readinessCollapsed">
-              <p class="mt-3 text-xs leading-5 text-[#6E4D58]">{{ readiness.completed }} of {{ readiness.total }} profile essentials complete.</p>
+              <p class="mt-3 text-xs leading-5 text-[#6E4D58]">{{ readiness.completed }} of {{ readiness.total }} profile and preference sections set up. Your advanced filters are optional.</p>
               <ul class="mt-4 divide-y divide-[#E8D8C4]">
                 <li v-for="item in readinessItems" :key="item.key" class="flex items-center gap-3 py-3">
                   <CheckCircle2 v-if="item.complete" class="size-5 shrink-0 text-[#6E8B52]" aria-hidden="true" />
@@ -404,7 +406,8 @@ onMounted(async () => {
             <form class="mt-5 grid gap-4 sm:grid-cols-2" novalidate @submit.prevent="saveProfileBasics">
               <label class="block text-sm font-medium sm:col-span-2">
                 Profile name
-                <input v-model="profile.displayName" class="field" type="text" :maxlength="accountNameLimit" autocomplete="nickname" required placeholder="Name shown to other members">
+                <input v-model="profile.displayName" class="field" type="text" :maxlength="profileNameLimit" autocomplete="nickname" required placeholder="Name shown to other members">
+                <span class="mt-1 block text-right text-xs font-normal text-[#6E4D58]">{{ profile.displayName.length }}/{{ profileNameLimit }}</span>
                 <span class="mt-1 block text-xs font-normal text-[#6E4D58]">This is your unique public name. Changing it does not change your private first or last name.</span>
               </label>
 

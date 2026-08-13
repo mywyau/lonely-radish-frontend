@@ -1,7 +1,7 @@
 export interface OnboardingStatusResponse {
   complete: boolean
   completedAt: string | null
-  nextStep: 1 | 2 | 3 | 4 | 5 | 6
+  nextStep: 1 | 2 | 3
   profileComplete: boolean
   racialIdentityComplete: boolean
   activityCount: number

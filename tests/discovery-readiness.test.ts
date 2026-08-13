@@ -20,7 +20,8 @@ describe('discovery readiness', () => {
 
   it('shows actionable progress on the account page', () => {
     const account = read('pages/account/v2/index.vue')
-    expect(account).toContain('A few things left to add')
+    expect(account).toContain('Optional ways to fine-tune')
+    expect(account).toContain('Your advanced filters are optional')
     expect(account).toContain("'/api/profile/readiness'")
     expect(account).toContain('readiness.percentage')
     expect(account).toContain('photosRequired')

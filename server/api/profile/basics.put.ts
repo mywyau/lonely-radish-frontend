@@ -5,11 +5,12 @@ import { objectBody, text } from '~/server/utils/productValidation'
 import { isGenderIdentity } from '~/utils/genderIdentity'
 import { isRaceEthnicity, raceEthnicitySelfDescriptionLimit, usesRaceEthnicitySelfDescription } from '~/utils/raceEthnicity'
 import { sexualOrientationValues } from '~/utils/sexualOrientation'
+import { PROFILE_NAME_LIMIT } from '~/utils/profileName'
 
 export default defineEventHandler(async (event) => {
   const { sub } = await requireUser(event)
   const body = objectBody(await readBody(event))
-  const displayName = text(body.displayName, 'Profile name', 80, true)!
+  const displayName = text(body.displayName, 'Profile name', PROFILE_NAME_LIMIT, true)!
   const raceEthnicity = text(body.raceEthnicity, 'Racial or ethnic identity', 100, true)!
   const sexualOrientation = text(body.sexualOrientation, 'Sexual orientation', 30, true)!
   const genderIdentity = text(body.genderIdentity, 'Gender identity', 20, true)!

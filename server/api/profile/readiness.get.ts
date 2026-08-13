@@ -8,7 +8,7 @@ export default defineEventHandler(async (event) => {
   const { rows } = await db.query(`select
     (p.user_id is not null and nullif(trim(p.display_name),'') is not null and p.date_of_birth is not null
       and nullif(trim(p.bio),'') is not null and p.gender_identity is not null
-      and p.sexual_orientation is not null and p.race_ethnicity is not null) as "profileBasics",
+      and p.sexual_orientation is not null) as "profileBasics",
     least((select count(*) from profile_photos pp where pp.user_id=$1), 6)::int as "photoCount",
     exists(select 1 from profile_activities pa where pa.user_id=$1) as activities,
     (p.location is not null) as location,

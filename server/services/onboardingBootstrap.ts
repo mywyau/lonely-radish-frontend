@@ -58,11 +58,11 @@ export function resolveOnboardingStatus(core: Pick<CoreRow,
   const preferencesComplete = core.preferencesComplete === true
   const datingComplete = core.datingComplete === true
   const locationComplete = core.locationComplete === true
-  const nextStep = (!profileComplete ? 1 : !racialIdentityComplete ? 2 : activityCount < 1 ? 3
-    : !preferencesComplete || !locationComplete ? 4 : !datingComplete ? 5 : 6) as OnboardingStatusResponse['nextStep']
+  const nextStep = (!profileComplete ? 1 : !locationComplete ? 2 : 3) as OnboardingStatusResponse['nextStep']
   return {
-    complete: Boolean(core.completedAt) && profileComplete && racialIdentityComplete
-      && activityCount > 0 && preferencesComplete && datingComplete && locationComplete,
+    // Existing completed members are deliberately grandfathered. New completions
+    // enforce the stronger three-activity and one-photo minimum at the write endpoint.
+    complete: Boolean(core.completedAt) && profileComplete && activityCount > 0 && locationComplete,
     completedAt: core.completedAt,
     nextStep,
     profileComplete,
