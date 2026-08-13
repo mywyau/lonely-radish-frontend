@@ -20,26 +20,21 @@ const activeMatchLimit = ref(5)
 const pendingInterestCount = ref(0)
 const interestLimit = ref(5)
 const hasMore = ref(false)
-const inboxReopensAt = ref<string | null>(null)
 const yourMoveMatch = ref<{ id: string; name: string } | null>(null)
 const undoableDeclines = ref<UndoableDecline[]>([])
 const { adjustMatchCount } = useMeStateV2()
 const atMatchLimit = computed(() => activeMatchCount.value >= activeMatchLimit.value)
-const inboxReopensLabel = computed(() => inboxReopensAt.value && new Date(inboxReopensAt.value) > new Date()
-  ? new Date(inboxReopensAt.value).toLocaleString('en-GB', { weekday: 'long', hour: 'numeric', minute: '2-digit' })
-  : '')
 
 async function loadReceivedInterests() {
   loading.value = true
   errorMessage.value = ''
   try {
-    const result = await $fetch<{ interests: ReceivedInterest[]; closedInterests: ClosedInterest[]; pendingInterestCount: number; interestLimit: number; hasMore: boolean; inboxReopensAt: string | null; activeMatchCount: number; activeMatchLimit: number; yourMoveMatch: { id: string; name: string } | null }>('/api/interests/received')
+    const result = await $fetch<{ interests: ReceivedInterest[]; closedInterests: ClosedInterest[]; pendingInterestCount: number; interestLimit: number; hasMore: boolean; activeMatchCount: number; activeMatchLimit: number; yourMoveMatch: { id: string; name: string } | null }>('/api/interests/received')
     interests.value = result.interests
     closedInterests.value = result.closedInterests
     pendingInterestCount.value = result.pendingInterestCount
     interestLimit.value = result.interestLimit
     hasMore.value = result.hasMore
-    inboxReopensAt.value = result.inboxReopensAt
     activeMatchCount.value = result.activeMatchCount
     activeMatchLimit.value = result.activeMatchLimit
     yourMoveMatch.value = result.yourMoveMatch
@@ -54,14 +49,13 @@ async function acceptInterest() {
   if (!pending.value) return
   accepting.value = true; errorMessage.value = ''
   try {
-    const result = await $fetch<{ name: string; matchId: string; queued: boolean; inboxReopensAt: string | null }>(`/api/interests/${pending.value.id}/accept`, {
+    const result = await $fetch<{ name: string; matchId: string; queued: boolean }>(`/api/interests/${pending.value.id}/accept`, {
       method: 'POST',
       headers: { 'Idempotency-Key': crypto.randomUUID() },
     })
     interests.value = interests.value.filter(item => item.id !== pending.value?.id)
     pendingInterestCount.value = Math.max(0, pendingInterestCount.value - 1)
     hasMore.value = pendingInterestCount.value > interests.value.length
-    inboxReopensAt.value = result.inboxReopensAt
     successMessage.value = result.queued
       ? `You matched with ${result.name}. Planning can begin when you both have space.`
       : `You matched with ${result.name}. Start planning before accepting another interest.`
@@ -81,13 +75,12 @@ async function declineInterest(person: ReceivedInterest) {
   declining.value = person.id
   errorMessage.value = ''
   try {
-    const result = await $fetch<{ inboxReopensAt: string | null; undoUntil: string }>(`/api/interests/${person.id}`, { method: 'DELETE' })
+    const result = await $fetch<{ undoUntil: string }>(`/api/interests/${person.id}`, { method: 'DELETE' })
     interests.value = interests.value.filter(item => item.id !== person.id)
     pendingInterestCount.value = Math.max(0, pendingInterestCount.value - 1)
     hasMore.value = pendingInterestCount.value > interests.value.length
-    inboxReopensAt.value = result.inboxReopensAt
     undoableDeclines.value.push({ person, undoUntil: result.undoUntil, restoring: false })
-    successMessage.value = `You chose not to match with ${person.name}. No one else will replace them today.`
+    successMessage.value = `You chose not to match with ${person.name}. That space is now available for someone new.`
     successShowsMatches.value = false
   } catch (error: any) {
     errorMessage.value = error?.data?.statusMessage || 'This interest could not be removed.'
@@ -120,8 +113,7 @@ async function undoDecline(action: UndoableDecline) {
     <p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">People who chose you</p><h1 class="mt-2 text-4xl font-semibold">Who’s interested?</h1><p class="mt-3 max-w-2xl leading-6 text-[#6E4D58]">Take your time. Each person stays here for up to 14 days, unless they take back their interest first.</p>
     <div v-if="pendingInterestCount" class="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[#E8D8C4] bg-white p-4 text-sm">
       <p><strong>{{ Math.min(pendingInterestCount, interestLimit) }}</strong> {{ Math.min(pendingInterestCount, interestLimit) === 1 ? 'person is' : 'people are' }} waiting for your answer</p>
-      <p v-if="inboxReopensLabel" class="text-xs text-[#6E4D58]">New interest remains paused until {{ inboxReopensLabel }}.</p>
-      <p v-else-if="pendingInterestCount >= interestLimit" class="text-xs text-[#6E4D58]">Incoming interest is paused while you consider these people.</p>
+      <p v-if="pendingInterestCount >= interestLimit" class="text-xs text-[#6E4D58]">Incoming interest is paused while you consider these people.</p>
       <p v-if="hasMore" class="w-full border-t border-[#E8D8C4] pt-3 text-xs leading-5 text-[#6E4D58]">Your account had more than five interests before this limit was introduced. You’re seeing the oldest five while that earlier list is worked through; no new interests can join it.</p>
     </div>
     <p v-if="successMessage" class="mt-5 rounded-lg bg-[#EAF2DE] p-4 text-sm font-semibold text-[#4D2F39]" role="status">{{ successMessage }} <NuxtLink v-if="successShowsMatches" to="/matches" class="text-[#8F1839] underline">View matches</NuxtLink></p>

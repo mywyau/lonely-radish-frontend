@@ -13,7 +13,7 @@ const saveError = ref('')
 
 function toggle(list: string[], value: string) { const index = list.indexOf(value); index >= 0 ? list.splice(index, 1) : list.push(value) }
 function toggleGender(value: string) { preferences.openToEveryone = false; toggle(preferences.genders, value); if (!preferences.genders.length) preferences.openToEveryone = true }
-function selectEveryone() { preferences.openToEveryone = true; preferences.genders.splice(0) }
+function selectAllGenders() { preferences.openToEveryone = true; preferences.genders.splice(0) }
 function toggleOrientation(value: string) { toggle(preferences.orientations, value) }
 function toggleRaceEthnicity(value: string) { preferences.noRaceEthnicityPreference = false; toggle(preferences.raceEthnicities, value); if (!preferences.raceEthnicities.length) preferences.noRaceEthnicityPreference = true }
 function selectNoRacePreference() { preferences.noRaceEthnicityPreference = true; preferences.raceEthnicities.splice(0) }
@@ -37,7 +37,7 @@ onMounted(async () => { Object.assign(preferences, await $fetch('/api/preference
         <section class="rounded-lg bg-white p-6 shadow-[0_12px_28px_rgba(180,35,74,0.08)]">
           <div class="flex items-start gap-3"><Heart class="mt-1 size-5 text-[#B4234A]" /><div><h2 class="text-xl font-semibold">Gender preference</h2><p class="mt-1 text-sm text-[#6E4D58]">Select the genders you are open to dating.</p></div></div>
           <div class="mt-5 grid gap-2 sm:grid-cols-2">
-            <button type="button" class="choice" :class="preferences.openToEveryone && 'choice-selected'" :aria-pressed="preferences.openToEveryone" @click="selectEveryone">Everyone</button>
+            <button type="button" class="choice" :class="preferences.openToEveryone && 'choice-selected'" :aria-pressed="preferences.openToEveryone" @click="selectAllGenders">All genders</button>
             <button v-for="option in genderOptions" :key="option" type="button" class="choice" :class="preferences.genders.includes(option) && 'choice-selected'" :aria-pressed="preferences.genders.includes(option)" @click="toggleGender(option)">{{ option }}</button>
           </div>
         </section>

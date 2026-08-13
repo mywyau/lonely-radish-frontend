@@ -80,7 +80,6 @@ export class InterestRepository {
     await expirePendingInterests(this.client, { recipientId })
     const { rows } = await this.client.query(`select 1 from users u join interest_inbox_state inbox
       on inbox.user_id=u.id where u.id=$1
-      and (u.interest_inbox_reopens_at is null or u.interest_inbox_reopens_at<=now())
       and inbox.pending_count<5 for update of inbox`, [recipientId])
     return Boolean(rows[0])
   }

@@ -3,8 +3,9 @@ import { withDatabaseClient } from '~/server/repositories/db'
 import { requireUser } from '~/server/utils/requireUser'
 import { signedPhotoUrls } from '~/server/utils/supabaseStorage'
 import { discoveryCategory } from '~/utils/activityDiscovery'
-import { discoveryDistanceSelect, recipientInterestAvailabilityWhere, viewerDiscoveryJoins, viewerDiscoveryWhere } from '~/server/utils/discoveryFilters'
+import { discoveryDistanceSelect, recipientInterestAvailabilitySelect, viewerDiscoveryJoins, viewerDiscoveryWhere } from '~/server/utils/discoveryFilters'
 import { decodeCursor, pageRows } from '~/server/utils/cursorPagination'
+import { normalizeDiscoveryPreferences } from '~/server/utils/discoveryPreferences'
 import { candidateDiscoveryVisibilityWhere } from '~/server/utils/profileVisibility'
 
 export default defineEventHandler(async (event) => {
@@ -21,7 +22,7 @@ export default defineEventHandler(async (event) => {
     extract(year from age(current_date,p.date_of_birth))::int as age,
     coalesce(p.location_label,p.postcode_area,p.neighbourhood) as place,p.bio as detail,
     photo.storage_key as "photoStorageKey",photo.public_url as "legacyPhotoUrl",
-    shared."activityTags",all_selected."allActivityTags",
+    shared."activityTags",all_selected."allActivityTags",${recipientInterestAvailabilitySelect},
     ${discoveryDistanceSelect}
     from profiles p join users u on u.id=p.user_id
     ${viewerDiscoveryJoins}
@@ -48,7 +49,6 @@ export default defineEventHandler(async (event) => {
         ((m.user_one_id=$2 and m.user_two_id=p.user_id) or (m.user_two_id=$2 and m.user_one_id=p.user_id)))
       ${candidateDiscoveryVisibilityWhere}
       ${viewerDiscoveryWhere}
-      ${recipientInterestAvailabilityWhere}
       and ($3::timestamptz is null or (p.updated_at,p.slug)<($3::timestamptz,$4::text))
     order by p.updated_at desc,p.slug desc limit $5`, [category.databaseCategories,sub,cursor?.sortAt || null,cursor?.tieBreaker || null,pageSize+1,category.customOnly === true])
     const preferenceResult = await database.query(`select mp.minimum_age as "minimumAge",mp.maximum_age as "maximumAge",
@@ -72,13 +72,12 @@ export default defineEventHandler(async (event) => {
       matchedActivityTags: matchedActivityTags.slice(0, 3),
       otherActivityTags: otherActivityTags.slice(0, 3),
       activityTags: [...matchedActivityTags, ...otherActivityTags].slice(0, 6),
+      acceptingInterest: person.acceptingInterest === true,
       photoUrl: person.photoStorageKey
         ? photoUrls.get(person.photoStorageKey) : person.legacyPhotoUrl || null,
     }
   })
-  const preferences = preferenceResult.rows[0] ?? { minimumAge: 18, maximumAge: 100, distance: 10,
-    openToEveryone: true, genders: [], noOrientationPreference: true, orientations: [], noRacePreference: true,
-    locationLabel: null, postcodeArea: null }
+  const preferences = normalizeDiscoveryPreferences(preferenceResult.rows[0])
   const searchLocation = [preferences.locationLabel, preferences.postcodeArea].filter((value, index, values) =>
     Boolean(value) && values.indexOf(value) === index).join(' · ') || null
   return {
@@ -86,7 +85,7 @@ export default defineEventHandler(async (event) => {
     nextCursor: page.nextCursor, hasMore: page.hasMore,
     filters: {
       minimumAge: preferences.minimumAge, maximumAge: preferences.maximumAge, distance: preferences.distance,
-      genderLabel: preferences.openToEveryone ? 'Everyone' : preferences.genders.join(', '),
+      genderLabel: preferences.openToEveryone ? 'All genders' : preferences.genders.join(', '),
       orientationLabel: preferences.noOrientationPreference ? 'Any orientation' : `${preferences.orientations.length} orientation ${preferences.orientations.length === 1 ? 'choice' : 'choices'}`,
       racialPreferencesApplied: preferences.noRacePreference === false, searchLocation,
     },

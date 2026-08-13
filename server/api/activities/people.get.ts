@@ -3,9 +3,10 @@ import { withDatabaseClient } from '~/server/repositories/db'
 import { requireUser } from '~/server/utils/requireUser'
 import { signedPhotoUrls } from '~/server/utils/supabaseStorage'
 import { discoveryCategories } from '~/utils/activityDiscovery'
-import { discoveryDistanceSelect, recipientInterestAvailabilityWhere, viewerDiscoveryJoins, viewerDiscoveryWhere } from '~/server/utils/discoveryFilters'
+import { discoveryDistanceSelect, recipientInterestAvailabilitySelect, viewerDiscoveryJoins, viewerDiscoveryWhere } from '~/server/utils/discoveryFilters'
 import { decodeCursor, pageRows } from '~/server/utils/cursorPagination'
 import { candidateDiscoveryVisibilityWhere } from '~/server/utils/profileVisibility'
+import { normalizeDiscoveryPreferences } from '~/server/utils/discoveryPreferences'
 
 const categoryEntries = Object.entries(discoveryCategories)
 
@@ -55,7 +56,7 @@ export default defineEventHandler(async (event) => {
     coalesce(p.location_label,p.postcode_area,p.neighbourhood) as place,p.bio as detail,
     photo.storage_key as "photoStorageKey",photo.public_url as "legacyPhotoUrl",
     filtered."activityTags",all_selected."allActivityTags",shared_exact."sharedActivityTags",
-    coalesce(cardinality(shared_exact."sharedActivityTags"),0)::int as "sharedCount",
+    coalesce(cardinality(shared_exact."sharedActivityTags"),0)::int as "sharedCount",${recipientInterestAvailabilitySelect},
     ${discoveryDistanceSelect}
     from profiles p join users u on u.id=p.user_id
     ${viewerDiscoveryJoins}
@@ -87,7 +88,6 @@ export default defineEventHandler(async (event) => {
         ((m.user_one_id=$2 and m.user_two_id=p.user_id) or (m.user_two_id=$2 and m.user_one_id=p.user_id)))
       ${candidateDiscoveryVisibilityWhere}
       ${viewerDiscoveryWhere}
-      ${recipientInterestAvailabilityWhere}
       and ($4::int is null or (coalesce(cardinality(shared_exact."sharedActivityTags"),0),p.updated_at,p.slug)<($4::int,$5::timestamptz,$6::text))
     order by coalesce(cardinality(shared_exact."sharedActivityTags"),0) desc,p.updated_at desc,p.slug desc limit $7`,
     [selectedCategories,sub,includeCustomIdeas,cursorRank,cursor?.sortAt || null,cursor?.tieBreaker || null,pageSize+1])
@@ -116,12 +116,11 @@ export default defineEventHandler(async (event) => {
       sharedActivityTags: sharedActivityTags.slice(0, 3), sharedCount: Number(person.sharedCount || 0),
       matchedActivityTags: matchedActivityTags.filter((activity: string) => !sharedActivityTags.includes(activity)).slice(0, 3),
       otherActivityTags: otherActivityTags.slice(0, 3),
+      acceptingInterest: person.acceptingInterest === true,
       photoUrl: person.photoStorageKey ? photoUrls.get(person.photoStorageKey) : person.legacyPhotoUrl || null,
     }
   })
-  const preferences = preferenceResult.rows[0] ?? { minimumAge: 18, maximumAge: 100, distance: 10,
-    openToEveryone: true, genders: [], noOrientationPreference: true, orientations: [], noRacePreference: true,
-    locationLabel: null, postcodeArea: null }
+  const preferences = normalizeDiscoveryPreferences(preferenceResult.rows[0])
   const searchLocation = [preferences.locationLabel, preferences.postcodeArea].filter((value, index, values) =>
     Boolean(value) && values.indexOf(value) === index).join(' · ') || null
 
@@ -130,7 +129,7 @@ export default defineEventHandler(async (event) => {
     selectedCategories: requestedSlugs, effectiveCategories: effectiveSlugs,
     filters: {
       minimumAge: preferences.minimumAge, maximumAge: preferences.maximumAge, distance: preferences.distance,
-      genderLabel: preferences.openToEveryone ? 'Everyone' : preferences.genders.join(', '),
+      genderLabel: preferences.openToEveryone ? 'All genders' : preferences.genders.join(', '),
       orientationLabel: preferences.noOrientationPreference ? 'Any orientation' : `${preferences.orientations.length} orientation ${preferences.orientations.length === 1 ? 'choice' : 'choices'}`,
       racialPreferencesApplied: preferences.noRacePreference === false, searchLocation,
     },

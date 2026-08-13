@@ -434,7 +434,7 @@ describe('interest and match services', () => {
       findPairMatch: vi.fn().mockResolvedValue(null),
       createOrResetQueuedMatch: vi.fn().mockResolvedValue({ id: 'match-2' }),
       clearDateProposals: vi.fn(),
-      resolveAcceptedInterest: vi.fn().mockResolvedValue('2026-08-31T23:00:00.000Z'),
+      resolveAcceptedInterest: vi.fn().mockResolvedValue(undefined),
     } as unknown as MatchRepository
     const requests = {
       removeExpired: vi.fn(),

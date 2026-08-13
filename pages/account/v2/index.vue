@@ -45,7 +45,7 @@ const contactLoadError = ref('');
 const contactLoading = ref(true);
 const accountLoadError = ref('');
 type ReadinessChecks = { profileBasics: boolean; photos: boolean; activities: boolean; location: boolean; generalPreferences: boolean; datingPreferences: boolean };
-const readiness = ref<{ checks: ReadinessChecks; completed: number; total: number; percentage: number; photoCount: number; photosRequired: number } | null>(null);
+const readiness = ref<{ checks: ReadinessChecks; discoveryReady: boolean; requiredCompleted: number; requiredTotal: number; optionalCompleted: number; optionalTotal: number; percentage: number; photoCount: number; photosRequired: number } | null>(null);
 const readinessCollapsed = ref(false);
 const readinessLoading = ref(true);
 const readinessError = ref('');
@@ -66,14 +66,16 @@ function applyContactDetails(details: ContactDetails | null | undefined) {
 const readinessItems = computed(() => {
   const checks = readiness.value?.checks;
   return [
-    { key: 'profileBasics', label: 'Profile basics', detail: 'Name, introduction and identity', to: '/account/v2' },
-    { key: 'photos', label: 'Profile photo', detail: `${readiness.value?.photoCount ?? 0} added · at least ${readiness.value?.photosRequired ?? 1} required`, to: '/photos' },
-    { key: 'activities', label: 'Activity interests', detail: 'Choose what you would enjoy', to: '/preferences/activities' },
-    { key: 'location', label: 'Approximate location', detail: 'Set a postcode for distance matching', to: '/preferences#location-and-age' },
-    { key: 'generalPreferences', label: 'Age and distance', detail: 'Optional · fine-tune your matching range', to: '/preferences#location-and-age' },
-    { key: 'datingPreferences', label: 'Dating preferences', detail: 'Optional · fine-tune who appears for you', to: '/preferences/dating' },
+    { key: 'profileBasics', label: 'Profile basics', detail: 'Name, introduction and identity', to: '/account/v2', required: true },
+    { key: 'photos', label: 'Profile photo', detail: `${readiness.value?.photoCount ?? 0} added · at least ${readiness.value?.photosRequired ?? 1} required`, to: '/photos', required: true },
+    { key: 'activities', label: 'Activity interests', detail: 'Choose what you would enjoy', to: '/preferences/activities', required: true },
+    { key: 'location', label: 'Approximate location', detail: 'Set a postcode for distance matching', to: '/preferences#location-and-age', required: true },
+    { key: 'generalPreferences', label: 'Age and distance', detail: 'Fine-tune your matching range', to: '/preferences#location-and-age', required: false },
+    { key: 'datingPreferences', label: 'Dating preferences', detail: 'Fine-tune who appears for you', to: '/preferences/dating', required: false },
   ].map(item => ({ ...item, complete: checks?.[item.key as keyof ReadinessChecks] === true }));
 });
+const requiredReadinessItems = computed(() => readinessItems.value.filter(item => item.required));
+const optionalReadinessItems = computed(() => readinessItems.value.filter(item => !item.required));
 
 const fullName = computed(() => `${profile.firstName} ${profile.lastName}`.trim());
 const signInPath = computed(() => `/please-sign-in?redirect=${encodeURIComponent('/account/v2')}`);
@@ -105,7 +107,7 @@ async function loadReadiness() {
   readinessError.value = ''
   try {
     readiness.value = await $fetch('/api/profile/readiness', { timeout: requestTimeoutMs })
-    readinessCollapsed.value = readiness.value.percentage === 100
+    readinessCollapsed.value = readiness.value.discoveryReady
   } catch (error: any) {
     readiness.value = null
     readinessError.value = requestMessage(error, 'Account readiness could not be loaded.')
@@ -331,18 +333,29 @@ onMounted(async () => {
           </div>
           <template v-else-if="readiness">
             <button type="button" class="flex w-full items-start justify-between gap-4 text-left" :aria-expanded="!readinessCollapsed" aria-controls="discovery-readiness-details" @click="readinessCollapsed = !readinessCollapsed">
-              <div><p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">Profile and preferences</p><h2 class="mt-2 text-xl font-semibold">{{ readiness.percentage === 100 ? 'Everything is set' : 'Optional ways to fine-tune' }}</h2></div>
-              <span class="flex shrink-0 items-center gap-2"><span class="rounded-full bg-[#FCE3E8] px-3 py-2 text-sm font-bold text-[#8F1839]">{{ readiness.percentage }}%</span><ChevronDown class="mt-2 size-5 text-[#8F1839] transition-transform" :class="!readinessCollapsed && 'rotate-180'" aria-hidden="true" /></span>
+              <div><p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">Discovery readiness</p><h2 class="mt-2 text-xl font-semibold">{{ readiness.discoveryReady ? 'Ready to discover people' : 'Finish your discovery profile' }}</h2></div>
+              <span class="flex shrink-0 items-center gap-2"><span class="rounded-full px-3 py-2 text-sm font-bold" :class="readiness.discoveryReady ? 'bg-[#EAF2DE] text-[#52713A]' : 'bg-[#FCE3E8] text-[#8F1839]'">{{ readiness.discoveryReady ? 'Ready' : `${readiness.requiredCompleted}/${readiness.requiredTotal}` }}</span><ChevronDown class="mt-2 size-5 text-[#8F1839] transition-transform" :class="!readinessCollapsed && 'rotate-180'" aria-hidden="true" /></span>
             </button>
             <div class="mt-4 h-2 overflow-hidden rounded-full bg-[#F3E8DA]" aria-hidden="true"><div class="h-full rounded-full bg-[#B4234A] transition-[width] duration-300" :style="{ width: `${readiness.percentage}%` }" /></div>
             <div id="discovery-readiness-details" v-show="!readinessCollapsed">
-              <p class="mt-3 text-xs leading-5 text-[#6E4D58]">{{ readiness.completed }} of {{ readiness.total }} profile and preference sections set up. Your advanced filters are optional.</p>
+              <p class="mt-3 text-xs leading-5 text-[#6E4D58]">{{ readiness.requiredCompleted }} of {{ readiness.requiredTotal }} required discovery items complete.</p>
+              <h3 class="mt-4 text-xs font-extrabold uppercase tracking-wider text-[#4D2F39]">Required for discovery</h3>
               <ul class="mt-4 divide-y divide-[#E8D8C4]">
-                <li v-for="item in readinessItems" :key="item.key" class="flex items-center gap-3 py-3">
+                <li v-for="item in requiredReadinessItems" :key="item.key" class="flex items-center gap-3 py-3">
                   <CheckCircle2 v-if="item.complete" class="size-5 shrink-0 text-[#6E8B52]" aria-hidden="true" />
                   <Circle v-else class="size-5 shrink-0 text-[#D7A7B3]" aria-hidden="true" />
                   <div class="min-w-0 flex-1"><p class="text-sm font-semibold">{{ item.label }}</p><p class="text-xs text-[#6E4D58]">{{ item.complete ? 'Complete' : item.detail }}</p></div>
                   <NuxtLink v-if="!item.complete" :to="item.to" :aria-label="`Complete ${item.label}`" class="inline-flex items-center gap-1 text-xs font-bold text-[#8F1839]">Add <ArrowRight class="size-3.5" /></NuxtLink>
+                </li>
+              </ul>
+              <h3 class="mt-5 text-xs font-extrabold uppercase tracking-wider text-[#4D2F39]">Optional ways to fine-tune</h3>
+              <p class="mt-2 text-xs leading-5 text-[#6E4D58]">These settings can improve your results but never reduce your discovery readiness.</p>
+              <ul class="mt-2 divide-y divide-[#E8D8C4]">
+                <li v-for="item in optionalReadinessItems" :key="item.key" class="flex items-center gap-3 py-3">
+                  <CheckCircle2 v-if="item.complete" class="size-5 shrink-0 text-[#6E8B52]" aria-hidden="true" />
+                  <Circle v-else class="size-5 shrink-0 text-[#D7A7B3]" aria-hidden="true" />
+                  <div class="min-w-0 flex-1"><p class="text-sm font-semibold">{{ item.label }}</p><p class="text-xs text-[#6E4D58]">{{ item.complete ? 'Set up' : item.detail }}</p></div>
+                  <NuxtLink v-if="!item.complete" :to="item.to" :aria-label="`Set up ${item.label}`" class="inline-flex items-center gap-1 text-xs font-bold text-[#8F1839]">Set up <ArrowRight class="size-3.5" /></NuxtLink>
                 </li>
               </ul>
             </div>

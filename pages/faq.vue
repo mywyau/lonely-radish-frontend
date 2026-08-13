@@ -15,7 +15,7 @@ const sections = [
       },
       {
         question: 'What do I need to complete my profile?',
-        answer: 'We’ll ask for some basic details, what you’re interested in, your dating preferences and an approximate UK location. A profile photo and regular availability are helpful but optional, and you can add them later. We never ask for your home address.',
+        answer: 'We’ll ask for some basic details, three activities, an approximate UK location and one clear profile photo. Extra photos, detailed dating preferences and regular availability are optional and can be added later. We never ask for your home address.',
       },
       {
         question: 'Why does the app ask about activities and availability?',
@@ -42,7 +42,7 @@ const sections = [
       },
       {
         question: 'Why can I receive only five interests at a time?',
-        answer: 'The limit gives you a small group to consider without an endless queue. When five people are waiting, your profile pauses incoming interest. Passing is final and new interest does not replace that person immediately. You can still choose people yourself, and a mutual interest can become a direct match.',
+        answer: 'The limit gives you a small group to consider without an endless queue. When five people are waiting, your profile remains visible but cannot receive another new interest until you accept or pass on someone. You can still choose people yourself, and a mutual interest can become a direct match even while your list is full.',
       },
       {
         question: 'How do active match limits work?',

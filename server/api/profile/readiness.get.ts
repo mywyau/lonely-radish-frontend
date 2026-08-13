@@ -28,17 +28,18 @@ export default defineEventHandler(async (event) => {
     generalPreferences: state.generalPreferences === true,
     datingPreferences: state.datingPreferences === true,
   }
-  const completed = Object.values(checks).filter(Boolean).length
-  const total = Object.keys(checks).length
-  const completedWithoutPhotos = Object.entries(checks)
-    .filter(([key, isComplete]) => key !== 'photos' && isComplete)
-    .length
-  const weightedProgress = completedWithoutPhotos + Math.min(photoCount / photosRequired, 1)
+  const requiredKeys = ['profileBasics', 'photos', 'activities', 'location'] as const
+  const optionalKeys = ['generalPreferences', 'datingPreferences'] as const
+  const requiredCompleted = requiredKeys.filter(key => checks[key]).length
+  const optionalCompleted = optionalKeys.filter(key => checks[key]).length
   return {
     checks,
-    completed,
-    total,
-    percentage: Math.round((weightedProgress / total) * 100),
+    discoveryReady: requiredCompleted === requiredKeys.length,
+    requiredCompleted,
+    requiredTotal: requiredKeys.length,
+    optionalCompleted,
+    optionalTotal: optionalKeys.length,
+    percentage: Math.round((requiredCompleted / requiredKeys.length) * 100),
     photoCount,
     photosRequired,
   }

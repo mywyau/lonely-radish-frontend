@@ -132,6 +132,8 @@ onMounted(() => {
             <span class="rounded-full bg-[#EAF2DE] px-3 py-2">Within {{ appliedFilters.distance }} km</span>
             <span class="rounded-full bg-[#F3E8DA] px-3 py-2">Ages {{ appliedFilters.minimumAge }}–{{ appliedFilters.maximumAge }}</span>
             <span class="rounded-full bg-[#FCE3E8] px-3 py-2">{{ appliedFilters.genderLabel }}</span>
+            <span class="rounded-full bg-[#FCE3E8] px-3 py-2">{{ appliedFilters.orientationLabel }}</span>
+            <span class="rounded-full bg-[#FFF1C7] px-3 py-2">{{ appliedFilters.racialPreferencesApplied ? 'Ethnicity filter active' : 'All ethnicities' }}</span>
           </div>
           <NuxtLink to="/preferences" class="shrink-0 text-sm font-semibold text-[#8F1839] hover:underline">Fine-tune matches</NuxtLink>
         </div>
@@ -150,7 +152,7 @@ onMounted(() => {
               <img v-if="person.photoUrl" :src="person.photoUrl" :alt="`${person.name}'s profile photo`" class="size-20 shrink-0 rounded-lg object-cover sm:size-24">
               <div v-else class="flex size-20 shrink-0 items-center justify-center rounded-lg bg-white/75 text-2xl font-semibold text-[#B4234A] sm:size-24">{{ person.name.charAt(0) }}</div>
               <div class="min-w-0 flex-1">
-                <div class="flex flex-wrap items-baseline justify-between gap-2"><h2 class="text-xl font-semibold group-hover:text-[#8F1839]">{{ person.name }}, {{ person.age }}</h2><span v-if="person.sharedCount" class="rounded-full bg-white/80 px-2.5 py-1 text-xs font-bold text-[#52713A]">{{ person.sharedCount }} shared</span></div>
+                <div class="flex flex-wrap items-baseline justify-between gap-2"><h2 class="text-xl font-semibold group-hover:text-[#8F1839]">{{ person.name }}, {{ person.age }}</h2><div class="flex flex-wrap justify-end gap-1.5"><span v-if="person.sharedCount" class="rounded-full bg-white/80 px-2.5 py-1 text-xs font-bold text-[#52713A]">{{ person.sharedCount }} shared</span><span v-if="person.acceptingInterest === false" class="rounded-full bg-[#FFF1C7] px-2.5 py-1 text-xs font-bold text-[#694C00]">Considering other interests</span></div></div>
                 <p class="mt-1 inline-flex items-center gap-1 text-sm text-[#6E4D58]"><MapPin class="size-3.5" />{{ person.place }}</p>
                 <div v-if="person.sharedActivityTags?.length" class="mt-3"><p class="text-[10px] font-extrabold uppercase tracking-wider text-[#52713A]">You both enjoy</p><div class="mt-1.5 flex flex-wrap gap-1.5"><span v-for="activity in person.sharedActivityTags" :key="`shared-${activity}`" class="rounded-full bg-white/90 px-2.5 py-1.5 text-xs font-bold text-[#52713A]">{{ activity }}</span></div></div>
                 <div v-if="person.matchedActivityTags?.length" class="mt-3"><p class="text-[10px] font-extrabold uppercase tracking-wider text-[#8F1839]">Matches your activity filters</p><div class="mt-1.5 flex flex-wrap gap-1.5"><span v-for="activity in person.matchedActivityTags" :key="`matched-${activity}`" class="rounded-full bg-white/85 px-2.5 py-1.5 text-xs font-bold text-[#8F1839]">{{ activity }}</span></div></div>

@@ -24,18 +24,12 @@ export const viewerDiscoveryWhere = `
   and (p.location is null or (viewer.location is not null and extensions.ST_DWithin(
     p.location,viewer.location,coalesce(theirs.max_distance_km,10)*1000)))`
 
-// Full inboxes stay out of general discovery, but a person who has already chosen the
-// viewer remains discoverable so a reciprocal interest can become a direct match.
-export const recipientInterestAvailabilityWhere = `
-  and (
-    exists(select 1 from daily_interests reciprocal where
-      reciprocal.sender_id=p.user_id and reciprocal.recipient_id=$2
-      and reciprocal.resolved_at is null)
-    or (
-      (u.interest_inbox_reopens_at is null or u.interest_inbox_reopens_at<=now())
-      and coalesce(inbox_state.pending_count,0)<5
-    )
-  )`
+// Full inboxes remain visible. This flag lets the interface explain that new interest
+// is paused without making a compatible profile mysteriously disappear. A reciprocal
+// choice can still become a match even when the normal inbox is full.
+export const recipientInterestAvailabilitySelect = `(exists(select 1 from daily_interests reciprocal where
+  reciprocal.sender_id=p.user_id and reciprocal.recipient_id=$2
+  and reciprocal.resolved_at is null) or coalesce(inbox_state.pending_count,0)<5) as "acceptingInterest"`
 
 export const discoveryDistanceSelect = `case when viewer.location is not null and p.location is not null
   then round((extensions.ST_Distance(viewer.location,p.location)/1000)::numeric,1) end as "distanceKm"`

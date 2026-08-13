@@ -76,6 +76,8 @@ describe("core page contracts", () => {
     expect(activities).toContain("selectedCategories.includes(category.slug)");
     expect(activities).toContain("'/api/activities/people'");
     expect(activities).toContain("Nobody here fits these filters yet");
+    expect(activities).toContain("appliedFilters.orientationLabel");
+    expect(activities).toContain("All ethnicities");
     expect(activities).toContain("`/profiles/${person.slug}`");
     expect(activities).toContain(':key="person.slug"');
     expect(activityMatches).toContain("path: '/activities'");

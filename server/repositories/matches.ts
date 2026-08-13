@@ -97,17 +97,8 @@ export class MatchRepository {
   }
 
   async resolveAcceptedInterest(interestId: string, recipientId: string) {
-    const { rows } = await this.client.query<{ inboxReopensAt: string }>(`with resolved as (
-        update daily_interests set resolution='accepted',resolved_at=now()
-        where id=$1 and recipient_id=$2 and resolved_at is null returning recipient_id
-      )
-      update users u set interest_inbox_reopens_at=greatest(
-        coalesce(u.interest_inbox_reopens_at,'-infinity'::timestamptz),
-        ((date_trunc('day',now() at time zone coalesce(u.timezone,'UTC'))+interval '1 day')
-          at time zone coalesce(u.timezone,'UTC')))
-      from resolved where u.id=resolved.recipient_id
-      returning u.interest_inbox_reopens_at as "inboxReopensAt"`, [interestId,recipientId])
-    return rows[0]?.inboxReopensAt ?? null
+    await this.client.query(`update daily_interests set resolution='accepted',resolved_at=now()
+      where id=$1 and recipient_id=$2 and resolved_at is null`, [interestId,recipientId])
   }
 
 }

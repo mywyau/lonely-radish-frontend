@@ -52,12 +52,10 @@ export default defineEventHandler(async (event) => {
       on p.user_id=case when m.user_one_id=$1 then m.user_two_id else m.user_one_id end
       where m.status='active' and m.action_required_by=$1 and m.action_completed_at is null
       order by m.matched_at limit 1`, [sub])
-    const inboxState = await database.query(`select interest_inbox_reopens_at as "inboxReopensAt"
-      from users where id=$1`, [sub])
     return { rows: interestsResult.rows, closedRows: closedInterests.rows,
-      active, activeMatchLimit, pendingAction, inboxState }
+      active, activeMatchLimit, pendingAction }
   })
-  const { rows, closedRows, active, activeMatchLimit, pendingAction, inboxState } = result
+  const { rows, closedRows, active, activeMatchLimit, pendingAction } = result
   const photoUrls = await signedPhotoUrls([...rows,...closedRows]
     .map(row => row.photoStorageKey).filter(Boolean))
   const interests = rows.map(row => ({
@@ -73,7 +71,6 @@ export default defineEventHandler(async (event) => {
   const pendingInterestCount = rows[0]?.pendingInterestCount || 0
   return { interests, closedInterests, pendingInterestCount, interestLimit: 5,
     hasMore: pendingInterestCount > interests.length,
-    inboxReopensAt: inboxState.rows[0]?.inboxReopensAt || null,
     activeMatchCount: active.rows[0]?.count || 0, activeMatchLimit,
     yourMoveMatch: pendingAction.rows[0] || null }
 })
