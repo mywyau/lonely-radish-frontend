@@ -36,14 +36,15 @@ describe("auth and billing page contracts", () => {
     expect(cancel).toContain('const quarterlyPrice = 19.99');
     expect(cancel).toContain('const yearlyPrice = 55.99');
 
-    expect(upgrade).toContain("Support a calmer dating app");
+    expect(upgrade).toContain("Support Lonely Radish");
+    expect(upgrade).toContain('All the core features stay free');
     expect(upgrade).toContain('Included for everyone');
-    expect(upgrade).toContain('Up to 10 activity interests');
+    expect(upgrade).toContain('Up to 10 date activities on your profile');
     expect(upgrade).toContain('Up to 5 active matches');
-    expect(upgrade).toContain('does not sell better visibility, priority or access to people');
-    expect(upgrade).toContain('Safety and privacy controls are never reserved for supporters');
+    expect(upgrade).toContain('No change to your matches or visibility');
     expect(upgrade).not.toContain('Advanced matching options and filters');
     expect(upgrade).not.toContain('Incognito discovery');
+    expect(upgrade).not.toContain('Meeting, matching and planning remain available without subscribing');
     expect(upgrade).toContain("upgrade('quarterly')");
     expect(upgrade).toContain('Three-month support');
     expect(upgrade).toContain('Your current plan:')

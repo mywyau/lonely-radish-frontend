@@ -17,7 +17,7 @@ definePageMeta({
       </h1>
 
       <p class="text-sm text-gray-500">
-        Last updated: {{ new Date().toLocaleDateString() }}
+        Last updated: <time datetime="2026-08-13">13 August 2026</time>
       </p>
     </header>
 
@@ -32,8 +32,9 @@ definePageMeta({
       <FooterPageSectionHeading :icon="CreditCard">Digital subscriptions</FooterPageSectionHeading>
 
       <p class="text-gray-700">
-        Lonely Radish provides access to digital dating-app features through monthly, three-month, or yearly
-        subscriptions.
+        Personal monthly, three-month and yearly memberships are optional supporter memberships
+        and do not unlock dating advantages. Business subscriptions separately pay for business
+        plan limits and placement.
       </p>
 
       <p class="text-gray-700">
@@ -66,7 +67,9 @@ definePageMeta({
       <FooterPageSectionHeading :icon="Trash2">Account deletion</FooterPageSectionHeading>
 
       <p class="text-gray-700">
-        Deleting your account permanently removes your access to Lonely Radish and any associated data.
+        Deleting your account permanently removes your access and queues account data for deletion,
+        subject to the limited legal, billing, security and fraud-prevention retention described in
+        our Privacy Notice.
       </p>
 
       <p class="text-gray-700">
@@ -88,7 +91,7 @@ definePageMeta({
 
       <ul class="list-disc pl-6 space-y-2 text-gray-700">
         <li>Duplicate or accidental charges</li>
-        <li>Technical issues preventing access to paid content</li>
+        <li>Technical or billing issues that prevented a purchased membership or business plan from being provided as described</li>
       </ul>
 
       <p class="text-gray-700">

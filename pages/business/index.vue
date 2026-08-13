@@ -121,7 +121,7 @@ onMounted(() => load().catch((error: any) => { errorMessage.value = error?.data?
           <NuxtLink v-if="!business.plan" to="/business/pricing" class="rounded-lg bg-[#F3E8DA] p-6">
             <BadgePoundSterling class="size-6 text-[#B4234A]" />
             <h2 class="mt-4 text-xl font-semibold">Compare business plans</h2>
-            <p class="mt-2 text-sm text-[#6E4D58]">Add more offers, multi-location campaigns and priority offer placement.</p>
+            <p class="mt-2 text-sm text-[#6E4D58]">Add more offers or choose Featured for priority offer placement.</p>
           </NuxtLink>
           <button v-else type="button" class="rounded-lg bg-[#F3E8DA] p-6 text-left" @click="manageSubscription">
             <BadgePoundSterling class="size-6 text-[#B4234A]" />

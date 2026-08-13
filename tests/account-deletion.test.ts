@@ -46,6 +46,8 @@ describe("account deletion", () => {
     expect(page).toContain("window.location.assign('/api/auth/logout')");
     expect(page).not.toContain("navigateTo('/account/deleting')");
     expect(page).toContain("Any active subscription will be cancelled");
+    expect(page).toContain("Transfer ownership or remove other business members before deleting");
+    expect(page).toContain("Deletion cannot complete while another business member remains");
     expect(read("components/BusinessNavBar.vue")).toMatch(
       /to:\s*['"]\/business\/account['"]/,
     );

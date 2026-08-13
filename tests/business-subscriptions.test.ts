@@ -75,9 +75,16 @@ describe("business subscriptions", () => {
     expect(read("pages/business/pricing.vue")).toContain(
       "Business subscriptions",
     );
-    expect(read("pages/business/pricing.vue")).toContain("Multi-location campaigns");
-    expect(read("pages/business/pricing.vue")).not.toContain("Offer scheduling");
-    expect(read("pages/business/pricing.vue")).not.toContain("as they launch");
+    const pricing = read("pages/business/pricing.vue");
+    expect(pricing).toContain("Every plan includes approved locations");
+    expect(pricing).toContain("multi-location campaigns");
+    expect(pricing).toContain("One-time redemption codes");
+    expect(pricing).not.toContain("One venue");
+    expect(pricing).not.toContain("Offer scheduling");
+    expect(pricing).not.toContain("as they launch");
+    expect(read("pages/business/index.vue")).not.toContain(
+      "Add more offers, multi-location campaigns and priority offer placement",
+    );
     expect(read("components/BlankNavBar.vue")).toContain("Business login");
   });
 

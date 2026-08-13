@@ -7,9 +7,9 @@ const loading = ref(true)
 const purchasing = ref<string | null>(null)
 const errorMessage = ref('')
 const plans = [
-  { id: 'free', name: 'Free', price: '£0', description: 'Test whether date-friendly offers work for your venue.', features: ['One venue','One offer','Manual business verification'] },
-  { id: 'standard', name: 'Standard', price: '£19/month', description: 'For venues running regular offers.', features: ['Up to five offers','Multi-location campaigns','One-time redemption codes'] },
-  { id: 'featured', name: 'Featured', price: '£49/month', description: 'For venues wanting more visibility.', features: ['Up to ten offers','Priority offer placement','Multi-location campaigns'] },
+  { id: 'free', name: 'Free', price: '£0', description: 'Test whether date-friendly offers work for your venue.', features: ['One offer','All location tools','One-time redemption codes'] },
+  { id: 'standard', name: 'Standard', price: '£19/month', description: 'For venues running regular offers.', features: ['Up to five offers','All location tools','One-time redemption codes'] },
+  { id: 'featured', name: 'Featured', price: '£49/month', description: 'For venues wanting more visibility.', features: ['Up to ten offers','Priority offer placement','All location tools'] },
 ]
 async function subscribe(plan: string) {
   if (!business.value) return
@@ -33,6 +33,7 @@ onMounted(async () => {
       <p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">Business subscriptions</p>
       <h1 class="mt-2 text-4xl font-semibold">Choose the plan that suits your venue.</h1>
       <p class="mt-3 max-w-2xl leading-7 text-[#6E4D58]">Start free and upgrade if you need more offers or visibility. You’ll never receive anyone’s dating profile or preferences.</p>
+      <p class="mt-2 max-w-2xl text-sm leading-6 text-[#6E4D58]">Every plan includes approved locations, multi-location campaigns and one-time redemption codes.</p>
       <div v-if="loading" class="mt-8 text-[#6E4D58]">Loading plans…</div>
       <div v-else-if="!business" class="mt-8 rounded-lg bg-white p-6"><p class="font-semibold">Create a business profile before choosing a plan.</p><NuxtLink to="/business" class="mt-4 inline-flex rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white">Create business profile</NuxtLink></div>
       <div v-else class="mt-8 grid gap-4 lg:grid-cols-3">

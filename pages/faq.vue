@@ -46,7 +46,7 @@ const sections = [
       },
       {
         question: 'How do active match limits work?',
-        answer: 'Everyone can have up to five active matches. A new match, a plan in progress and a confirmed date each use one space. A waiting match does not count until you activate it. Paying never changes your visibility, ranking or ability to meet and make a plan.',
+        answer: 'Everyone can have up to five active matches. Each active connection uses one space throughout matching, planning and a confirmed date; those stages do not use separate spaces. A waiting match does not count until you activate it. Paying never changes your visibility, ranking or ability to meet and make a plan.',
       },
       {
         question: 'Can I browse without appearing in discovery?',
@@ -116,7 +116,7 @@ const sections = [
       },
       {
         question: 'What happens after a date?',
-        answer: 'We’ll privately ask whether the date happened and whether you’d like to meet again. Your answers are not shared unless you both want another date. Cancelling in advance is treated differently from not turning up.',
+        answer: 'We’ll privately ask whether the date happened and whether you’d like to meet again. Your answer and optional note stay hidden until both people respond, then you can each see what the other chose. If you both want another date, the connection continues; otherwise it closes. Cancelling in advance is treated differently from not turning up.',
       },
     ],
   },
