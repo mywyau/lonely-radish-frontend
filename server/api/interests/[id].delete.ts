@@ -1,6 +1,7 @@
 import { createError, getRouterParam } from 'h3'
 import { db } from '~/server/repositories/db'
 import { requireUser } from '~/server/utils/requireUser'
+import { undoUntil } from '~/server/utils/undoWindow'
 
 export default defineEventHandler(async (event) => {
   const { sub } = await requireUser(event)
@@ -19,7 +20,7 @@ export default defineEventHandler(async (event) => {
           at time zone coalesce(timezone,'UTC')))
       where id=$1 returning interest_inbox_reopens_at as "inboxReopensAt"`, [sub])
     await client.query('commit')
-    return { declined: true, inboxReopensAt: rows[0]?.inboxReopensAt ?? null }
+    return { declined: true, inboxReopensAt: rows[0]?.inboxReopensAt ?? null, undoUntil: undoUntil() }
   } catch (error) {
     await client.query('rollback')
     throw error

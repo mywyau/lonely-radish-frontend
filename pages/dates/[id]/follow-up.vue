@@ -19,6 +19,9 @@ const outcomeNote = ref('')
 const outcomeSaving = ref(false)
 const outcomeError = ref('')
 const reportResponseNote = ref('')
+type PendingNoChoice = { message: string; expiresAt: string; timer: ReturnType<typeof setTimeout> }
+const pendingNoChoice = ref<PendingNoChoice | null>(null)
+const noChoiceUndoWindowMs = 10_000
 const isPreview = computed(() => import.meta.dev && route.params.id === 'preview-nina')
 
 function previewDate() {
@@ -75,24 +78,49 @@ async function respondToNoShowReport(response: 'acknowledge' | 'dispute') {
   } catch (error: any) { outcomeError.value = error?.data?.statusMessage || 'Your response could not be saved.' }
   finally { outcomeSaving.value = false }
 }
-async function submit() {
-  if (meetAgain.value === null) return
+async function saveDateChoice(choice: boolean, note: string, reload = true) {
   saving.value = true; errorMessage.value = ''
   try {
     if (isPreview.value) {
       date.value = {
-        ...date.value, myChoice: meetAgain.value, myMessage: message.value || null,
-        bothResponded: true, mutual: meetAgain.value === true, closed: meetAgain.value === false,
-        theirChoice: true, canReconsider: meetAgain.value === false,
+        ...date.value, myChoice: choice, myMessage: note || null,
+        bothResponded: true, mutual: choice === true, closed: choice === false,
+        theirChoice: true, canReconsider: choice === false,
         theirMessage: 'I had a lovely time too — another gallery trip would be fun.',
       }
       return
     }
     await $fetch(`/api/dates/${String(route.params.id)}/follow-up`, { method: 'POST',
-      body: { meetAgain: meetAgain.value, message: message.value || null } })
-    await load()
+      body: { meetAgain: choice, message: note || null } })
+    if (reload) await load()
   } catch (error: any) { errorMessage.value = error?.data?.statusMessage || 'Your response could not be saved.' }
   finally { saving.value = false }
+}
+async function submit() {
+  if (meetAgain.value === null || pendingNoChoice.value) return
+  if (meetAgain.value) {
+    await saveDateChoice(true, message.value)
+    return
+  }
+  const note = message.value
+  const expiresAt = new Date(Date.now() + noChoiceUndoWindowMs).toISOString()
+  pendingNoChoice.value = {
+    message: note,
+    expiresAt,
+    timer: setTimeout(() => { void commitNoChoice() }, noChoiceUndoWindowMs),
+  }
+}
+function undoNoChoice() {
+  if (!pendingNoChoice.value || saving.value) return
+  clearTimeout(pendingNoChoice.value.timer)
+  pendingNoChoice.value = null
+}
+async function commitNoChoice(reload = true) {
+  const pending = pendingNoChoice.value
+  if (!pending || saving.value) return
+  clearTimeout(pending.timer)
+  pendingNoChoice.value = null
+  await saveDateChoice(false, pending.message, reload)
 }
 async function reconsider() {
   if (!apologyMessage.value.trim()) return
@@ -108,6 +136,9 @@ async function reconsider() {
   finally { reconsidering.value = false }
 }
 onMounted(() => { load().catch((error: any) => { errorMessage.value = error?.data?.statusMessage || 'This date could not be loaded.'; loading.value = false }) })
+onBeforeUnmount(() => {
+  if (pendingNoChoice.value) void commitNoChoice(false)
+})
 </script>
 
 <template>
@@ -171,10 +202,12 @@ onMounted(() => { load().catch((error: any) => { errorMessage.value = error?.dat
 
         <section v-else-if="date.myChoice !== null" class="mt-5 rounded-lg bg-[#FCE3E8] p-6"><Check class="size-6 text-[#B4234A]" /><h2 class="mt-3 text-xl font-semibold">Your choice is saved.</h2><p class="mt-2 text-sm leading-6 text-[#4D2F39]">We’re waiting for {{ date.personName }}. When they answer, you’ll both see the choices and any notes.</p></section>
 
+        <UndoActionNotice v-if="pendingNoChoice" class="mt-5" :message="`You chose to leave the connection with ${date.personName} here.`" :expires-at="pendingNoChoice.expiresAt" :busy="saving" @undo="undoNoChoice" />
+
         <form v-else-if="date.dateHasPassed" class="mt-5 rounded-lg bg-white p-6 shadow-[0_12px_28px_rgba(180,35,74,0.08)]" @submit.prevent="submit">
           <fieldset><legend class="text-lg font-semibold">Would you like another date?</legend><div class="mt-4 grid gap-3 sm:grid-cols-2"><button type="button" class="choice" :class="meetAgain === true && 'choice-selected'" @click="meetAgain = true">Yes, I’d like another date</button><button type="button" class="choice" :class="meetAgain === false && 'choice-selected'" @click="meetAgain = false">No, I’d like to leave it here</button></div></fieldset>
           <p v-if="meetAgain === true" class="mt-4 rounded-lg bg-[#EAF2DE] p-3 text-sm leading-6 text-[#4D2F39]">If {{ date.personName }} also chooses yes, your connection stays open and you can plan another date. If they choose no, it closes.</p>
-          <p v-else-if="meetAgain === false" class="mt-4 rounded-lg bg-[#F3E8DA] p-3 text-sm leading-6 text-[#4D2F39]">After {{ date.personName }} answers, the connection will close. You’ll then both see the choices and any notes.</p>
+          <p v-else-if="meetAgain === false" class="mt-4 rounded-lg bg-[#F3E8DA] p-3 text-sm leading-6 text-[#4D2F39]">After you save, you’ll have 10 seconds to undo. Once {{ date.personName }} answers, the connection will close and you’ll both see the choices and any notes.</p>
           <label v-if="meetAgain !== null" class="mt-5 block text-sm font-semibold">Optional note<textarea v-model="message" :maxlength="noteLimit" rows="4" class="mt-2 w-full resize-none rounded-lg border border-[#E8D8C4] bg-[#FBF7F1] p-3" :placeholder="meetAgain ? 'I had a lovely time and would enjoy doing this again…' : 'Thank you for meeting me. I wish you all the best…'" /><span class="mt-1 block text-right text-xs font-normal text-[#6E4D58]">{{ message.length }}/{{ noteLimit }}</span></label>
           <p class="mt-5 flex items-start gap-2 text-xs leading-5 text-[#6E4D58]"><ShieldCheck class="mt-0.5 size-4 shrink-0" />Your note can accompany either choice. It is shown only after both people answer, so neither choice influences the other.</p>
           <button type="submit" :disabled="meetAgain === null || saving" class="mt-5 rounded-lg bg-[#B4234A] px-5 py-3 text-sm font-semibold text-white disabled:opacity-50">{{ saving ? 'Saving…' : 'Save my choice' }}</button>

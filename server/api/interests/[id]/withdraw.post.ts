@@ -2,6 +2,7 @@ import { createError, getRouterParam, setHeader } from 'h3'
 import { db } from '~/server/repositories/db'
 import { requireUser } from '~/server/utils/requireUser'
 import { expirePendingInterests } from '~/server/utils/interestLifecycle'
+import { undoUntil } from '~/server/utils/undoWindow'
 
 export default defineEventHandler(async (event) => {
   setHeader(event, 'Cache-Control', 'private, no-store')
@@ -22,7 +23,8 @@ export default defineEventHandler(async (event) => {
     await client.query(`delete from notifications where kind='interest_received'
       and recipient_id=$1 and actor_id=$2`, [interest.recipientId,sub])
     await client.query('commit')
-    return { withdrawn: true, resolvedAt: new Date().toISOString() }
+    const resolvedAt = new Date()
+    return { withdrawn: true, resolvedAt: resolvedAt.toISOString(), undoUntil: undoUntil(resolvedAt) }
   } catch (error) {
     await client.query('rollback')
     throw error

@@ -5,6 +5,7 @@ import { trackProductEvent } from '~/utils/productAnalytics'
 definePageMeta({ title: 'Received interests · Lonely Radish', middleware: 'logged-in' })
 type ReceivedInterest = { id: string; slug: string; name: string; age: number; place: string; createdAt: string; activityTags: string[]; matchStatus: string | null; photoUrl?: string }
 type ClosedInterest = { id: string; slug: string; name: string; createdAt: string; resolvedAt: string; resolution: 'expired' | 'withdrawn'; photoUrl?: string }
+type UndoableDecline = { person: ReceivedInterest; undoUntil: string; restoring: boolean }
 const interests = ref<ReceivedInterest[]>([])
 const closedInterests = ref<ClosedInterest[]>([])
 const loading = ref(true)
@@ -21,6 +22,7 @@ const interestLimit = ref(5)
 const hasMore = ref(false)
 const inboxReopensAt = ref<string | null>(null)
 const yourMoveMatch = ref<{ id: string; name: string } | null>(null)
+const undoableDeclines = ref<UndoableDecline[]>([])
 const { adjustMatchCount } = useMeStateV2()
 const atMatchLimit = computed(() => activeMatchCount.value >= activeMatchLimit.value)
 const inboxReopensLabel = computed(() => inboxReopensAt.value && new Date(inboxReopensAt.value) > new Date()
@@ -79,16 +81,37 @@ async function declineInterest(person: ReceivedInterest) {
   declining.value = person.id
   errorMessage.value = ''
   try {
-    const result = await $fetch<{ inboxReopensAt: string | null }>(`/api/interests/${person.id}`, { method: 'DELETE' })
+    const result = await $fetch<{ inboxReopensAt: string | null; undoUntil: string }>(`/api/interests/${person.id}`, { method: 'DELETE' })
     interests.value = interests.value.filter(item => item.id !== person.id)
     pendingInterestCount.value = Math.max(0, pendingInterestCount.value - 1)
     hasMore.value = pendingInterestCount.value > interests.value.length
     inboxReopensAt.value = result.inboxReopensAt
+    undoableDeclines.value.push({ person, undoUntil: result.undoUntil, restoring: false })
     successMessage.value = `You chose not to match with ${person.name}. No one else will replace them today.`
     successShowsMatches.value = false
   } catch (error: any) {
     errorMessage.value = error?.data?.statusMessage || 'This interest could not be removed.'
   } finally { declining.value = null }
+}
+
+async function undoDecline(action: UndoableDecline) {
+  if (action.restoring) return
+  action.restoring = true
+  errorMessage.value = ''
+  try {
+    await $fetch(`/api/interests/${action.person.id}/undo`, { method: 'POST' })
+    interests.value = [...interests.value, action.person]
+      .sort((first, second) => new Date(first.createdAt).getTime() - new Date(second.createdAt).getTime())
+    pendingInterestCount.value += 1
+    hasMore.value = pendingInterestCount.value > interests.value.length
+    undoableDeclines.value = undoableDeclines.value.filter(item => item !== action)
+    successMessage.value = `${action.person.name} is back in your interests.`
+  } catch (error: any) {
+    errorMessage.value = error?.data?.statusMessage || 'This interest could not be restored.'
+    if (error?.statusCode === 409 || error?.response?.status === 409 || error?.data?.statusCode === 409) {
+      undoableDeclines.value = undoableDeclines.value.filter(item => item !== action)
+    } else action.restoring = false
+  }
 }
 </script>
 
@@ -102,6 +125,9 @@ async function declineInterest(person: ReceivedInterest) {
       <p v-if="hasMore" class="w-full border-t border-[#E8D8C4] pt-3 text-xs leading-5 text-[#6E4D58]">Your account had more than five interests before this limit was introduced. You’re seeing the oldest five while that earlier list is worked through; no new interests can join it.</p>
     </div>
     <p v-if="successMessage" class="mt-5 rounded-lg bg-[#EAF2DE] p-4 text-sm font-semibold text-[#4D2F39]" role="status">{{ successMessage }} <NuxtLink v-if="successShowsMatches" to="/matches" class="text-[#8F1839] underline">View matches</NuxtLink></p>
+    <div v-if="undoableDeclines.length" class="mt-4 grid gap-2">
+      <UndoActionNotice v-for="action in undoableDeclines" :key="action.person.id" :message="`You chose not to match with ${action.person.name}.`" :expires-at="action.undoUntil" :busy="action.restoring" @undo="undoDecline(action)" />
+    </div>
     <p v-if="yourMoveMatch" class="mt-5 rounded-lg bg-[#FFF1C7] p-4 text-sm leading-6 text-[#694C00]" role="status"><strong>Your new connection with {{ yourMoveMatch.name }} needs attention.</strong> Make a plan or close the connection before accepting another interest. You can still view profiles, pass and show interest in other people. <NuxtLink to="/matches" class="font-semibold underline">Go to connection</NuxtLink></p>
     <div v-if="errorMessage" class="mt-5 rounded-lg bg-[#FCE3E8] p-4 text-sm font-semibold text-[#8F1839]" role="alert"><p>{{ errorMessage }}</p><button v-if="!loading && !interests.length" type="button" class="mt-3 rounded-lg bg-white px-4 py-2" @click="loadReceivedInterests">Try again</button></div>
     <div v-if="loading" class="mt-7 rounded-lg bg-white p-8 text-center text-sm text-[#6E4D58]">Loading received interests…</div>
