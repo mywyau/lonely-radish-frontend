@@ -1,6 +1,6 @@
 import { createError } from 'h3'
 
-export type ListCursor = { sortAt: string; tieBreaker: string }
+export type ListCursor = { sortAt: string; tieBreaker: string; rank?: number }
 
 export function encodeCursor(cursor: ListCursor) {
   return Buffer.from(JSON.stringify(cursor)).toString('base64url')
@@ -12,7 +12,8 @@ export function decodeCursor(value: unknown): ListCursor | null {
   try {
     const parsed = JSON.parse(Buffer.from(value, 'base64url').toString('utf8')) as Partial<ListCursor>
     if (typeof parsed.sortAt !== 'string' || Number.isNaN(Date.parse(parsed.sortAt)) || typeof parsed.tieBreaker !== 'string' || !parsed.tieBreaker) throw new Error()
-    return { sortAt: parsed.sortAt, tieBreaker: parsed.tieBreaker }
+    if (parsed.rank !== undefined && (!Number.isInteger(parsed.rank) || parsed.rank < 0)) throw new Error()
+    return { sortAt: parsed.sortAt, tieBreaker: parsed.tieBreaker, ...(parsed.rank !== undefined && { rank: parsed.rank }) }
   } catch { throw createError({ statusCode: 400, statusMessage: 'Invalid pagination cursor' }) }
 }
 

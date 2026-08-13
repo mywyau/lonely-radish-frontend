@@ -37,7 +37,7 @@ describe('blocking and reporting', () => {
     expect(read('pages/activities/index.vue')).toContain('Report reference:')
     expect(read('components/ProfileSafetyActions.vue')).toContain('border-t border-[#E8D8C4]')
     expect(read('server/api/profiles/[slug].get.ts')).toContain('not exists(select 1 from blocks')
-    expect(read('server/api/activities/[slug]/people.get.ts')).toContain('not exists(select 1 from blocks')
+    expect(read('server/api/activities/people.get.ts')).toContain('not exists(select 1 from blocks')
     expect(read('server/repositories/interests.ts')).toContain('not exists(select 1 from blocks')
     const receivedHistory = read('pages/interests/received.vue')
     expect(receivedHistory).toContain('View profile')

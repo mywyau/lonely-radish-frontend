@@ -7,7 +7,7 @@ const read = (path: string) =>
 
 describe("core journey recovery", () => {
   it("does not present a discovery outage as an empty match pool", () => {
-    const page = read("pages/activities/[slug].vue");
+    const page = read("pages/activities/index.vue");
     expect(page).toContain("We couldn’t load anyone just now");
     expect(page).toContain("Try again in a moment.");
     expect(page).toContain('@click="loadCandidates()"');
@@ -44,7 +44,7 @@ describe("core journey recovery", () => {
   });
 
   it("keeps incomplete members out of discovery", () => {
-    expect(read("server/api/activities/[slug]/people.get.ts")).toContain(
+    expect(read("server/api/activities/people.get.ts")).toContain(
       "u.onboarding_completed_at is not null",
     );
     expect(read("server/api/profiles/[slug].get.ts")).toContain(
@@ -66,7 +66,7 @@ describe("core journey recovery", () => {
     expect(analytics).toContain("track(name, properties)");
     const sources = [
       read("pages/onboarding.vue"),
-      read("pages/activities/[slug].vue"),
+      read("pages/activities/index.vue"),
       read("composables/useDailyInterest.ts"),
       read("pages/plans/[slug].vue"),
       read("pages/offers.vue"),

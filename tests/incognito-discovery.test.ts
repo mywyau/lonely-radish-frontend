@@ -17,13 +17,13 @@ describe('incognito discovery', () => {
 
   it('keeps incognito candidates out of discovery unless they currently chose the viewer', () => {
     const policy = read('server/utils/profileVisibility.ts')
-    const discovery = read('server/api/activities/[slug]/people.get.ts')
+    const discovery = read('server/api/activities/people.get.ts')
     expect(policy).toContain("coalesce(u.discovery_mode,'standard')='standard'")
     expect(policy).toContain('visibility_interest.sender_id=p.user_id')
     expect(policy).toContain('visibility_interest.recipient_id=$2')
     expect(policy).toContain('visibility_interest.resolved_at is null')
     expect(discovery).toContain('candidateDiscoveryVisibilityWhere')
-    expect(discovery.indexOf('candidateDiscoveryVisibilityWhere')).toBeLessThan(discovery.indexOf('order by p.updated_at'))
+    expect(discovery.indexOf('candidateDiscoveryVisibilityWhere')).toBeLessThan(discovery.indexOf('order by coalesce'))
   })
 
   it('prevents a guessed slug or interest submission from bypassing incognito', () => {

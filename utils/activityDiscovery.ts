@@ -31,3 +31,8 @@ const legacyCategorySlugs: Record<string, string> = {
 export function discoveryCategory(slug: string) {
   return discoveryCategories[legacyCategorySlugs[slug] || slug]
 }
+
+export function discoveryCategorySlug(slug: string) {
+  const canonicalSlug = legacyCategorySlugs[slug] || slug
+  return discoveryCategories[canonicalSlug] ? canonicalSlug : null
+}

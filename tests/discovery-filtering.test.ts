@@ -22,7 +22,7 @@ describe('scalable discovery filtering', () => {
 
   it('applies age, reciprocal gender and orientation, ethnicity and distance filters on the server', () => {
     const filters = read('server/utils/discoveryFilters.ts')
-    const discovery = read('server/api/activities/[slug]/people.get.ts')
+    const discovery = read('server/api/activities/people.get.ts')
     expect(filters).toContain("p.date_of_birth<=(current_date-(coalesce(mine.minimum_age,18)*interval '1 year'))::date")
     expect(filters).toContain("p.date_of_birth>(current_date-((coalesce(mine.maximum_age,100)+1)*interval '1 year'))::date")
     expect(filters).not.toContain('extract(year from age(current_date,p.date_of_birth))')

@@ -65,7 +65,7 @@ describe('private profile photo storage', () => {
 
   it('uses thumbnails in collection views while preserving full profile photos', () => {
     for (const path of [
-      'server/api/activities/[slug]/people.get.ts',
+      'server/api/activities/people.get.ts',
       'server/api/blocks/index.get.ts',
       'server/api/interests/received.get.ts',
       'server/api/interests/sent.get.ts',

@@ -9,11 +9,12 @@ describe('cursor pagination', () => {
     const utility = read('server/utils/cursorPagination.ts')
     expect(utility).toContain("toString('base64url')")
     expect(utility).toContain('Invalid pagination cursor')
+    expect(utility).toContain('rank?: number')
     expect(utility).toContain('rows.length > pageSize')
   })
 
   for (const [endpoint, page, label] of [
-    ['server/api/activities/[slug]/people.get.ts', 'pages/activities/[slug].vue', 'Load more people'],
+    ['server/api/activities/people.get.ts', 'pages/activities/index.vue', 'Load more people'],
     ['server/api/notifications.get.ts', 'pages/notifications.vue', 'Load more notifications'],
     ['server/api/blocks/index.get.ts', 'pages/account/blocked.vue', 'Load more blocked users'],
     ['server/api/matches/past.get.ts', 'pages/matches/past.vue', 'Load more past connections'],

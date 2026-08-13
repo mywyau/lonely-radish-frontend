@@ -68,19 +68,18 @@ describe("core page contracts", () => {
       "utf8",
     );
 
-    expect(activities).toContain("title: 'Date Ideas · Lonely Radish'");
-    expect(activities).toContain("What sounds good to you?");
+    expect(activities).toContain("title: 'Discover by activity · Lonely Radish'");
+    expect(activities).toContain("Who would you enjoy meeting?");
     expect(activities).toContain("slug: 'sports'");
     expect(activities).toContain("slug: 'games'");
-    expect(activities).toContain("`/activities/${category.slug}`");
-    expect(activities).toContain("See who’s interested");
-    expect(activityMatches).toContain(
-      "visiblePeople.length === 1 ? 'person' : 'people'",
-    );
-    expect(activityMatches).toContain("Everyone here chose something in this category");
-    expect(activityMatches).toContain("Nobody here fits your preferences yet");
-    expect(activityMatches).toContain("`/profiles/${person.slug}`");
-    expect(activityMatches).toContain("`/api/activities/${slug.value}/people`");
+    expect(activities).toContain("Activity filters");
+    expect(activities).toContain("selectedCategories.includes(category.slug)");
+    expect(activities).toContain("'/api/activities/people'");
+    expect(activities).toContain("Nobody here fits these filters yet");
+    expect(activities).toContain("`/profiles/${person.slug}`");
+    expect(activities).toContain(':key="person.slug"');
+    expect(activityMatches).toContain("path: '/activities'");
+    expect(activityMatches).toContain("categories: category");
     expect(profile).toContain(
       "`${profile.value.name}'s Profile · Lonely Radish`",
     );
@@ -109,8 +108,8 @@ describe("core page contracts", () => {
     expect(profile).toContain("profileInterests");
     expect(profileActivityPanel).toContain(".profile-flip-card:hover");
     expect(profile).toContain("useDailyInterest()");
-    expect(activityMatches).not.toContain("useDailyInterest()");
-    expect(activityMatches).toContain(':to="`/profiles/${person.slug}`"');
+    expect(activities).not.toContain("useDailyInterest()");
+    expect(activities).toContain(':to="`/profiles/${person.slug}`"');
     expect(matches).toContain("title: 'Matches & Plans · Lonely Radish'");
     expect(matches).toContain("What would you like to do next?");
     expect(matches).toContain("title: 'Reply to a plan'");

@@ -15,7 +15,7 @@ describe('account discovery pause', () => {
 
   it('automatically treats expired pauses as discoverable', () => {
     expect(read('server/api/profiles/[slug].get.ts')).toContain('u.paused_until<=now()')
-    expect(read('server/api/activities/[slug]/people.get.ts')).toContain('u.paused_until<=now()')
+    expect(read('server/api/activities/people.get.ts')).toContain('u.paused_until<=now()')
     expect(read('server/api/account/pause.get.ts')).toContain("paused_until<=now() then 'active'")
     expect(read('server/api/account/pause.get.ts')).toContain('replaceAccountAccess')
   })
