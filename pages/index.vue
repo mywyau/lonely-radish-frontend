@@ -76,6 +76,30 @@ const featuredMatches = [
     time: 'Free after work',
     tone: 'bg-[#F7D4DC]',
   },
+  {
+    name: 'Amina',
+    age: 33,
+    photo: '/images/amina-profile-triptych.png',
+    detail: 'Pottery studios, flower markets and park walks',
+    time: 'Free Sun afternoon',
+    tone: 'bg-[#E8DDD4]',
+  },
+  {
+    name: 'Ravi',
+    age: 36,
+    photo: '/images/ravi-profile-triptych.png',
+    detail: 'Canal walks, food markets and board games',
+    time: 'Free Wed evening',
+    tone: 'bg-[#E3ECE5]',
+  },
+  {
+    name: 'Jordan',
+    age: 31,
+    photo: '/images/jordan-profile-triptych.png',
+    detail: 'Art fairs, community gardens and city parks',
+    time: 'Free Sat afternoon',
+    tone: 'bg-[#EEE3D2]',
+  },
 ]
 
 const dateFlow = [
@@ -209,24 +233,29 @@ onMounted(() => {
         </ul>
       </div>
 
-      <div class="grid gap-3">
-        <article
-          v-for="match in featuredMatches"
-          :key="match.name"
-          class="match-card"
-          :class="match.tone"
-        >
-          <div class="match-photo"><img :src="match.photo" :alt="`${match.name} profile example`"></div>
-          <div class="min-w-0 flex-1">
-            <h3 class="text-lg font-semibold">
-              {{ match.name }}, {{ match.age }}
-            </h3>
-            <p class="mt-1 text-sm text-[#6E4D58]">
-              {{ match.detail }}
-            </p>
-          </div>
-          <span class="availability-pill">{{ match.time }}</span>
-        </article>
+      <div>
+        <!-- <p class="mb-3 text-xs font-semibold uppercase tracking-[0.08em] text-[#8F6A76]">
+          Illustrative profile examples
+        </p> -->
+        <div class="grid gap-3 xl:grid-cols-2">
+          <article
+            v-for="match in featuredMatches"
+            :key="match.name"
+            class="match-card"
+            :class="match.tone"
+          >
+            <div class="match-photo"><img :src="match.photo" :alt="`${match.name} profile example`"></div>
+            <div class="min-w-0 flex-1">
+              <h3 class="text-lg font-semibold">
+                {{ match.name }}, {{ match.age }}
+              </h3>
+              <p class="mt-1 text-sm text-[#6E4D58]">
+                {{ match.detail }}
+              </p>
+            </div>
+            <span class="availability-pill">{{ match.time }}</span>
+          </article>
+        </div>
       </div>
     </section>
 
@@ -455,6 +484,20 @@ onMounted(() => {
   .availability-pill {
     grid-column: auto;
     justify-self: auto;
+  }
+}
+
+@media (min-width: 1280px) {
+  .match-card {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: start;
+    column-gap: 0.875rem;
+    row-gap: 0.75rem;
+  }
+
+  .availability-pill {
+    grid-column: 2;
+    justify-self: start;
   }
 }
 

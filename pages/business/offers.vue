@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { Archive, BadgePercent, MapPin, Pencil, Plus, RotateCcw, Store, X } from '@lucide/vue'
+import { Archive, BadgePercent, Eye, MapPin, Pencil, Plus, RotateCcw, Store, X } from '@lucide/vue'
 import type { BusinessOfferApprovalStatus, BusinessVenueStatus } from '~/types/api/businessSubmissions'
 
 definePageMeta({ title: 'Business offers · Lonely Radish', middleware: 'business-only' })
 
 type VenueScope = 'single' | 'selected' | 'all'
 type Venue = { id: string; name: string; city: string; postcode: string; status: BusinessVenueStatus }
-type Business = { status: 'draft' | 'pending' | 'active' | 'suspended'; role: 'owner' | 'manager' | 'staff'; plan: 'standard' | 'featured' | null; venues: Venue[] }
+type Business = { name: string; status: 'draft' | 'pending' | 'active' | 'suspended'; role: 'owner' | 'manager' | 'staff'; plan: 'standard' | 'featured' | null; venues: Venue[] }
 type Offer = {
     id: string
     title: string
@@ -35,6 +35,7 @@ const successMessage = ref('')
 const editingOfferId = ref<string | null>(null)
 const lifecycleSavingId = ref('')
 const venueSearch = ref('')
+const previewOffer = ref<Offer | null>(null)
 const form = reactive({
     venueScope: 'single' as VenueScope,
     venueId: '',
@@ -74,6 +75,31 @@ function locationLabel(offer: Offer) {
     const selected = business.value?.venues.filter(venue => offer.venueIds.includes(venue.id)) || []
     if (offer.venueScope === 'selected') return `${selected.length} selected ${selected.length === 1 ? 'location' : 'locations'}`
     return selected[0]?.name || 'One location'
+}
+
+function previewVenues(offer: Offer) {
+    const venues = business.value?.venues || []
+    if (offer.venueScope === 'all') return venues.filter(venue => venue.status === 'active')
+    return venues.filter(venue => offer.venueIds.includes(venue.id) && venue.status === 'active')
+}
+
+function customerLocationLabel(offer: Offer) {
+    const venues = previewVenues(offer)
+    if (offer.venueCount === 1 && venues[0]) return `${venues[0].name}, ${venues[0].city}`
+    if (offer.venueCount > 1) return `${offer.venueCount} participating locations`
+    return 'No approved participating locations yet'
+}
+
+function discountLabel(offer: Offer) {
+    return offer.discountType === 'percentage' ? `${offer.discountValue}% off` : `£${offer.discountValue} off`
+}
+
+function closePreview() {
+    previewOffer.value = null
+}
+
+function handlePreviewKeydown(event: KeyboardEvent) {
+    if (event.key === 'Escape') closePreview()
 }
 
 function canPublish(offer: Offer) {
@@ -173,9 +199,13 @@ async function toggleOffer(offer: Offer) {
     }
 }
 
-onMounted(() => load()
-    .catch((error: any) => { errorMessage.value = error?.data?.statusMessage || 'Offers could not be loaded.' })
-    .finally(() => { loading.value = false }))
+onMounted(() => {
+    window.addEventListener('keydown', handlePreviewKeydown)
+    void load()
+        .catch((error: any) => { errorMessage.value = error?.data?.statusMessage || 'Offers could not be loaded.' })
+        .finally(() => { loading.value = false })
+})
+onBeforeUnmount(() => window.removeEventListener('keydown', handlePreviewKeydown))
 </script>
 
 <template>
@@ -214,21 +244,24 @@ onMounted(() => load()
                                     offer.rejectionNote }}</p>
                                 <p class="mt-2 text-xs text-[#6E4D58]">Limit: {{ offer.redemptionLimitTotal || 'Unlimited' }} total · {{ offer.redemptionLimitPerUser }} per customer</p>
                             </div>
-                            <div v-if="canManage" class="flex flex-wrap justify-end gap-2">
-                                <button v-if="offer.approvalStatus !== 'archived'" type="button"
+                            <div class="flex flex-wrap justify-end gap-2">
+                                <button type="button"
+                                    class="rounded-lg border border-[#B4234A]/20 bg-white px-3 py-2 text-sm font-semibold text-[#8F1839]"
+                                    @click="previewOffer = offer"><Eye class="mr-1 inline size-4" />Preview</button>
+                                <button v-if="canManage && offer.approvalStatus !== 'archived'" type="button"
                                     class="rounded-lg bg-[#F3E8DA] px-3 py-2 text-sm font-semibold text-[#4D2F39]"
                                     @click="editOffer(offer)"><Pencil class="mr-1 inline size-4" />Edit</button>
-                                <button v-if="['draft','rejected','archived'].includes(offer.approvalStatus)" type="button"
+                                <button v-if="canManage && ['draft','rejected','archived'].includes(offer.approvalStatus)" type="button"
                                     :disabled="lifecycleSavingId === offer.id"
                                     class="rounded-lg bg-[#FFF1C7] px-3 py-2 text-sm font-semibold text-[#694C00] disabled:opacity-50"
                                     @click="lifecycleAction(offer, 'resubmit')"><RotateCcw class="mr-1 inline size-4" />Resubmit</button>
-                                <button v-if="offer.approvalStatus === 'approved' || offer.active" type="button"
+                                <button v-if="canManage && (offer.approvalStatus === 'approved' || offer.active)" type="button"
                                     :disabled="!offer.active && !canPublish(offer)"
                                     :title="!offer.active && !canPublish(offer) ? 'Business, offer and venue approval are required before publishing' : undefined"
                                     class="rounded-lg px-3 py-2 text-sm font-semibold hover:brightness-90 disabled:cursor-not-allowed disabled:opacity-50"
                                     :class="offer.active ? 'bg-[#EAF2DE] text-[#52713A]' : 'bg-[#F3E8DA] text-[#8F1839]'"
                                     @click="toggleOffer(offer)">{{ offer.active ? 'Active · Pause' : 'Activate' }}</button>
-                                <button v-if="offer.approvalStatus !== 'archived'" type="button"
+                                <button v-if="canManage && offer.approvalStatus !== 'archived'" type="button"
                                     :disabled="lifecycleSavingId === offer.id"
                                     class="rounded-lg bg-[#FCE3E8] px-3 py-2 text-sm font-semibold text-[#8F1839] disabled:opacity-50"
                                     @click="lifecycleAction(offer, 'archive')"><Archive class="mr-1 inline size-4" />Archive</button>
@@ -371,6 +404,54 @@ onMounted(() => load()
                 <Store class="size-4" />Back to business dashboard
             </NuxtLink>
         </section>
+
+        <div v-if="previewOffer" class="fixed inset-0 z-50 flex items-center justify-center bg-[#2A1520]/55 p-4"
+            role="dialog" aria-modal="true" aria-labelledby="offer-preview-title" @click.self="closePreview">
+            <section class="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl bg-[#FBF7F1] p-5 shadow-2xl sm:p-6">
+                <div class="flex items-start justify-between gap-4">
+                    <div>
+                        <p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">Customer preview</p>
+                        <h2 id="offer-preview-title" class="mt-1 text-xl font-semibold">How your offer will appear</h2>
+                    </div>
+                    <button type="button" class="rounded-full bg-white p-2 text-[#6E4D58] hover:text-[#2A1520]"
+                        aria-label="Close offer preview" @click="closePreview"><X class="size-5" /></button>
+                </div>
+                <p class="mt-4 rounded-lg bg-[#FFF1C7] p-3 text-xs leading-5 text-[#694C00]">
+                    This is a preview only. Customers can see the offer after its approvals are complete and you activate it.
+                </p>
+
+                <article class="mt-4 rounded-lg bg-white p-4 shadow-[0_8px_20px_rgba(180,35,74,0.07)]">
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="min-w-0">
+                            <p class="truncate text-xs font-bold uppercase tracking-wide text-[#8F1839]">{{ business?.name }}</p>
+                            <h3 class="mt-1 text-lg font-semibold">{{ previewOffer.title }}</h3>
+                        </div>
+                        <BadgePercent class="size-5 shrink-0 text-[#B4234A]" />
+                    </div>
+                    <p class="mt-2 text-base font-bold text-[#52713A]">{{ discountLabel(previewOffer) }}</p>
+                    <p class="mt-2 flex items-start gap-1 text-xs font-semibold text-[#6E4D58]">
+                        <MapPin class="mt-0.5 size-3.5 shrink-0" />{{ customerLocationLabel(previewOffer) }}
+                    </p>
+                    <div class="mt-4 border-t border-[#E8D8C4] pt-4">
+                        <p v-if="previewOffer.description" class="text-sm leading-6 text-[#4D2F39]">{{ previewOffer.description }}</p>
+                        <p v-else class="text-sm italic text-[#8F6A76]">No description added.</p>
+                        <div v-if="previewOffer.venueCount > 1" class="mt-3 rounded-lg bg-[#FBF7F1] px-3 py-2 text-xs text-[#6E4D58]">
+                            <p class="font-semibold text-[#4D2F39]">Participating locations</p>
+                            <ul class="mt-2 grid gap-1.5">
+                                <li v-for="venue in previewVenues(previewOffer).slice(0, 5)" :key="venue.id">
+                                    {{ venue.name }} · {{ venue.city }}, {{ venue.postcode }}
+                                </li>
+                            </ul>
+                            <p v-if="previewOffer.venueCount > 5" class="mt-2 font-semibold">And {{ previewOffer.venueCount - 5 }} more locations.</p>
+                        </div>
+                        <p v-if="previewOffer.terms" class="mt-3 rounded-lg bg-[#F3E8DA] p-3 text-xs leading-5 text-[#6E4D58]">Terms: {{ previewOffer.terms }}</p>
+                        <button type="button" disabled class="mt-4 inline-flex cursor-not-allowed items-center gap-2 rounded-lg bg-[#F3E8DA] px-4 py-2.5 text-sm font-semibold text-[#8F1839] opacity-70">
+                            Choose a confirmed date
+                        </button>
+                    </div>
+                </article>
+            </section>
+        </div>
     </main>
 </template>
 

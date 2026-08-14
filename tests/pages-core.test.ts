@@ -7,7 +7,9 @@ describe("core page contracts", () => {
   it("contact page keeps metadata title and support email link", () => {
     const source = readPage("contact.vue");
     expect(source).toContain("title: 'Contact · Lonely Radish'");
+    expect(source).toContain("How can we help?");
     expect(source).toContain("mailto:contact@lonelyradish.app");
+    expect(source).toContain("We usually reply within a few days.");
   });
 
   it("privacy notice page keeps metadata title and heading copy", () => {
@@ -42,6 +44,13 @@ describe("core page contracts", () => {
     expect(source).toContain("When you find someone");
     expect(source).toContain("name: 'Theo'");
     expect(source).toContain("photo: '/images/theo-profile-triptych.png'");
+    expect(source).toContain("name: 'Amina'");
+    expect(source).toContain("photo: '/images/amina-profile-triptych.png'");
+    expect(source).toContain("name: 'Ravi'");
+    expect(source).toContain("photo: '/images/ravi-profile-triptych.png'");
+    expect(source).toContain("name: 'Jordan'");
+    expect(source).toContain("photo: '/images/jordan-profile-triptych.png'");
+    expect(source).toContain("Illustrative profile examples");
     expect(source).not.toContain("name: 'Alex'");
     expect(source).toContain("text-[#2A1520] sm:text-6xl");
     expect(source).toContain("user.value?.firstName");

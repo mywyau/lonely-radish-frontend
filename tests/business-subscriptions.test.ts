@@ -71,6 +71,9 @@ describe("business subscriptions", () => {
       "Create your business profile",
     );
     expect(read("pages/business/offers.vue")).toContain("Create an offer");
+    expect(read("pages/business/offers.vue")).toContain("Customer preview");
+    expect(read("pages/business/offers.vue")).toContain("@click=\"previewOffer = offer\"");
+    expect(read("pages/business/offers.vue")).toContain("How your offer will appear");
     expect(read("pages/business/venues.vue")).toContain("Add another location");
     expect(read("pages/business/pricing.vue")).toContain(
       "Business subscriptions",
