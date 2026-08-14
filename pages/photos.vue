@@ -85,7 +85,7 @@ async function onFilesSelected(event: Event) {
           body: {
             storageKey: signed.photo.path,
             thumbnailStorageKey: signed.thumbnail.path,
-            altText: `${file.name} profile photo`,
+            altText: `Profile photo ${photos.value.length + 1}`,
           },
         })
         photos.value.push({ ...photo, name: file.name, size: optimized.full.size })
@@ -203,7 +203,7 @@ onMounted(async () => {
           </div>
           <div v-if="photos.length" class="mt-5 grid grid-cols-3 gap-2 overflow-hidden rounded-lg bg-[#F3E8DA] p-2" aria-live="polite">
             <div v-for="(photo, index) in photos" :key="`preview-${photo.id}`" class="relative overflow-hidden rounded-md bg-[#E8D8C4]" :class="index === 0 ? 'col-span-2 row-span-2 aspect-square' : 'aspect-square'">
-              <img :src="photo.url" :alt="`Preview position ${index + 1}: ${photo.name}`" class="h-full w-full object-cover">
+              <ProfilePhotoImage :src="photo.url" :alt="`Profile preview position ${index + 1}`" class="h-full w-full" />
               <span class="absolute bottom-1.5 left-1.5 rounded-full bg-[#2A1520]/85 px-2 py-1 text-[10px] font-bold text-white">{{ index === 0 ? '1 · Primary' : index + 1 }}</span>
             </div>
             <div v-for="position in photoSlots" :key="`preview-empty-${position}`" class="flex aspect-square items-center justify-center rounded-md border border-dashed border-[#CDB9A8] bg-white/45 text-xs font-semibold text-[#8A6A74]">{{ photos.length + position }}</div>
@@ -225,7 +225,7 @@ onMounted(async () => {
             @drop.prevent="dropPhoto(index, $event)"
           >
             <div class="relative aspect-[4/5] bg-[#F3E8DA]">
-              <img :alt="photo.name" :src="photo.url" class="h-full w-full object-cover">
+              <ProfilePhotoImage :src="photo.url" :alt="`Your profile photo ${index + 1}`" class="h-full w-full" />
               <span class="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-[#2A1520]/90 px-3 py-1.5 text-xs font-bold text-white shadow">
                 <Star v-if="index === 0" class="size-3" aria-hidden="true" />{{ index === 0 ? '1 · Primary' : `Photo ${index + 1}` }}
               </span>

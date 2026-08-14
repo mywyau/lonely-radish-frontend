@@ -55,7 +55,7 @@ onMounted(loadBlockedUsers)
       <p v-else-if="errorMessage && !blockedUsers.length" class="mt-6 rounded-lg bg-[#FCE3E8] p-4 text-sm font-semibold text-[#8F1839]" role="alert">{{ errorMessage }}</p>
       <div v-else-if="blockedUsers.length" class="mt-6 grid gap-3">
         <article v-for="person in blockedUsers" :key="person.slug" class="flex items-center gap-4 rounded-lg bg-white p-5 shadow-[0_8px_20px_rgba(180,35,74,.07)]">
-          <img v-if="person.photoUrl" :src="person.photoUrl" alt="" class="size-14 shrink-0 rounded-full object-cover">
+          <ProfilePhotoImage v-if="person.photoUrl" :src="person.photoUrl" alt="" class="size-14 shrink-0 rounded-full" />
           <div v-else class="flex size-14 shrink-0 items-center justify-center rounded-full bg-[#F3E8DA] text-lg font-semibold text-[#B4234A]">{{ person.name.charAt(0) }}</div>
           <div class="min-w-0 flex-1"><h2 class="truncate text-lg font-semibold">{{ person.name }}</h2><p class="mt-1 text-xs text-[#6E4D58]">Blocked {{ new Date(person.blockedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) }}</p></div>
           <button type="button" class="rounded-lg border border-[#B4234A]/30 px-4 py-2.5 text-sm font-semibold text-[#8F1839] hover:bg-[#FCE3E8]" @click="pendingUnblock = person">Unblock</button>

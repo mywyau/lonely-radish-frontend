@@ -149,7 +149,7 @@ onMounted(() => {
         <div class="mt-4 grid gap-4">
           <NuxtLink v-for="(person, index) in databasePeople" :key="person.slug" :to="`/profiles/${person.slug}`" class="group block rounded-lg p-5 shadow-[0_10px_24px_rgba(180,35,74,0.08)] transition hover:-translate-y-0.5 hover:shadow-[0_14px_30px_rgba(180,35,74,0.14)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#B4234A] sm:p-6" :class="['bg-[#FCE3E8]','bg-[#EAF2DE]','bg-[#F3E8DA]'][index % 3]" :aria-label="`View ${person.name}'s profile`">
             <div class="flex min-w-0 gap-4">
-              <img v-if="person.photoUrl" :src="person.photoUrl" :alt="`${person.name}'s profile photo`" class="size-20 shrink-0 rounded-lg object-cover sm:size-24">
+              <ProfilePhotoImage v-if="person.photoUrl" :src="person.photoUrl" :alt="`${person.name}'s profile photo`" class="size-20 shrink-0 rounded-lg sm:size-24" />
               <div v-else class="flex size-20 shrink-0 items-center justify-center rounded-lg bg-white/75 text-2xl font-semibold text-[#B4234A] sm:size-24">{{ person.name.charAt(0) }}</div>
               <div class="min-w-0 flex-1">
                 <div class="flex flex-wrap items-baseline justify-between gap-2"><h2 class="text-xl font-semibold group-hover:text-[#8F1839]">{{ person.name }}, {{ person.age }}</h2><div class="flex flex-wrap justify-end gap-1.5"><span v-if="person.sharedCount" class="rounded-full bg-white/80 px-2.5 py-1 text-xs font-bold text-[#52713A]">{{ person.sharedCount }} shared</span><span v-if="person.acceptingInterest === false" class="rounded-full bg-[#FFF1C7] px-2.5 py-1 text-xs font-bold text-[#694C00]">Considering other interests</span></div></div>

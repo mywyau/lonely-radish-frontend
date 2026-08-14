@@ -61,7 +61,7 @@ onMounted(() => loadConnections())
       <div v-else-if="connections.length" class="mt-8 grid gap-3">
         <article v-for="connection in connections" :key="connection.id" class="rounded-lg bg-white p-5 shadow-[0_8px_20px_rgba(180,35,74,.07)]">
           <div class="flex items-start gap-4">
-            <img v-if="connection.photoUrl" :src="connection.photoUrl" :alt="`${connection.name}'s profile photo`" class="size-14 rounded-full object-cover">
+            <ProfilePhotoImage v-if="connection.photoUrl" :src="connection.photoUrl" :alt="`${connection.name}'s profile photo`" class="size-14 rounded-full" />
             <div v-else class="flex size-14 shrink-0 items-center justify-center rounded-full bg-[#F3E8DA] text-lg font-semibold text-[#B4234A]">{{ connection.name.charAt(0) }}</div>
             <div class="min-w-0 flex-1"><h2 class="text-lg font-semibold">{{ connection.name }}</h2><p class="mt-1 flex items-center gap-1.5 text-sm text-[#6E4D58]"><XCircle class="size-4" />{{ outcome(connection) }}</p><p v-if="connection.activity" class="mt-1 text-xs text-[#6E4D58]">Last plan: {{ connection.activity }}</p><p v-if="connection.endedAt" class="mt-1 text-xs text-[#6E4D58]">{{ new Date(connection.endedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) }}</p></div>
           </div>

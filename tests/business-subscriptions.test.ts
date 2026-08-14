@@ -67,9 +67,13 @@ describe("business subscriptions", () => {
   });
 
   it("provides onboarding, location, offers and pricing pages", () => {
-    expect(read("pages/business/index.vue")).toContain(
+    const dashboard = read("pages/business/index.vue");
+    expect(dashboard).toContain(
       "Create your business profile",
     );
+    expect(dashboard.match(/business-action-tile/g)?.length).toBeGreaterThanOrEqual(8);
+    expect(dashboard).toContain("transform: translateY(-4px)");
+    expect(dashboard).toContain("prefers-reduced-motion: reduce");
     expect(read("pages/business/offers.vue")).toContain("Create an offer");
     expect(read("pages/business/offers.vue")).toContain("Customer preview");
     expect(read("pages/business/offers.vue")).toContain("@click=\"previewOffer = offer\"");
@@ -85,7 +89,7 @@ describe("business subscriptions", () => {
     expect(pricing).not.toContain("One venue");
     expect(pricing).not.toContain("Offer scheduling");
     expect(pricing).not.toContain("as they launch");
-    expect(read("pages/business/index.vue")).not.toContain(
+    expect(dashboard).not.toContain(
       "Add more offers, multi-location campaigns and priority offer placement",
     );
     expect(read("components/BlankNavBar.vue")).toContain("Business login");

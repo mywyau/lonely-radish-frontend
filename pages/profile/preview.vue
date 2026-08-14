@@ -120,10 +120,9 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleGalleryKeydown
             <section v-if="activePhoto" aria-label="Your profile photos" class="order-1 min-w-0 max-w-full sm:hidden">
               <button type="button"
                 class="profile-photo relative block aspect-[4/3] w-full max-w-full overflow-hidden rounded-lg"
-                :aria-label="`Expand ${activePhoto.altText || 'your profile photo'}`"
+                :aria-label="`Expand your profile photo ${activePhotoIndex + 1}`"
                 @click="openPhoto(activePhotoIndex)">
-                <img :src="activePhoto.url" :alt="activePhoto.altText || `Your profile photo ${activePhotoIndex + 1}`"
-                  class="h-full w-full object-cover">
+                <ProfilePhotoImage :src="activePhoto.url" :alt="`Your profile photo ${activePhotoIndex + 1}`" class="h-full w-full" />
                 <span class="absolute bottom-3 right-3 inline-flex items-center gap-1.5 rounded-full bg-[#2A1520]/80 px-3 py-2 text-xs font-semibold text-white">
                   <Expand class="size-3.5" aria-hidden="true" />Tap to expand
                 </span>
@@ -137,7 +136,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleGalleryKeydown
                   :class="index === activePhotoIndex ? 'border-[#B4234A]' : 'border-transparent opacity-70'"
                   :aria-label="`View profile photo ${index + 1}`" :aria-pressed="index === activePhotoIndex"
                   @click="selectPhoto(index)">
-                  <img :src="photo.url" alt="" class="h-full w-full object-cover">
+                  <ProfilePhotoImage :src="photo.url" alt="" class="h-full w-full" />
                 </button>
               </div>
             </section>
@@ -148,10 +147,9 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleGalleryKeydown
                 class="profile-photo group aspect-square text-left disabled:cursor-default"
                 :class="[index === 0 && 'col-span-2 row-span-2', photo.empty && 'profile-photo-empty']"
                 :disabled="photo.empty"
-                :aria-label="photo.empty ? `Empty photo slot ${photo.position}` : `Expand ${photo.altText || `your profile photo ${index + 1}`}`"
+                :aria-label="photo.empty ? `Empty photo slot ${photo.position}` : `Expand your profile photo ${index + 1}`"
                 @click="!photo.empty && openPhoto(index)">
-                <img v-if="!photo.empty" :src="photo.url" :alt="photo.altText || `Your profile photo ${index + 1}`"
-                  class="h-full w-full object-cover">
+                <ProfilePhotoImage v-if="!photo.empty" :src="photo.url" :alt="`Your profile photo ${index + 1}`" class="h-full w-full" />
                 <span v-if="!photo.empty"
                   class="absolute bottom-3 right-3 inline-flex items-center gap-1.5 rounded-full bg-[#2A1520]/80 px-3 py-2 text-xs font-semibold text-white opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
                   <Expand class="size-3.5" aria-hidden="true" />Expand
@@ -289,8 +287,8 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleGalleryKeydown
           aria-label="Previous photo" @click="changePhoto(-1)"><ChevronLeft class="size-7" /></button>
         <div class="profile-photo h-[78vh] w-[calc(100vw-2rem)] max-w-3xl touch-pan-y overflow-hidden rounded-lg bg-black"
           @touchstart.passive="startPhotoSwipe" @touchend.passive="endPhotoSwipe">
-          <img :src="activePhoto.url" :alt="activePhoto.altText || `Your profile photo ${activePhotoIndex + 1}`"
-            class="h-full w-full object-contain">
+          <ProfilePhotoImage :src="activePhoto.url" :alt="`Your profile photo ${activePhotoIndex + 1}`"
+            class="h-full w-full" image-class="h-full w-full object-contain" />
         </div>
         <button v-if="galleryPhotos.length > 1" type="button" class="absolute right-3 z-10 rounded-full bg-white/20 p-3 text-white"
           aria-label="Next photo" @click="changePhoto(1)"><ChevronRight class="size-7" /></button>

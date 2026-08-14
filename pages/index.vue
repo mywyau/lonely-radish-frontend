@@ -195,7 +195,7 @@ onMounted(() => {
             </p>
 
             <h1 class="max-w-3xl text-4xl font-semibold leading-[1.05] tracking-tight text-[#2A1520] sm:text-6xl">
-              Meet someone by doing something you both enjoy.
+              Meet someone by doing <span class="hero-gradient-text">something you both enjoy.</span>
             </h1>
 
             <p class="mt-5 max-w-2xl text-base leading-7 text-[#6E4D58] sm:text-lg">
@@ -379,24 +379,24 @@ onMounted(() => {
               <span class="offer-icon offer-icon-business"><Store class="size-6" aria-hidden="true" /></span>
               <div>
                 <p class="offer-card-kicker offer-card-kicker-business">For business owners</p>
-                <h3 class="text-2xl font-semibold">Welcome people who are already heading out.</h3>
+                <h3 class="text-2xl font-semibold">Help bring people together at your venue.</h3>
               </div>
             </div>
             <ol class="mt-6 grid gap-4">
               <li class="offer-step">
                 <BadgePercent class="size-5 shrink-0 text-[#52713A]" aria-hidden="true" />
-                <span><strong>Create an offer.</strong> Choose the saving, the terms and where people can use it.</span>
+                <span><strong>Set the scene.</strong> A thoughtful saving or little extra can make choosing where to meet easier.</span>
               </li>
               <li class="offer-step">
                 <ShieldCheck class="size-5 shrink-0 text-[#52713A]" aria-hidden="true" />
-                <span><strong>Send it for review.</strong> Once approved, people can find it. You can pause it whenever you like.</span>
+                <span><strong>Welcome real dates.</strong> Your offer reaches people who have already decided to spend time together.</span>
               </li>
               <li class="offer-step">
                 <TicketCheck class="size-5 shrink-0 text-[#52713A]" aria-hidden="true" />
-                <span><strong>Check the code.</strong> Validate it at the venue and see redemptions in your dashboard.</span>
+                <span><strong>Keep it simple.</strong> We review the offer; your team checks a one-time code when they arrive.</span>
               </li>
             </ol>
-            <NuxtLink to="/business" class="offer-link offer-link-business">Offer something date-friendly <span aria-hidden="true">→</span></NuxtLink>
+            <NuxtLink to="/business" class="offer-link offer-link-business">Create a date-friendly offer <span aria-hidden="true">→</span></NuxtLink>
           </article>
         </div>
       </div>
@@ -500,6 +500,14 @@ onMounted(() => {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #b4234a;
+}
+
+.hero-gradient-text {
+  color: #B4234A;
+  background: linear-gradient(100deg, #B4234A 5%, #8F1839 48%, #526B3C 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .section-heading {

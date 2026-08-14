@@ -391,7 +391,7 @@ onBeforeUnmount(() => {
             <article v-for="match in section.items" :key="match.id" class="rounded-lg p-5 shadow-[0_10px_24px_rgba(180,35,74,0.08)]" :class="section.tone">
               <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div class="flex min-w-0 gap-4">
-                  <img v-if="match.photoUrl" :src="match.photoUrl" :alt="`${match.name}'s primary profile photo`" class="size-14 shrink-0 rounded-full object-cover">
+                  <ProfilePhotoImage v-if="match.photoUrl" :src="match.photoUrl" :alt="`${match.name}'s primary profile photo`" class="size-14 shrink-0 rounded-full" />
                   <div v-else class="flex size-14 shrink-0 items-center justify-center rounded-full bg-white/75 text-lg font-semibold text-[#B4234A]">{{ match.name.charAt(0) }}</div>
                   <div class="min-w-0"><h3 class="text-lg font-semibold">{{ match.name }}</h3><p v-if="match.activity" class="mt-1 inline-flex items-center gap-1 text-sm font-semibold text-[#8F1839]"><Sparkles class="size-3.5" />{{ match.activity }}</p><p v-if="match.venue || match.place" class="mt-1 flex items-center gap-1 truncate text-xs text-[#6E4D58]"><MapPin class="size-3.5 shrink-0" />{{ match.venue || match.place }}</p></div>
                 </div>

@@ -102,28 +102,28 @@ onMounted(() => load().catch((error: any) => { errorMessage.value = error?.data?
         </section>
 
         <div class="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <NuxtLink to="/business/venues" class="group rounded-lg bg-[#2A1520] p-6 text-white">
+          <NuxtLink to="/business/venues" class="business-action-tile group rounded-lg bg-[#2A1520] p-6 text-white">
             <MapPin class="size-6" />
             <h2 class="mt-4 text-xl font-semibold">Manage locations</h2>
             <p class="mt-2 text-sm text-white/75">Add establishments and follow each venue’s approval state.</p>
           </NuxtLink>
-          <NuxtLink to="/business/offers" class="group rounded-lg bg-[#B4234A] p-6 text-white">
+          <NuxtLink to="/business/offers" class="business-action-tile group rounded-lg bg-[#B4234A] p-6 text-white">
             <Plus class="size-6" />
             <h2 class="mt-4 text-xl font-semibold">Manage offers</h2>
             <p class="mt-2 text-sm text-white/75">Create an offer for one location, a selection or all of them.</p>
           </NuxtLink>
-          <NuxtLink to="/business/redeem" class="group rounded-lg bg-[#52713A] p-6 text-white">
+          <NuxtLink to="/business/redeem" class="business-action-tile group rounded-lg bg-[#52713A] p-6 text-white">
             <ScanLine class="size-6" />
             <h2 class="mt-4 text-xl font-semibold">Redeem customer code</h2>
             <p class="mt-2 text-sm text-white/75">Choose the serving venue, enter the customer’s code and record
               one-time use.</p>
           </NuxtLink>
-          <NuxtLink v-if="!business.plan" to="/business/pricing" class="rounded-lg bg-[#F3E8DA] p-6">
+          <NuxtLink v-if="!business.plan" to="/business/pricing" class="business-action-tile rounded-lg bg-[#F3E8DA] p-6">
             <BadgePoundSterling class="size-6 text-[#B4234A]" />
             <h2 class="mt-4 text-xl font-semibold">Compare business plans</h2>
             <p class="mt-2 text-sm text-[#6E4D58]">Add more offers or choose Featured for priority offer placement.</p>
           </NuxtLink>
-          <button v-else type="button" class="rounded-lg bg-[#F3E8DA] p-6 text-left" @click="manageSubscription">
+          <button v-else type="button" class="business-action-tile rounded-lg bg-[#F3E8DA] p-6 text-left" @click="manageSubscription">
             <BadgePoundSterling class="size-6 text-[#B4234A]" />
             <h2 class="mt-4 text-xl font-semibold">Manage subscription</h2>
             <p class="mt-2 text-sm text-[#6E4D58]">Update payment details or cancel through Stripe.</p>
@@ -196,5 +196,32 @@ onMounted(() => load().catch((error: any) => { errorMessage.value = error?.data?
 .field:focus {
   border-color: #B4234A;
   box-shadow: 0 0 0 3px rgba(180, 35, 74, .14);
+}
+
+.business-action-tile {
+  transition: filter 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.business-action-tile:hover,
+.business-action-tile:focus-visible {
+  filter: brightness(1.06);
+  box-shadow: 0 16px 30px rgba(42, 21, 32, .2);
+  transform: translateY(-4px);
+}
+
+.business-action-tile:focus-visible {
+  outline: 3px solid #E7BCC6;
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .business-action-tile {
+    transition: none;
+  }
+
+  .business-action-tile:hover,
+  .business-action-tile:focus-visible {
+    transform: none;
+  }
 }
 </style>
