@@ -38,7 +38,7 @@ describe("core page contracts", () => {
     expect(source).toContain(
       "Spend less time swiping and more time seeing if you click.",
     );
-    expect(source).toContain("Zero algorithms used — no ranking, paid boosts or pay-to-be-seen");
+    expect(source).toContain("Zero algorithms. No ranking, paid boosts or \"pay-to-be-seen\"");
     expect(source).toContain("Why it works this way");
     expect(source).toContain("Choose who you’re actually curious about");
     expect(source).toContain("Keep room for a real conversation");
