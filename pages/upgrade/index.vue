@@ -89,6 +89,13 @@ onMounted(() => resolve())
         <section class="mx-auto grid w-full max-w-3xl gap-3 text-left sm:grid-cols-2"
           aria-labelledby="membership-principles-title">
           <h2 id="membership-principles-title" class="sr-only">What everyone receives and what a supporter membership means</h2>
+          <div class="flex items-start gap-3 rounded-lg border border-[#D8C6B4] bg-[#F3E8DA] p-5 sm:col-span-2">
+            <ShieldCheck class="mt-0.5 size-5 shrink-0 text-[#B4234A]" aria-hidden="true" />
+            <div>
+              <h3 class="font-semibold">No algorithmic ranking or paid boosts</h3>
+              <p class="mt-1 text-sm leading-6 text-[#4D2F39]">Free members and paid supporters follow the same visibility rules. Paying never moves a profile ahead of anyone else.</p>
+            </div>
+          </div>
           <div class="relative rounded-lg border bg-white p-5"
             :class="currentPlan === 'free' ? 'border-[#B4234A] ring-2 ring-[#F7B7C4]' : 'border-[#E8D8C4]'">
             <span v-if="currentPlan === 'free'"

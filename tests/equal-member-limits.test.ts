@@ -37,6 +37,8 @@ describe('equal member limits', () => {
     const membership = read('pages/upgrade/index.vue')
     expect(membership).toContain('All the core features stay free')
     expect(membership).toContain('No change to your matches or visibility')
+    expect(membership).toContain('No algorithmic ranking or paid boosts')
+    expect(membership).toContain('Free members and paid supporters follow the same visibility rules')
     expect(membership).toContain('Helps cover hosting and development')
     expect(membership).not.toContain('Advanced matching options and filters')
     expect(membership).not.toContain('priority placement')

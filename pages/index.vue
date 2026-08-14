@@ -130,6 +130,7 @@ const dateFlow = [
 ]
 
 const principles = [
+  'Zero algorithms. No ranking, paid boosts or "pay-to-be-seen"',
   'Meet people who are genuinely open to someone new',
   'Start with an activity, so there is already something to talk about',
   'Make the first plan somewhere public and confirm before you go',

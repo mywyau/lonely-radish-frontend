@@ -43,6 +43,7 @@ describe('private profile photo storage', () => {
     const photoImage = read('components/ProfilePhotoImage.vue')
     expect(photoImage).toContain("loaded ? 'opacity-100' : 'opacity-0'")
     expect(photoImage).toContain('animate-pulse')
+    expect(photoImage).not.toContain('bg-gradient')
     expect(photoImage).toContain('@error="loaded = false; failed = true"')
     expect(page).toContain("`preview-${photo.id}`")
     expect(page).toContain("isOnboarding && 'onboarding-return'")

@@ -31,7 +31,7 @@ onMounted(checkCachedImage)
 <template>
   <span class="relative block overflow-hidden bg-[#E8D8C4]" :aria-busy="!loaded && !failed">
     <span v-if="!loaded && !failed" class="absolute inset-0 flex items-center justify-center bg-[#E8D8C4]" aria-hidden="true">
-      <span class="absolute inset-0 animate-pulse bg-gradient-to-br from-[#F3E8DA] via-[#E3EBD9] to-[#E7BCC6]" />
+      <span class="absolute inset-0 animate-pulse bg-[#F3E8DA]" />
       <UserRound class="relative size-7 text-[#8A6A74]/65" />
     </span>
     <span v-else-if="failed" class="absolute inset-0 flex items-center justify-center bg-[#F3E8DA]" aria-hidden="true">
