@@ -355,7 +355,7 @@ onMounted(() => {
               <span class="offer-icon offer-icon-daters"><HeartHandshake class="size-6" aria-hidden="true" /></span>
               <div>
                 <p class="offer-card-kicker">For people dating</p>
-                <h3 class="text-2xl font-semibold">Found one you both like?</h3>
+                <h3 class="text-2xl font-semibold">Found an offer you both like?</h3>
               </div>
             </div>
             <ol class="mt-6 grid gap-4">
