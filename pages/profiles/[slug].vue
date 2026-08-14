@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { AtSign, ChevronDown, ChevronLeft, ChevronRight, Expand, HeartHandshake, Mail, MapPin, Phone, RefreshCw, ShieldCheck, Sparkles, UserRound, X } from '@lucide/vue'
+import { AtSign, ChevronDown, ChevronLeft, ChevronRight, Expand, HeartHandshake, Mail, MapPin, Phone, RefreshCw, ShieldCheck, UserRound, X } from '@lucide/vue'
 import { profileDetails } from '~/utils/profileDetails'
 import { genderIdentityLabel } from '~/utils/genderIdentity'
 
@@ -11,35 +11,41 @@ const { todaysInterests, dailyInterestLimit, activeMatchLimit, hasUsedDailyInter
 const profiles: Record<string, any> = {
   maya: {
     isDemo: true,
-    name: 'Maya', age: 31, genderIdentity: 'woman', pronouns: 'she/her', place: 'London',
+    name: 'Maya', age: 31, genderIdentity: 'woman', pronouns: 'she/her', place: 'East London',
     bio: 'I’m a book designer who is happiest wandering around a small exhibition, finding the best thing at a Sunday market, or catching a low-key gig. I’m looking for someone kind and curious who is up for making an actual plan.',
     activities: ['Gallery walks', 'Sunday markets', 'Live music', 'Bookshops', 'Riverside walks'],
-    interests: ['Design', 'Independent magazines', 'Cooking', 'City history'],
+    personalInterests: ['Design', 'Independent magazines', 'Cooking', 'City history'],
     availability: ['Thursday evenings', 'Weekend afternoons'],
+    availabilityVisibleBeforeMatch: false,
     photos: ['/images/maya-profile-triptych.png', '/images/maya-profile-triptych-2.png'],
-    matchReason: 'Maya fits your current match preferences and also wants to make a gallery plan.',
+    relationshipStatus: null, isMatched: false, interestSent: false, acceptingInterest: true,
+    heightCm: 168, drinking: 'socially', smoking: 'never', dailyRhythm: 'flexible',
   },
   nina: {
     isDemo: true,
-    name: 'Nina', age: 29, genderIdentity: 'woman', pronouns: 'she/her', place: 'London',
-    isMatched: true,
+    name: 'Nina', age: 29, genderIdentity: 'woman', pronouns: 'she/her', place: 'Hackney',
+    isMatched: true, relationshipStatus: 'active', matchId: 'preview-post-date',
     bio: 'I work in community radio and spend a lot of my free time looking for films, food, and corners of London I have not seen before. I appreciate thoughtful people, silly observations, and plans that leave room for a spontaneous second stop.',
     activities: ['Indie films', 'City walks', 'Casual food spots', 'Comedy nights', 'Markets'],
-    interests: ['Community radio', 'Photography', 'Podcasts', 'Trying new recipes'],
+    personalInterests: ['Community radio', 'Photography', 'Podcasts', 'Trying new recipes'],
     availability: ['Wednesday evenings', 'Weekend afternoons'],
+    availabilityVisibleBeforeMatch: false,
     photos: ['/images/nina-profile-triptych.png', '/images/nina-profile-triptych-2.png'],
-    matchReason: 'Nina fits your current match preferences and shares your availability for relaxed weekend plans.',
+    interestSent: false, acceptingInterest: true,
+    heightCm: 164, drinking: 'socially', smoking: 'never', dailyRhythm: 'night_owl',
     contactDetails: { phoneNumber: '+44 7700 900123', contactEmail: 'nina.demo@example.com', socialHandle: '@nina_demo' },
   },
   alex: {
     isDemo: true,
-    name: 'Alex', age: 34, genderIdentity: 'neither', pronouns: 'they/them', place: 'London',
+    name: 'Alex', age: 34, genderIdentity: 'neither', pronouns: 'they/them', place: 'South London',
     bio: 'I’m a product researcher, enthusiastic beginner climber, and collector of second-hand books I absolutely intend to read. I like people who are curious, direct, and happy to alternate active plans with a quiet wander and a good snack.',
     activities: ['Climbing', 'Book markets', 'Riverside walks', 'Board games', 'Cooking classes'],
-    interests: ['Architecture', 'Science fiction', 'Ceramics', 'Neighbourhood history'],
+    personalInterests: ['Architecture', 'Science fiction', 'Ceramics', 'Neighbourhood history'],
     availability: ['Friday evenings', 'Sunday mornings'],
+    availabilityVisibleBeforeMatch: false,
     photos: ['/images/alex-profile-triptych.png', '/images/alex-profile-triptych-2.png'],
-    matchReason: 'Alex fits your current match preferences and is open to the same active, low-pressure plans.',
+    relationshipStatus: 'queued', isMatched: false, interestSent: true, acceptingInterest: true,
+    heightCm: 175, drinking: 'never', smoking: 'never', dailyRhythm: 'early_bird',
   },
 }
 
@@ -86,7 +92,7 @@ const gallerySlots = computed(() => [
 const activePhoto = computed(() => galleryPhotos.value[activePhotoIndex.value] || null)
 const profileInterests = computed(() => profile.value?.personalInterests?.length
   ? profile.value.personalInterests
-  : profile.value?.isDemo ? profile.value.interests || [] : [])
+  : [])
 const lifestyleDetails = computed(() => profile.value ? profileDetails(profile.value) : [])
 const bioNeedsExpansion = computed(() => (profile.value?.bio?.length || 0) > 420)
 const availabilityIsVisible = computed(() => Boolean(profile.value?.availability?.length
@@ -284,7 +290,7 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
                     </div>
                   </div>
                   <button type="button"
-                    class="inline-flex shrink-0 items-center gap-2 rounded-full bg-[#FCE3E8] px-3 py-2 text-xs font-semibold text-[#8F1839 hover:brightness-90"
+                    class="inline-flex shrink-0 items-center gap-2 rounded-full bg-[#FCE3E8] px-3 py-2 text-xs font-semibold text-[#8F1839] hover:brightness-90"
                     aria-label="View About me" @click="profileCardFlipped = true">
                     <UserRound class="size-3.5" aria-hidden="true" />
                     <RefreshCw class="size-3.5" aria-hidden="true" />
@@ -293,12 +299,6 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
                 <p v-if="profile.place" class="mt-2 inline-flex items-center gap-1 text-sm text-[#6E4D58]">
                   <MapPin class="size-4" /><span>{{ profile.place }}</span>
                 </p>
-                <div v-if="profile.matchReason" class="mt-5 rounded-lg bg-[#EAF2DE] p-4">
-                  <p class="inline-flex items-center gap-2 text-sm font-semibold">
-                    <Sparkles class="size-4 text-[#6E8B52]" />Strong activity overlap
-                  </p>
-                  <p class="mt-1 text-xs leading-5 text-[#4D2F39]">{{ profile.matchReason }}</p>
-                </div>
                 <DailyInterestCounter class="mt-5" :count="todaysInterests.length" :limit="dailyInterestLimit" />
                 <button type="button"
                   :disabled="sending || profile.isMatched || profile.relationshipStatus === 'queued' || (profile.relationshipStatus === 'unmatched' && !profile.secondChanceAvailable) || profile.interestSent || (profile.relationshipStatus !== 'unmatched' && isTodaysChoice(profileSlug)) || profile.acceptingInterest === false || hasUsedDailyInterest"

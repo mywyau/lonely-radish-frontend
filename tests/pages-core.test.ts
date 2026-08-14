@@ -51,6 +51,9 @@ describe("core page contracts", () => {
     expect(source).toContain("name: 'Jordan'");
     expect(source).toContain("photo: '/images/jordan-profile-triptych.png'");
     expect(source).toContain("Illustrative profile examples");
+    expect(source).toContain("/images/home-canal-date.webp");
+    expect(source).toContain("/images/home-pottery-date.webp");
+    expect(source).toContain("/images/home-cafe-date.webp");
     expect(source).not.toContain("name: 'Alex'");
     expect(source).toContain("text-[#2A1520] sm:text-6xl");
     expect(source).toContain("user.value?.firstName");

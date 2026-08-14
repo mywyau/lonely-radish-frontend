@@ -31,7 +31,8 @@ export async function useAuth() {
 
 export async function login(targetUrl?: string | null) {
   if (!import.meta.client) return;
-  window.location.assign(`/api/auth/login?returnTo=${encodeURIComponent(normalizeLoginRedirectPath(targetUrl))}`);
+  const returnTo = encodeURIComponent(normalizeLoginRedirectPath(targetUrl));
+  window.location.assign(`/api/auth/login?mode=switch&returnTo=${returnTo}`);
 }
 
 export async function loginWithGoogle(targetUrl?: string | null) {
@@ -39,9 +40,7 @@ export async function loginWithGoogle(targetUrl?: string | null) {
 }
 
 export async function loginWithAnotherAccount(targetUrl?: string | null) {
-  if (!import.meta.client) return;
-  const returnTo = encodeURIComponent(normalizeLoginRedirectPath(targetUrl));
-  window.location.assign(`/api/auth/login?mode=switch&returnTo=${returnTo}`);
+  await login(targetUrl);
 }
 
 export async function signup(targetUrl?: string | null) {

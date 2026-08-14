@@ -32,7 +32,10 @@ export default defineEventHandler(async (event) => {
   if (query.mode === 'signup') {
     authorizeUrl.searchParams.set('screen_hint', 'signup')
     authorizeUrl.searchParams.set('prompt', 'login')
+  } else {
+    // Never resume an abandoned Auth0/Google login attempt. Returning members
+    // should always see an account choice, including email/password.
+    authorizeUrl.searchParams.set('prompt', 'login select_account')
   }
-  if (query.mode === 'switch') authorizeUrl.searchParams.set('prompt', 'select_account')
   return sendRedirect(event, authorizeUrl.toString(), 302)
 })

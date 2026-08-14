@@ -115,14 +115,14 @@ onMounted(() => {
 
       <section class="mt-6 rounded-lg bg-white p-5 shadow-[0_10px_24px_rgba(180,35,74,0.08)]" aria-labelledby="activity-filter-title">
         <div class="flex flex-wrap items-start justify-between gap-3">
-          <div><div class="flex items-center gap-2"><SlidersHorizontal class="size-5 text-[#B4234A]" /><h2 id="activity-filter-title" class="text-lg font-semibold">Activity filters</h2></div><p class="mt-1 text-sm text-[#6E4D58]">Selecting several categories shows people interested in any of them.</p></div>
+          <div><div class="flex items-center gap-2"><SlidersHorizontal class="size-5 text-[#B4234A]" /><h2 id="activity-filter-title" class="text-lg font-semibold">Activity filters</h2></div><p class="mt-1 text-sm leading-6 text-[#6E4D58]">Choose one or more broad categories. With no manual filters, we use the categories from activities saved to your profile.</p></div>
           <button v-if="selectedCategories.length" type="button" class="inline-flex items-center gap-1 text-sm font-semibold text-[#8F1839]" @click="clearCategories"><X class="size-4" />Clear</button>
         </div>
         <div class="mt-4 flex flex-wrap gap-2">
-          <button type="button" class="filter-chip" :class="!selectedCategories.length && 'filter-chip-selected'" :aria-pressed="!selectedCategories.length" @click="clearCategories"><Sparkles class="size-4" />All for you</button>
+          <button type="button" class="filter-chip" :class="!selectedCategories.length && 'filter-chip-selected'" :aria-pressed="!selectedCategories.length" @click="clearCategories"><Sparkles class="size-4" />Based on my activities</button>
           <button v-for="category in categories" :key="category.slug" type="button" class="filter-chip" :class="selectedCategories.includes(category.slug) && 'filter-chip-selected'" :aria-pressed="selectedCategories.includes(category.slug)" @click="toggleCategory(category.slug)"><component :is="category.icon" class="size-4" />{{ category.name }}</button>
         </div>
-        <p class="mt-4 text-xs font-semibold text-[#6E4D58]">{{ selectedCategoryNames.length ? `Showing ${selectedCategoryNames.join(' or ')}` : effectiveCategoryNames.length ? `Based on your saved interests: ${effectiveCategoryNames.join(', ')}` : 'Using all activity categories' }}</p>
+        <p class="mt-4 text-xs font-semibold text-[#6E4D58]">{{ selectedCategoryNames.length ? `Showing ${selectedCategoryNames.join(' or ')}` : effectiveCategoryNames.length ? `Using your saved activity categories: ${effectiveCategoryNames.join(', ')}` : 'No saved activities yet — using all activity categories' }}</p>
       </section>
 
       <section v-if="appliedFilters" class="mt-5 rounded-lg border border-[#E8D8C4] bg-white/75 p-4" aria-label="Applied match preferences">

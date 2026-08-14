@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { ArrowRight, Sparkles, UserRound } from '@lucide/vue'
-import { login, loginWithAnotherAccount, signup } from '@/composables/useAuth'
+import { login, signup } from '@/composables/useAuth'
 
 definePageMeta({
-  title: 'Sign in · Lonely Radish'
+  title: 'Sign in · Lonely Radish',
+  layout: false
 })
 const route = useRoute()
 const returnTo = computed(() => typeof route.query.redirect === 'string' ? route.query.redirect : '/')
@@ -12,26 +13,26 @@ const cancelled = computed(() => /access denied|cancel|denied|permissions/i.test
 </script>
 
 <template>
-  <main class="min-h-[70vh] bg-[#FBF7F1] px-5 py-16 text-[#211A16]">
-    <section class="mx-auto max-w-2xl rounded-lg bg-white p-6 shadow-sm sm:p-8">
+  <main class="flex min-h-screen items-center bg-[#526B3C] px-5 py-12 text-[#2A1520]">
+    <section class="mx-auto w-full max-w-2xl rounded-xl bg-[#FBF7F1] p-6 shadow-2xl sm:p-9">
       <div class="flex items-start gap-4">
-        <div class="flex size-12 shrink-0 items-center justify-center rounded-full bg-[#F6E1E1]">
-          <UserRound class="size-6" aria-hidden="true" />
+        <div class="flex size-12 shrink-0 items-center justify-center rounded-full bg-[#E3EBD9]">
+          <UserRound class="size-6 text-[#526B3C]" aria-hidden="true" />
         </div>
         <div>
-          <p class="text-sm font-semibold text-[#B05D45]">Welcome back</p>
-          <h1 class="mt-2 text-3xl font-semibold">Sign in to Lonely Radish</h1>
-          <p class="mt-3 text-[#6B5C52]">
-            Sign in to pick up where you left off, or create an account if you’re new here.
+          <p class="text-xs font-extrabold uppercase tracking-widest text-[#526B3C]">Lonely Radish personal</p>
+          <h1 class="mt-2 text-3xl font-semibold">Find your next good date.</h1>
+          <p class="mt-3 leading-6 text-[#6E4D58]">
+            Choose a Google account or use your email and password.
           </p>
         </div>
       </div>
 
-      <div v-if="authError" class="mt-6 rounded-lg bg-[#FCE3E8] p-4 text-sm text-[#8F1839]" role="alert"><p>{{ cancelled ? 'Sign-in was cancelled. No account information was shared.' : authError }}</p><p v-if="cancelled" class="mt-2 text-[#6E4D58]">You can try again or choose a different account.</p></div>
+      <div v-if="authError" class="mt-6 rounded-lg bg-[#FCE3E8] p-4 text-sm font-semibold text-[#8F1839]" role="alert"><p>{{ cancelled ? 'Sign-in was cancelled. No account information was shared.' : authError }}</p><p v-if="cancelled" class="mt-2 font-normal text-[#6E4D58]">You can try again or choose a different account.</p></div>
       <div class="mt-8 grid gap-3 sm:grid-cols-2">
         <button
           type="button"
-          class="inline-flex items-center justify-center gap-2 rounded-lg bg-[#211A16] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#3A302A]"
+          class="inline-flex items-center justify-center gap-2 rounded-lg bg-[#2A1520] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#421F30]"
           @click="login(returnTo)"
         >
           Log in
@@ -46,9 +47,10 @@ const cancelled = computed(() => /access denied|cancel|denied|permissions/i.test
           Create account
         </button>
       </div>
-      <button type="button" class="mt-4 inline-flex w-full items-center justify-center rounded-lg border border-[#D8C8B6] bg-white px-5 py-3 text-sm font-semibold text-[#4D2F39] transition hover:bg-[#FBF7F1]" @click="loginWithAnotherAccount(returnTo)">Use another account</button>
-      <NuxtLink to="/" class="mt-5 inline-flex text-sm font-semibold text-[#6E4D58] hover:text-[#B4234A]">Return home</NuxtLink>
-      <NuxtLink to="/business/sign-in" class="mt-5 ml-4 inline-flex text-sm font-semibold text-[#6E4D58] hover:text-[#B4234A]">Business login</NuxtLink>
+      <div class="mt-6 flex flex-wrap gap-x-5 gap-y-2">
+        <NuxtLink to="/" class="inline-flex text-sm font-semibold text-[#526B3C] hover:text-[#2A1520]">Return home</NuxtLink>
+        <NuxtLink to="/business/sign-in" class="inline-flex text-sm font-semibold text-[#526B3C] hover:text-[#2A1520]">Looking for business login?</NuxtLink>
+      </div>
     </section>
   </main>
 </template>

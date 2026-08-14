@@ -6,6 +6,7 @@ import { readPage } from "./pageTestUtils";
 describe("auth and billing page contracts", () => {
   it("provides a real sign-in gate", () => {
     const signIn = readPage("please-sign-in.vue");
+    const app = readFileSync(resolve(process.cwd(), "app.vue"), "utf8");
     const unavailable = readPage("content-not-available.vue");
     const comingSoon = readPage("coming-soon.vue");
 
@@ -13,6 +14,8 @@ describe("auth and billing page contracts", () => {
     expect(signIn).toContain("login(returnTo)");
     expect(signIn).toContain("signup(returnTo)");
     expect(signIn).toContain("Create account");
+    expect(app).toContain("businessSignIn.value || route.path === '/please-sign-in'");
+    expect(app).toContain('!businessShell && !standaloneSignIn');
 
     expect(unavailable).toContain("title: 'Feature preview · Lonely Radish'");
     expect(unavailable).toContain("This part isn’t ready yet.");

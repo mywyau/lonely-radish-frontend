@@ -177,41 +177,47 @@ onMounted(() => {
 <template>
   <main class="min-h-screen bg-[#FBF7F1] text-[#2A1520]">
     <section class="hero-shell">
-      <div class="mx-auto flex min-h-[calc(100vh-5rem)] max-w-6xl flex-col justify-end px-5 pb-8 pt-24 sm:px-8 lg:min-h-[40rem] lg:pb-12">
-        <div v-if="isLoggedIn" class="mb-7 max-w-xl rounded-lg bg-[#C13A5C] px-6 py-5 shadow-[0_16px_34px_rgba(180,35,74,0.2)]">
-          <p class="text-lg font-semibold text-white">
-            {{ greeting }}
-          </p>
-          <p class="mt-2 text-base leading-6 text-white">
-            {{ welcomeMessage }}
-          </p>
-        </div>
+      <div class="hero-layout mx-auto min-h-[calc(100vh-5rem)] max-w-6xl px-5 pb-8 pt-24 sm:px-8 lg:min-h-[40rem] lg:pb-12">
+        <div class="self-end">
+          <div v-if="isLoggedIn" class="mb-7 max-w-xl rounded-lg bg-[#C13A5C] px-6 py-5 shadow-[0_16px_34px_rgba(180,35,74,0.2)]">
+            <p class="text-lg font-semibold text-white">
+              {{ greeting }}
+            </p>
+            <p class="mt-2 text-base leading-6 text-white">
+              {{ welcomeMessage }}
+            </p>
+          </div>
 
-        <div class="max-w-3xl">
-          <p class="mb-4 inline-flex items-center gap-2 rounded-full border border-[#E8D8C4] bg-white px-3 py-1 text-sm font-medium text-[#8F1839] shadow-sm">
-            <Sparkles class="size-4" aria-hidden="true" />
-            Dating feels better when there’s a plan
-          </p>
+          <div class="max-w-3xl">
+            <p class="mb-4 inline-flex items-center gap-2 rounded-full border border-[#E8D8C4] bg-white px-3 py-1 text-sm font-medium text-[#8F1839] shadow-sm">
+              <Sparkles class="size-4" aria-hidden="true" />
+              Dating feels better when there’s a plan
+            </p>
 
-          <h1 class="max-w-3xl text-4xl font-semibold leading-[1.05] tracking-tight text-[#2A1520] sm:text-6xl">
-            Meet someone by doing something you both enjoy.
-          </h1>
+            <h1 class="max-w-3xl text-4xl font-semibold leading-[1.05] tracking-tight text-[#2A1520] sm:text-6xl">
+              Meet someone by doing something you both enjoy.
+            </h1>
 
-          <p class="mt-5 max-w-2xl text-base leading-7 text-[#6E4D58] sm:text-lg">
-            Start with something you’d both like to do. If you like each other too, choose a public place and make a plan together.
-          </p>
+            <p class="mt-5 max-w-2xl text-base leading-7 text-[#6E4D58] sm:text-lg">
+              Start with something you’d both like to do. If you like each other too, choose a public place and make a plan together.
+            </p>
 
-          <div class="mt-7 flex flex-col gap-3 sm:flex-row">
-            <button type="button" class="primary-action" @click="startOnboarding">
-              <Sparkles class="size-5" aria-hidden="true" />
-              Meet someone new
-            </button>
+            <div class="mt-7 flex flex-col gap-3 sm:flex-row">
+              <button type="button" class="primary-action" @click="startOnboarding">
+                <Sparkles class="size-5" aria-hidden="true" />
+                Meet someone new
+              </button>
 
-            <NuxtLink to="/matches" class="secondary-action">
-              Browse matches
-            </NuxtLink>
+              <NuxtLink to="/matches" class="secondary-action">
+                Browse matches
+              </NuxtLink>
+            </div>
           </div>
         </div>
+
+        <figure class="hero-photo self-end">
+          <img src="/images/home-canal-date.webp" alt="Two people chatting while walking beside a London canal" width="1672" height="941" fetchpriority="high">
+        </figure>
       </div>
     </section>
 
@@ -280,11 +286,11 @@ onMounted(() => {
           </li>
         </ul>
 
-        <div class="mt-6 rounded-lg border border-[#B4234A]/15 bg-[#FCE3E8]/55 p-4 text-sm leading-6 text-[#4D2F39]">
+        <!-- <div class="mt-6 rounded-lg border border-[#B4234A]/15 bg-[#FCE3E8]/55 p-4 text-sm leading-6 text-[#4D2F39]">
           <strong>Accepting an interest works one at a time.</strong>
           Once you accept someone, either start making a plan or decide that the match isn’t for you before accepting the next person. If you had already liked each other, you’ll still match automatically.
           <NuxtLink to="/faq#discovery-and-matching" class="ml-1 font-semibold text-[#8F1839] hover:underline">How matching works</NuxtLink>
-        </div>
+        </div> -->
 
         <NuxtLink to="/faq" class="mt-7 inline-flex items-center gap-2 rounded-lg bg-[#2A1520] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#4D2F39]">
           Read the FAQs <span aria-hidden="true">→</span>
@@ -294,7 +300,7 @@ onMounted(() => {
 
     <section class="bg-[#2A1520] px-5 py-12 text-white sm:px-8">
       <div class="mx-auto max-w-6xl">
-        <div class="mb-7 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+        <div class="mb-8 grid gap-6 lg:grid-cols-[1fr_0.72fr] lg:items-end">
           <div>
             <p class="section-kicker text-[#F7B7C4]">When you find someone</p>
             <h2 class="section-heading max-w-2xl text-white">
@@ -303,10 +309,13 @@ onMounted(() => {
             <p class="mt-4 max-w-2xl leading-7 text-white/70">
               No vague “we should do something sometime”. You can pick an idea, agree the details and know whether you’re both still on for it.
             </p>
+            <NuxtLink to="/contact" class="mt-5 inline-flex text-sm font-semibold text-[#F7B7C4] hover:text-white">
+              Give feedback
+            </NuxtLink>
           </div>
-          <NuxtLink to="/contact" class="text-sm font-semibold text-[#F7B7C4] hover:text-white">
-            Give feedback
-          </NuxtLink>
+          <figure class="editorial-photo editorial-photo-dark">
+            <img src="/images/home-pottery-date.webp" alt="Two people enjoying a pottery workshop together" width="1448" height="1086" loading="lazy">
+          </figure>
         </div>
 
         <div class="grid gap-4 md:grid-cols-3">
@@ -326,12 +335,17 @@ onMounted(() => {
 
     <section class="offer-section px-5 py-12 sm:px-8 sm:py-16">
       <div class="mx-auto max-w-6xl">
-        <div class="max-w-3xl">
-          <p class="section-kicker">A little extra</p>
-          <h2 class="section-heading">Already made a plan? See if there’s an offer nearby.</h2>
-          <p class="mt-4 max-w-2xl leading-7 text-[#6E4D58]">
-            Once your date is confirmed, you can look for offers from approved local places. It might mean money off a meal, a drink or something you can do together.
-          </p>
+        <div class="grid gap-6 lg:grid-cols-[1fr_0.72fr] lg:items-end">
+          <div class="max-w-3xl">
+            <p class="section-kicker">A little extra</p>
+            <h2 class="section-heading">Already made a plan? See if there’s an offer nearby.</h2>
+            <p class="mt-4 max-w-2xl leading-7 text-[#6E4D58]">
+              Once your date is confirmed, you can look for offers from approved local places. It might mean money off a meal, a drink or something you can do together.
+            </p>
+          </div>
+          <figure class="editorial-photo">
+            <img src="/images/home-cafe-date.webp" alt="Two people sharing food and conversation at a local café" width="1448" height="1086" loading="lazy">
+          </figure>
         </div>
 
         <div class="mt-8 grid gap-5 lg:grid-cols-2">
@@ -397,6 +411,55 @@ onMounted(() => {
   overflow: hidden;
   background: linear-gradient(180deg, #fbf7f1 0%, #f3e8da 100%);
   border-bottom: 1px solid rgba(180, 35, 74, 0.12);
+}
+
+.hero-layout {
+  display: grid;
+  align-items: end;
+  gap: 2rem;
+}
+
+.hero-photo,
+.editorial-photo {
+  overflow: hidden;
+  border-radius: 0.9rem;
+  background: #e8d8c4;
+  box-shadow: 0 18px 42px rgba(42, 21, 32, 0.14);
+}
+
+.hero-photo {
+  aspect-ratio: 16 / 10;
+}
+
+.hero-photo img,
+.editorial-photo img {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+}
+
+.hero-photo img {
+  object-position: 62% center;
+}
+
+.editorial-photo {
+  aspect-ratio: 16 / 10;
+}
+
+.editorial-photo-dark {
+  border: 1px solid rgba(247, 183, 196, 0.18);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.24);
+}
+
+@media (min-width: 1024px) {
+  .hero-layout {
+    grid-template-columns: minmax(0, 1.08fr) minmax(20rem, 0.92fr);
+  }
+
+  .hero-photo {
+    aspect-ratio: 4 / 5;
+    max-height: 34rem;
+  }
 }
 
 .primary-action,

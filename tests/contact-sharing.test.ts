@@ -36,6 +36,11 @@ describe('match-only contact details', () => {
     const page = read('pages/profiles/[slug].vue')
     expect(page.match(/isDemo: true/g)).toHaveLength(3)
     expect(page).toMatch(/Demo\s+profile/)
+    expect(page).toContain("relationshipStatus: 'active'")
+    expect(page).toContain("relationshipStatus: 'queued'")
+    expect(page).toContain('personalInterests:')
+    expect(page).not.toContain('matchReason:')
+    expect(page).not.toContain('Strong activity overlap')
   })
 
   it('shows a neutral social icon only when a shared handle exists', () => {
@@ -66,6 +71,7 @@ describe('match-only contact details', () => {
     expect(preview).toContain('v-model:flipped="availabilityContactFlipped"')
     expect(preview).toContain('owner-preview')
     expect(card).toContain("ownerPreview ? 'Show saved contact details' : 'Show shared contact details'")
+    expect(card).toContain('absolute right-5 top-5')
     expect(card).toContain('aria-label="Show usual availability"')
     expect(card).toContain('.availability-contact-flip.is-flipped')
     expect(card).toContain('Edit availability →')

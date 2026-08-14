@@ -48,8 +48,8 @@ function availabilityParts(label: string) {
         class="availability-contact-face availability-contact-front overflow-hidden rounded-lg bg-white shadow-[0_10px_24px_rgba(180,35,74,0.08)]"
         :aria-hidden="flipped" :inert="flipped || undefined">
         <div class="h-1 bg-gradient-to-r from-[#B4234A] via-[#D77B91] to-[#E8D8C4]"></div>
-        <div class="p-5 sm:p-6">
-          <div class="flex flex-wrap items-start justify-between gap-4">
+        <div class="relative p-5 sm:p-6">
+          <div class="pr-12 sm:pr-40">
             <div class="flex min-w-0 items-start gap-3">
               <span class="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#FCE3E8]">
                 <CalendarDays class="size-5 text-[#B4234A]" aria-hidden="true" />
@@ -64,13 +64,13 @@ function availabilityParts(label: string) {
                 <p class="mt-1 max-w-xl text-sm leading-5 text-[#6E4D58]">{{ availabilityIntro }}</p>
               </div>
             </div>
-            <button v-if="hasContactDetails" type="button"
-              class="inline-flex shrink-0 items-center gap-2 rounded-full bg-[#FCE3E8] px-3 py-2 text-xs font-semibold text-[#8F1839] hover:brightness-95"
-              :aria-label="ownerPreview ? 'Show saved contact details' : 'Show shared contact details'"
-              @click="emit('update:flipped', true)">
-              <RefreshCw class="size-3.5" aria-hidden="true" /> Contact details
-            </button>
           </div>
+          <button v-if="hasContactDetails" type="button"
+            class="absolute right-5 top-5 inline-flex shrink-0 items-center gap-2 rounded-full bg-[#FCE3E8] px-3 py-2 text-xs font-semibold text-[#8F1839] hover:brightness-95 sm:right-6 sm:top-6"
+            :aria-label="ownerPreview ? 'Show saved contact details' : 'Show shared contact details'"
+            @click="emit('update:flipped', true)">
+            <RefreshCw class="size-3.5" aria-hidden="true" /><span class="hidden sm:inline">Contact details</span>
+          </button>
 
           <div class="mt-5 grid gap-2 sm:grid-cols-2">
             <div v-for="label in availability" :key="label"
