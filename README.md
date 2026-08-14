@@ -441,3 +441,11 @@ Lonely Radish is under active MVP development. Before a public launch, use
 isolated environments, exercise the safety/moderation paths, verify background
 jobs and account deletion end-to-end, and run the separate E2E suite against a
 non-production environment.
+
+
+### migrate staging db changes
+
+node --env-file=.env.staging.local scripts/migrate.mjs
+
+### migrate prod db changes
+npm run db:migrate 
