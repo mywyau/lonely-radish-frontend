@@ -3,10 +3,12 @@ import { db } from '~/server/repositories/db'
 import { requireUser } from '~/server/utils/requireUser'
 import { objectBody, stringArray, text, badRequest } from '~/server/utils/productValidation'
 import { ensureTimesFitSharedAvailability } from '~/server/utils/proposalAvailability'
+import { enforceRateLimit } from '~/server/utils/rate-limiting/rateLimit'
 import { isUkPostcode, normalizeUkPostcode } from '~/utils/ukPostcode'
 
 export default defineEventHandler(async (event) => {
   const { sub } = await requireUser(event)
+  await enforceRateLimit(`rl:proposal-create:${sub}`, 20, 60 * 60)
   const body = objectBody(await readBody(event))
   const profileSlug = text(body.profileSlug, 'Profile', 80, true)
   const activity = text(body.activity, 'Activity', 100, true)

@@ -3,10 +3,12 @@ import { db } from '~/server/repositories/db'
 import { requireUser } from '~/server/utils/requireUser'
 import { badRequest, objectBody, stringArray, text } from '~/server/utils/productValidation'
 import { ensureTimesFitSharedAvailability } from '~/server/utils/proposalAvailability'
+import { enforceRateLimit } from '~/server/utils/rate-limiting/rateLimit'
 import { isUkPostcode, normalizeUkPostcode } from '~/utils/ukPostcode'
 
 export default defineEventHandler(async (event) => {
   const { sub } = await requireUser(event)
+  await enforceRateLimit(`rl:proposal-update:${sub}`, 20, 60 * 60)
   const id = getRouterParam(event, 'id')
   const body = objectBody(await readBody(event))
   const fullReproposal = body.fullReproposal === true
@@ -32,6 +34,9 @@ export default defineEventHandler(async (event) => {
     const senderEditingDraft = current.inviterId === sub && ['draft','pending'].includes(current.status)
     const recipientSuggestingChange = current.inviteeId === sub && current.status === 'pending'
     const recipientReproposing = current.inviteeId === sub && current.status === 'pending' && fullReproposal
+    if (!senderEditingDraft && !recipientSuggestingChange) {
+      throw createError({ statusCode: 404, statusMessage: 'Date proposal not found' })
+    }
     const otherUserId = current.inviterId === sub ? current.inviteeId : current.inviterId
     await ensureTimesFitSharedAvailability(client, [sub,otherUserId], times)
     const proposal = await client.query(`update date_proposals set
@@ -46,10 +51,17 @@ export default defineEventHandler(async (event) => {
     await client.query('delete from proposal_times where proposal_id=$1', [id])
     for (const [index,time] of times.entries()) await client.query(`insert into proposal_times(proposal_id,proposed_at,position)
       values($1,$2,$3)`, [id,time.toISOString(),index+1])
-    if (senderEditingDraft && current.status === 'pending') await client.query(`delete from notifications
-      where proposal_id=$1 and recipient_id=$2 and kind in ('proposal_received','proposal_updated')`, [id,current.inviteeId])
+    if (senderEditingDraft && current.status === 'pending') await client.query(`update notifications
+      set read_at=coalesce(read_at,now())
+      where proposal_id=$1 and recipient_id=$2
+        and kind in ('proposal_received','date_reschedule_requested','proposal_updated')`, [id,current.inviteeId])
     if (!senderEditingDraft) await client.query(`insert into notifications(recipient_id,actor_id,match_id,proposal_id,kind)
-      values($1,$2,$3,$4,'proposal_updated')`, [proposal.rows[0].inviteeId,sub,proposal.rows[0].matchId,id])
+      values($1,$2,$3,$4,'proposal_updated')
+      on conflict(recipient_id,proposal_id,kind)
+        where proposal_id is not null
+          and kind in ('proposal_received','date_reschedule_requested','proposal_updated')
+      do update set actor_id=excluded.actor_id,match_id=excluded.match_id,
+        read_at=null,created_at=now()`, [proposal.rows[0].inviteeId,sub,proposal.rows[0].matchId,id])
     await client.query('commit')
     return { ...proposal.rows[0], venue, venueAddress, venuePostcode, meetingPoint: venueDetails,
       venueDetails, times: times.map(time => time.toISOString()) }
