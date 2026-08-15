@@ -95,7 +95,7 @@ describe('match-only contact details', () => {
   it('presents regular availability as readable day and time rows', () => {
     const card = read('components/ProfileAvailabilityContactCard.vue')
     expect(card).toContain('availabilityParts')
-    expect(card).toContain('These times are a guide — confirm the exact time together.')
+    expect(card).toContain('Plan together using these times as a guide.')
     expect(card).toContain("props.availability.length === 1 ? 'timeslot' : 'timeslots'")
   })
 })

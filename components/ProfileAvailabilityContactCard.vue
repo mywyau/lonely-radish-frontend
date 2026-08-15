@@ -61,7 +61,7 @@ function availabilityParts(label: string) {
                     {{ availabilitySummary }}
                   </span>
                 </div>
-                <p class="mt-1 max-w-xl text-sm leading-5 text-[#6E4D58]">{{ availabilityIntro }}</p>
+                <!-- <p class="mt-1 max-w-xl text-sm leading-5 text-[#6E4D58]">{{ availabilityIntro }}</p> -->
               </div>
             </div>
           </div>
@@ -88,7 +88,7 @@ function availabilityParts(label: string) {
           <div class="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-[#E8D8C4] pt-4">
             <p class="flex items-start gap-2 text-xs leading-5 text-[#6E4D58]">
               <Clock3 class="mt-0.5 size-3.5 shrink-0 text-[#B4234A]" aria-hidden="true" />
-              These times are a guide — confirm the exact time together.
+              Plan together using these times as a guide.
             </p>
             <NuxtLink v-if="ownerPreview" to="/preferences/schedule"
               class="text-xs font-semibold text-[#8F1839] hover:underline">Edit availability →</NuxtLink>
