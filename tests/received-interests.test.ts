@@ -19,6 +19,7 @@ describe('received interests', () => {
     expect(read('pages/interests/received.vue')).toContain('stays here for up to 14 days')
     expect(read('pages/interests/received.vue')).toContain('Earlier interest')
     expect(api).toContain('row_number() over(partition by di.sender_id')
+    expect(api).toContain('from ranked_closed di join profiles p')
     expect(api).toContain('di.sender_rank=1')
     expect(api).toContain('pending.resolved_at is null')
     expect(api).toContain('as "reconnectRequest"')

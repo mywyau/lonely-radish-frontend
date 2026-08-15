@@ -55,7 +55,7 @@ export default defineEventHandler(async (event) => {
           where man.match_id=matched.id and man.sender_id=di.sender_id
             and man.message_type='apology' and man.created_at>matched.ended_at
             and man.created_at<di.created_at),false) as "reconnectRequest"
-      from daily_interests di join profiles p on p.user_id=di.sender_id
+      from ranked_closed di join profiles p on p.user_id=di.sender_id
       left join lateral (select coalesce(thumbnail_storage_key,storage_key) as storage_key,public_url
         from profile_photos where user_id=p.user_id order by position limit 1) photo on true
       left join lateral (select m.id,m.status,m.ended_at,m.ended_by from matches m where
