@@ -25,16 +25,13 @@ export default defineEventHandler(async (event) => {
         and exists(select 1 from match_apology_notes man where man.match_id=relationship.id
           and man.sender_id=$2 and man.created_at>relationship.ended_at
           and relationship.ended_by=$2 and man.message_type='apology')))) as "interestSent",
-    (coalesce(inbox_state.pending_count,0)<5 or exists(select 1 from daily_interests reciprocal
-      where reciprocal.sender_id=p.user_id and reciprocal.recipient_id=$2
-      and reciprocal.resolved_at is null)) as "acceptingInterest"
+    true as "acceptingInterest"
     ,coalesce(mp.availability_visible_before_match,false) as "availabilityVisibleBeforeMatch",
     coalesce(photos.items,'[]'::json) as photos,
     coalesce(activity_rows.items,'[]'::json) as "activityRows",
     coalesce(personal_interests.items,'[]'::json) as "personalInterests",
     coalesce(schedule.items,'[]'::json) as availability,contact.item as "contactDetails"
     from profiles p join users u on u.id=p.user_id left join match_preferences mp on mp.user_id=p.user_id
-    left join interest_inbox_state inbox_state on inbox_state.user_id=p.user_id
     left join lateral (select m.id,m.status,m.ended_by,m.ended_at from matches m where
       (m.user_one_id=$2 and m.user_two_id=p.user_id) or (m.user_two_id=$2 and m.user_one_id=p.user_id)
       order by coalesce(m.ended_at,m.matched_at) desc limit 1) relationship on true

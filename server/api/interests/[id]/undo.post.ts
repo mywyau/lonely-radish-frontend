@@ -34,9 +34,6 @@ export default defineEventHandler(async (event) => {
   } catch (error) {
     await client.query('rollback')
     const databaseError = error as { code?: string; constraint?: string }
-    if (databaseError.code === '23514' && databaseError.constraint === 'interest_inbox_capacity') {
-      throw createError({ statusCode: 409, statusMessage: 'This interest cannot be restored because their interest list is full' })
-    }
     if (databaseError.code === '23505') {
       throw createError({ statusCode: 409, statusMessage: 'A newer interest already exists between these accounts' })
     }

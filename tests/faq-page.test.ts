@@ -27,7 +27,7 @@ describe('product rules and FAQ', () => {
     expect(faq).toContain('How is cancelling different from rescheduling?')
     expect(faq).toContain("title: 'Privacy and safety'")
     expect(faq).toContain('one clear profile photo')
-    expect(faq).toContain('your profile remains visible but cannot receive another new interest')
+    expect(faq).toContain('your profile can continue receiving new interest while you decide')
     expect(faq).toContain('The person you choose can see your interest')
     expect(faq).toContain('send one respectful note and ask to reconnect once')
     expect(faq).toContain('block or report someone from their profile')

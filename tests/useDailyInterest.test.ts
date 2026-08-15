@@ -20,7 +20,7 @@ describe('daily interest allowance', () => {
     expect(source).not.toContain('replaceTodaysInterest')
     expect(source).not.toContain('interests.value.filter(interest => interest.profileSlug !== profileSlug)')
     expect(source).toContain("status === 404 ? 'You can’t show interest in this profile right now.'")
-    expect(source).toContain("'This person isn’t accepting new interests right now.'")
+    expect(source).not.toContain("'This person isn’t accepting new interests right now.'")
     expect(readFileSync(resolve(process.cwd(), 'components/DailyInterestCounter.vue'), 'utf8')).toContain('of {{ limit }} sent today')
   })
 })

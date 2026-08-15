@@ -1,6 +1,5 @@
 import type { DatabaseClient } from '~/server/repositories/db'
 import { viewerDiscoveryJoins, viewerDiscoveryWhere } from '~/server/utils/discoveryFilters'
-import { expirePendingInterests } from '~/server/utils/interestLifecycle'
 import { directProfileVisibilityWhere } from '~/server/utils/profileVisibility'
 
 export interface InterestSender {
@@ -74,14 +73,6 @@ export class InterestRepository {
         ${viewerDiscoveryWhere}
       `, [profileSlug,senderId])
     return rows[0] ?? null
-  }
-
-  async recipientInboxAcceptingInterests(recipientId: string) {
-    await expirePendingInterests(this.client, { recipientId })
-    const { rows } = await this.client.query(`select 1 from users u join interest_inbox_state inbox
-      on inbox.user_id=u.id where u.id=$1
-      and inbox.pending_count<5 for update of inbox`, [recipientId])
-    return Boolean(rows[0])
   }
 
   async findCurrentMatch(senderId: string, recipientId: string) {

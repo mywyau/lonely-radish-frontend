@@ -13,7 +13,7 @@ describe('protection against accidental final decisions', () => {
     expect(undo).toContain('for update')
     expect(undo).toContain('set declined_at=null,resolution=null,resolved_at=null')
     expect(undo).toContain("'interest_received'")
-    expect(undo).toContain('interest_inbox_capacity')
+    expect(undo).not.toContain('interest_inbox_capacity')
     expect(undo).toContain('not exists(select 1 from blocks')
     expect(undo).not.toContain("resolution='expired'")
   })

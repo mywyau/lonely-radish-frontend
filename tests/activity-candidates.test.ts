@@ -38,7 +38,7 @@ describe('real activity candidates', () => {
     expect(page).toContain('person.matchedActivityTags')
     expect(page).toContain('You both enjoy')
     expect(page).toContain('Matches your activity filters')
-    expect(page).toContain('Considering other interests')
+    expect(page).not.toContain('Considering other interests')
     expect(page).toContain('appliedFilters.orientationLabel')
     expect(page).toContain("appliedFilters.racialPreferencesApplied ? 'Ethnicity filter active' : 'All ethnicities'")
     expect(page).not.toContain('selected</span>')

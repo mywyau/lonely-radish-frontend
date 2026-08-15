@@ -41,8 +41,8 @@ const sections = [
         answer: 'Someone has 14 days to respond to your interest. You can take it back before they accept it. If there is no response, it closes quietly without sending either person an alert. Your histories explain whether you were still waiting, took it back or reached the end of the 14 days. Once an interest closes, it cannot be sent again to the same person.',
       },
       {
-        question: 'Why can I receive only five interests at a time?',
-        answer: 'The limit gives you a small group to consider without an endless queue. When five people are waiting, your profile remains visible but cannot receive another new interest until you accept or pass on someone. You can still choose people yourself, and a mutual interest can become a direct match even while your list is full.',
+        question: 'Why can I see only five interests at a time?',
+        answer: 'A smaller group makes each decision easier. You see the five oldest interests first; when you accept or pass on someone, the next waiting person appears. Each interest stays open for up to 14 days, and your profile can continue receiving new interest while you decide.',
       },
       {
         question: 'How do active match limits work?',

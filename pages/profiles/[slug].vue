@@ -301,13 +301,13 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
                 </p>
                 <DailyInterestCounter class="mt-5" :count="todaysInterests.length" :limit="dailyInterestLimit" />
                 <button type="button"
-                  :disabled="sending || profile.isMatched || profile.relationshipStatus === 'queued' || (profile.relationshipStatus === 'unmatched' && !profile.secondChanceAvailable) || profile.interestSent || (profile.relationshipStatus !== 'unmatched' && isTodaysChoice(profileSlug)) || profile.acceptingInterest === false || hasUsedDailyInterest"
+                  :disabled="sending || profile.isMatched || profile.relationshipStatus === 'queued' || (profile.relationshipStatus === 'unmatched' && !profile.secondChanceAvailable) || profile.interestSent || (profile.relationshipStatus !== 'unmatched' && isTodaysChoice(profileSlug)) || hasUsedDailyInterest"
                   class="mt-5 inline-flex w-full min-w-0 items-center justify-center gap-2 whitespace-normal break-words rounded-lg bg-[#B4234A] px-3 py-3 text-center text-sm font-semibold text-white transition hover:bg-[#8F1839] disabled:cursor-not-allowed disabled:bg-[#D7A7B3] min-[360px]:px-5"
                   @click="sendProfileInterest">
                   <HeartHandshake class="size-4" />{{ sending ? 'Sending…' : profile.isMatched ? `Already matched with ${profile.name}` : profile.relationshipStatus === 'queued' ? `Matched with ${profile.name}` : profile.interestSent || (profile.relationshipStatus !== 'unmatched' &&
                     isTodaysChoice(profileSlug)) ? 'Interest already sent' : profile.relationshipStatus === 'unmatched' &&
                       profile.secondChanceAvailable ? `Ask ${profile.name} to reconnect` : profile.relationshipStatus
-                        === 'unmatched' ? `Unmatched from ${profile.name}` : profile.acceptingInterest === false ? 'Considering other interests' :
+                        === 'unmatched' ? `Unmatched from ${profile.name}` :
                   isTodaysChoice(profileSlug) ? `Interest sent to ${profile.name}` : 'Show interest' }}
                 </button>
                 <p v-if="profile.isMatched" class="mt-3 rounded-lg bg-[#EAF2DE] p-3 text-xs leading-5 text-[#4D2F39]"
@@ -340,7 +340,6 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
                     v-if="profile.relationshipStatus === 'unmatched'">You asked {{ profile.name
                     }} to reconnect. It’s up to them whether to accept.</template><template v-else>You have shown interest in {{
                     profile.name }}.</template></p>
-                <p v-else-if="profile.acceptingInterest === false" class="mt-3 rounded-lg bg-[#FFF1C7] p-3 text-xs leading-5 text-[#694C00]" role="status">{{ profile.name }} is currently considering five interests. Their profile remains visible, but new interest will become available after they make a decision.</p>
                 <p v-else-if="atMatchLimit" class="mt-3 rounded-lg bg-[#FFF1C7] p-3 text-xs leading-5 text-[#694C00]"
                   role="status">You already have {{ activeMatchLimit }} active matches. You can still send interest; any new mutual match remains visible until both people have space.
                 </p>

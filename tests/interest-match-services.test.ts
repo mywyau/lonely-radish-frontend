@@ -98,7 +98,6 @@ describe('interest and match services', () => {
       findEndedMatch: vi.fn().mockResolvedValue(null),
       findInterest: vi.fn().mockResolvedValue(null),
       countSentToday: vi.fn().mockResolvedValue(0),
-      recipientInboxAcceptingInterests: vi.fn().mockResolvedValue(true),
       createInterest,
       hasReverseInterest: vi.fn().mockResolvedValue(true),
       upsertQueuedMatch: vi.fn().mockResolvedValue({ id: 'match-1' }),
@@ -249,7 +248,6 @@ describe('interest and match services', () => {
       resolvePairInterestsThrough,
       countSentToday,
       hasReverseInterest: vi.fn().mockResolvedValue(false),
-      recipientInboxAcceptingInterests: vi.fn().mockResolvedValue(true),
       createInterest,
     } as unknown as InterestRepository
     const service = new InterestService({
@@ -316,7 +314,7 @@ describe('interest and match services', () => {
     expect(query.mock.calls.at(-1)?.[0]).toBe('rollback')
   })
 
-  it('does not admit a one-sided interest when the recipient inbox is unavailable', async () => {
+  it('queues a one-sided interest even when five others are already waiting', async () => {
     const { database, query } = databaseClient()
     const repository = {
       lockSender: vi.fn(),
@@ -335,8 +333,7 @@ describe('interest and match services', () => {
       findInterest: vi.fn().mockResolvedValue(null),
       countSentToday: vi.fn().mockResolvedValue(0),
       hasReverseInterest: vi.fn().mockResolvedValue(false),
-      recipientInboxAcceptingInterests: vi.fn().mockResolvedValue(false),
-      createInterest: vi.fn(),
+      createInterest: vi.fn().mockResolvedValue({ id: 'interest-queued-6', date: '2026-08-30' }),
     } as unknown as InterestRepository
     const requests = {
       removeExpired: vi.fn(),
@@ -357,64 +354,11 @@ describe('interest and match services', () => {
       senderId: 'user-a',
       profileSlug: 'alex',
       idempotencyKey: 'request-key-0004',
-    })).rejects.toMatchObject({
-      statusCode: 409,
-      statusMessage: 'This person is not accepting new interests right now',
-    })
+    })).resolves.toMatchObject({ matched: false, queued: false })
 
-    expect(repository.recipientInboxAcceptingInterests).toHaveBeenCalledWith('user-b')
-    expect(repository.createInterest).not.toHaveBeenCalled()
-    expect(query.mock.calls.at(-1)?.[0]).toBe('rollback')
-  })
-
-  it('turns an atomic capacity race into the normal full-inbox response', async () => {
-    const { database, query } = databaseClient()
-    const repository = {
-      lockSender: vi.fn(),
-      getSenderForUpdate: vi.fn().mockResolvedValue({
-        accountStatus: 'active',
-        pausedUntil: null,
-        discoveryRestrictedUntil: null,
-      }),
-      findEligibleTarget: vi.fn().mockResolvedValue({
-        userId: 'user-b',
-        displayName: 'Alex',
-      }),
-      lockPair: vi.fn(),
-      findCurrentMatch: vi.fn().mockResolvedValue(null),
-      findEndedMatch: vi.fn().mockResolvedValue(null),
-      findInterest: vi.fn().mockResolvedValue(null),
-      countSentToday: vi.fn().mockResolvedValue(0),
-      hasReverseInterest: vi.fn().mockResolvedValue(false),
-      recipientInboxAcceptingInterests: vi.fn().mockResolvedValue(true),
-      createInterest: vi.fn().mockRejectedValue({
-        code: '23514',
-        constraint: 'interest_inbox_capacity',
-      }),
-    } as unknown as InterestRepository
-    const requests = {
-      removeExpired: vi.fn(),
-      claim: vi.fn().mockResolvedValue({ claimed: true }),
-      complete: vi.fn(),
-    } as unknown as IdempotencyRepository
-    const service = new InterestService({
-      database,
-      interests: () => repository,
-      idempotency: () => requests,
-      outbox: () => ({ publish: vi.fn() }) as unknown as OutboxRepository,
-      activateMatch: vi.fn(),
-      requestOutboxProcessing: vi.fn(),
-    })
-
-    await expect(service.sendInterest({
-      senderId: 'user-a',
-      profileSlug: 'alex',
-      idempotencyKey: 'request-key-capacity-race',
-    })).rejects.toMatchObject({
-      statusCode: 409,
-      statusMessage: 'This person is not accepting new interests right now',
-    })
-    expect(query.mock.calls.at(-1)?.[0]).toBe('rollback')
+    expect(repository.createInterest).toHaveBeenCalledWith('user-a', 'user-b', false)
+    expect(events.publish).toHaveBeenCalledWith(expect.objectContaining({ eventType: 'interest.sent' }))
+    expect(query.mock.calls.at(-1)?.[0]).toBe('commit')
   })
 
   it('serializes manual acceptance and preserves a capacity-limited queued match', async () => {

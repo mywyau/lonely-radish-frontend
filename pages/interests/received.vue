@@ -67,6 +67,7 @@ async function acceptInterest() {
     }
     trackProductEvent('Interest Accepted', { queued: result.queued })
     pending.value = null
+    await loadReceivedInterests()
   } catch (error: any) { errorMessage.value = error?.data?.statusMessage || 'This match could not be created.' }
   finally { accepting.value = false }
 }
@@ -82,6 +83,7 @@ async function declineInterest(person: ReceivedInterest) {
     undoableDeclines.value.push({ person, undoUntil: result.undoUntil, restoring: false })
     successMessage.value = `You chose not to match with ${person.name}. That space is now available for someone new.`
     successShowsMatches.value = false
+    await loadReceivedInterests()
   } catch (error: any) {
     errorMessage.value = error?.data?.statusMessage || 'This interest could not be removed.'
   } finally { declining.value = null }
@@ -93,12 +95,9 @@ async function undoDecline(action: UndoableDecline) {
   errorMessage.value = ''
   try {
     await $fetch(`/api/interests/${action.person.id}/undo`, { method: 'POST' })
-    interests.value = [...interests.value, action.person]
-      .sort((first, second) => new Date(first.createdAt).getTime() - new Date(second.createdAt).getTime())
-    pendingInterestCount.value += 1
-    hasMore.value = pendingInterestCount.value > interests.value.length
     undoableDeclines.value = undoableDeclines.value.filter(item => item !== action)
     successMessage.value = `${action.person.name} is back in your interests.`
+    await loadReceivedInterests()
   } catch (error: any) {
     errorMessage.value = error?.data?.statusMessage || 'This interest could not be restored.'
     if (error?.statusCode === 409 || error?.response?.status === 409 || error?.data?.statusCode === 409) {
@@ -112,9 +111,9 @@ async function undoDecline(action: UndoableDecline) {
   <main class="min-h-screen bg-[#FBF7F1] px-5 py-10 text-[#2A1520] sm:px-8"><section class="mx-auto max-w-3xl">
     <p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">People who chose you</p><h1 class="mt-2 text-4xl font-semibold">Who’s interested?</h1><p class="mt-3 max-w-2xl leading-6 text-[#6E4D58]">Take your time. Each person stays here for up to 14 days, unless they take back their interest first.</p>
     <div v-if="pendingInterestCount" class="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[#E8D8C4] bg-white p-4 text-sm">
-      <p><strong>{{ Math.min(pendingInterestCount, interestLimit) }}</strong> {{ Math.min(pendingInterestCount, interestLimit) === 1 ? 'person is' : 'people are' }} waiting for your answer</p>
-      <p v-if="pendingInterestCount >= interestLimit" class="text-xs text-[#6E4D58]">Incoming interest is paused while you consider these people.</p>
-      <p v-if="hasMore" class="w-full border-t border-[#E8D8C4] pt-3 text-xs leading-5 text-[#6E4D58]">Your account had more than five interests before this limit was introduced. You’re seeing the oldest five while that earlier list is worked through; no new interests can join it.</p>
+      <p><strong>{{ pendingInterestCount }}</strong> {{ pendingInterestCount === 1 ? 'person is' : 'people are' }} waiting for your answer</p>
+      <p class="text-xs text-[#6E4D58]">Showing up to {{ interestLimit }} at a time, oldest first.</p>
+      <p v-if="hasMore" class="w-full border-t border-[#E8D8C4] pt-3 text-xs leading-5 text-[#6E4D58]">{{ pendingInterestCount - interests.length }} more {{ pendingInterestCount - interests.length === 1 ? 'person is' : 'people are' }} waiting. The next interest appears when you accept or pass on someone.</p>
     </div>
     <p v-if="successMessage" class="mt-5 rounded-lg bg-[#EAF2DE] p-4 text-sm font-semibold text-[#4D2F39]" role="status">{{ successMessage }} <NuxtLink v-if="successShowsMatches" to="/matches" class="text-[#8F1839] underline">View matches</NuxtLink></p>
     <div v-if="undoableDeclines.length" class="mt-4 grid gap-2">
@@ -124,7 +123,6 @@ async function undoDecline(action: UndoableDecline) {
     <div v-if="errorMessage" class="mt-5 rounded-lg bg-[#FCE3E8] p-4 text-sm font-semibold text-[#8F1839]" role="alert"><p>{{ errorMessage }}</p><button v-if="!loading && !interests.length" type="button" class="mt-3 rounded-lg bg-white px-4 py-2" @click="loadReceivedInterests">Try again</button></div>
     <div v-if="loading" class="mt-7 rounded-lg bg-white p-8 text-center text-sm text-[#6E4D58]">Loading received interests…</div>
     <div v-else-if="interests.length" class="mt-7 grid gap-3"><article v-for="person in interests" :key="person.id" class="rounded-lg bg-white p-5 shadow-[0_8px_20px_rgba(180,35,74,.07)]"><div class="flex items-start gap-4"><ProfilePhotoImage v-if="person.photoUrl" :src="person.photoUrl" :alt="`${person.name}'s profile photo`" class="size-16 shrink-0 rounded-full" /><div v-else class="flex size-16 shrink-0 items-center justify-center rounded-full bg-[#FCE3E8] text-xl font-semibold text-[#B4234A]">{{ person.name.charAt(0) }}</div><div class="min-w-0 flex-1"><h2 class="text-xl font-semibold">{{ person.name }}, {{ person.age }}</h2><p class="mt-1 flex items-center gap-1 text-xs text-[#6E4D58]"><MapPin class="size-3.5" />{{ person.place }}</p><div v-if="person.activityTags.length" class="mt-3 flex flex-wrap gap-1.5"><span v-for="tag in person.activityTags" :key="tag" class="rounded-full bg-[#F3E8DA] px-2.5 py-1 text-xs font-semibold text-[#6E4D58]">{{ tag }}</span></div></div></div><div class="mt-5 flex flex-wrap gap-2"><NuxtLink :to="`/profiles/${person.slug}`" class="rounded-lg bg-[#F3E8DA] px-4 py-2.5 text-sm font-semibold text-[#8F1839]">View profile</NuxtLink><NuxtLink v-if="person.matchStatus === 'active' || person.matchStatus === 'queued'" to="/matches" class="rounded-lg bg-[#EAF2DE] px-4 py-2.5 text-sm font-semibold text-[#4D2F39]">{{ person.matchStatus === 'queued' ? 'Match waiting' : 'Already matched' }}</NuxtLink><span v-else-if="person.matchStatus" class="rounded-lg bg-[#FCE3E8] px-4 py-2.5 text-sm font-semibold text-[#8F1839]">Connection ended</span><template v-else><button type="button" class="inline-flex items-center gap-2 rounded-lg bg-[#B4234A] px-4 py-2.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50" :disabled="Boolean(yourMoveMatch)" :title="yourMoveMatch ? `Take action on your match with ${yourMoveMatch.name} first` : undefined" @click="pending = person"><HeartHandshake class="size-4" />Accept and match</button><button type="button" class="rounded-lg border border-[#B4234A]/30 px-4 py-2.5 text-sm font-semibold text-[#8F1839] disabled:opacity-50" :disabled="declining === person.id" @click="declineInterest(person)">{{ declining === person.id ? 'Saving…' : 'Not for me' }}</button></template></div></article></div>
-    <div v-else-if="!errorMessage && pendingInterestCount" class="mt-7 rounded-lg bg-white p-8 text-center"><UserRound class="mx-auto size-8 text-[#B4234A]" /><h2 class="mt-3 text-xl font-semibold">That’s enough decisions for today</h2><p class="mt-2 text-sm leading-6 text-[#6E4D58]">You’ve reviewed the current group. Any older interests will wait until your next review.</p></div>
     <div v-else-if="!errorMessage" class="mt-7 rounded-lg bg-white p-8 text-center"><UserRound class="mx-auto size-8 text-[#B4234A]" /><h2 class="mt-3 text-xl font-semibold">Nobody here yet</h2><p class="mt-2 text-sm text-[#6E4D58]">When someone shows interest in you, you’ll find them here.</p></div>
     <section v-if="!loading && closedInterests.length" class="mt-10" aria-labelledby="closed-interests-title">
       <h2 id="closed-interests-title" class="text-xl font-semibold">Earlier interest</h2>
