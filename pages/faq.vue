@@ -30,7 +30,7 @@ const sections = [
     questions: [
       {
         question: 'How many people can I show interest in?',
-        answer: 'You can show interest in up to five people each day. The idea is to choose people you’re genuinely curious about, rather than work through an endless queue.',
+        answer: 'You can show interest in up to five people each day. The idea is to choose people you’re genuinely curious about and helping with cutting out the noise.',
       },
       {
         question: 'When does an interest become a match?',
