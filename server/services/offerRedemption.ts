@@ -13,6 +13,7 @@ type RedemptionClaim = {
   discountValue: number
   terms: string | null
   businessName: string
+  businessStatus: 'draft' | 'pending' | 'active' | 'paused' | 'suspended'
   venueName: string
   active: boolean
   approvalStatus: 'pending' | 'approved' | 'rejected'
@@ -62,19 +63,21 @@ export async function redeemOfferClaim(
       `select c.id,c.offer_id as "offerId",c.claimant_user_id as "claimantUserId",c.status,
         c.expires_at as "expiresAt",c.offer_title as "offerTitle",c.discount_type as "discountType",
         c.discount_value::float as "discountValue",c.terms,c.business_name as "businessName",
+        business.status as "businessStatus",
         v.name as "venueName",o.active,o.approval_status as "approvalStatus",o.starts_at as "startsAt",
         o.ends_at as "endsAt",v.status as "venueStatus",
         o.redemption_limit_total as "redemptionLimitTotal",
         o.redemption_limit_per_user as "redemptionLimitPerUser",
         c.redemption_idempotency_key::text as "redemptionIdempotencyKey",c.redeemed_at as "redeemedAt"
       from business_offer_claims c join business_offers o on o.id=c.offer_id
+      join businesses business on business.id=o.business_id
       join business_venues v on v.id=$3 and v.business_id=o.business_id
       where c.code_digest=$1 and o.business_id=$2 and (
         o.venue_scope='all' or
         (o.venue_scope='single' and o.venue_id=v.id) or
         (o.venue_scope='selected' and exists(select 1 from business_offer_venues ov
           where ov.offer_id=o.id and ov.venue_id=v.id))
-      ) for update of c,o`,
+      ) for update of c,o,business`,
       [input.codeDigest, input.businessId, input.venueId],
     )
     const claim = claimResult.rows[0]
@@ -90,7 +93,8 @@ export async function redeemOfferClaim(
 
     const now = Date.now()
     const eligible = claim.status === 'issued' && new Date(claim.expiresAt).getTime() > now
-      && claim.active === true && claim.approvalStatus === 'approved' && claim.venueStatus === 'active'
+      && claim.businessStatus === 'active' && claim.active === true
+      && claim.approvalStatus === 'approved' && claim.venueStatus === 'active'
       && (!claim.startsAt || new Date(claim.startsAt).getTime() <= now)
       && (!claim.endsAt || new Date(claim.endsAt).getTime() > now)
     if (!eligible) throw createError({ statusCode: 409, statusMessage: 'That redemption code is invalid or expired' })

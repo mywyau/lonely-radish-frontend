@@ -6,7 +6,7 @@ definePageMeta({ title: 'Business offers · Lonely Radish', middleware: 'busines
 
 type VenueScope = 'single' | 'selected' | 'all'
 type Venue = { id: string; name: string; city: string; postcode: string; status: BusinessVenueStatus }
-type Business = { name: string; status: 'draft' | 'pending' | 'active' | 'suspended'; role: 'owner' | 'manager' | 'staff'; plan: 'standard' | 'featured' | null; venues: Venue[] }
+type Business = { name: string; status: 'draft' | 'pending' | 'active' | 'paused' | 'suspended'; role: 'owner' | 'manager' | 'staff'; plan: 'standard' | 'featured' | null; venues: Venue[] }
 type Offer = {
     id: string
     title: string

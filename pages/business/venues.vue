@@ -19,7 +19,7 @@ type Venue = {
 type Business = {
     id: string
     name: string
-    status: 'draft' | 'pending' | 'active' | 'suspended'
+    status: 'draft' | 'pending' | 'active' | 'paused' | 'suspended'
     role: 'owner' | 'manager' | 'staff'
     venues: Venue[]
 }
@@ -149,8 +149,8 @@ onMounted(() => load()
                 <section v-if="business.status !== 'active' && !editingVenueId"
                     class="mt-6 rounded-lg bg-[#FFF1C7] p-5 text-sm text-[#694C00]">
                     <ShieldCheck class="size-5" />
-                    <p class="mt-2 font-semibold">The initial business review must be completed first.</p>
-                    <p class="mt-1">Additional locations can be submitted after the business has been approved.</p>
+                    <p class="mt-2 font-semibold">{{ business.status === 'paused' ? 'Promotion has been temporarily paused.' : 'The initial business review must be completed first.' }}</p>
+                    <p class="mt-1">{{ business.status === 'paused' ? 'Contact support for help resolving the review.' : 'Additional locations can be submitted after the business has been approved.' }}</p>
                 </section>
 
                 <form v-else-if="canManage"

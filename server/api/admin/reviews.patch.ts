@@ -24,7 +24,16 @@ export default defineEventHandler(async (event) => {
       const status = decision === 'approved' ? 'active' : decision === 'rejected' ? 'suspended' : 'pending'
       result = await client.query(`update businesses set status=$2,reviewed_by=$3,
         reviewed_at=case when $2='pending' then null else now() end,updated_at=now()
-        where id=$1 returning id,status`, [entityId,status,admin.sub])
+        where id=$1 and status<>'paused' returning id,status`, [entityId,status,admin.sub])
+      if (!result.rows[0]) {
+        const current = await client.query('select status from businesses where id=$1', [entityId])
+        if (current.rows[0]?.status === 'paused') {
+          throw createError({
+            statusCode: 409,
+            statusMessage: 'Restore this business through the intervention control',
+          })
+        }
+      }
       if (status !== 'active') {
         await client.query(`update business_offers set active=false,updated_at=now()
           where business_id=$1 and active=true`, [entityId])

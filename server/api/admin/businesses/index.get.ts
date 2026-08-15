@@ -5,18 +5,26 @@ import { decodeCursor, pageRows } from '~/server/utils/cursorPagination'
 import { badRequest, text } from '~/server/utils/productValidation'
 
 const entityTypes = new Set(['business', 'venue', 'offer'])
-const reviewStatuses = new Set(['all', 'pending', 'approved', 'rejected'])
+const reviewStatuses = new Set(['all', 'pending', 'approved', 'rejected', 'paused'])
 const ageFilters = new Set(['all', 'day', 'week', 'month'])
 
 function databaseStatus(entityType: string, status: string) {
   if (status === 'all') return null
-  if (entityType === 'business') return status === 'approved' ? 'active' : status === 'rejected' ? 'suspended' : 'pending'
+  if (entityType === 'business') {
+    if (status === 'approved') return 'active'
+    if (status === 'rejected') return 'suspended'
+    return status
+  }
   if (entityType === 'venue') return status === 'approved' ? 'active' : status === 'rejected' ? 'rejected' : 'pending'
   return status
 }
 
 function normalizedStatus(entityType: string, status: string) {
-  if (entityType === 'business') return status === 'active' ? 'approved' : status === 'suspended' ? 'rejected' : 'pending'
+  if (entityType === 'business') {
+    if (status === 'active') return 'approved'
+    if (status === 'suspended') return 'rejected'
+    return status
+  }
   if (entityType === 'venue') return status === 'active' ? 'approved' : status === 'rejected' ? 'rejected' : 'pending'
   return status
 }

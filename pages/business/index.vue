@@ -58,6 +58,11 @@ onMounted(() => load().catch((error: any) => { errorMessage.value = error?.data?
       <div v-if="loading" class="mt-8 rounded-lg bg-white p-8 text-center text-[#6E4D58]">Loading business tools…</div>
 
       <template v-else-if="business">
+        <div v-if="business.status === 'paused'"
+          class="mt-6 rounded-lg bg-[#FFF1C7] p-4 text-sm text-[#694C00]" role="alert">
+          <p class="font-semibold">Promotion has been temporarily paused by Lonely Radish.</p>
+          <p class="mt-1">Offers and redemptions are unavailable. Contact support for help resolving the review.</p>
+        </div>
         <div v-if="$route.query.checkout === 'success'"
           class="mt-6 rounded-lg bg-[#EAF2DE] p-4 text-sm font-semibold text-[#52713A]" role="status">Payment received.
           Stripe is activating your business plan; this may take a moment.</div>

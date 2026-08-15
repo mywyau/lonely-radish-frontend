@@ -8,6 +8,8 @@ import {
   MapPin,
   RotateCcw,
   Search,
+  Pause,
+  Play,
   Store,
   X,
 } from '@lucide/vue'
@@ -15,7 +17,7 @@ import {
 definePageMeta({ title: 'Business approvals · Lonely Radish', middleware: 'admin' })
 
 type EntityType = 'business' | 'venue' | 'offer'
-type ReviewStatus = 'all' | 'pending' | 'approved' | 'rejected'
+type ReviewStatus = 'all' | 'pending' | 'approved' | 'rejected' | 'paused'
 type ApprovalItem = {
   id: string
   entityType: EntityType
@@ -134,6 +136,10 @@ function selectTab(type: EntityType) {
   if (entityType.value === type) return
   entityType.value = type
   nextCursor.value = null
+  if (status.value === 'paused' && type !== 'business') {
+    status.value = 'pending'
+    return
+  }
   void loadReviews()
 }
 
@@ -165,6 +171,34 @@ async function review(entity: EntityType, entityId: string, decision: Exclude<Re
     await loadReviews()
   } catch (error: any) {
     errorMessage.value = error?.data?.statusMessage || 'The review could not be saved.'
+  } finally {
+    savingKey.value = ''
+  }
+}
+
+async function intervene(item: ApprovalItem, action: 'pause' | 'restore') {
+  const key = `${item.entityType}:${item.id}`
+  const reason = reviewNotes[key]?.trim()
+  if (!reason) {
+    errorMessage.value = `Add a private reason before you ${action} this business.`
+    return
+  }
+  if (action === 'pause' && !window.confirm(`Pause “${itemTitle(item)}”? Its offers will be disabled and current redemption codes revoked.`)) return
+
+  savingKey.value = key
+  errorMessage.value = ''
+  successMessage.value = ''
+  try {
+    await $fetch(`/api/admin/businesses/${item.id}/intervention`, {
+      method: 'PATCH',
+      body: { action, reason },
+    })
+    successMessage.value = action === 'pause'
+      ? 'Business promotion paused. Offers were disabled and current codes revoked.'
+      : 'Business restored. Its offers remain inactive until the business chooses to enable them again.'
+    await loadReviews()
+  } catch (error: any) {
+    errorMessage.value = error?.data?.statusMessage || 'The business intervention could not be saved.'
   } finally {
     savingKey.value = ''
   }
@@ -223,6 +257,7 @@ onBeforeUnmount(() => {
               <option value="pending">Pending</option>
               <option value="approved">Approved</option>
               <option value="rejected">Rejected</option>
+              <option v-if="entityType === 'business'" value="paused">Intervention paused</option>
               <option value="all">All statuses</option>
             </select>
           </label>
@@ -296,13 +331,21 @@ onBeforeUnmount(() => {
                 maxlength="500"
                 rows="2"
                 class="mt-1 w-full rounded-lg border border-[#D8C8B6] bg-white p-3 font-normal outline-none focus:border-[#B4234A]"
-                placeholder="Optional internal note or reason for rejection"
+                :placeholder="item.entityType === 'business' && ['approved', 'paused'].includes(item.status) ? 'Required reason for pausing or restoring' : 'Optional internal note or reason for rejection'"
               />
             </label>
             <div class="mt-4 flex flex-wrap gap-2">
-              <button class="review-approve" :disabled="savingKey === `${item.entityType}:${item.id}`" @click="review(item.entityType, item.id, 'approved')"><Check class="size-4" />Approve</button>
-              <button class="review-reject" :disabled="savingKey === `${item.entityType}:${item.id}`" @click="review(item.entityType, item.id, 'rejected')"><X class="size-4" />Reject</button>
-              <button class="review-reset" :disabled="savingKey === `${item.entityType}:${item.id}`" @click="review(item.entityType, item.id, 'pending')"><RotateCcw class="size-4" />Return to pending</button>
+              <template v-if="item.entityType === 'business' && item.status === 'approved'">
+                <button class="review-pause" :disabled="savingKey === `${item.entityType}:${item.id}`" @click="intervene(item, 'pause')"><Pause class="size-4" />Pause promotion</button>
+              </template>
+              <template v-else-if="item.entityType === 'business' && item.status === 'paused'">
+                <button class="review-restore" :disabled="savingKey === `${item.entityType}:${item.id}`" @click="intervene(item, 'restore')"><Play class="size-4" />Restore business</button>
+              </template>
+              <template v-else>
+                <button class="review-approve" :disabled="savingKey === `${item.entityType}:${item.id}`" @click="review(item.entityType, item.id, 'approved')"><Check class="size-4" />Approve</button>
+                <button class="review-reject" :disabled="savingKey === `${item.entityType}:${item.id}`" @click="review(item.entityType, item.id, 'rejected')"><X class="size-4" />Reject</button>
+                <button class="review-reset" :disabled="savingKey === `${item.entityType}:${item.id}`" @click="review(item.entityType, item.id, 'pending')"><RotateCcw class="size-4" />Return to pending</button>
+              </template>
             </div>
           </div>
         </details>
@@ -332,11 +375,14 @@ onBeforeUnmount(() => {
 .status-pending { background: #FFF3CD; color: #7A5600; }
 .status-approved { background: #EAF2DE; color: #3F6229; }
 .status-rejected { background: #FCE3E8; color: #8F1839; }
+.status-paused { background: #FFF1C7; color: #694C00; }
 dt, .detail-label { display: block; margin-bottom: .2rem; font-size: .7rem; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; color: #6E4D58; }
 dd { color: #2A1520; }
-.review-approve, .review-reject, .review-reset { display: inline-flex; align-items: center; gap: .35rem; border-radius: .5rem; padding: .6rem .8rem; font-size: .75rem; font-weight: 700; }
+.review-approve, .review-reject, .review-reset, .review-pause, .review-restore { display: inline-flex; align-items: center; gap: .35rem; border-radius: .5rem; padding: .6rem .8rem; font-size: .75rem; font-weight: 700; }
 .review-approve { background: #EAF2DE; color: #3F6229; }
 .review-reject { background: #FCE3E8; color: #8F1839; }
 .review-reset { background: #F3E8DA; color: #6E4D58; }
-.review-approve:disabled, .review-reject:disabled, .review-reset:disabled { opacity: .5; }
+.review-pause { background: #FFF1C7; color: #694C00; }
+.review-restore { background: #EAF2DE; color: #3F6229; }
+.review-approve:disabled, .review-reject:disabled, .review-reset:disabled, .review-pause:disabled, .review-restore:disabled { opacity: .5; }
 </style>

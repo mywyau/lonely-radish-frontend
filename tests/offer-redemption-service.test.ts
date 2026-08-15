@@ -13,7 +13,7 @@ function issuedClaim(overrides: Record<string, unknown> = {}) {
     id: 'claim-1', offerId: 'offer-1', claimantUserId: 'member-1', status: 'issued',
     expiresAt: new Date(Date.now() + 60_000).toISOString(), offerTitle: 'Coffee for two',
     discountType: 'percentage', discountValue: 20, terms: null, businessName: 'Cafe',
-    venueName: 'Cafe Central', active: true, approvalStatus: 'approved', startsAt: null,
+    businessStatus: 'active', venueName: 'Cafe Central', active: true, approvalStatus: 'approved', startsAt: null,
     endsAt: null, venueStatus: 'active', redemptionLimitTotal: 100,
     redemptionLimitPerUser: 1, redemptionIdempotencyKey: null, redeemedAt: null, ...overrides,
   }
@@ -77,5 +77,18 @@ describe('offer redemption policy', () => {
 
     await expectLimit({ total: 100, userTotal: 0 }, 'This offer has reached its redemption limit')
     await expectLimit({ total: 4, userTotal: 1 }, 'This customer has reached the limit for this offer')
+  })
+
+  it('rejects an issued code when the business is intervention-paused', async () => {
+    const query = vi.fn(async (sql: string) => sql.includes('from business_offer_claims c join')
+      ? { rows: [issuedClaim({ businessStatus: 'paused' })], rowCount: 1 }
+      : { rows: [], rowCount: 0 })
+    const { database } = databaseFor(query as unknown as DatabaseClient['query'])
+
+    await expect(redeemOfferClaim(database, input)).rejects.toMatchObject({
+      statusCode: 409,
+      statusMessage: 'That redemption code is invalid or expired',
+    })
+    expect(query.mock.calls.some(call => String(call[0]).includes("for update of c,o,business"))).toBe(true)
   })
 })
