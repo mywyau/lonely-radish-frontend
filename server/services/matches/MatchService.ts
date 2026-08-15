@@ -80,7 +80,7 @@ export class MatchService {
       }
 
       if (await repository.hasAcceptedInterestAwaitingAction(input.recipientId)) {
-        throw conflict('Make a plan with your new connection or close it before accepting another interest')
+        throw conflict('Send a date plan to your new connection or close it before accepting another interest')
       }
 
       const incoming = await repository.findIncomingInterestForUpdate(

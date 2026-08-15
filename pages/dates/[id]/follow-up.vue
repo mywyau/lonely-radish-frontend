@@ -200,7 +200,7 @@ onBeforeUnmount(() => {
           </form>
         </section>
 
-        <section v-else-if="date.myChoice !== null" class="mt-5 rounded-lg bg-[#FCE3E8] p-6"><Check class="size-6 text-[#B4234A]" /><h2 class="mt-3 text-xl font-semibold">Your choice is saved.</h2><p class="mt-2 text-sm leading-6 text-[#4D2F39]">We’re waiting for {{ date.personName }}. When they answer, you’ll both see the choices and any notes.</p></section>
+        <section v-else-if="date.myChoice !== null" class="mt-5 rounded-lg bg-[#FCE3E8] p-6"><Check class="size-6 text-[#B4234A]" /><h2 class="mt-3 text-xl font-semibold">Your choice is saved.</h2><p class="mt-2 text-sm leading-6 text-[#4D2F39]">We’re waiting for {{ date.personName }}. This connection remains open until they answer or either of you closes it. When they answer, you’ll both see the choices and any notes.</p></section>
 
         <UndoActionNotice v-if="pendingNoChoice" class="mt-5" :message="`You chose to leave the connection with ${date.personName} here.`" :expires-at="pendingNoChoice.expiresAt" :busy="saving" @undo="undoNoChoice" />
 

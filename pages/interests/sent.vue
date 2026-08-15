@@ -24,7 +24,7 @@ onMounted(async () => {
 })
 function interestStatus(interest: SentInterest) {
   if (interest.matched) return 'You matched'
-  if (interest.queued) return 'Waiting for space to open'
+  if (interest.queued) return 'Matched — waiting for room in both connection lists'
   if (interest.ended) return 'Your connection ended'
   if (interest.resolution === 'expired') {
     if (interest.reconnectRequest) return 'No response to your reconnect request'
@@ -85,7 +85,7 @@ async function undoWithdrawal(action: UndoableWithdrawal) {
     <section class="mx-auto max-w-3xl">
       <p class="text-xs font-extrabold uppercase tracking-widest text-[#B4234A]">People you chose</p>
       <h1 class="mt-2 text-4xl font-semibold">Your sent interests</h1>
-      <p class="mt-3 max-w-2xl leading-6 text-[#6E4D58]">See who you’re waiting to hear from and what happened to earlier choices. If someone does not respond within 14 days, the interest closes quietly.</p>
+      <p class="mt-3 max-w-2xl leading-6 text-[#6E4D58]">See who you’re waiting to hear from and the latest outcome with each person. If someone does not respond within 14 days, the interest closes quietly.</p>
       <DailyInterestCounter class="mt-6" :count="todaysInterests.length" :limit="dailyInterestLimit" />
       <div v-if="undoableWithdrawals.length" class="mt-4 grid gap-2">
         <UndoActionNotice v-for="action in undoableWithdrawals" :key="action.interest.id" :message="`You took back your interest in ${action.interest.name}.`" :expires-at="action.undoUntil" :busy="action.restoring" @undo="undoWithdrawal(action)" />

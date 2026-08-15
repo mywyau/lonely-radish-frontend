@@ -35,6 +35,14 @@ describe('notification centre', () => {
     expect(read('pages/notifications.vue')).toContain('sent you a private message')
   })
 
+  it('removes stale proposal actions after the recipient responds', () => {
+    const respond = read('server/api/proposals/[id]/respond.post.ts')
+    expect(respond).toContain('delete from notifications')
+    expect(respond).toContain("kind in ('proposal_received','date_reschedule_requested','proposal_updated')")
+    expect(read('pages/notifications.vue')).toContain('Email settings don’t affect which relevant updates appear here.')
+    expect(read('pages/notifications.vue')).not.toContain('You’ll still find every update here')
+  })
+
   it('presents earlier updates as a secondary ordered, collapsible timeline', () => {
     const page = read('pages/matches/index.vue')
     expect(page).toContain('Earlier updates')

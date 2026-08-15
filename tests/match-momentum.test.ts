@@ -10,7 +10,7 @@ describe('match momentum', () => {
     const service = read('server/services/matches/MatchService.ts')
     expect(repository).toContain('action_required_by=$2')
     expect(repository).toContain('action_required_by=$1 and action_completed_at is null')
-    expect(service).toContain('Make a plan with your new connection or close it before accepting another interest')
+    expect(service).toContain('Send a date plan to your new connection or close it before accepting another interest')
   })
 
   it('keeps reciprocal interests automatic and free of a required action', () => {
@@ -21,10 +21,12 @@ describe('match momentum', () => {
     expect(service).toContain('matched = true')
   })
 
-  it('clears the required action through planning or closing the match', () => {
+  it('clears the required action only after sending a plan or closing the connection', () => {
     const page = read('pages/matches/index.vue')
-    expect(read('server/api/proposals/index.post.ts')).toContain('set action_completed_at=now()')
+    expect(read('server/api/proposals/index.post.ts')).not.toContain('set action_completed_at=now()')
+    expect(read('server/api/proposals/[id]/send.post.ts')).toContain('set action_completed_at=now()')
     expect(read('server/api/matches/[id].delete.ts')).toContain("status='unmatched'")
+    expect(read('pages/interests/received.vue')).toContain('Send a date plan or close the connection')
     expect(page).toContain("if (match.yourMove) return 'Choose what happens next'")
     expect(page).toContain("match.yourMove")
     expect(page).toContain("bg-[#FFF1C7] text-[#694C00]")

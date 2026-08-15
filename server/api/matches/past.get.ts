@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
   const pageSize = 25
   const { rows } = await db.query(`select m.id,m.ended_reason as "endedReason",m.ended_at as "endedAt",
     coalesce(m.ended_at,m.matched_at)::text as "sortAt",
-    m.ended_by=$1 as "endedByMe",(m.ended_by is distinct from $1) as "wasUnmatched",
+    m.ended_by=$1 as "endedByMe",(m.ended_by is not null and m.ended_by<>$1) as "wasUnmatched",
     p.slug,p.display_name as name,
     photo.storage_key as "photoStorageKey",photo.public_url as "legacyPhotoUrl",
     proposal.id as "proposalId",proposal.activity_label as activity,

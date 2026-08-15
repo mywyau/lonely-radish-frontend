@@ -48,6 +48,11 @@ describe('private post-date follow-up', () => {
     expect(page).toContain('Save my choice')
   })
 
+  it('sets an accurate expectation while one answer is outstanding', () => {
+    const page = read('pages/dates/[id]/follow-up.vue')
+    expect(page).toContain('This connection remains open until they answer or either of you closes it.')
+  })
+
   it('offers a development-only completed date preview', () => {
     expect(read('pages/matches/index.vue')).toContain("proposalId: 'preview-nina'")
     const page = read('pages/dates/[id]/follow-up.vue')

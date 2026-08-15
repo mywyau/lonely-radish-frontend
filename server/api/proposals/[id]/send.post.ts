@@ -18,6 +18,9 @@ export default defineEventHandler(async (event) => {
         dp.replaces_proposal_id as "replacesProposalId"`, [id,sub])
     const proposal = rows[0]
     if (!proposal) throw createError({ statusCode: 409, statusMessage: 'Save a complete draft with a future time before sending' })
+    await client.query(`update matches set action_completed_at=now()
+      where id=$1 and status='active' and action_required_by=$2 and action_completed_at is null`,
+    [proposal.matchId,sub])
     await client.query(`insert into notifications(recipient_id,actor_id,match_id,proposal_id,kind)
       values($1,$2,$3,$4,$5)
       on conflict(recipient_id,proposal_id,kind)

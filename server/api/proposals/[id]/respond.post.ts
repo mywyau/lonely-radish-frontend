@@ -33,6 +33,9 @@ export default defineEventHandler(async (event) => {
         confirmed_at=null,updated_at=now() where id=$1 and status='accepted'`, [proposal.replacesProposalId])
       await client.query('delete from date_attendance_responses where proposal_id=$1', [proposal.replacesProposalId])
     }
+    await client.query(`delete from notifications
+      where recipient_id=$1 and proposal_id=$2
+        and kind in ('proposal_received','date_reschedule_requested','proposal_updated')`, [sub,id])
     await client.query(`insert into notifications(recipient_id,actor_id,match_id,proposal_id,kind)
       values($1,$2,$3,$4,$5)`, [proposal.inviterId,sub,proposal.matchId,id,
       status === 'accepted' ? 'date_confirmed' : 'proposal_declined'])

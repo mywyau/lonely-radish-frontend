@@ -153,7 +153,7 @@ onMounted(async () => {
       </div>
       <section class="mt-8 rounded-lg bg-white p-5 shadow-[0_8px_20px_rgba(180,35,74,.06)]">
         <button type="button" class="flex w-full items-start justify-between gap-4 text-left" :aria-expanded="!emailPreferencesCollapsed" aria-controls="email-notification-settings" @click="emailPreferencesCollapsed = !emailPreferencesCollapsed">
-          <span><span class="block text-lg font-semibold">What should we email you about?</span><span class="mt-1 block text-sm text-[#6E4D58]">You’ll still find every update here, even if you turn its emails off.</span></span>
+          <span><span class="block text-lg font-semibold">What should we email you about?</span><span class="mt-1 block text-sm text-[#6E4D58]">Email settings don’t affect which relevant updates appear here.</span></span>
           <ChevronDown class="mt-1 size-5 shrink-0 text-[#8F1839] transition-transform" :class="!emailPreferencesCollapsed && 'rotate-180'" aria-hidden="true" />
         </button>
         <form id="email-notification-settings" v-show="!emailPreferencesCollapsed" class="mt-4 grid gap-3 sm:grid-cols-2" @submit.prevent="saveEmailPreferences">
