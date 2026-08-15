@@ -1,5 +1,6 @@
 import { createError, getRouterParam, readBody } from 'h3'
 import { db } from '~/server/repositories/db'
+import { promoteOldestEligibleQueuedMatch } from '~/server/utils/promoteQueuedMatch'
 import { requireUser } from '~/server/utils/requireUser'
 import { boolean, objectBody, text } from '~/server/utils/productValidation'
 
@@ -26,11 +27,18 @@ export default defineEventHandler(async (event) => {
       select case when dp.inviter_id=$2 then dp.invitee_id else dp.inviter_id end,$2,dp.match_id,dp.id,'follow_up_ready'
       from date_proposals dp where dp.id=$1`, [id,sub])
     if (outcome.rows[0].responses === 2 && outcome.rows[0].mutual !== true) {
-      await client.query(`update matches m set status='unmatched',ended_by=null,ended_reason='post_date',ended_at=now() from date_proposals dp
-        where dp.id=$1 and m.id=dp.match_id`, [id])
+      const closedMatch = await client.query(`update matches m set status='unmatched',ended_by=null,
+        ended_reason='post_date',ended_at=now() from date_proposals dp
+        where dp.id=$1 and m.id=dp.match_id and m.status='active'
+        returning m.user_one_id as "userOneId",m.user_two_id as "userTwoId"`, [id])
       await client.query(`insert into notifications(recipient_id,match_id,kind)
         select case when dp.inviter_id=$2 then dp.invitee_id else dp.inviter_id end,dp.match_id,'date_follow_up_closed'
         from date_proposals dp where dp.id=$1`, [id,sub])
+      if (closedMatch.rows[0]) {
+        for (const freedUserId of [closedMatch.rows[0].userOneId,closedMatch.rows[0].userTwoId].sort()) {
+          await promoteOldestEligibleQueuedMatch(client, freedUserId)
+        }
+      }
     }
     await client.query('commit')
     return rows[0]

@@ -24,6 +24,12 @@ describe('received interests', () => {
     expect(api).toContain('as "reconnectRequest"')
     expect(read('pages/interests/received.vue')).toContain('Reconnect request expired')
     expect(read('pages/interests/received.vue')).toContain('took back their reconnect request')
+    expect(api).toContain('reconnect_note.message as "reconnectNote"')
+    expect(api).toContain('matched.ended_by=di.sender_id')
+    expect(read('pages/interests/received.vue')).toContain('Reconnect request</span>')
+    expect(read('pages/interests/received.vue')).toContain('Accept and reconnect')
+    expect(read('pages/interests/received.vue')).toContain('Do not reconnect')
+    expect(read('pages/interests/received.vue')).toContain('person.reconnectNote')
     expect(read('pages/faq.vue')).toContain('Why can I see only five interests at a time?')
   })
   it('allows the recipient to deliberately create a match', () => {

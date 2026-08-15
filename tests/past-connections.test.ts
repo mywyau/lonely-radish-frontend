@@ -75,6 +75,11 @@ describe('past connections', () => {
     expect(read('pages/matches/past.vue')).toContain('Reconnect request pending')
     expect(read('pages/matches/past.vue')).toContain('View sent request')
     expect(read('pages/matches/past.vue')).toContain('connection.apologySent && !connection.reconnectInterestId')
+    expect(pastApi).toContain('apology_received.message as "apologyReceivedMessage"')
+    expect(pastApi).toContain('incoming_reconnect.id as "incomingReconnectInterestId"')
+    expect(read('pages/matches/past.vue')).toContain('Note received from {{ connection.name }}')
+    expect(read('pages/matches/past.vue')).toContain('Review reconnect request')
+    expect(read('pages/matches/past.vue')).toContain('You chose not to reconnect')
     expect(read('server/api/matches/[id]/apology.post.ts')).toContain('created_at>$3')
     expect(read('server/api/matches/[id]/apology.post.ts')).toContain('for update')
     expect(read('docs/migrations/20260820_allow_repeat_second_chances.sql')).toContain(

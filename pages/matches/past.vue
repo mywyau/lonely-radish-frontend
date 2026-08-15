@@ -3,7 +3,7 @@ import { CalendarClock, History, XCircle } from '@lucide/vue'
 
 definePageMeta({ title: 'Past connections · Lonely Radish', middleware: 'logged-in' })
 type ReconnectResolution = 'accepted' | 'passed' | 'expired' | 'withdrawn' | 'blocked' | null
-type Connection = { id: string; name: string; slug: string; photoUrl?: string; endedReason?: 'removed' | 'post_date'; endedAt?: string; endedByMe?: boolean; wasUnmatched?: boolean; activity?: string; proposalId?: string; canReconsider?: boolean; canViewProfile?: boolean; apologySent?: boolean; reconnectInterestId?: string | null; reconnectInterestResolution?: ReconnectResolution }
+type Connection = { id: string; name: string; slug: string; photoUrl?: string; endedReason?: 'removed' | 'post_date'; endedAt?: string; endedByMe?: boolean; wasUnmatched?: boolean; activity?: string; proposalId?: string; canReconsider?: boolean; canViewProfile?: boolean; apologySent?: boolean; apologyReceived?: boolean; apologyReceivedMessage?: string | null; apologyReceivedAt?: string | null; reconnectInterestId?: string | null; reconnectInterestResolution?: ReconnectResolution; incomingReconnectInterestId?: string | null; incomingReconnectInterestResolution?: ReconnectResolution }
 const connections = ref<Connection[]>([])
 const loading = ref(true)
 const errorMessage = ref('')
@@ -24,6 +24,14 @@ function reconnectStatus(connection: Connection) {
   if (connection.reconnectInterestResolution === 'withdrawn') return 'You took back the reconnect request'
   if (connection.reconnectInterestResolution === 'blocked') return 'Reconnect request closed'
   return 'Reconnect request accepted'
+}
+function incomingReconnectStatus(connection: Connection) {
+  if (!connection.incomingReconnectInterestResolution) return 'Reconnect request pending'
+  if (connection.incomingReconnectInterestResolution === 'passed') return 'You chose not to reconnect'
+  if (connection.incomingReconnectInterestResolution === 'expired') return 'Their reconnect request expired'
+  if (connection.incomingReconnectInterestResolution === 'withdrawn') return 'They took back their reconnect request'
+  if (connection.incomingReconnectInterestResolution === 'blocked') return 'Reconnect request closed'
+  return 'You reconnected'
 }
 async function sendApology(connection: Connection) {
   if (!apologyMessage.value.trim()) return
@@ -82,9 +90,12 @@ onMounted(() => loadConnections())
             <span v-if="connection.reconnectInterestId" class="rounded-lg px-4 py-2.5 text-sm font-semibold" :class="connection.reconnectInterestResolution ? 'bg-[#F3E8DA] text-[#6E4D58]' : 'bg-[#FFF1C7] text-[#694C00]'">{{ reconnectStatus(connection) }}</span>
             <NuxtLink v-if="connection.apologySent && !connection.reconnectInterestId" :to="{ path: `/profiles/${connection.slug}`, query: { connection: 'past' } }" class="rounded-lg bg-[#B4234A] px-4 py-2.5 text-sm font-semibold text-white">Ask to reconnect</NuxtLink>
             <NuxtLink v-else-if="connection.reconnectInterestId" to="/interests/sent" class="rounded-lg bg-[#B4234A] px-4 py-2.5 text-sm font-semibold text-white">View sent request</NuxtLink>
+            <span v-if="connection.incomingReconnectInterestId" class="rounded-lg px-4 py-2.5 text-sm font-semibold" :class="connection.incomingReconnectInterestResolution ? 'bg-[#F3E8DA] text-[#6E4D58]' : 'bg-[#FFF1C7] text-[#694C00]'">{{ incomingReconnectStatus(connection) }}</span>
+            <NuxtLink v-if="connection.incomingReconnectInterestId && !connection.incomingReconnectInterestResolution" to="/interests/received" class="rounded-lg bg-[#B4234A] px-4 py-2.5 text-sm font-semibold text-white">Review reconnect request</NuxtLink>
             <p v-if="connection.wasUnmatched && !connection.canViewProfile" class="text-xs leading-5 text-[#6E4D58]">They ended this connection, so it remains closed unless they choose to ask for another chance.</p>
             <p v-else-if="!connection.canViewProfile" class="text-xs leading-5 text-[#6E4D58]">Their profile is no longer available from this connection.</p>
           </div>
+          <div v-if="connection.apologyReceivedMessage" class="mt-4 rounded-lg bg-[#FBF7F1] p-4 text-sm leading-6 text-[#4D2F39]"><p class="font-semibold">Note received from {{ connection.name }}</p><blockquote class="mt-2 border-l-2 border-[#D8C8B6] pl-3 italic">“{{ connection.apologyReceivedMessage }}”</blockquote><p v-if="connection.apologyReceivedAt" class="mt-2 text-xs text-[#6E4D58]">Received {{ new Date(connection.apologyReceivedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) }}</p></div>
           <form v-if="apologyFor === connection.id" class="mt-4 rounded-lg bg-[#FBF7F1] p-4" @submit.prevent="sendApology(connection)"><label class="text-sm font-semibold">Note to {{ connection.name }}<textarea v-model="apologyMessage" maxlength="500" rows="3" class="mt-2 w-full rounded-lg border border-[#D8C8B6] bg-white p-3 font-normal" placeholder="Keep it brief, respectful, and without pressure." /></label><p class="mt-2 text-xs leading-5 text-[#6E4D58]">They will receive this note. Afterward, you may ask to reconnect once; they can ignore or decline that request.</p><div class="mt-3 flex gap-2"><button type="submit" :disabled="apologySending || !apologyMessage.trim()" class="rounded-lg bg-[#8F1839] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">{{ apologySending ? 'Sending…' : 'Send note' }}</button><button type="button" class="px-3 py-2 text-sm font-semibold text-[#6E4D58]" @click="apologyFor = null">Cancel</button></div></form>
         </article>
         <button v-if="hasMore" type="button" :disabled="loadingMore" class="mx-auto mt-3 rounded-lg bg-[#4D2F39] px-5 py-3 text-sm font-semibold text-white disabled:opacity-50" @click="loadConnections(true)">{{ loadingMore ? 'Loading…' : 'Load more past connections' }}</button>

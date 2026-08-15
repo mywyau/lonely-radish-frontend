@@ -14,6 +14,9 @@ export default defineEventHandler(async (event) => {
     extract(year from age(current_date,p.date_of_birth))::int as age,p.neighbourhood as place,
     photo.storage_key as "photoStorageKey",photo.public_url as "legacyPhotoUrl",
     case when matched.status='unmatched' and di.created_at>matched.ended_at then null else matched.status end as "matchStatus",
+    coalesce(matched.status='unmatched' and matched.ended_by=di.sender_id
+      and di.created_at>matched.ended_at and reconnect_note.message is not null,false) as "reconnectRequest",
+    reconnect_note.message as "reconnectNote",
     coalesce(tags.items,'{}'::text[]) as "activityTags",count(*) over()::int as "pendingInterestCount"
     from daily_interests di
     join profiles p on p.user_id=di.sender_id and p.visibility='active'
@@ -21,9 +24,13 @@ export default defineEventHandler(async (event) => {
       (u.account_status='paused' and u.paused_until is not null and u.paused_until<=now()))
     left join lateral (select coalesce(thumbnail_storage_key,storage_key) as storage_key,public_url
       from profile_photos where user_id=p.user_id order by position limit 1) photo on true
-    left join lateral (select m.status,m.ended_at from matches m where
+    left join lateral (select m.id,m.status,m.ended_at,m.ended_by from matches m where
       (m.user_one_id=$1 and m.user_two_id=di.sender_id) or (m.user_two_id=$1 and m.user_one_id=di.sender_id)
       order by m.matched_at desc limit 1) matched on true
+    left join lateral (select man.message from match_apology_notes man
+      where man.match_id=matched.id and man.sender_id=di.sender_id and man.recipient_id=$1
+        and man.message_type='apology' and man.created_at>matched.ended_at and man.created_at<di.created_at
+      order by man.created_at desc limit 1) reconnect_note on true
     left join lateral (select array_agg(coalesce(a.name,pa.custom_label) order by pa.position) as items
       from profile_activities pa left join activities a on a.id=pa.activity_id where pa.user_id=di.sender_id) tags on true
     where di.recipient_id=$1 and di.resolved_at is null and di.inbox_bypassed=false and not exists(select 1 from blocks b where
@@ -74,6 +81,7 @@ export default defineEventHandler(async (event) => {
   const interests = rows.map(row => ({
     id: row.id, slug: row.slug, name: row.name, age: row.age, place: row.place || 'Nearby',
     createdAt: row.createdAt, activityTags: row.activityTags.slice(0, 5), matchStatus: row.matchStatus || null,
+    reconnectRequest: row.reconnectRequest === true, reconnectNote: row.reconnectNote || null,
     photoUrl: row.photoStorageKey ? photoUrls.get(row.photoStorageKey) : row.legacyPhotoUrl || null,
   }))
   const closedInterests = closedRows.map(row => ({

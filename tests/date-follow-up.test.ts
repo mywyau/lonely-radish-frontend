@@ -26,6 +26,7 @@ describe('private post-date follow-up', () => {
     expect(post).toContain('bool_and(meet_again) as mutual')
     expect(post).toContain('for update of dp')
     expect(post).toContain("'date_follow_up_closed'")
+    expect(post).toContain('promoteOldestEligibleQueuedMatch')
     expect(read('pages/dates/[id]/follow-up.vue')).toContain('You didn’t both choose another date.')
   })
 

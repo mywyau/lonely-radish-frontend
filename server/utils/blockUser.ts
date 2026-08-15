@@ -1,4 +1,5 @@
 import type { DatabaseClient } from '~/server/repositories/db'
+import { promoteOldestEligibleQueuedMatch } from '~/server/utils/promoteQueuedMatch'
 
 export async function blockUser(client: DatabaseClient, blockerId: string, blockedId: string) {
   const pair = [blockerId, blockedId].sort().join(':')
@@ -15,5 +16,10 @@ export async function blockUser(client: DatabaseClient, blockerId: string, block
       ((sender_id=$1 and recipient_id=$2) or (sender_id=$2 and recipient_id=$1))`, [blockerId,blockedId])
   await client.query(`delete from notifications
     where (recipient_id=$1 and actor_id=$2) or (recipient_id=$2 and actor_id=$1)`, [blockerId,blockedId])
+  if (matches.rowCount) {
+    for (const freedUserId of [blockerId,blockedId].sort()) {
+      await promoteOldestEligibleQueuedMatch(client, freedUserId)
+    }
+  }
   return { newlyBlocked: (matches.rowCount || 0) > 0 }
 }

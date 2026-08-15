@@ -18,10 +18,13 @@ export default defineEventHandler(async (event) => {
     coalesce(followup.can_reconsider,false) as "canReconsider",
     exists(select 1 from match_apology_notes man where man.match_id=m.id and man.sender_id=$1
       and man.message_type='apology' and man.created_at>m.ended_at) as "apologySent",
-    exists(select 1 from match_apology_notes man where man.match_id=m.id and man.recipient_id=$1
-      and man.message_type='apology' and man.created_at>m.ended_at) as "apologyReceived",
+    apology_received.message as "apologyReceivedMessage",
+    apology_received.created_at as "apologyReceivedAt",
+    apology_received.message is not null as "apologyReceived",
     reconnect_interest.id as "reconnectInterestId",
-    reconnect_interest.resolution as "reconnectInterestResolution"
+    reconnect_interest.resolution as "reconnectInterestResolution",
+    incoming_reconnect.id as "incomingReconnectInterestId",
+    incoming_reconnect.resolution as "incomingReconnectInterestResolution"
     from matches m join profiles p on p.user_id=case when m.user_one_id=$1 then m.user_two_id else m.user_one_id end
     left join lateral (select coalesce(thumbnail_storage_key,storage_key) as storage_key,public_url
       from profile_photos where user_id=p.user_id order by position limit 1) photo on true
@@ -31,6 +34,14 @@ export default defineEventHandler(async (event) => {
     left join lateral (select di.id,di.resolution from daily_interests di
       where di.sender_id=$1 and di.recipient_id=p.user_id and di.created_at>m.ended_at
       order by di.created_at desc,di.id desc limit 1) reconnect_interest on true
+    left join lateral (select man.message,man.created_at from match_apology_notes man
+      where man.match_id=m.id and man.sender_id=p.user_id and man.recipient_id=$1
+        and man.message_type='apology' and man.created_at>m.ended_at
+      order by man.created_at desc limit 1) apology_received on true
+    left join lateral (select di.id,di.resolution from daily_interests di
+      where di.sender_id=p.user_id and di.recipient_id=$1 and di.created_at>m.ended_at
+        and apology_received.message is not null and di.created_at>apology_received.created_at
+      order by di.created_at desc,di.id desc limit 1) incoming_reconnect on true
     left join lateral (select mine.meet_again=false and theirs.meet_again=true and mine.reconsidered_at is null as can_reconsider
       from date_follow_ups mine join date_follow_ups theirs on theirs.proposal_id=mine.proposal_id and theirs.user_id<>$1
       where mine.proposal_id=proposal.id and mine.user_id=$1) followup on true
