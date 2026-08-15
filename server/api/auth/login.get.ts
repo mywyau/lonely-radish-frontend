@@ -1,6 +1,6 @@
 import { randomBytes } from 'node:crypto'
 import { createError, getQuery, sendRedirect } from 'h3'
-import { safeReturnTo, useAuthFlowSession } from '~/server/utils/authSession'
+import { activeAuthFlowAttempts, safeReturnTo, useAuthFlowSession } from '~/server/utils/authSession'
 
 function required(name: 'AUTH0_DOMAIN' | 'AUTH0_CLIENT_ID' | 'SITE_URL') {
   const value = process.env[name]?.trim()
@@ -16,9 +16,11 @@ export default defineEventHandler(async (event) => {
   const state = randomBytes(32).toString('base64url')
   const nonce = randomBytes(32).toString('base64url')
   const flow = await useAuthFlowSession(event)
-  const intent = query.intent === 'business' ? 'business' : 'personal'
+  const intent: 'business' | 'personal' = query.intent === 'business' ? 'business' : 'personal'
   const returnTo = intent === 'business' ? safeReturnTo(query.returnTo || '/business') : safeReturnTo(query.returnTo)
-  await flow.update({ state, nonce, returnTo, intent })
+  const attempts = [...activeAuthFlowAttempts(flow.data), { state, nonce, returnTo, intent, createdAt: Date.now() }]
+    .slice(-3)
+  await flow.update({ attempts, state: undefined, nonce: undefined, returnTo: undefined, intent: undefined })
 
   const authorizeUrl = new URL(`https://${domain}/authorize`)
   authorizeUrl.search = new URLSearchParams({

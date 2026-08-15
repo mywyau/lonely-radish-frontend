@@ -3,7 +3,7 @@ import { createError, getQuery, sendRedirect } from 'h3'
 import { ensureUser } from '~/server/services/auth/ensureUser'
 import { accountCollisionMessage, isUniqueConstraintViolation, normalizeAuthEmail } from '~/server/services/auth/accountCollision'
 import { db } from '~/server/repositories/db'
-import { useAuthFlowSession, useAuthSession } from '~/server/utils/authSession'
+import { activeAuthFlowAttempts, findAuthFlowAttempt, safeReturnTo, useAuthFlowSession, useAuthSession } from '~/server/utils/authSession'
 
 function required(name: 'AUTH0_DOMAIN' | 'AUTH0_CLIENT_ID' | 'AUTH0_CLIENT_SECRET' | 'SITE_URL') {
   const value = process.env[name]?.trim()
@@ -14,12 +14,24 @@ function required(name: 'AUTH0_DOMAIN' | 'AUTH0_CLIENT_ID' | 'AUTH0_CLIENT_SECRE
 export default defineEventHandler(async (event) => {
   const query = getQuery(event)
   const flow = await useAuthFlowSession(event)
-  if (query.error) {
-    const errorPage = flow.data.intent === 'business' ? '/business/sign-in' : '/please-sign-in'
-    return sendRedirect(event, `${errorPage}?error=${encodeURIComponent(String(query.error_description || query.error))}`, 302)
+  const queryState = typeof query.state === 'string' ? query.state : ''
+  const attempt = findAuthFlowAttempt(flow.data, queryState)
+  const returnTo = attempt?.returnTo || '/'
+  const errorPage = attempt?.intent === 'business' ? '/business/sign-in' : '/please-sign-in'
+  const consumeAttempt = async () => {
+    const attempts = activeAuthFlowAttempts(flow.data).filter(candidate => candidate.state !== queryState)
+    await flow.update({ attempts, state: undefined, nonce: undefined, returnTo: undefined, intent: undefined })
   }
-  if (typeof query.code !== 'string' || typeof query.state !== 'string' || query.state !== flow.data.state) {
-    throw createError({ statusCode: 400, statusMessage: 'Invalid authentication callback state' })
+  const redirectWithError = async (message: string, consume = true) => {
+    if (consume && attempt) await consumeAttempt()
+    const params = new URLSearchParams({ error: message, redirect: safeReturnTo(returnTo) })
+    return sendRedirect(event, `${errorPage}?${params.toString()}`, 302)
+  }
+  if (query.error) {
+    return redirectWithError(String(query.error_description || query.error))
+  }
+  if (typeof query.code !== 'string' || !attempt) {
+    return redirectWithError('This sign-in attempt expired or was replaced. Please try again in one browser tab.', false)
   }
 
   const domain = required('AUTH0_DOMAIN').replace(/^https?:\/\//, '').replace(/\/$/, '')
@@ -38,18 +50,11 @@ export default defineEventHandler(async (event) => {
   const { payload } = await jwtVerify(tokens.id_token, createRemoteJWKSet(new URL(`https://${domain}/.well-known/jwks.json`)), {
     issuer: `https://${domain}/`, audience: clientId,
   })
-  if (!flow.data.nonce || payload.nonce !== flow.data.nonce || !payload.sub || typeof payload.email !== 'string') {
+  if (payload.nonce !== attempt.nonce || !payload.sub || typeof payload.email !== 'string') {
     throw createError({ statusCode: 401, statusMessage: 'Invalid Auth0 identity token' })
   }
 
   const email = normalizeAuthEmail(payload.email)
-  const returnTo = flow.data.returnTo || '/'
-  const redirectWithError = async (message: string) => {
-    const errorPage = flow.data.intent === 'business' ? '/business/sign-in' : '/please-sign-in'
-    const params = new URLSearchParams({ error: message, redirect: returnTo })
-    await flow.clear()
-    return sendRedirect(event, `${errorPage}?${params.toString()}`, 302)
-  }
   if (payload.email_verified !== true) {
     return redirectWithError('This email/password account hasn’t been verified. Check your inbox, or choose “Use another account” to use your original sign-in method.')
   }
@@ -76,16 +81,16 @@ export default defineEventHandler(async (event) => {
     if (!conflictingAccount.rows[0] || conflictingAccount.rows[0].id === payload.sub) throw error
     return redirectWithError(accountCollisionMessage(conflictingAccount.rows[0].id))
   }
-  if (flow.data.intent === 'business' && (!existing.rows[0] ||
+  if (attempt.intent === 'business' && (!existing.rows[0] ||
     (existing.rows[0].account_type === 'personal' && !existing.rows[0].onboarding_completed_at && !existing.rows[0].hasProfile))) {
     await db.query(`update users set account_type='business' where id=$1`, [payload.sub])
   }
   const session = await useAuthSession(event)
   await session.update({ user: { sub: payload.sub, email,
     emailVerified: payload.email_verified === true, name: typeof payload.name === 'string' ? payload.name : undefined,
-    mode: flow.data.intent === 'business' ? 'business' : 'personal' } })
+    mode: attempt.intent === 'business' ? 'business' : 'personal' } })
   const onboarding = await db.query('select onboarding_completed_at,account_type from users where id=$1', [payload.sub])
-  await flow.clear()
+  await consumeAttempt()
   if (onboarding.rows[0]?.account_type === 'business') {
     return sendRedirect(event, returnTo.startsWith('/business') ? returnTo : '/business', 302)
   }
