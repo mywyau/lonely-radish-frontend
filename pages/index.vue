@@ -341,7 +341,7 @@ onMounted(() => {
             <p class="section-kicker">A little extra</p>
             <h2 class="section-heading">Already made a plan? See if there’s an offer nearby.</h2>
             <p class="mt-4 max-w-2xl leading-7 text-[#6E4D58]">
-              Once your date is confirmed, you can look for offers from approved local places. It might mean money off a meal, a drink or something you can do together.
+              Once your date is confirmed, you can look for offers from approved local places. It might mean a little money off a meal, a drink or something you can do together.
             </p>
           </div>
           <figure class="editorial-photo">
@@ -386,15 +386,15 @@ onMounted(() => {
             <ol class="mt-6 grid gap-4">
               <li class="offer-step">
                 <BadgePercent class="size-5 shrink-0 text-[#52713A]" aria-hidden="true" />
-                <span><strong>Set the scene.</strong> A thoughtful saving or little extra can make choosing where to meet easier.</span>
+                <span><strong>Set the scene.</strong> Help bring people together at your venues and help support human connection.</span>
               </li>
               <li class="offer-step">
                 <ShieldCheck class="size-5 shrink-0 text-[#52713A]" aria-hidden="true" />
-                <span><strong>Welcome real dates.</strong> Your offer reaches people who have already decided to spend time together.</span>
+                <span><strong>Welcome real dates.</strong> Your offer reaches genuine connections.</span>
               </li>
               <li class="offer-step">
                 <TicketCheck class="size-5 shrink-0 text-[#52713A]" aria-hidden="true" />
-                <span><strong>Keep it simple.</strong> We review the offer; your team checks a one-time code when they arrive.</span>
+                <span><strong>Keep it simple.</strong> We review the offer; your team checks a one-time code when they arrive. Simples.</span>
               </li>
             </ol>
             <NuxtLink to="/business" class="offer-link offer-link-business">Create a date-friendly offer <span aria-hidden="true">→</span></NuxtLink>
