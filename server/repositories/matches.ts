@@ -97,8 +97,14 @@ export class MatchRepository {
   }
 
   async resolveAcceptedInterest(interestId: string, recipientId: string) {
-    await this.client.query(`update daily_interests set resolution='accepted',resolved_at=now()
-      where id=$1 and recipient_id=$2 and resolved_at is null`, [interestId,recipientId])
+    await this.client.query(`with accepted as (
+      update daily_interests set resolution='accepted',resolved_at=now()
+      where id=$1 and recipient_id=$2 and resolved_at is null
+      returning sender_id,recipient_id
+    ) delete from notifications notification using accepted
+      where notification.kind='interest_received'
+        and notification.recipient_id=accepted.recipient_id
+        and notification.actor_id=accepted.sender_id`, [interestId,recipientId])
   }
 
 }

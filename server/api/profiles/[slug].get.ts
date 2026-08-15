@@ -20,11 +20,16 @@ export default defineEventHandler(async (event) => {
     exists(select 1 from match_apology_notes man where man.match_id=relationship.id
       and man.sender_id=$2 and man.created_at>relationship.ended_at
       and relationship.ended_by=$2 and man.message_type='apology') as "secondChanceAvailable",
-    exists(select 1 from daily_interests di where di.sender_id=$2 and di.recipient_id=p.user_id
-      and (relationship.status is distinct from 'unmatched' or (di.created_at>relationship.ended_at
+    (latest_sent_interest.id is not null
+      and (relationship.status is distinct from 'unmatched' or (latest_sent_interest.created_at>relationship.ended_at
         and exists(select 1 from match_apology_notes man where man.match_id=relationship.id
           and man.sender_id=$2 and man.created_at>relationship.ended_at
           and relationship.ended_by=$2 and man.message_type='apology')))) as "interestSent",
+    latest_sent_interest.resolution as "interestResolution",
+    (relationship.status='unmatched' and latest_sent_interest.created_at>relationship.ended_at
+      and exists(select 1 from match_apology_notes man where man.match_id=relationship.id
+        and man.sender_id=$2 and man.created_at>relationship.ended_at
+        and relationship.ended_by=$2 and man.message_type='apology')) as "interestIsReconnect",
     true as "acceptingInterest"
     ,coalesce(mp.availability_visible_before_match,false) as "availabilityVisibleBeforeMatch",
     coalesce(photos.items,'[]'::json) as photos,
@@ -35,6 +40,9 @@ export default defineEventHandler(async (event) => {
     left join lateral (select m.id,m.status,m.ended_by,m.ended_at from matches m where
       (m.user_one_id=$2 and m.user_two_id=p.user_id) or (m.user_two_id=$2 and m.user_one_id=p.user_id)
       order by coalesce(m.ended_at,m.matched_at) desc limit 1) relationship on true
+    left join lateral (select di.id,di.created_at,di.resolution from daily_interests di
+      where di.sender_id=$2 and di.recipient_id=p.user_id
+      order by di.created_at desc,di.id desc limit 1) latest_sent_interest on true
     left join lateral (select json_agg(json_build_object(
       'src',public_url,'storageKey',storage_key,'alt',alt_text,'position',position
     ) order by position) as items from profile_photos where user_id=p.user_id) photos on true

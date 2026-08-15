@@ -19,11 +19,18 @@ export default defineEventHandler(async (event) => {
     exists(select 1 from match_apology_notes man where man.match_id=m.id and man.sender_id=$1
       and man.message_type='apology' and man.created_at>m.ended_at) as "apologySent",
     exists(select 1 from match_apology_notes man where man.match_id=m.id and man.recipient_id=$1
-      and man.message_type='apology' and man.created_at>m.ended_at) as "apologyReceived"
+      and man.message_type='apology' and man.created_at>m.ended_at) as "apologyReceived",
+    reconnect_interest.id as "reconnectInterestId",
+    reconnect_interest.resolution as "reconnectInterestResolution"
     from matches m join profiles p on p.user_id=case when m.user_one_id=$1 then m.user_two_id else m.user_one_id end
     left join lateral (select coalesce(thumbnail_storage_key,storage_key) as storage_key,public_url
       from profile_photos where user_id=p.user_id order by position limit 1) photo on true
-    left join lateral (select dp.id,dp.activity_label from date_proposals dp where dp.match_id=m.id order by dp.created_at desc limit 1) proposal on true
+    left join lateral (select dp.id,dp.activity_label from date_proposals dp
+      where dp.match_id=m.id and dp.confirmed_at is not null
+      order by dp.confirmed_at desc,dp.created_at desc limit 1) proposal on true
+    left join lateral (select di.id,di.resolution from daily_interests di
+      where di.sender_id=$1 and di.recipient_id=p.user_id and di.created_at>m.ended_at
+      order by di.created_at desc,di.id desc limit 1) reconnect_interest on true
     left join lateral (select mine.meet_again=false and theirs.meet_again=true and mine.reconsidered_at is null as can_reconsider
       from date_follow_ups mine join date_follow_ups theirs on theirs.proposal_id=mine.proposal_id and theirs.user_id<>$1
       where mine.proposal_id=proposal.id and mine.user_id=$1) followup on true

@@ -3,7 +3,7 @@ import { Check, HeartHandshake, MapPin, Send, Undo2 } from '@lucide/vue'
 
 definePageMeta({ title: 'Sent interests · Lonely Radish', middleware: 'logged-in' })
 type InterestResolution = 'accepted' | 'passed' | 'expired' | 'withdrawn' | null
-type SentInterest = { id: string; slug: string; name: string; place?: string; sentOn: string; createdAt: string; expiresAt: string; resolvedAt?: string | null; resolution: InterestResolution; matched: boolean; queued?: boolean; ended: boolean; matchStatus?: string; photoUrl?: string }
+type SentInterest = { id: string; slug: string; name: string; place?: string; sentOn: string; createdAt: string; expiresAt: string; resolvedAt?: string | null; resolution: InterestResolution; matched: boolean; queued?: boolean; ended: boolean; reconnectRequest?: boolean; matchStatus?: string; photoUrl?: string }
 type UndoableWithdrawal = { interest: SentInterest; undoUntil: string; restoring: boolean }
 const interests = ref<SentInterest[]>([])
 const loading = ref(true)
@@ -26,10 +26,23 @@ function interestStatus(interest: SentInterest) {
   if (interest.matched) return 'You matched'
   if (interest.queued) return 'Waiting for space to open'
   if (interest.ended) return 'Your connection ended'
-  if (interest.resolution === 'expired') return 'No response after 14 days'
-  if (interest.resolution === 'withdrawn') return 'You took this back'
-  if (interest.resolution === 'passed') return 'They didn’t take this further'
-  if (interest.resolution === 'accepted') return 'They chose you too'
+  if (interest.resolution === 'expired') {
+    if (interest.reconnectRequest) return 'No response to your reconnect request'
+    return 'No response after 14 days'
+  }
+  if (interest.resolution === 'withdrawn') {
+    if (interest.reconnectRequest) return 'You took back your reconnect request'
+    return 'You took this back'
+  }
+  if (interest.resolution === 'passed') {
+    if (interest.reconnectRequest) return 'They chose not to reconnect'
+    return 'They didn’t take this further'
+  }
+  if (interest.resolution === 'accepted') {
+    if (interest.reconnectRequest) return 'They chose to reconnect'
+    return 'They chose you too'
+  }
+  if (interest.reconnectRequest) return 'Reconnect request sent'
   return `Waiting for ${interest.name}`
 }
 function canWithdraw(interest: SentInterest) {
@@ -83,7 +96,7 @@ async function undoWithdrawal(action: UndoableWithdrawal) {
         <article v-for="interest in interests" :key="interest.id" class="flex flex-col gap-4 rounded-lg bg-white p-5 shadow-[0_8px_20px_rgba(180,35,74,.07)] sm:flex-row sm:items-center">
           <ProfilePhotoImage v-if="interest.photoUrl" :src="interest.photoUrl" :alt="`${interest.name}'s profile photo`" class="size-14 rounded-full" />
           <div v-else class="flex size-14 items-center justify-center rounded-full bg-[#FCE3E8] text-lg font-semibold text-[#B4234A]">{{ interest.name.charAt(0) }}</div>
-          <div class="min-w-0 flex-1"><h2 class="text-lg font-semibold">{{ interest.name }}</h2><p v-if="interest.place" class="mt-1 flex items-center gap-1 text-xs text-[#6E4D58]"><MapPin class="size-3.5" />{{ interest.place }}</p><p class="mt-1 text-xs text-[#6E4D58]">Sent {{ new Date(interest.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) }}</p><p v-if="canWithdraw(interest)" class="mt-1 text-xs text-[#6E4D58]">Closes {{ new Date(interest.expiresAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) }}</p></div>
+          <div class="min-w-0 flex-1"><h2 class="text-lg font-semibold">{{ interest.name }}</h2><p v-if="interest.place" class="mt-1 flex items-center gap-1 text-xs text-[#6E4D58]"><MapPin class="size-3.5" />{{ interest.place }}</p><p class="mt-1 text-xs text-[#6E4D58]">Sent {{ new Date(interest.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) }}<span v-if="interest.reconnectRequest"> after your note</span></p><p v-if="canWithdraw(interest)" class="mt-1 text-xs text-[#6E4D58]">Closes {{ new Date(interest.expiresAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) }}</p></div>
           <div class="flex flex-wrap items-center gap-2"><span class="inline-flex items-center gap-1 rounded-full px-3 py-2 text-xs font-semibold" :class="interest.matched ? 'bg-[#EAF2DE] text-[#4D2F39]' : interest.queued ? 'bg-[#FFF1C7] text-[#694C00]' : interest.resolution === 'expired' || interest.resolution === 'withdrawn' || interest.resolution === 'passed' || interest.ended ? 'bg-[#FCE3E8] text-[#8F1839]' : 'bg-[#F3E8DA] text-[#6E4D58]' "><Check v-if="interest.matched" class="size-3.5" /><Send v-else class="size-3.5" />{{ interestStatus(interest) }}</span><button v-if="canWithdraw(interest)" type="button" class="inline-flex items-center gap-1 rounded-lg border border-[#B4234A]/30 px-4 py-2.5 text-sm font-semibold text-[#8F1839] disabled:opacity-50" :disabled="withdrawing === interest.id" @click="withdrawInterest(interest)"><Undo2 class="size-4" />{{ withdrawing === interest.id ? 'Taking back…' : 'Take back' }}</button><NuxtLink v-if="interest.matched || interest.queued || interest.ended" :to="interest.matched || interest.queued ? '/matches' : '/matches/past'" class="rounded-lg bg-[#B4234A] px-4 py-2.5 text-sm font-semibold text-white">{{ interest.ended ? 'View past connection' : 'View match' }}</NuxtLink><NuxtLink v-else-if="canWithdraw(interest)" :to="`/profiles/${interest.slug}`" class="rounded-lg bg-[#B4234A] px-4 py-2.5 text-sm font-semibold text-white">View profile</NuxtLink></div>
         </article>
       </div>

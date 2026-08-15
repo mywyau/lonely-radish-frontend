@@ -106,6 +106,26 @@ const hasSharedContactDetails = computed(() => Boolean(
     || profile.value.contactDetails.socialHandle),
 ))
 
+function sentInterestButtonLabel(person: any) {
+  if (!person.interestResolution) return person.interestIsReconnect ? 'Reconnect request sent' : 'Interest already sent'
+  if (person.interestIsReconnect) return 'Reconnect request closed'
+  return 'Interest closed'
+}
+
+function sentInterestStatus(person: any) {
+  if (person.interestIsReconnect) {
+    if (person.interestResolution === 'passed') return `${person.name} chose not to reconnect.`
+    if (person.interestResolution === 'expired') return `Your reconnect request to ${person.name} closed after 14 days.`
+    if (person.interestResolution === 'withdrawn') return `You took back your reconnect request to ${person.name}.`
+    return `You asked ${person.name} to reconnect. It’s up to them whether to accept.`
+  }
+  if (person.interestResolution === 'passed') return `${person.name} didn’t take this interest further.`
+  if (person.interestResolution === 'expired') return `Your interest in ${person.name} closed after 14 days.`
+  if (person.interestResolution === 'withdrawn') return `You took back your interest in ${person.name}.`
+  if (person.interestResolution === 'accepted') return `${person.name} chose you too.`
+  return `You have shown interest in ${person.name}.`
+}
+
 async function sendApology() {
   if (!profile.value?.matchId || !apologyMessage.value.trim()) return
   apologySending.value = true; apologyError.value = ''
@@ -122,7 +142,11 @@ async function sendProfileInterest() {
   if (!profile.value) return
   const sent = await showInterest(profileSlug.value, profile.value.name)
   if (!sent) return
-  if (databaseProfile.value) databaseProfile.value.interestSent = true
+  if (databaseProfile.value) Object.assign(databaseProfile.value, {
+    interestSent: true,
+    interestResolution: null,
+    interestIsReconnect: databaseProfile.value.relationshipStatus === 'unmatched',
+  })
   else if (profiles[profileSlug.value]) profiles[profileSlug.value].interestSent = true
 }
 
@@ -304,7 +328,7 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
                   :disabled="sending || profile.isMatched || profile.relationshipStatus === 'queued' || (profile.relationshipStatus === 'unmatched' && !profile.secondChanceAvailable) || profile.interestSent || (profile.relationshipStatus !== 'unmatched' && isTodaysChoice(profileSlug)) || hasUsedDailyInterest"
                   class="mt-5 inline-flex w-full min-w-0 items-center justify-center gap-2 whitespace-normal break-words rounded-lg bg-[#B4234A] px-3 py-3 text-center text-sm font-semibold text-white transition hover:bg-[#8F1839] disabled:cursor-not-allowed disabled:bg-[#D7A7B3] min-[360px]:px-5"
                   @click="sendProfileInterest">
-                  <HeartHandshake class="size-4" />{{ sending ? 'Sending…' : profile.isMatched ? `Already matched with ${profile.name}` : profile.relationshipStatus === 'queued' ? `Matched with ${profile.name}` : profile.interestSent || (profile.relationshipStatus !== 'unmatched' &&
+                  <HeartHandshake class="size-4" />{{ sending ? 'Sending…' : profile.isMatched ? `Already matched with ${profile.name}` : profile.relationshipStatus === 'queued' ? `Matched with ${profile.name}` : profile.interestSent ? sentInterestButtonLabel(profile) : (profile.relationshipStatus !== 'unmatched' &&
                     isTodaysChoice(profileSlug)) ? 'Interest already sent' : profile.relationshipStatus === 'unmatched' &&
                       profile.secondChanceAvailable ? `Ask ${profile.name} to reconnect` : profile.relationshipStatus
                         === 'unmatched' ? `Unmatched from ${profile.name}` :
@@ -336,10 +360,8 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
                     closed from your side.</p>
                 </div>
                 <p v-else-if="profile.interestSent || (profile.relationshipStatus !== 'unmatched' && isTodaysChoice(profileSlug))"
-                  class="mt-3 rounded-lg bg-[#EAF2DE] p-3 text-xs leading-5 text-[#4D2F39]" role="status"><template
-                    v-if="profile.relationshipStatus === 'unmatched'">You asked {{ profile.name
-                    }} to reconnect. It’s up to them whether to accept.</template><template v-else>You have shown interest in {{
-                    profile.name }}.</template></p>
+                  class="mt-3 rounded-lg p-3 text-xs leading-5 text-[#4D2F39]"
+                  :class="profile.interestResolution ? 'bg-[#F3E8DA]' : 'bg-[#EAF2DE]'" role="status">{{ profile.interestSent ? sentInterestStatus(profile) : `You have shown interest in ${profile.name}.` }}</p>
                 <p v-else-if="atMatchLimit" class="mt-3 rounded-lg bg-[#FFF1C7] p-3 text-xs leading-5 text-[#694C00]"
                   role="status">You already have {{ activeMatchLimit }} active matches. You can still send interest; any new mutual match remains visible until both people have space.
                 </p>

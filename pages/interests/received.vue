@@ -4,7 +4,7 @@ import { trackProductEvent } from '~/utils/productAnalytics'
 
 definePageMeta({ title: 'Received interests · Lonely Radish', middleware: 'logged-in' })
 type ReceivedInterest = { id: string; slug: string; name: string; age: number; place: string; createdAt: string; activityTags: string[]; matchStatus: string | null; photoUrl?: string }
-type ClosedInterest = { id: string; slug: string; name: string; createdAt: string; resolvedAt: string; resolution: 'expired' | 'withdrawn'; photoUrl?: string }
+type ClosedInterest = { id: string; slug: string; name: string; createdAt: string; resolvedAt: string; resolution: 'expired' | 'withdrawn'; reconnectRequest: boolean; photoUrl?: string }
 type UndoableDecline = { person: ReceivedInterest; undoUntil: string; restoring: boolean }
 const interests = ref<ReceivedInterest[]>([])
 const closedInterests = ref<ClosedInterest[]>([])
@@ -24,6 +24,15 @@ const yourMoveMatch = ref<{ id: string; name: string } | null>(null)
 const undoableDeclines = ref<UndoableDecline[]>([])
 const { adjustMatchCount } = useMeStateV2()
 const atMatchLimit = computed(() => activeMatchCount.value >= activeMatchLimit.value)
+
+function closedInterestStatus(interest: ClosedInterest) {
+  if (interest.reconnectRequest) {
+    return interest.resolution === 'expired'
+      ? 'Reconnect request expired'
+      : `${interest.name} took back their reconnect request`
+  }
+  return interest.resolution === 'expired' ? 'Closed after 14 days' : `${interest.name} took this back`
+}
 
 async function loadReceivedInterests() {
   loading.value = true
@@ -133,7 +142,7 @@ async function undoDecline(action: UndoableDecline) {
             <ProfilePhotoImage v-if="interest.photoUrl" :src="interest.photoUrl" :alt="`${interest.name}'s profile photo`" class="size-12 rounded-full" />
             <div v-else class="flex size-12 items-center justify-center rounded-full bg-[#FCE3E8] font-semibold text-[#B4234A]">{{ interest.name.charAt(0) }}</div>
             <div class="min-w-0 flex-1"><h3 class="font-semibold">{{ interest.name }}</h3><p class="mt-1 text-xs text-[#6E4D58]">Sent {{ new Date(interest.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) }} · ended {{ new Date(interest.resolvedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) }}</p></div>
-            <span class="rounded-full bg-[#FCE3E8] px-3 py-2 text-xs font-semibold text-[#8F1839]">{{ interest.resolution === 'expired' ? 'Closed after 14 days' : `${interest.name} took this back` }}</span>
+            <span class="rounded-full bg-[#FCE3E8] px-3 py-2 text-xs font-semibold text-[#8F1839]">{{ closedInterestStatus(interest) }}</span>
           </div>
           <div class="mt-4 border-t border-[#E8D8C4] pt-4">
             <NuxtLink :to="`/profiles/${interest.slug}`" class="text-xs font-semibold text-[#8F1839] hover:underline">View profile</NuxtLink>

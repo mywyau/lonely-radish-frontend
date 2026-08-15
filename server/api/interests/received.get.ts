@@ -34,14 +34,27 @@ export default defineEventHandler(async (event) => {
         where man.match_id=ended.id and man.sender_id=di.sender_id and man.created_at>ended.ended_at
           and di.sender_id=ended.ended_by and man.message_type='apology')))
     order by di.created_at asc limit 5`, [sub])
-    const closedInterests = await database.query(`select di.id,di.created_at as "createdAt",
+    const closedInterests = await database.query(`with ranked_closed as (
+      select di.*,row_number() over(partition by di.sender_id order by di.created_at desc,di.id desc) as sender_rank
+      from daily_interests di
+      where di.recipient_id=$1 and di.resolution in ('expired','withdrawn')
+        and not exists(select 1 from daily_interests pending where pending.sender_id=di.sender_id
+          and pending.recipient_id=di.recipient_id and pending.resolved_at is null)
+    ) select di.id,di.created_at as "createdAt",
       di.resolution,di.resolved_at as "resolvedAt",p.slug,p.display_name as name,
-      photo.storage_key as "photoStorageKey",photo.public_url as "legacyPhotoUrl"
+      photo.storage_key as "photoStorageKey",photo.public_url as "legacyPhotoUrl",
+      coalesce(matched.status='unmatched' and matched.ended_by=di.sender_id
+        and di.created_at>matched.ended_at and exists(select 1 from match_apology_notes man
+          where man.match_id=matched.id and man.sender_id=di.sender_id
+            and man.message_type='apology' and man.created_at>matched.ended_at
+            and man.created_at<di.created_at),false) as "reconnectRequest"
       from daily_interests di join profiles p on p.user_id=di.sender_id
       left join lateral (select coalesce(thumbnail_storage_key,storage_key) as storage_key,public_url
         from profile_photos where user_id=p.user_id order by position limit 1) photo on true
-      where di.recipient_id=$1 and di.resolution in ('expired','withdrawn')
-        and not exists(select 1 from blocks b where
+      left join lateral (select m.id,m.status,m.ended_at,m.ended_by from matches m where
+        (m.user_one_id=$1 and m.user_two_id=di.sender_id) or (m.user_two_id=$1 and m.user_one_id=di.sender_id)
+        order by m.matched_at desc limit 1) matched on true
+      where di.sender_rank=1 and not exists(select 1 from blocks b where
           (b.blocker_id=$1 and b.blocked_id=di.sender_id)
           or (b.blocker_id=di.sender_id and b.blocked_id=$1))
       order by di.resolved_at desc limit 25`, [sub])
@@ -65,7 +78,7 @@ export default defineEventHandler(async (event) => {
   }))
   const closedInterests = closedRows.map(row => ({
     id: row.id, slug: row.slug, name: row.name, createdAt: row.createdAt,
-    resolution: row.resolution, resolvedAt: row.resolvedAt,
+    resolution: row.resolution, resolvedAt: row.resolvedAt, reconnectRequest: row.reconnectRequest,
     photoUrl: row.photoStorageKey ? photoUrls.get(row.photoStorageKey) : row.legacyPhotoUrl || null,
   }))
   const pendingInterestCount = rows[0]?.pendingInterestCount || 0

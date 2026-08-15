@@ -23,7 +23,7 @@ export default defineEventHandler(async (event) => {
 
     await client.query(`update daily_interests set declined_at=null,resolution=null,resolved_at=null
       where id=$1`, [id])
-    if (interest.resolution === 'withdrawn') {
+    if (interest.resolution === 'withdrawn' || interest.resolution === 'passed') {
       await client.query(`insert into notifications(recipient_id,actor_id,kind)
         select $1,$2,'interest_received' where not exists(select 1 from notifications
           where recipient_id=$1 and actor_id=$2 and kind='interest_received' and read_at is null)`,

@@ -2,7 +2,8 @@
 import { CalendarClock, History, XCircle } from '@lucide/vue'
 
 definePageMeta({ title: 'Past connections · Lonely Radish', middleware: 'logged-in' })
-type Connection = { id: string; name: string; slug: string; photoUrl?: string; endedReason?: 'removed' | 'post_date'; endedAt?: string; endedByMe?: boolean; wasUnmatched?: boolean; activity?: string; proposalId?: string; canReconsider?: boolean; canViewProfile?: boolean; apologySent?: boolean }
+type ReconnectResolution = 'accepted' | 'passed' | 'expired' | 'withdrawn' | 'blocked' | null
+type Connection = { id: string; name: string; slug: string; photoUrl?: string; endedReason?: 'removed' | 'post_date'; endedAt?: string; endedByMe?: boolean; wasUnmatched?: boolean; activity?: string; proposalId?: string; canReconsider?: boolean; canViewProfile?: boolean; apologySent?: boolean; reconnectInterestId?: string | null; reconnectInterestResolution?: ReconnectResolution }
 const connections = ref<Connection[]>([])
 const loading = ref(true)
 const errorMessage = ref('')
@@ -15,6 +16,14 @@ const loadingMore = ref(false)
 function outcome(connection: Connection) {
   if (connection.endedReason === 'post_date') return 'Closed after your post-date check-in'
   return connection.endedByMe ? 'You ended this match' : 'The other person ended this match'
+}
+function reconnectStatus(connection: Connection) {
+  if (!connection.reconnectInterestResolution) return 'Reconnect request pending'
+  if (connection.reconnectInterestResolution === 'passed') return 'They chose not to reconnect'
+  if (connection.reconnectInterestResolution === 'expired') return 'Reconnect request expired'
+  if (connection.reconnectInterestResolution === 'withdrawn') return 'You took back the reconnect request'
+  if (connection.reconnectInterestResolution === 'blocked') return 'Reconnect request closed'
+  return 'Reconnect request accepted'
 }
 async function sendApology(connection: Connection) {
   if (!apologyMessage.value.trim()) return
@@ -63,14 +72,16 @@ onMounted(() => loadConnections())
           <div class="flex items-start gap-4">
             <ProfilePhotoImage v-if="connection.photoUrl" :src="connection.photoUrl" :alt="`${connection.name}'s profile photo`" class="size-14 rounded-full" />
             <div v-else class="flex size-14 shrink-0 items-center justify-center rounded-full bg-[#F3E8DA] text-lg font-semibold text-[#B4234A]">{{ connection.name.charAt(0) }}</div>
-            <div class="min-w-0 flex-1"><h2 class="text-lg font-semibold">{{ connection.name }}</h2><p class="mt-1 flex items-center gap-1.5 text-sm text-[#6E4D58]"><XCircle class="size-4" />{{ outcome(connection) }}</p><p v-if="connection.activity" class="mt-1 text-xs text-[#6E4D58]">Last plan: {{ connection.activity }}</p><p v-if="connection.endedAt" class="mt-1 text-xs text-[#6E4D58]">{{ new Date(connection.endedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) }}</p></div>
+            <div class="min-w-0 flex-1"><h2 class="text-lg font-semibold">{{ connection.name }}</h2><p class="mt-1 flex items-center gap-1.5 text-sm text-[#6E4D58]"><XCircle class="size-4" />{{ outcome(connection) }}</p><p v-if="connection.activity" class="mt-1 text-xs text-[#6E4D58]">Last agreed plan: {{ connection.activity }}</p><p v-if="connection.endedAt" class="mt-1 text-xs text-[#6E4D58]">{{ new Date(connection.endedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) }}</p></div>
           </div>
           <div class="mt-4 flex flex-wrap gap-2">
             <NuxtLink v-if="connection.canViewProfile" :to="{ path: `/profiles/${connection.slug}`, query: { connection: 'past' } }" class="rounded-lg bg-[#F3E8DA] px-4 py-2.5 text-sm font-semibold text-[#8F1839]">View their profile</NuxtLink>
             <NuxtLink v-if="connection.canReconsider && connection.proposalId" :to="`/dates/${connection.proposalId}/follow-up`" class="rounded-lg bg-[#B4234A] px-4 py-2.5 text-sm font-semibold text-white">Review your answer</NuxtLink>
             <button v-if="connection.endedByMe && !connection.apologySent" type="button" class="rounded-lg bg-[#FCE3E8] px-4 py-2.5 text-sm font-semibold text-[#8F1839]" @click="apologyFor = connection.id; apologyMessage = ''">Send a note</button>
-            <span v-else-if="connection.apologySent" class="rounded-lg bg-[#EAF2DE] px-4 py-2.5 text-sm font-semibold text-[#4D2F39]">Note sent</span>
-            <NuxtLink v-if="connection.apologySent" :to="{ path: `/profiles/${connection.slug}`, query: { connection: 'past' } }" class="rounded-lg bg-[#B4234A] px-4 py-2.5 text-sm font-semibold text-white">Ask to reconnect</NuxtLink>
+            <span v-else-if="connection.apologySent && !connection.reconnectInterestId" class="rounded-lg bg-[#EAF2DE] px-4 py-2.5 text-sm font-semibold text-[#4D2F39]">Note sent</span>
+            <span v-if="connection.reconnectInterestId" class="rounded-lg px-4 py-2.5 text-sm font-semibold" :class="connection.reconnectInterestResolution ? 'bg-[#F3E8DA] text-[#6E4D58]' : 'bg-[#FFF1C7] text-[#694C00]'">{{ reconnectStatus(connection) }}</span>
+            <NuxtLink v-if="connection.apologySent && !connection.reconnectInterestId" :to="{ path: `/profiles/${connection.slug}`, query: { connection: 'past' } }" class="rounded-lg bg-[#B4234A] px-4 py-2.5 text-sm font-semibold text-white">Ask to reconnect</NuxtLink>
+            <NuxtLink v-else-if="connection.reconnectInterestId" to="/interests/sent" class="rounded-lg bg-[#B4234A] px-4 py-2.5 text-sm font-semibold text-white">View sent request</NuxtLink>
             <p v-if="connection.wasUnmatched && !connection.canViewProfile" class="text-xs leading-5 text-[#6E4D58]">They ended this connection, so it remains closed unless they choose to ask for another chance.</p>
             <p v-else-if="!connection.canViewProfile" class="text-xs leading-5 text-[#6E4D58]">Their profile is no longer available from this connection.</p>
           </div>

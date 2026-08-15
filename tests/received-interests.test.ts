@@ -18,6 +18,12 @@ describe('received interests', () => {
     expect(read('pages/interests/received.vue')).toContain('Not for me')
     expect(read('pages/interests/received.vue')).toContain('stays here for up to 14 days')
     expect(read('pages/interests/received.vue')).toContain('Earlier interest')
+    expect(api).toContain('row_number() over(partition by di.sender_id')
+    expect(api).toContain('di.sender_rank=1')
+    expect(api).toContain('pending.resolved_at is null')
+    expect(api).toContain('as "reconnectRequest"')
+    expect(read('pages/interests/received.vue')).toContain('Reconnect request expired')
+    expect(read('pages/interests/received.vue')).toContain('took back their reconnect request')
     expect(read('pages/faq.vue')).toContain('Why can I see only five interests at a time?')
   })
   it('allows the recipient to deliberately create a match', () => {
@@ -28,6 +34,7 @@ describe('received interests', () => {
     expect(service).toContain("'new_match'")
     expect(service).toContain('active match limit')
     expect(read('pages/interests/received.vue')).toContain('activeMatchLimit')
+    expect(repository).toContain("notification.kind='interest_received'")
   })
   it('queues incoming interests while showing the oldest five at a time', () => {
     const queueMigration = read('docs/migrations/20260918_queue_received_interests.sql')

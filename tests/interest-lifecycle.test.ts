@@ -24,6 +24,16 @@ describe('interest lifecycle', () => {
     expect(endpoint).toContain("kind='interest_received'")
   })
 
+  it('removes resolved-interest alerts and restores one when a pass is undone', () => {
+    const pass = read('server/api/interests/[id].delete.ts')
+    const accept = read('server/repositories/matches.ts')
+    const undo = read('server/api/interests/[id]/undo.post.ts')
+    expect(pass).toContain("notification.kind='interest_received'")
+    expect(accept).toContain("notification.kind='interest_received'")
+    expect(undo).toContain("interest.resolution === 'withdrawn' || interest.resolution === 'passed'")
+    expect(undo).toContain("'interest_received'")
+  })
+
   it('keeps expiry silent and prevents delayed notification delivery', () => {
     const lifecycle = read('server/utils/interestLifecycle.ts')
     const outbox = read('server/services/outbox/OutboxProcessor.ts')
