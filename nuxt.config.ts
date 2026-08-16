@@ -44,10 +44,11 @@ export default defineNuxtConfig({
     },
   },
 
-  vite: {
-    build: {
-      cssCodeSplit: false,
-    },
+  features: {
+    // Keep production CSS in hashed assets instead of embedding the whole app's
+    // stylesheet in every HTML response. This also makes client navigation use
+    // the same versioned styles as a full page load.
+    inlineStyles: false,
   },
 
   runtimeConfig: {

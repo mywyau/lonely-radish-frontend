@@ -31,11 +31,15 @@ const categories = [
   { slug: 'community', name: 'Community', icon: HandHeart, tone: 'bg-[#EAF2DE]' },
 ]
 const categorySlugs = new Set(categories.map(category => category.slug))
-const selectedCategories = computed(() => {
-  const value = route.query.categories
+function parseCategorySelection(value: string | string[] | null | undefined) {
   const raw = (Array.isArray(value) ? value : [value]).flatMap(item => typeof item === 'string' ? item.split(',') : [])
   return [...new Set(raw.filter(slug => categorySlugs.has(slug)))]
-})
+}
+function sameCategorySelection(left: string[], right: string[]) {
+  return left.length === right.length && left.every((slug, index) => slug === right[index])
+}
+
+const selectedCategories = ref(parseCategorySelection(route.query.categories))
 const selectedCategoryNames = computed(() => selectedCategories.value
   .map(slug => categories.find(category => category.slug === slug)?.name).filter(Boolean))
 const effectiveCategoryNames = computed(() => effectiveCategories.value
@@ -48,7 +52,14 @@ const safetyMessage = computed(() => {
 })
 
 async function updateCategorySelection(next: string[]) {
-  await router.replace({ query: { ...route.query, categories: next.length ? next.join(',') : undefined } })
+  // Update the controls immediately. Waiting for the route to settle made rapid
+  // taps calculate from stale query state and made the filters look unresponsive.
+  selectedCategories.value = next
+  try {
+    await router.replace({ query: { ...route.query, categories: next.length ? next.join(',') : undefined } })
+  } catch {
+    selectedCategories.value = parseCategorySelection(route.query.categories)
+  }
 }
 function toggleCategory(slug: string) {
   const next = selectedCategories.value.includes(slug)
@@ -89,7 +100,11 @@ async function loadCandidates(loadMore = false) {
   } finally { if (request === candidateRequest) loadingMore.value = false }
 }
 
-watch(() => route.query.categories, () => { void loadCandidates() })
+watch(() => route.query.categories, (value) => {
+  const routeSelection = parseCategorySelection(value)
+  if (!sameCategorySelection(selectedCategories.value, routeSelection)) selectedCategories.value = routeSelection
+})
+watch(selectedCategories, () => { void loadCandidates() })
 onMounted(() => {
   if (safetyMessage.value && String(route.query.safety).startsWith('reported')) {
     reportReference.value = window.sessionStorage.getItem('lonely-radish-latest-report-reference') || ''
@@ -119,8 +134,8 @@ onMounted(() => {
           <button v-if="selectedCategories.length" type="button" class="inline-flex items-center gap-1 text-sm font-semibold text-[#8F1839]" @click="clearCategories"><X class="size-4" />Clear</button>
         </div>
         <div class="mt-4 flex flex-wrap gap-2">
-          <button type="button" class="filter-chip" :class="!selectedCategories.length && 'filter-chip-selected'" :aria-pressed="!selectedCategories.length" @click="clearCategories"><Sparkles class="size-4" />Based on my activities</button>
-          <button v-for="category in categories" :key="category.slug" type="button" class="filter-chip" :class="selectedCategories.includes(category.slug) && 'filter-chip-selected'" :aria-pressed="selectedCategories.includes(category.slug)" @click="toggleCategory(category.slug)"><component :is="category.icon" class="size-4" />{{ category.name }}</button>
+          <button type="button" class="inline-flex items-center gap-1.5 rounded-full border px-3.5 py-2.5 text-[.8rem] font-bold transition-colors" :class="!selectedCategories.length ? 'border-[#B4234A] bg-[#B4234A] text-white hover:bg-[#8F1839]' : 'border-[#E8D8C4] bg-[#FBF7F1] text-[#4D2F39] hover:border-[#D7A7B3] hover:bg-[#FCE3E8]'" :aria-pressed="!selectedCategories.length" @click="clearCategories"><Sparkles class="size-4" />Based on my activities</button>
+          <button v-for="category in categories" :key="category.slug" type="button" class="inline-flex items-center gap-1.5 rounded-full border px-3.5 py-2.5 text-[.8rem] font-bold transition-colors" :class="selectedCategories.includes(category.slug) ? 'border-[#B4234A] bg-[#B4234A] text-white hover:bg-[#8F1839]' : 'border-[#E8D8C4] bg-[#FBF7F1] text-[#4D2F39] hover:border-[#D7A7B3] hover:bg-[#FCE3E8]'" :aria-pressed="selectedCategories.includes(category.slug)" @click="toggleCategory(category.slug)"><component :is="category.icon" class="size-4" />{{ category.name }}</button>
         </div>
         <p class="mt-4 text-xs font-semibold text-[#6E4D58]">{{ selectedCategoryNames.length ? `Showing ${selectedCategoryNames.join(' or ')}` : effectiveCategoryNames.length ? `Using your saved activity categories: ${effectiveCategoryNames.join(', ')}` : 'No saved activities yet — using all activity categories' }}</p>
       </section>
@@ -170,10 +185,3 @@ onMounted(() => {
     </section>
   </main>
 </template>
-
-<style scoped>
-.filter-chip { display: inline-flex; align-items: center; gap: .4rem; border: 1px solid #E8D8C4; border-radius: 999px; background: #FBF7F1; padding: .65rem .9rem; color: #4D2F39; font-size: .8rem; font-weight: 700; transition: background-color .15s, border-color .15s, color .15s; }
-.filter-chip:hover { border-color: #D7A7B3; background: #FCE3E8; }
-.filter-chip-selected { border-color: #B4234A; background: #B4234A; color: white; }
-.filter-chip-selected:hover { background: #8F1839; color: white; }
-</style>

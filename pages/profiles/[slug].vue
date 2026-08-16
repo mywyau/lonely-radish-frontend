@@ -571,74 +571,9 @@ useHead(() => ({ title: profile.value ? `${profile.value.name}'s Profile · Lone
   transform: translateX(-66.666%);
 }
 
-.profile-flip-card {
-  min-height: 13rem;
-  border-radius: .5rem;
-  outline: none;
-  perspective: 1000px;
-  transition: filter .2s ease, transform .2s ease;
-}
-
-.profile-flip-card:hover,
-.profile-flip-card:focus-visible {
-  filter: brightness(1.035) drop-shadow(0 12px 18px rgba(180, 35, 74, .16));
-  transform: translateY(-2px);
-}
-
-.profile-flip-card:focus-visible {
-  box-shadow: 0 0 0 3px rgba(180, 35, 74, .3);
-}
-
-.profile-flip-inner {
-  position: relative;
-  display: block;
-  min-height: 13rem;
-  transform-style: preserve-3d;
-  transition: transform .55s cubic-bezier(.2, .7, .2, 1);
-}
-
-.profile-flip-card.is-flipped .profile-flip-inner {
-  transform: rotateY(180deg);
-}
-
-.profile-flip-face {
-  position: absolute;
-  inset: 0;
-  display: block;
-  overflow: auto;
-  border-radius: .5rem;
-  padding: 1.25rem;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-}
-
-.profile-flip-front {
-  background: #FCE3E8;
-}
-
-.profile-flip-back {
-  background: #EAF2DE;
-  transform: rotateY(180deg);
-}
-
-.profile-flip-hint {
-  flex-shrink: 0;
-  color: #8F1839;
-  font-size: .7rem;
-  font-weight: 700;
-}
-
 @media (prefers-reduced-motion: reduce) {
-
-  .profile-flip-card,
-  .profile-flip-inner,
   .profile-summary-inner {
     transition: none;
-  }
-
-  .profile-flip-card:hover,
-  .profile-flip-card:focus-visible {
-    transform: none;
   }
 }
 </style>
