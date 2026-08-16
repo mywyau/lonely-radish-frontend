@@ -79,6 +79,10 @@ describe('production readiness', () => {
     expect(inspectProductionConfiguration({ ...configuredEnvironment, STRIPE_SECRET_KEY: 'sk_test_your-secret-key' }).services.stripe.configured).toBe(false)
     expect(inspectProductionConfiguration({ ...configuredEnvironment, SITE_URL: 'http://localhost:3000' }).services.qstash.configured).toBe(false)
     expect(inspectProductionConfiguration({ ...configuredEnvironment, AUTH_SESSION_SECRET: 'too-short' }).services.auth0.configured).toBe(false)
+    expect(inspectProductionConfiguration({
+      ...configuredEnvironment,
+      DATABASE_SSL_REJECT_UNAUTHORIZED: 'false',
+    }).services.database.configured).toBe(false)
   })
 
   it('requires the Vercel automation bypass for protected staging QStash deliveries', () => {

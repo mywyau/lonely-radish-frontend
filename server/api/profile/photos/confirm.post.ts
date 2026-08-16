@@ -2,6 +2,7 @@ import { readBody } from 'h3'
 import { db } from '~/server/repositories/db'
 import { requireUser } from '~/server/utils/requireUser'
 import { objectBody, text } from '~/server/utils/productValidation'
+import { sanitizeProfilePhoto, type ProfilePhotoContentType } from '~/server/utils/profilePhotoValidation'
 import { photoOwnerFolder, PROFILE_PHOTO_BUCKET, signedPhotoUrl, storageAdmin } from '~/server/utils/supabaseStorage'
 
 const MAX_PHOTO_BYTES = 1024 * 1024
@@ -43,6 +44,52 @@ export default defineEventHandler(async (event) => {
     || thumbnail.size < 1 || thumbnail.size > MAX_THUMBNAIL_BYTES) {
     await bucket.remove([storageKey, thumbnailStorageKey])
     throw createError({ statusCode: 415, statusMessage: 'Uploaded file is not an accepted photo' })
+  }
+
+  const [photoDownload, thumbnailDownload] = await Promise.all([
+    bucket.download(storageKey),
+    bucket.download(thumbnailStorageKey),
+  ])
+  if (photoDownload.error || !photoDownload.data || thumbnailDownload.error || !thumbnailDownload.data) {
+    await bucket.remove([storageKey, thumbnailStorageKey])
+    throw createError({ statusCode: 409, statusMessage: 'Upload could not be inspected' })
+  }
+
+  let normalizedPhoto: Buffer
+  let normalizedThumbnail: Buffer
+  try {
+    [normalizedPhoto, normalizedThumbnail] = await Promise.all([
+      sanitizeProfilePhoto(
+        Buffer.from(await photoDownload.data.arrayBuffer()),
+        photo.contentType as ProfilePhotoContentType,
+        'full',
+      ),
+      sanitizeProfilePhoto(
+        Buffer.from(await thumbnailDownload.data.arrayBuffer()),
+        thumbnail.contentType as ProfilePhotoContentType,
+        'thumbnail',
+      ),
+    ])
+  } catch {
+    await bucket.remove([storageKey, thumbnailStorageKey])
+    throw createError({ statusCode: 415, statusMessage: 'Uploaded file is not a valid photo' })
+  }
+
+  const [photoUpdate, thumbnailUpdate] = await Promise.all([
+    bucket.update(storageKey, normalizedPhoto, {
+      contentType: photo.contentType,
+      cacheControl: '31536000',
+      upsert: true,
+    }),
+    bucket.update(thumbnailStorageKey, normalizedThumbnail, {
+      contentType: thumbnail.contentType,
+      cacheControl: '31536000',
+      upsert: true,
+    }),
+  ])
+  if (photoUpdate.error || thumbnailUpdate.error) {
+    await bucket.remove([storageKey, thumbnailStorageKey])
+    throw createError({ statusCode: 502, statusMessage: 'Photo could not be secured for storage' })
   }
 
   const { rows } = await db.query(`insert into profile_photos(

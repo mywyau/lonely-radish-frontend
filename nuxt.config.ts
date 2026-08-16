@@ -13,6 +13,25 @@ export default defineNuxtConfig({
       "/**": {
         headers: {
           "Cache-Control": "no-cache",
+          "Content-Security-Policy": [
+            "default-src 'self'",
+            "base-uri 'self'",
+            "connect-src 'self' https://*.supabase.co https://*.vercel-insights.com",
+            "font-src 'self' data:",
+            "form-action 'self' https://*.auth0.com",
+            "frame-ancestors 'none'",
+            "img-src 'self' data: blob: https:",
+            "media-src 'self' blob:",
+            "object-src 'none'",
+            "script-src 'self' 'unsafe-inline'",
+            "style-src 'self' 'unsafe-inline'",
+            "worker-src 'self' blob:",
+            "upgrade-insecure-requests",
+          ].join("; "),
+          "Permissions-Policy": "camera=(self), geolocation=(), microphone=()",
+          "Referrer-Policy": "strict-origin-when-cross-origin",
+          "X-Content-Type-Options": "nosniff",
+          "X-Frame-Options": "DENY",
         },
       },
 

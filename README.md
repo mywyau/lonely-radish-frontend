@@ -435,6 +435,11 @@ where email = 'admin@example.com';
 Do not expose an API that lets users assign their own role. Non-admin requests
 to `/api/admin/me` correctly return `403`.
 
+Require multi-factor authentication for every administrator through an Auth0
+Action or tenant policy. Use dedicated administrator identities rather than
+promoting an administrator's everyday dating account, and keep recovery methods
+under the same operational control as production secrets.
+
 ## Current status
 
 Lonely Radish is under active MVP development. Before a public launch, use
@@ -448,4 +453,4 @@ non-production environment.
 node --env-file=.env.staging.local scripts/migrate.mjs
 
 ### migrate prod db changes
-npm run db:migrate 
+npm run db:migrate

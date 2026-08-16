@@ -72,6 +72,9 @@ export function inspectProductionConfiguration(env: Environment = process.env): 
   if (usable(env.DATABASE_URL) && !/^postgres(ql)?:\/\//.test(env.DATABASE_URL!)) {
     invalidate(services.database, 'DATABASE_URL must be a PostgreSQL URL')
   }
+  if (env.DATABASE_SSL_REJECT_UNAUTHORIZED?.trim().toLowerCase() === 'false') {
+    invalidate(services.database, 'Database TLS certificate verification cannot be disabled')
+  }
   if (usable(env.AUTH_SESSION_SECRET) && env.AUTH_SESSION_SECRET!.trim().length < 32) {
     invalidate(services.auth0, 'AUTH_SESSION_SECRET must contain at least 32 characters')
   }

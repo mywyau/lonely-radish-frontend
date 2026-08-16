@@ -5,6 +5,12 @@ import { tracePostgresPoolWait, tracePostgresQuery } from "../utils/telemetry";
 
 const { Pool } = pg;
 
+export function databaseSslOptions(environment: NodeJS.ProcessEnv = process.env) {
+  const ca = environment.DATABASE_CA_CERT?.replace(/\\n/g, '\n').trim()
+  const rejectUnauthorized = environment.DATABASE_SSL_REJECT_UNAUTHORIZED?.trim().toLowerCase() !== 'false'
+  return ca ? { rejectUnauthorized, ca } : { rejectUnauthorized }
+}
+
 export interface DatabaseQueryResult<Row = Record<string, any>> {
   rows: Row[]
   rowCount: number
@@ -88,7 +94,7 @@ if (!process.env.DATABASE_URL && process.env.NODE_ENV === "production") {
 const pool = process.env.DATABASE_URL
   ? new Pool({
       connectionString: process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false },
+      ssl: databaseSslOptions(),
       // Serverless instances scale horizontally. Keep each local pool small so
       // bursts do not exhaust Supabase's shared transaction-pooler clients.
       max: databasePoolMax(),
